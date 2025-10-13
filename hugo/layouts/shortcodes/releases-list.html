@@ -1,0 +1,10 @@
+{{ $releases := where .Site.RegularPages ".Params.tags" "intersect" (slice "release") }}
+
+
+{{ if $releases }}
+    {{ range $releases }}
+        {{ partial "article-link/simple.html" . }}
+    {{ end }}
+{{ else }}
+<p>No releases found.</p>
+{{ end }}

@@ -1,0 +1,5 @@
+{{ $src := .Get "src" }}
+{{ $alt := or (.Get "alt") $src }}
+{{ with resources.Get $src }}
+    {{ partial "img" (dict "img" . "alt" $alt) }}
+{{ end }}

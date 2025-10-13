@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{{ .Title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Reveal.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/theme/black.css" />
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        {{ .Content | safeHTML }}
+    </div>
+</div>
+
+<!-- Reveal.js JS -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+<script>
+    Reveal.initialize();
+</script>
+</body>
+</html>

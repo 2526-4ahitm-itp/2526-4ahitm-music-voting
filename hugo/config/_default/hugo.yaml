@@ -1,0 +1,64 @@
+# -- Site Configuration --
+# Refer to the theme docs for more details about each of these parameters.
+# https://blowfish.page/docs/getting-started/
+
+# theme: "blowfish"
+# baseURL: "2526-4ahitm-itp/2526-4ahitm-music-voting"
+defaultContentLanguage: en
+
+# pluralizeListTitles: true
+
+enableRobotsTXT: true
+summaryLength: 0
+
+buildDrafts: false
+buildFuture: false
+
+enableEmoji: true
+
+pagination:
+  pagerSize: 100
+
+imaging:
+  anchor: Center
+taxonomies:
+  tag: tags
+  category: categories
+  author: authors
+  series: series
+
+sitemap:
+  changefreq: daily
+  filename: sitemap.xml
+  priority: 0.5
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+related:
+  threshold: 0
+  toLower: false
+
+  indices:
+    - name: tags
+      weight: 100
+
+    - name: categories
+      weight: 100
+
+    - name: series
+      weight: 50
+
+    - name: authors
+      weight: 20
+
+    - name: date
+      weight: 10
+
+    - applyFilter: false
+      name: fragmentrefs
+      type: fragments
+      weight: 10

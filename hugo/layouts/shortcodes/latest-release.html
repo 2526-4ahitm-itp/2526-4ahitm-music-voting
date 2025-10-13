@@ -1,0 +1,10 @@
+{{ $allPages := where .Site.Pages "Kind" "page" }}
+{{ $releasePages := where $allPages ".Params.tags" "intersect" (slice "release") }}
+{{ $releasePages = where $releasePages "Title" "!=" "Latest Release" }}
+{{ $releasePages = sort $releasePages "Date" "desc" }}
+
+{{ with index $releasePages 0 }}
+    {{ partial "article-link/simple.html" . }}
+{{ else }}
+    <p>No release pages found.</p>
+{{ end }}
