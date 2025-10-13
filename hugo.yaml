@@ -6,3 +6,7 @@ theme: "ananke"
 params:
   author: "Simone Sperrer"
   description: "Eine coole Hugo-Website mit YAML"
+
+caches:
+  images:
+    dir: :cacheDir/images
