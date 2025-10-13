@@ -1,60 +1,64 @@
 ---
-title: "Präsentation für das Projekt MusicVoting"
+title: "Präsentation: MusicVoting"
 layout: "presentation"
 ---
 
-{{< slide title="Intro" >}}
-# MusicVoting 
-### no more lame party because of bad music
+{{< slide title="🎵 MusicVoting" >}}
+<h3>No more lame parties because of bad music</h3>
 {{< /slide >}}
 
-{{< slide title="Teil 1" >}}
-## Problem 
-
-Der Gastgeber hat keine Zeit sich um die Musik zu kümmern oder hat einfach nicht die richtige Musik für seine Gäste. 
-
+{{< slide title="❌ Problem" >}}
+<ul>
+  <li>Der Gastgeber hat keine Zeit, sich um Musik zu kümmern</li>
+  <li>Oder: Er hat einfach nicht den passenden Musikgeschmack</li>
+</ul>
 {{< /slide >}}
 
-{{< slide title="Teil 2" >}}
-## Lösung
-
-Jeder kann seine eigene Musik die ihm gefällt in eine Playlist einbringen und diese Lieder sogar voten um sie vorzureihen. 
-
+{{< slide title="✅ Lösung" >}}
+<ul>
+  <li>Gäste bringen ihre eigene Musik mit in die Playlist</li>
+  <li>Mit Votes werden Songs in der Reihenfolge hochgestuft</li>
+</ul>
 {{< /slide >}}
 
-
-{{< slide title="Teil 3" >}}
-## Unsere Idee
-
-Dieses Programm gibt es bereit wobei Lieder über YouTube abgespielt werden, nun möchten wir stattdessen einen Spotify Premium Account verknüpfen. 
-
+{{< slide title="💡 Unsere Idee" >}}
+<p>
+  Das aktuelle System spielt Musik über YouTube.<br>
+  Wir möchten es stattdessen mit einem <strong>Spotify Premium Account</strong> verbinden.
+</p>
 {{< /slide >}}
 
-
-{{< slide title="Teil 4" >}}
-## Umsetzung 
-
-Mit der Spotify Web Playback SDK ist es möglich per Access token Lieder abzuspielen, zu pausieren und zu überspringen. 
-Außerdem können so auf Songs, Albums, Genres und vieles mehr zugegriffen und ausgelesen werden, um dem User Vorschläge für nächste Lieder zu machen. 
-
-Der Acess token läuft nach einer Stunde ab, deswegen muss das Backend den token zwischendurch neu laden. 
-
+{{< slide title="⚙️ Technische Umsetzung" >}}
+<ul>
+  <li>Spotify Web Playback SDK ermöglicht:
+    <ul>
+      <li>Abspielen, Pausieren, Überspringen</li>
+      <li>Zugriff auf Songs, Alben, Genres etc.</li>
+    </ul>
+  </li>
+  <li>Access Token läuft nach 1 Stunde ab → muss erneuert werden</li>
+</ul>
 {{< /slide >}}
 
-
-{{< slide title="Teil 5" >}}
-## Original Projekt 
-
-https://github.com/MusicVoting/MusicVotingV3 von Anna Hartl und Hautzmayer Sheila
-
-dieses Github Repo ist nicht vollständig, deswegen haben wir von Eldin B. das Projekt das letztes Jahr beim Tag der offenen Tür gelaufen ist bekommen. 
-
-In dieses werden wir uns in nächster Zeit einarbeiten um den Ist-Zustand zu analysieren und die nächsten Schritte plannen zu können. 
-
+{{< slide title="📂 Projektstand" >}}
+<p>
+  GitHub Repo: <a href="https://github.com/MusicVoting/MusicVotingV3">MusicVotingV3</a><br>
+  (von Anna Hartl & Sheila Hautzmayer)
+</p>
+<p>
+  → nicht vollständig, daher verwenden wir das Projekt von <strong>Eldin B.</strong><br>
+  (vom Tag der offenen Tür 2024)
+</p>
+<p>
+  Ziel: Einarbeiten, analysieren, nächste Schritte planen
+</p>
 {{< /slide >}}
 
-
-{{< slide title="Teil 6" >}}
-## Ziel soll eine verbesserte, einfache Version sein!
-
+{{< slide title="🎯 Ziel" >}}
+<p><strong>Eine einfachere, verbesserte Version von MusicVoting</strong></p>
+<ul>
+  <li>Stabil</li>
+  <li>Intuitiv bedienbar</li>
+  <li>Vollständig Spotify-kompatibel</li>
+</ul>
 {{< /slide >}}
