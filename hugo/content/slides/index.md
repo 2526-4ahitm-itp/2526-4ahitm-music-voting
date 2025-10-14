@@ -57,7 +57,6 @@ layout: "presentation"
 {{< slide title="🎯 Ziel" >}}
 <p><strong>Eine einfachere, verbesserte Version von MusicVoting</strong></p>
 <ul>
-  <li>Stabil</li>
   <li>Intuitiv bedienbar</li>
   <li>Vollständig Spotify-kompatibel</li>
 </ul>
