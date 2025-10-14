@@ -6,9 +6,8 @@
 # https://blowfish.page/docs/configuration/#theme-parameters
 
 colorScheme: custom
-autoSwitchAppearance: false
 defaultAppearance: dark
-disableThemeToggle: true
+autoSwitchAppearance: true
 
 enableSearch: true
 enableCodeCopy: true
@@ -25,7 +24,7 @@ disableImageOptimization: false
 disableTextInHeader: false
 # backgroundImageWidth: 1200
 
-defaultBackgroundImage: img/card/purple_wallpaper.jpg# used as default for background images
+defaultBackgroundImage: img/card/purple_wallpaper.jpg # used as default for background images
 # defaultFeaturedImage: "IMAGE.jpg" # used as default for featured images in all articles
 
 highlightCurrentMenuArea: true

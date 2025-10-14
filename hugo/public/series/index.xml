@@ -2,12 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Series on MusicVoting</title>
-    <link>//localhost:40325/series/</link>
+    <link>//localhost:35559/series/</link>
     <description>Recent content in Series on MusicVoting</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Copyright © 2025 MusicVoting, HTBLA Leonding. &lt;br&gt;Licensed under the &lt;u&gt;[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)&lt;/u&gt;.</copyright>
-    <atom:link href="//localhost:40325/series/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="//localhost:35559/series/index.xml" rel="self" type="application/rss+xml" />
     
   </channel>
 </rss>

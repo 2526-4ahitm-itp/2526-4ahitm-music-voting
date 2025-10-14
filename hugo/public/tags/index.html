@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr" class="scroll-smooth" data-default-appearance="dark"
-  data-auto-appearance="false"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=40325&amp;path=livereload" data-no-instant defer></script>
+  data-auto-appearance="true"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=35559&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   
   <meta http-equiv="content-language" content="en" />
@@ -15,7 +15,7 @@
   
   
   
-  <link rel="canonical" href="//localhost:40325/tags/" />
+  <link rel="canonical" href="//localhost:35559/tags/" />
   
   <link rel="alternate" type="application/rss+xml" href="/tags/index.xml" title="MusicVoting" />
   
@@ -28,8 +28,8 @@
   
   
   
-  <link type="text/css" rel="stylesheet" href="/css/main.bundle.min.26f4116fdac139589c7f541b57a687abbe9ed0c50be25ab0ee95246ecb7f08924e8f569cd0f3bc0991954e9eac776f1fa89f777d30baa5cb39d2fbcf73c19544.css"
-    integrity="sha512-JvQRb9rBOVicf1QbV6aHq76e0MUL4lqw7pUkbst/CJJOj1ac0PO8CZGVTp6sd28fqJ93fTC6pcs50vvPc8GVRA==" />
+  <link type="text/css" rel="stylesheet" href="/css/main.bundle.min.661a4bd70a41625d0c5640e7a227f63d308eb176dd6c2807a7b83575ff0f678e71e3e8cf21f68f5cd36294c699f0d8d8648a630c4a322a139e4e946fdbc8e476.css"
+    integrity="sha512-ZhpL1wpBYl0MVkDnoif2PTCOsXbdbCgHp7g1df8PZ45x4&#43;jPIfaPXNNilMaZ8NjYZIpjDEoyKhOeTpRv28jkdg==" />
   
   
   <script type="text/javascript" src="/js/appearance.min.516a16745bea5a9bd011138d254cc0fd3973cd55ce6e15f3dec763e7c7c2c7448f8fe7b54cca811cb821b0c7e12cd161caace1dd794ac3d34d40937cbcc9ee12.js"
@@ -69,7 +69,7 @@
   
   
   
-  <meta property="og:url" content="//localhost:40325/tags/">
+  <meta property="og:url" content="//localhost:35559/tags/">
   <meta property="og:site_name" content="MusicVoting">
   <meta property="og:title" content="Tags">
   <meta property="og:locale" content="en">
@@ -573,6 +573,32 @@
 
 
 
+<div id="hero" class="h-[150px] md:h-[200px]"></div>
+
+
+
+    
+    <div class="fixed inset-x-0 top-0 h-[800px] single_hero_background nozoom"
+    style="background-image:url(/img/card/purple_wallpaper_hu_b6213ba7ef1ecfe4.jpg);">
+    
+
+
+    <div class="absolute inset-0 bg-gradient-to-t from-neutral dark:from-neutral-800 to-transparent mix-blend-normal">
+    </div>
+    <div
+        class="absolute inset-0 opacity-60 bg-gradient-to-t from-neutral dark:from-neutral-800 to-neutral-100 dark:to-neutral-800 mix-blend-normal">
+    </div>
+</div>
+
+<div id="background-blur" class="fixed opacity-0 inset-x-0 top-0 h-full single_hero_background nozoom backdrop-blur-2xl"></div>
+<script>
+    window.addEventListener('scroll', function (e) {
+        var scroll = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        var background_blur = document.getElementById('background-blur');
+        background_blur.style.opacity = (scroll / 300)
+    });
+</script>
+
  
 
   <header>
@@ -673,6 +699,54 @@
     </h2>
   </article>
     
+      <article class="w-full px-2 my-3 overflow-hidden sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4">
+    <h2 class="flex items-center">
+      <a
+        class="text-xl font-medium decoration-primary-500 hover:underline hover:underline-offset-2"
+        href="/tags/mom/"
+        >Mom</a
+      >
+      
+        <span class="px-2 text-base text-primary-500">&middot;</span>
+        <span class="text-base text-neutral-400">
+          1
+        </span>
+      
+    </h2>
+  </article>
+    
+      <article class="w-full px-2 my-3 overflow-hidden sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4">
+    <h2 class="flex items-center">
+      <a
+        class="text-xl font-medium decoration-primary-500 hover:underline hover:underline-offset-2"
+        href="/tags/project/"
+        >Project</a
+      >
+      
+        <span class="px-2 text-base text-primary-500">&middot;</span>
+        <span class="text-base text-neutral-400">
+          1
+        </span>
+      
+    </h2>
+  </article>
+    
+      <article class="w-full px-2 my-3 overflow-hidden sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4">
+    <h2 class="flex items-center">
+      <a
+        class="text-xl font-medium decoration-primary-500 hover:underline hover:underline-offset-2"
+        href="/tags/user-stories/"
+        >User Stories</a
+      >
+      
+        <span class="px-2 text-base text-primary-500">&middot;</span>
+        <span class="text-base text-neutral-400">
+          1
+        </span>
+      
+    </h2>
+  </article>
+    
   </section>
 
   
@@ -724,7 +798,7 @@
 <div
   id="search-wrapper"
   class="invisible fixed inset-0 flex h-screen w-screen cursor-default flex-col bg-neutral-500/50 p-4 backdrop-blur-sm dark:bg-neutral-900/50 sm:p-6 md:p-[10vh] lg:p-[12vh]"
-  data-url="//localhost:40325/"
+  data-url="//localhost:35559/"
   style="z-index:500"
 >
   <div
