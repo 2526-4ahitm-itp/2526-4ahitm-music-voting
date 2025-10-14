@@ -62,3 +62,8 @@ related:
       name: fragmentrefs
       type: fragments
       weight: 10
+
+params:
+  assets:
+    customCSS:
+      - css/schemas/custom.css

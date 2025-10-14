@@ -1,19 +1,11 @@
-:root { 
+:root {
 
 
     --color-neutral: 255, 255, 255;
-    --color-neutral-50:     255,255,255;
+    --color-neutral-50: 255,255,255;
 
     /* Gray */
-    --color-neutral-100: 241, 245, 249;
-    --color-neutral-200: 226, 232, 240;
-    --color-neutral-300: 203, 213, 225;
-    --color-neutral-400: 148, 163, 184;
-    --color-neutral-500: 100, 116, 139;
-    --color-neutral-600: 71, 85, 105;
-    --color-neutral-700: 51, 65, 85;
-    --color-neutral-800: 30, 41, 59;
-    --color-neutral-900: 15, 23, 42;
+
 
 
 
@@ -44,3 +36,11 @@
     scrollbar-gutter: stable;
 }
 
+
+body {
+    background-image: url("../../img/card/purple_wallpaper.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
