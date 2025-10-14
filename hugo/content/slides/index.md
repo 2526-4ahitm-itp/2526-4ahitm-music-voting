@@ -4,7 +4,7 @@ layout: "presentation"
 ---
 
 {{< slide title="🎵 MusicVoting" >}}
-<h3>No more lame parties because of bad music</h3>
+<h3>Keine langweiligen Partys mehr </h3>
 {{< /slide >}}
 
 {{< slide title="❌ Problem" >}}
