@@ -2,29 +2,29 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>MusicVoting</title>
-    <link>//localhost:35559/docs/</link>
+    <link>//localhost:1313/docs/</link>
     <description>Recent content on MusicVoting</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Copyright © 2025 MusicVoting, HTBLA Leonding. &lt;br&gt;Licensed under the &lt;u&gt;[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)&lt;/u&gt;.</copyright>
-    <lastBuildDate>Mon, 03 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="//localhost:35559/docs/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 03 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="//localhost:1313/docs/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Hugo</title>
-      <link>//localhost:35559/docs/hugo/</link>
+      <link>//localhost:1313/docs/hugo/</link>
       <pubDate>Mon, 03 Mar 2025 00:00:00 +0000</pubDate>
       
-      <guid>//localhost:35559/docs/hugo/</guid>
+      <guid>//localhost:1313/docs/hugo/</guid>
       <description></description>
       
     </item>
     
     <item>
       <title>How To Run</title>
-      <link>//localhost:35559/docs/runinstructions/</link>
+      <link>//localhost:1313/docs/runinstructions/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>//localhost:35559/docs/runinstructions/</guid>
+      <guid>//localhost:1313/docs/runinstructions/</guid>
       <description></description>
       
     </item>

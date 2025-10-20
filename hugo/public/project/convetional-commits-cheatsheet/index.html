@@ -8,14 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   
-  <title>How To Run &middot; MusicVoting</title>
-  <meta name="title" content="How To Run &middot; MusicVoting" />
-  
-  <meta name="description" content="How to run the application" />
+  <title>Internes Dokument - Conventional Commits &middot; MusicVoting</title>
+  <meta name="title" content="Internes Dokument - Conventional Commits &middot; MusicVoting" />
   
   
   
-  <link rel="canonical" href="//localhost:1313/docs/runinstructions/" />
+  
+  
+  <link rel="canonical" href="//localhost:1313/project/convetional-commits-cheatsheet/" />
   
   
   
@@ -67,31 +67,29 @@
   
   
   
-  <meta property="og:url" content="//localhost:1313/docs/runinstructions/">
+  <meta property="og:url" content="//localhost:1313/project/convetional-commits-cheatsheet/">
   <meta property="og:site_name" content="MusicVoting">
-  <meta property="og:title" content="How To Run">
-  <meta property="og:description" content="How to run the application">
+  <meta property="og:title" content="Internes Dokument - Conventional Commits">
   <meta property="og:locale" content="en">
   <meta property="og:type" content="article">
-    <meta property="article:section" content="docs">
+    <meta property="article:section" content="project">
 
   
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="How To Run">
-  <meta name="twitter:description" content="How to run the application">
+  <meta name="twitter:title" content="Internes Dokument - Conventional Commits">
 
   
   <script type="application/ld+json">
   [{
     "@context": "https://schema.org",
     "@type": "Article",
-    "articleSection": "",
-    "name": "How To Run",
-    "headline": "How To Run",
-    "description": "How to run the application",
+    "articleSection": "Project",
+    "name": "Internes Dokument - Conventional Commits",
+    "headline": "Internes Dokument - Conventional Commits",
+    
     
     "inLanguage": "en",
-    "url" : "\/\/localhost:1313\/docs\/runinstructions\/",
+    "url" : "\/\/localhost:1313\/project\/convetional-commits-cheatsheet\/",
     "author" : {
       "@type": "Person",
       "name": ""
@@ -105,7 +103,7 @@
     
     
     "mainEntityOfPage": "true",
-    "wordCount": "16"
+    "wordCount": "790"
   }]
   </script>
 
@@ -654,8 +652,8 @@
   <li class="inline">
     <a
       class="hover:underline decoration-neutral-300 dark:underline-neutral-600"
-      href="/docs/"
-      >docs</a
+      href="/project/"
+      >Project</a
     ><span class="px-1 text-primary-500">/</span>
   </li>
 
@@ -663,8 +661,8 @@
   <li class="hidden">
     <a
       class="hover:underline decoration-neutral-300 dark:underline-neutral-600"
-      href="/docs/runinstructions/"
-      >How To Run</a
+      href="/project/convetional-commits-cheatsheet/"
+      >Internes Dokument - Conventional Commits</a
     ><span class="px-1 text-primary-500">/</span>
   </li>
 
@@ -673,7 +671,7 @@
 
     
     <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
-      How To Run
+      Internes Dokument - Conventional Commits
     </h1>
     <div class="mt-1 mb-6 text-base text-neutral-500 dark:text-neutral-400 print:hidden">
       
@@ -701,8 +699,6 @@
 
 
 
-  
-
 
 
 
@@ -720,7 +716,7 @@
 <div class="flex flex-row flex-wrap items-center">
   
   
-  <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time><span class="px-2 text-primary-500">&middot;</span><span>16 words</span><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">1 min</span><span class="px-2 text-primary-500">&middot;</span>
+  <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time><span class="px-2 text-primary-500">&middot;</span><span>790 words</span><span class="px-2 text-primary-500">&middot;</span>
 
 
   
@@ -730,7 +726,7 @@
 
 <span class="mb-[2px]">
   <a
-    href="https://github.com/2425-3ahitm-itp/02-projekte-helpr/edit/dev/hugo/content/docs/runinstructions.md"
+    href="https://github.com/2425-3ahitm-itp/02-projekte-helpr/edit/dev/hugo/content/project/convetional-commits-cheatsheet.md"
     class="text-lg hover:text-primary-500"
     rel="noopener noreferrer"
     target="_blank"
@@ -826,14 +822,29 @@
     class="min-w-[220px] py-2 border-dotted ltr:-ml-5 ltr:border-l ltr:pl-5 rtl:-mr-5 rtl:border-r rtl:pr-5 dark:border-neutral-600">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#starten-des-programms">Starten des Programms</a>
+    <li><a href="#commit-message-formats">Commit Message Formats</a>
       <ul>
-        <li><a href="#voraussetzungen">Voraussetzungen</a></li>
-        <li><a href="#starten-der-datenbank">Starten der Datenbank</a></li>
-        <li><a href="#starten-der-anwendung">Starten der Anwendung</a></li>
-        <li><a href="#troubleshooting">Troubleshooting</a></li>
+        <li><a href="#general-commit">General Commit</a></li>
+        <li><a href="#initial-commit">Initial Commit</a></li>
+        <li><a href="#merge-commit">Merge Commit</a></li>
+        <li><a href="#revert-commit">Revert Commit</a></li>
+        <li><a href="#types">Types</a></li>
+        <li><a href="#scopes">Scopes</a></li>
+        <li><a href="#breaking-changes-indicator">Breaking Changes Indicator</a></li>
+        <li><a href="#description">Description</a></li>
+        <li><a href="#body">Body</a></li>
+        <li><a href="#footer">Footer</a></li>
+        <li><a href="#versioning">Versioning</a></li>
+        <li><a href="#examples">Examples</a></li>
       </ul>
     </li>
+    <li><a href="#git-hook-scripts-to-ensure-commit-message-header-format">Git Hook Scripts to ensure commit message header format</a>
+      <ul>
+        <li><a href="#commit-msg-hook-local">commit-msg Hook (local)</a></li>
+        <li><a href="#pre-receive-hook-server-side">pre-receive Hook (server side)</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
   </ul>
 </nav>
   </div>
@@ -847,14 +858,29 @@
     class="py-2 border-dotted border-neutral-300 ltr:-ml-5 ltr:border-l ltr:pl-5 rtl:-mr-5 rtl:border-r rtl:pr-5 dark:border-neutral-600">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#starten-des-programms">Starten des Programms</a>
+    <li><a href="#commit-message-formats">Commit Message Formats</a>
       <ul>
-        <li><a href="#voraussetzungen">Voraussetzungen</a></li>
-        <li><a href="#starten-der-datenbank">Starten der Datenbank</a></li>
-        <li><a href="#starten-der-anwendung">Starten der Anwendung</a></li>
-        <li><a href="#troubleshooting">Troubleshooting</a></li>
+        <li><a href="#general-commit">General Commit</a></li>
+        <li><a href="#initial-commit">Initial Commit</a></li>
+        <li><a href="#merge-commit">Merge Commit</a></li>
+        <li><a href="#revert-commit">Revert Commit</a></li>
+        <li><a href="#types">Types</a></li>
+        <li><a href="#scopes">Scopes</a></li>
+        <li><a href="#breaking-changes-indicator">Breaking Changes Indicator</a></li>
+        <li><a href="#description">Description</a></li>
+        <li><a href="#body">Body</a></li>
+        <li><a href="#footer">Footer</a></li>
+        <li><a href="#versioning">Versioning</a></li>
+        <li><a href="#examples">Examples</a></li>
       </ul>
     </li>
+    <li><a href="#git-hook-scripts-to-ensure-commit-message-header-format">Git Hook Scripts to ensure commit message header format</a>
+      <ul>
+        <li><a href="#commit-msg-hook-local">commit-msg Hook (local)</a></li>
+        <li><a href="#pre-receive-hook-server-side">pre-receive Hook (server side)</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
   </ul>
 </nav>
   </div>
@@ -938,64 +964,447 @@
         <div class="article-content max-w-prose mb-20">
           
 
-<h2 class="relative group">Starten des Programms 
-    <div id="starten-des-programms" class="anchor"></div>
+<h1 class="relative group">Conventional Commit Messages <a href="https://github.com/qoomon/starline" target="_blank">
+  <figure>
+    <img class="my-0 rounded-md" loading="lazy" src="https://starlines.qoo.monster/assets/qoomon/5dfcdf8eec66a051ecd85625518cfd13@gist" alt="starline" />
+    
+  </figure>
+</a> 
+    <div id="conventional-commit-messages-starlinehttpsstarlinesqoomonsterassetsqoomon5dfcdf8eec66a051ecd85625518cfd13gisthttpsgithubcomqoomonstarline" class="anchor"></div>
     
     <span
         class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
         <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
-            style="text-decoration-line: none !important;" href="#starten-des-programms" aria-label="Anchor">#</a>
+            style="text-decoration-line: none !important;" href="#conventional-commit-messages-starlinehttpsstarlinesqoomonsterassetsqoomon5dfcdf8eec66a051ecd85625518cfd13gisthttpsgithubcomqoomonstarline" aria-label="Anchor">#</a>
+    </span>        
+    
+</h1>
+<p>See how <a href="#examples">a minor change</a> to your commit message style can make a difference.</p>
+<pre>
+git commit -m"<b><a href="#types">&lt;type&gt;</a></b></font>(<b><a href="#scopes">&lt;optional scope&gt;</a></b>): <b><a href="#description">&lt;description&gt;</a></b>" \
+  -m"<b><a href="#body">&lt;optional body&gt;</a></b>" \
+  -m"<b><a href="#footer">&lt;optional footer&gt;</a></b>"
+</pre>
+
+          <link rel="stylesheet" href="/css/vendors/admonitions.css">
+    <div class="admonition note">
+      <div class="admonition-header"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M0 64C0 28.7 28.7 0 64 0L224 0l0 128c0 17.7 14.3 32 32 32l128 0 0 125.7-86.8 86.8c-10.3 10.3-17.5 23.1-21 37.2l-18.7 74.9c-2.3 9.2-1.8 18.8 1.3 27.5L64 512c-35.3 0-64-28.7-64-64L0 64zm384 64l-128 0L256 0 384 128zM549.8 235.7l14.4 14.4c15.6 15.6 15.6 40.9 0 56.6l-29.4 29.4-71-71 29.4-29.4c15.6-15.6 40.9-15.6 56.6 0zM311.9 417L441.1 287.8l71 71L382.9 487.9c-4.1 4.1-9.2 7-14.9 8.4l-60.1 15c-5.5 1.4-11.2-.2-15.2-4.2s-5.6-9.7-4.2-15.2l15-60.1c1.4-5.6 4.3-10.8 8.4-14.9z"/></svg>
+        <span>Note</span>
+      </div>
+      <div class="admonition-content">
+        <p>This cheatsheet is opinionated, however it does not violate the specification of <a href="https://www.conventionalcommits.org/" target="_blank">conventional commits</a></p>
+      </div>
+    </div>
+    <div class="admonition tip">
+      <div class="admonition-header"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M272 384c9.6-31.9 29.5-59.1 49.2-86.2c0 0 0 0 0 0c5.2-7.1 10.4-14.2 15.4-21.4c19.8-28.5 31.4-63 31.4-100.3C368 78.8 289.2 0 192 0S16 78.8 16 176c0 37.3 11.6 71.9 31.4 100.3c5 7.2 10.2 14.3 15.4 21.4c0 0 0 0 0 0c19.8 27.1 39.7 54.4 49.2 86.2l160 0zM192 512c44.2 0 80-35.8 80-80l0-16-160 0 0 16c0 44.2 35.8 80 80 80zM112 176c0 8.8-7.2 16-16 16s-16-7.2-16-16c0-61.9 50.1-112 112-112c8.8 0 16 7.2 16 16s-7.2 16-16 16c-44.2 0-80 35.8-80 80z"/></svg>
+        <span>Tip</span>
+      </div>
+      <div class="admonition-content">
+        <p>Take a look at <strong><a href="https://github.com/qoomon/git-conventional-commits" target="_blank">git-conventional-commits</a></strong> ; a CLI util to ensure these conventions, determine version and generate changelogs.</p>
+      </div>
+    </div>
+
+<h2 class="relative group">Commit Message Formats 
+    <div id="commit-message-formats" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#commit-message-formats" aria-label="Anchor">#</a>
     </span>        
     
 </h2>
 
 
-<h3 class="relative group">Voraussetzungen 
-    <div id="voraussetzungen" class="anchor"></div>
+<h3 class="relative group">General Commit 
+    <div id="general-commit" class="anchor"></div>
     
     <span
         class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
         <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
-            style="text-decoration-line: none !important;" href="#voraussetzungen" aria-label="Anchor">#</a>
+            style="text-decoration-line: none !important;" href="#general-commit" aria-label="Anchor">#</a>
     </span>        
     
 </h3>
+<pre>
+<b><a href="#types">&lt;type&gt;</a></b></font>(<b><a href="#scopes">&lt;optional scope&gt;</a></b>): <b><a href="#description">&lt;description&gt;</a></b>
+<sub>empty line as separator</sub>
+<b><a href="#body">&lt;optional body&gt;</a></b>
+<sub>empty line as separator</sub>
+<b><a href="#footer">&lt;optional footer&gt;</a></b>
+</pre>
 
 
-<h3 class="relative group">Starten der Datenbank 
-    <div id="starten-der-datenbank" class="anchor"></div>
+<h3 class="relative group">Initial Commit 
+    <div id="initial-commit" class="anchor"></div>
     
     <span
         class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
         <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
-            style="text-decoration-line: none !important;" href="#starten-der-datenbank" aria-label="Anchor">#</a>
+            style="text-decoration-line: none !important;" href="#initial-commit" aria-label="Anchor">#</a>
     </span>        
     
 </h3>
+<pre tabindex="0"><code>chore: init
+</code></pre>
 
-
-<h3 class="relative group">Starten der Anwendung 
-    <div id="starten-der-anwendung" class="anchor"></div>
+<h3 class="relative group">Merge Commit 
+    <div id="merge-commit" class="anchor"></div>
     
     <span
         class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
         <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
-            style="text-decoration-line: none !important;" href="#starten-der-anwendung" aria-label="Anchor">#</a>
+            style="text-decoration-line: none !important;" href="#merge-commit" aria-label="Anchor">#</a>
     </span>        
     
 </h3>
+<pre>
+Merge branch '<b>&lt;branch name&gt;</b>'
+</pre>
+<p><sup>Follows default git merge message</sup></p>
 
 
-<h3 class="relative group">Troubleshooting 
-    <div id="troubleshooting" class="anchor"></div>
+<h3 class="relative group">Revert Commit 
+    <div id="revert-commit" class="anchor"></div>
     
     <span
         class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
         <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
-            style="text-decoration-line: none !important;" href="#troubleshooting" aria-label="Anchor">#</a>
+            style="text-decoration-line: none !important;" href="#revert-commit" aria-label="Anchor">#</a>
     </span>        
     
 </h3>
+<pre>
+Revert "<b>&lt;reverted commit subject line&gt;</b>"
+</pre>
+<p><sup>Follows default git revert message</sup></p>
+
+
+<h3 class="relative group">Types 
+    <div id="types" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#types" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<ul>
+<li>Changes relevant to the API or UI:
+<ul>
+<li><code>feat</code> Commits that add, adjust or remove a new feature to the API or UI</li>
+<li><code>fix</code> Commits that fix an API or UI bug of a preceded <code>feat</code> commit</li>
+</ul>
+</li>
+<li><code>refactor</code> Commits that rewrite or restructure code without altering API or UI behavior
+<ul>
+<li><code>perf</code> Commits are special type of <code>refactor</code> commits that specifically improve performance</li>
+</ul>
+</li>
+<li><code>style</code> Commits that address code style (e.g., white-space, formatting, missing semi-colons) and do not affect application behavior</li>
+<li><code>test</code> Commits that add missing tests or correct existing ones</li>
+<li><code>docs</code> Commits that exclusively affect documentation</li>
+<li><code>build</code> Commits that affect build-related components such as build tools, dependencies, project version, CI/CD pipelines, &hellip;</li>
+<li><code>ops</code> Commits that affect operational components like infrastructure, deployment, backup, recovery procedures, &hellip;</li>
+<li><code>chore</code> Miscellaneous commits e.g. modifying <code>.gitignore</code>, &hellip;</li>
+</ul>
+
+
+<h3 class="relative group">Scopes 
+    <div id="scopes" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#scopes" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<p>The <code>scope</code> provides additional contextual information.</p>
+<ul>
+<li>The scope is an <strong>optional</strong> part</li>
+<li>Allowed scopes vary and are typically defined by the specific project</li>
+<li><strong>Do not</strong> use issue identifiers as scopes</li>
+</ul>
+
+
+<h3 class="relative group">Breaking Changes Indicator 
+    <div id="breaking-changes-indicator" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#breaking-changes-indicator" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<ul>
+<li>A commit that introduce breaking changes <strong>must</strong> be indicated by an <code>!</code> before the <code>:</code> in the subject line e.g. <code>feat(api)!: remove status endpoint</code></li>
+<li>Breaking changes <strong>should</strong> be described in the <a href="#footer">commit footer section</a>, if the <a href="#description">commit description</a> isn&rsquo;t sufficiently informative</li>
+</ul>
+
+
+<h3 class="relative group">Description 
+    <div id="description" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#description" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<p>The <code>description</code> contains a concise description of the change.</p>
+<ul>
+<li>The description is a <strong>mandatory</strong> part</li>
+<li>Use the imperative, present tense: &ldquo;change&rdquo; not &ldquo;changed&rdquo; nor &ldquo;changes&rdquo;
+<ul>
+<li>Think of <code>This commit will...</code> or <code>This commit should...</code></li>
+</ul>
+</li>
+<li><strong>Do not</strong> capitalize the first letter</li>
+<li><strong>Do not</strong> end the description with a period (<code>.</code>)</li>
+<li>I case of breaking changes also see <a href="#breaking-changes-indicator">breaking changes indicator</a></li>
+</ul>
+
+
+<h3 class="relative group">Body 
+    <div id="body" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#body" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<p>The <code>body</code> should include the motivation for the change and contrast this with previous behavior.</p>
+<ul>
+<li>The body is an <strong>optional</strong> part</li>
+<li>Use the imperative, present tense: &ldquo;change&rdquo; not &ldquo;changed&rdquo; nor &ldquo;changes&rdquo;</li>
+</ul>
+
+
+<h3 class="relative group">Footer 
+    <div id="footer" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#footer" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<p>The <code>footer</code> should contain issue references and informations about <strong>Breaking Changes</strong></p>
+<ul>
+<li>The footer is an <strong>optional</strong> part, except if the commit introduce breaking changes</li>
+<li><em>Optionally</em> reference issue identifiers (e.g., <code>Closes #123</code>, <code>Fixes JIRA-456</code>)</li>
+<li><strong>Breaking Changes</strong> <strong>must</strong> start with the word <code>BREAKING CHANGE:</code>
+<ul>
+<li>For a single line description just add a space after <code>BREAKING CHANGE:</code></li>
+<li>For a multi line description add two new lines after <code>BREAKING CHANGE:</code></li>
+</ul>
+</li>
+</ul>
+
+
+<h3 class="relative group">Versioning 
+    <div id="versioning" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#versioning" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<ul>
+<li><strong>If</strong> your next release contains commit with&hellip;
+<ul>
+<li><strong>Breaking Changes</strong> incremented the <strong>major version</strong></li>
+<li><strong>API relevant changes</strong> (<code>feat</code> or <code>fix</code>) incremented the <strong>minor version</strong></li>
+</ul>
+</li>
+<li><strong>Else</strong> increment the <strong>patch version</strong></li>
+</ul>
+
+
+<h3 class="relative group">Examples 
+    <div id="examples" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#examples" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<ul>
+<li>
+<pre tabindex="0"><code>feat: add email notifications on new direct messages
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>feat(shopping cart): add the amazing button
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>feat!: remove ticket list endpoint
+
+refers to JIRA-1337
+
+BREAKING CHANGE: ticket endpoints no longer supports list all entities.
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>fix(shopping-cart): prevent order an empty shopping cart
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>fix(api): fix wrong calculation of request body checksum
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>fix: add missing parameter to service call
+
+The error occurred due to &lt;reasons&gt;.
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>perf: decrease memory footprint for determine unique visitors by using HyperLogLog
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>build: update dependencies
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>build(release): bump version to 1.0.0
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>refactor: implement fibonacci number calculation as recursion
+</code></pre></li>
+<li>
+<pre tabindex="0"><code>style: remove empty line
+</code></pre></li>
+</ul>
+<hr>
+
+
+<h2 class="relative group">Git Hook Scripts to ensure commit message header format 
+    <div id="git-hook-scripts-to-ensure-commit-message-header-format" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#git-hook-scripts-to-ensure-commit-message-header-format" aria-label="Anchor">#</a>
+    </span>        
+    
+</h2>
+<details>
+<summary>Click to expand</summary>
+
+
+<h3 class="relative group">commit-msg Hook (local) 
+    <div id="commit-msg-hook-local" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#commit-msg-hook-local" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<ul>
+<li>Create a commit-msg hook using <a href="https://github.com/qoomon/git-conventional-commits?tab=readme-ov-file#automatically-validate-commit-message-convention-before-commit" target="_blank">git-conventional-commits cli</a></li>
+</ul>
+
+
+<h3 class="relative group">pre-receive Hook (server side) 
+    <div id="pre-receive-hook-server-side" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#pre-receive-hook-server-side" aria-label="Anchor">#</a>
+    </span>        
+    
+</h3>
+<ul>
+<li>create following file in your repository folder <code>.git/hooks/pre-receive</code>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="cp">#!/usr/bin/env bash
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Pre-receive hook that will block commits with messages that do not follow regex rule</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">commit_msg_type_regex</span><span class="o">=</span><span class="s1">&#39;feat|fix|refactor|style|test|docs|build&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">commit_msg_scope_regex</span><span class="o">=</span><span class="s1">&#39;.{1,20}&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">commit_msg_description_regex</span><span class="o">=</span><span class="s1">&#39;.{1,100}&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">commit_msg_regex</span><span class="o">=</span><span class="s2">&#34;^(</span><span class="si">${</span><span class="nv">commit_msg_type_regex</span><span class="si">}</span><span class="s2">)(\(</span><span class="si">${</span><span class="nv">commit_msg_scope_regex</span><span class="si">}</span><span class="s2">\))?: (</span><span class="si">${</span><span class="nv">commit_msg_description_regex</span><span class="si">}</span><span class="s2">)\$&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">merge_msg_regex</span><span class="o">=</span><span class="s2">&#34;^Merge branch &#39;.+&#39;\$&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">zero_commit</span><span class="o">=</span><span class="s2">&#34;0000000000000000000000000000000000000000&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Do not traverse over commits that are already in the repository</span>
+</span></span><span class="line"><span class="cl"><span class="nv">excludeExisting</span><span class="o">=</span><span class="s2">&#34;--not --all&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">error</span><span class="o">=</span><span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="nb">read</span> oldrev newrev refname<span class="p">;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="cl">  <span class="c1"># branch or tag get deleted</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">[</span> <span class="s2">&#34;</span><span class="nv">$newrev</span><span class="s2">&#34;</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="nv">$zero_commit</span><span class="s2">&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">    <span class="k">continue</span>
+</span></span><span class="line"><span class="cl">  <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1"># Check for new branch or tag</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">[</span> <span class="s2">&#34;</span><span class="nv">$oldrev</span><span class="s2">&#34;</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="nv">$zero_commit</span><span class="s2">&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">rev_span</span><span class="o">=</span><span class="sb">`</span>git rev-list <span class="nv">$newrev</span> <span class="nv">$excludeExisting</span><span class="sb">`</span>
+</span></span><span class="line"><span class="cl">  <span class="k">else</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">rev_span</span><span class="o">=</span><span class="sb">`</span>git rev-list <span class="nv">$oldrev</span>..<span class="nv">$newrev</span> <span class="nv">$excludeExisting</span><span class="sb">`</span>
+</span></span><span class="line"><span class="cl">  <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> commit in <span class="nv">$rev_span</span><span class="p">;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">commit_msg_header</span><span class="o">=</span><span class="k">$(</span>git show -s --format<span class="o">=</span>%s <span class="nv">$commit</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> ! <span class="o">[[</span> <span class="s2">&#34;</span><span class="nv">$commit_msg_header</span><span class="s2">&#34;</span> <span class="o">=</span>~ <span class="o">(</span><span class="si">${</span><span class="nv">commit_msg_regex</span><span class="si">}</span><span class="o">)</span><span class="p">|</span><span class="o">(</span><span class="si">${</span><span class="nv">merge_msg_regex</span><span class="si">}</span><span class="o">)</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">      <span class="nb">echo</span> <span class="s2">&#34;</span><span class="nv">$commit</span><span class="s2">&#34;</span> &gt;<span class="p">&amp;</span><span class="m">2</span>
+</span></span><span class="line"><span class="cl">      <span class="nb">echo</span> <span class="s2">&#34;ERROR: Invalid commit message format&#34;</span> &gt;<span class="p">&amp;</span><span class="m">2</span>
+</span></span><span class="line"><span class="cl">      <span class="nb">echo</span> <span class="s2">&#34;</span><span class="nv">$commit_msg_header</span><span class="s2">&#34;</span> &gt;<span class="p">&amp;</span><span class="m">2</span>
+</span></span><span class="line"><span class="cl">      <span class="nv">error</span><span class="o">=</span><span class="s2">&#34;true&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">  <span class="k">done</span>
+</span></span><span class="line"><span class="cl"><span class="k">done</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="o">[</span> -n <span class="s2">&#34;</span><span class="nv">$error</span><span class="s2">&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">  <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl"><span class="k">fi</span>
+</span></span></code></pre></div></li>
+</ul>
+<ul>
+<li>⚠ make <code>.git/hooks/pre-receive</code> executable (unix: <code>chmod +x '.git/hooks/pre-receive'</code>)</li>
+</ul>
+</details>
+<hr>
+
+
+<h2 class="relative group">References 
+    <div id="references" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#references" aria-label="Anchor">#</a>
+    </span>        
+    
+</h2>
+<ul>
+<li>
+<p><a href="https://www.conventionalcommits.org/" target="_blank">https://www.conventionalcommits.org/</a></p>
+</li>
+<li>
+<p><a href="https://github.com/angular/angular/blob/master/CONTRIBUTING.md" target="_blank">https://github.com/angular/angular/blob/master/CONTRIBUTING.md</a></p>
+</li>
+<li>
+<p><a href="http://karma-runner.github.io/1.0/dev/git-commit-msg.html" target="_blank">http://karma-runner.github.io/1.0/dev/git-commit-msg.html</a>
+<br></p>
+</li>
+<li>
+<p><a href="https://github.com/github/platform-samples/tree/master/pre-receive-hooks" target="_blank">https://github.com/github/platform-samples/tree/master/pre-receive-hooks</a></p>
+</li>
+<li>
+<p><a href="https://github.community/t5/GitHub-Enterprise-Best-Practices/Using-pre-receive-hooks-in-GitHub-Enterprise/ba-p/13863" target="_blank">https://github.community/t5/GitHub-Enterprise-Best-Practices/Using-pre-receive-hooks-in-GitHub-Enterprise/ba-p/13863</a></p>
+</li>
+</ul>
 
           
           
@@ -1013,7 +1422,7 @@
       <a
       target="_blank"
       class="m-1 rounded bg-neutral-300 p-1.5 text-neutral-700 hover:bg-primary-500 hover:text-neutral dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800"
-      href="https://twitter.com/intent/tweet/?url=//localhost:1313/docs/runinstructions/&amp;text=How%20To%20Run"
+      href="https://twitter.com/intent/tweet/?url=//localhost:1313/project/convetional-commits-cheatsheet/&amp;text=Internes%20Dokument%20-%20Conventional%20Commits"
       title="Tweet on Twitter"
       aria-label="Tweet on Twitter"
       >
@@ -1031,7 +1440,7 @@
       <a
       target="_blank"
       class="m-1 rounded bg-neutral-300 p-1.5 text-neutral-700 hover:bg-primary-500 hover:text-neutral dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800"
-      href="https://bsky.app/intent/compose?text=How%20To%20Run&#43;//localhost:1313/docs/runinstructions/"
+      href="https://bsky.app/intent/compose?text=Internes%20Dokument%20-%20Conventional%20Commits&#43;//localhost:1313/project/convetional-commits-cheatsheet/"
       title="Post on Bluesky"
       aria-label="Post on Bluesky"
       >
@@ -1049,7 +1458,7 @@
       <a
       target="_blank"
       class="m-1 rounded bg-neutral-300 p-1.5 text-neutral-700 hover:bg-primary-500 hover:text-neutral dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800"
-      href="https://s2f.kytta.dev/?text=How%20To%20Run%20//localhost:1313/docs/runinstructions/"
+      href="https://s2f.kytta.dev/?text=Internes%20Dokument%20-%20Conventional%20Commits%20//localhost:1313/project/convetional-commits-cheatsheet/"
       title=""
       aria-label=""
       >
@@ -1068,7 +1477,7 @@
       <a
       target="_blank"
       class="m-1 rounded bg-neutral-300 p-1.5 text-neutral-700 hover:bg-primary-500 hover:text-neutral dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800"
-      href="https://reddit.com/submit/?url=//localhost:1313/docs/runinstructions/&amp;resubmit=true&amp;title=How%20To%20Run"
+      href="https://reddit.com/submit/?url=//localhost:1313/project/convetional-commits-cheatsheet/&amp;resubmit=true&amp;title=Internes%20Dokument%20-%20Conventional%20Commits"
       title="Submit to Reddit"
       aria-label="Submit to Reddit"
       >
@@ -1087,7 +1496,7 @@
       <a
       target="_blank"
       class="m-1 rounded bg-neutral-300 p-1.5 text-neutral-700 hover:bg-primary-500 hover:text-neutral dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800"
-      href="mailto:?body=//localhost:1313/docs/runinstructions/&amp;subject=How%20To%20Run"
+      href="mailto:?body=//localhost:1313/project/convetional-commits-cheatsheet/&amp;subject=Internes%20Dokument%20-%20Conventional%20Commits"
       title="Send via email"
       aria-label="Send via email"
       >
@@ -1116,8 +1525,8 @@
           
         
       <script>
-        var oid = "views_docs\/runinstructions.md"
-        var oid_likes = "likes_docs\/runinstructions.md"
+        var oid = "views_project\/convetional-commits-cheatsheet.md"
+        var oid_likes = "likes_project\/convetional-commits-cheatsheet.md"
       </script>
       
       
@@ -1128,43 +1537,6 @@
   <footer class="pt-8 max-w-prose print:hidden">
 
     
-  
-    
-    
-    
-    <div class="pt-8">
-      <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
-      <div class="flex justify-between pt-3">
-        <span>
-          
-        </span>
-        <span>
-          
-            <a class="flex text-right group ml-3" href="/docs/hugo/">
-              <span class="flex flex-col">
-                <span
-                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
-                  >Hugo</span
-                >
-                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
-                  
-                    <time datetime="2025-03-03T00:00:00&#43;00:00">3 March 2025</time>
-                  
-                </span>
-              </span>
-              <span
-                class="ml-3 text-neutral-700 group-hover:text-primary-600 ltr:inline rtl:hidden dark:text-neutral dark:group-hover:text-primary-400"
-                >&rarr;</span
-              >
-              <span
-                class="mr-3 text-neutral-700 group-hover:text-primary-600 ltr:hidden rtl:inline dark:text-neutral dark:group-hover:text-primary-400"
-                >&larr;</span
-              >
-            </a>
-          
-        </span>
-      </div>
-    </div>
   
 
 
