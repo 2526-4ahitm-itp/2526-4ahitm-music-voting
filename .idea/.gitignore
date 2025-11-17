@@ -7,7 +7,5 @@
 /dataSources/
 /dataSources.local.xml
 
-**/node_modules/
-/.idea_modules/
-**/.angular/
-
+/node_modules//.idea_modules/
+/.angular/
