@@ -10,6 +10,4 @@
 **/node_modules/
 /.idea_modules/
 **/.angular/
-**/.angular/cache/
-
 
