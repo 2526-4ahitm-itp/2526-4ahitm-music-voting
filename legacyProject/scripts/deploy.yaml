@@ -1,0 +1,84 @@
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: db-deployment
+#  namespace: student-a-hartl1
+#spec:
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: database
+#  template:
+#    metadata:
+#      labels:
+#        app: database
+#    spec:
+#      containers:
+#        - name: database
+#          image: postgres
+#          ports:
+#            - containerPort: 5432
+#              name: "postgres"
+#          env:
+#            - name: POSTGRES_DB
+#              value: db
+#            - name: POSTGRES_USER
+#              value: app
+#            - name: POSTGRES_PASSWORD
+#              value: app
+#---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-frontend-deployment
+  namespace: student-a-hartl1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: music-frontend
+  template:
+    metadata:
+      labels:
+        app: music-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/musicvoting/musicvotingv3-frontend
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-frontend-svc
+  namespace: student-a-hartl1
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: music-frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress-mv
+  namespace: student-a-hartl1
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: student.cloud.htl-leonding.ac.at
+      http:
+        paths:
+          - path: /a.hartl1/music-voting(/|$)(.*)$
+            pathType: Prefix
+            backend:
+              service:
+                name: music-frontend-svc
+                port:
+                  number: 80

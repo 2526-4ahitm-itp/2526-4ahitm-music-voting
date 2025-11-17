@@ -1,0 +1,417 @@
+:sourcedir: ../src/main/java
+:icons: font
+:toc: left
+:sectnums:
+:imagesdir: ../asciidocs/images
+
+= Dokumentation
+
+== Allgemein
+
+Music Voting ist ein Projekt, mit dem man Musik spielen kann. Hierbei können Lieder zu einer Playlist hinzugefügt werden, geliked werden und nacheinander abgespielt werden.
+Mit MusicVoting wird jedes lahme Event zu einer richtig coolen Party.
+
+=== Musik hinzufügen
+
+image::mv01.png[,500]
+
+Man kann in das Suchfeld eingeben, nach was für einem Lied bzw. nach welchem Sänger/welcher Sängerin man suchen will.
+Klickt man auf den Button mit der Lupe darunter, startet man die Suche.
+
+image::mv2.png[,500]
+
+Es werden die gefundenen Lieder in einer Liste untereinander angezeigt. Die Songs sind in den meisten Fällen die Lyrics Version des Songs, da somit verhindert wird, dass lange Musikvideos mit unnötigen Dialogen oder Teilen, die nicht zum Song gehören hinzugefügt werden können.
+
+Neben jedem Lied befindet sich ein Button mit einem Plussymbol. Klickt man auf diesen Button, fügt man das Lied zu einer Playlist hinzu.
+
+
+
+=== Musik abstimmen
+
+image::mv7.jpeg[,500]
+
+Wenn man oben auf den Reiter "Abstimmen" klickt, gelangt man zu der oben angezeigten Seite. Dort werden alle Lieder angezeigt, die sich in der aktuellen Playlist befinden. Neben jedem Lied befindet sich ein Button mit einem Herz. Klickt man auf diesen wird die Like-Anzahl für das Lied erhöht. Die Lieder der Playlist werden nach der Anzahl der Likes sortiert und die Lieder in dieser Reihenfolge abgespielt. So kann man Lieder, die einem gefallen schneller hören.
+
+=== Musik abspielen
+
+image::mv8.png[,500]
+
+Geht man auf diese Seite, muss das Admin-Passwort eingegeben werden. Wird das Passwort korrekt eingegeben, gelangt man auf die richtige Seite mit der Playlist, welche man abspielen kann.
+
+
+image::mv6.png[,500]
+
+Klickt man auf den türkisen Startbutton beginnt die Musik aus der Playlist nacheinander zu spielen. Zusätzlich wird ein neues Fenster geöffnet, welches man links sehen kann. In diesem Fenster öffnet Youtube das Lied, welches gerade gespielt wird. Die Lieder in der Playlist werden je nach Anzahl der Likes sortiert und auch in dieser Reihenfolge abgespielt. Jede Reihe wird von links nach rechts durchgegangen.
+
+Wenn gerade kein Lied in der Playlist ist, wird automatisch ein neuer Song hinzugefügt. Das funktioniert, indem aus einer Datei mit dem Namen **artists.csv**, eine Liste aus 100 verschiedenen Sänger, einer ausgewählt wird und ein random Song von diesem Sänger hinzugefügt wird.
+
+=== Admin Page
+
+Auf die Admin-Page gelangt man, wenn man auf den Button Admin links oben klickt:
+
+image::mv3.png[,500]
+
+Um auf die Admin-Page zu gelangen, muss man ein Passwort eingeben. Damit verhindert man, dass jede Person Lieder löschen und Titel sperren kann.
+Hat man das richtige Passwort eingegeben, gelangt man auf die folgende Seite.
+
+
+image::mv4_Admin.png[,500]
+
+Auf der Admin Page sieht man alle Lieder, die sich in der Playlist befinden. Möchte man ein Lied davon löschen, kann man auf den Button mit dem Mitkübel neben jedem Lied klicken.
+
+Reicht das Löschen des Liedes nicht aus, kann man ein Lied auch Sperren lassen. Dafür muss man auf den Button mit dem Schloss klicken.
+
+image::mv5.png[,500]
+
+Möchte man nicht nur ein einzelnes Lied, sondern auch gewisse Wörter in Liedtiteln sperren, kann man auf den Reiter "Black List" klicken.
+
+
+=== QR-Code
+
+image::mv9.png[,500]
+
+Auf dieser Seite wird ein QR-Code angezeigt. Dieser wird automatisch generiert. Wenn jemand diesen scannen will, ohne zuvor das Admin Passwort einzugeben, wird derjenige/diejenige auf diese Seite weitergeleitet:
+
+image::mv10.jpeg[,500]
+
+Gibt man das richtige Passwort ein, kann der angezeigte QR-Code gescanned werden und man gelangt auf die Seite mit dem Namen "Musik hinzufügen":
+
+image::mv11.png[,500]
+
+image::mv01.png[,500]
+
+== Wieso keine Youtube API
+
+Anfangs wurde Music Voting mit der Youtube API umgesetzt. Youtube rechnet mit sogenannten **Quota**. Quota sind eine Einheit, um die kostenlose Verwendung der API zu limitieren. Pro Tag stehen 10 000 Quota zur Verfügung. Die Youtube API wurde für Music Voting verwendet. Um die Links der Youtube Videos zu erhalten, also wurde die search Funktion verwendet. Diese Funktion verrechnet pro Suchanfrage 100 Quota. Wenn man sich eine Party vorstellt, dann wäre es möglich 10 000 / 100 = 100 Suchanfragen durchzuführen.
+
+
+== Scraping
+Für die Suche auf Youtube wurde dann Scraping verwendet.
+
+Library: https://jsoup.org/[Jsoup^]
+
+.Methode: getSearchFromYoutube in Search.java
+[source,java]
+----
+public List<Song> getSearchFromYoutube(String queryTerm) {
+        queryTerm += " Lyrics";
+        List<Song> songs = new ArrayList<>();
+        String baseUrl = "https://www.youtube.com/results?search_query=";
+
+        Document doc = null;
+        try {
+            doc = Jsoup.connect(baseUrl+queryTerm).get();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Element body = doc.body();
+
+        String javascript = body.child(15).html();
+        JsonObject json = new JsonObject(javascript.substring(19, javascript.length()-1));
+
+        var videoArray = json.getJsonObject("contents").getJsonObject("twoColumnSearchResultsRenderer")
+                .getJsonObject("primaryContents").getJsonObject("sectionListRenderer")
+                .getJsonArray("contents").getJsonObject(0).getJsonObject("itemSectionRenderer").getJsonArray("contents"); <1>
+
+        for (int i = 0; i < videoArray.size()-1; i++) {
+            var video = videoArray.getJsonObject(i).getJsonObject("videoRenderer");
+            if(video != null){
+                String title = video.getJsonObject("title").getJsonArray("runs").getJsonObject(0).getString("text");
+                String thumbnail = video.getJsonObject("thumbnail").getJsonArray("thumbnails").getJsonObject(0).getString("url");
+                String videoUrl = "https://www.youtube.com/watch?v="+ video.getString("videoId");
+
+                if(video.getJsonObject("lengthText") != null) //Live Video <2>
+                {
+                    String durationString = video.getJsonObject("lengthText").getString("simpleText");
+                    int duration = convertStringToDuration(durationString); <3>
+                    Song newSong = new Song(title,videoUrl, thumbnail, "", null);
+                    newSong.setDuration(duration);
+                    songs.add(newSong);
+                }
+            }
+        }
+        return songs;
+    }
+----
+<1> Es wird das Javascript ausgelesen
+<2> Wenn die Länge eines Videos nicht bekannt ist, handelt es sich um ein Live Video
+<3> Konvertiert einen String der die Länge eines Videos erhält in Millisekungen
+
+
+Wenn jede dieser Suchanfragen ein Lied spielt, welches 3 Minuten läuft, dann könnte man um die 300 Minuten Lieder abspielen. Das entspricht 5 Stunden. Nahc diesen 5 Stunden müsste man entweder anfangen etwas für jede weitere Suchanfrage zu bezahlen, oder auf der Party würde es keine Musik mehr spielen. Beide Ausgänge sind keine Lösung, darum wurde schlussendlich Scraping verwendet.
+
+== Deployment
+Das Deployment wird in zwei Schritten durchgeführt:
+
+* GH-Actions -> mv-image-backend.yaml und mv-image-frontend.yaml
+* LeoCloud -> leocloud_mv.yaml
+
+=== GH-Actions
+
+*mv-image-backend.yaml*
+
+----
+name: build-image-backend
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - server/**
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-server:
+    name: build-docker-image-server
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      deployments: write
+      packages: write
+      pages: write
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: cd ./server && ls && ./mvnw package && ls && cp artists.csv target/quarkus-app <1>
+
+      - name: convert github repository name to lowercase
+        run: echo "IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: convert github registry name to lowercase
+        run: echo "IMAGE_REGISTRY=$(echo ${{ env.REGISTRY }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Build
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./server
+          file: ./server/src/main/docker/Dockerfile.jvm
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}-server:latest
+          build-args: |
+            configuration=production
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}-server:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}-server:buildcache,mode=max
+----
+
+In der Datei server/src/main/docker/Dockerfile.jvm steht die nötige Information,
+die für das Generieren des Docker Images gebraucht wird.
+
+<1> Alle zusätzlichen Dateien müssen in den Ordner target/quarkus-app kopiert werden sonst wird die CSV nicht gefunden
+
+=== LeoCloud
+
+Sämtliche a.hartl1 müssen im GANZEN Projekt verändert werden!
+
+(auch im Dockerfile vom Angular)
+
+----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-db-deployment
+  namespace: student-a-hartl1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: musicdatabase
+  template:
+    metadata:
+      labels:
+        app: musicdatabase
+    spec:
+      containers:
+        - name: musicdatabase
+          image: postgres
+          ports:
+            - containerPort: 5432
+              name: "postgres"
+          env:
+            - name: POSTGRES_DB
+              value: db
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              value: app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-frontend-deployment
+  namespace: student-a-hartl1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: music-frontend
+  template:
+    metadata:
+      labels:
+        app: music-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/musicvoting/musicvotingv3-frontend:latest
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-backend-deployment
+  namespace: student-a-hartl1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: music-backend
+  template:
+    metadata:
+      labels:
+        app: music-backend
+    spec:
+      containers:
+        - name: music-backend
+          image: ghcr.io/musicvoting/musicvotingv3-server:latest
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-frontend-svc
+  namespace: student-a-hartl1
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: music-frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-backend-svc
+  namespace: student-a-hartl1
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: music-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-database-svc
+  namespace: student-a-hartl1
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: musicdatabase
+  selector:
+    app: musicdatabase
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress-mv
+  namespace: student-a-hartl1
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: student.cloud.htl-leonding.ac.at
+      http:
+        paths:
+          - path: /a.hartl1/music-voting/api(/|$)(.*)$
+            pathType: Prefix
+            backend:
+              service:
+                name: music-backend-svc
+                port:
+                  number: 80
+          - path: /a.hartl1/music-voting(/|$)(.*)$
+            pathType: Prefix
+            backend:
+              service:
+                name: music-frontend-svc
+                port:
+                  number: 80
+----
+
+Ausgeführt muss folgender Command im Terminal (vorraussetzug ist eine funktionierende LeoCloud)
+
+== Authentifizierung
+
+1. Bei Angular wird das Passwort mit md5 verschlüsselt dann an den Server gesendet
+    https://de.wikipedia.org/wiki/Message-Digest_Algorithm_5
+2. Am Server wird dann das Passwort mit dem im Application.properties verglichen
+
+----
+@GET
+    @Path("checkPassword/{password}")
+    public Response checkPassword(@PathParam("password") String password){
+        String adminPass = ConfigProvider.getConfig().getValue("admin.password", String.class);
+
+        if(Objects.equals(adminPass, password)) {
+            System.out.println("Pass: " + adminPass);
+            return Response.ok().build();
+        }
+        return Response.status(Response.Status.FORBIDDEN).build();
+    }
+----
+
+Das Passwort im Application.properties ist auch verschlüsselt.
+
+https://www.md5.cz/
+
+
+== Weitere Ideen für die Zukunft
+
+1. Verschidene Versionen:
+
+* Karaoke
+* Musik Videos
+* Tanz
+* ...
+
+2. Quarkus Asynchron
+3. Websockets anstatt polling
+4. Native Jar mit GraalVM
+5. Youtube Video auf der Music Abspielen Seite integrieren (Blass im Hintergrund)
+
+MusicVoting Vorgängerprojekt:
+
+image::youtubeVideo.png[,500]
