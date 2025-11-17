@@ -10,7 +10,7 @@ layout: "presentation"
 {{< slide title="❌ Problem" >}}
 <ul>
   <li>Der Gastgeber hat keine Zeit, sich um Musik zu kümmern</li>
-  <li>Oder: Er hat einfach nicht den passenden Musikgeschmack</li>
+  <li>Oder: Er hat einfach nicht den gleichen Musikgeschmack wie die Gäste</li>
 </ul>
 {{< /slide >}}
 
