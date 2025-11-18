@@ -1,10 +1,10 @@
 ---
-title: Template yyyy.mm.dd
-description: A template for new moms
+title: User Stories & Systemarchitektur 10.11.2025
+description: Meeting-Notizen vom 10.11.2025 zu User Stories und Systemarchitektur
 tags: [mom]
-showDate: false
+showDate: true
 authors:
-  - jakob
+  - marlies.winklbauer
 ---
 
 ## Teilnehmer
