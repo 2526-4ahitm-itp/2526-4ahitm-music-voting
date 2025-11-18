@@ -7,9 +7,10 @@
 
 <br>
 
-## Current Agreement
+## Current Agreements
 
-{{< article link="project/mom/yyyy-mm-dd-mom_template/" >}}
+{{< article link="project/mom/2025-11-10_user-stories_systemarchitektur" >}}
+{{< article link="project/mom/2025-11-18_vision" >}}
 
 ## Other
 
