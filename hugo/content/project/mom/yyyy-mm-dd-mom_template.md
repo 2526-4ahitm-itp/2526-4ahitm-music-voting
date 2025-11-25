@@ -4,18 +4,18 @@ description: A template for new moms
 tags: [mom]
 showDate: false
 authors:
-  - jakob
+  - simone
 ---
 
 ## Teilnehmer
 
-| anwesend             | Verteiler |
-|----------------------|-----------|
-| Vorname Nachname     |           |
-| A. Anton (teilweise) | A. Anton  |
-| B. Berta             | B. Berta  |
-| C. Cäsar             | C. Cäsar  |
-|                      | D. Dora   |
+| anwesend             |
+|----------------------|
+| Vorname Nachname     |
+| A. Anton (teilweise) |
+| B. Berta             |
+| C. Cäsar             |
+|                      |
 
 ## Ort und Zeit
 
@@ -37,8 +37,8 @@ authors:
 
 ### Was wurde vereinbart?
 
-| wer      | macht was                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | bis wann   |
-|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
-| Hr. Dora | Erstellung des UCD                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 20.06.2020 |
-| ...      | **Ev. Bilder und Diagramme**<br>![](animal-pet-cute-kitten-45201.jpg)<br><br>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. | 1.06.2020  |
-| Fr. Emil | **Class Diagram**<br>![CLD](CLD.png)<br><br>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.                                  | 3.06.2020  |
+| wer     | macht was | bis wann   |
+|---------|-----------|------------|
+| Simone  |           | 20.06.2020 |
+| Miriam  |           | 1.06.2020  |
+| Marlies |           | 3.06.2020  |
