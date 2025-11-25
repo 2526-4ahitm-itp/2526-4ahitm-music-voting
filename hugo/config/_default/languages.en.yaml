@@ -12,7 +12,9 @@ params:
 #   logo: img/logo.png
 #   secondaryLogo: img/secondary-logo.png
 #   description: My awesome website
-  copyright: 'Copyright © 2025 MusicVoting, HTBLA Leonding. <br>Licensed under the <u>[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)</u>.'
+  copyright: 'Copyright © 2025 MusicVoting, HTBLA Leonding. <br> Based on the original Hugo site by <a href="https://github.com/JakobHuemer">Jakob Huemer-Fistelberger</a>
+.
+  <br>Licensed under the <u>[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)</u>.'
 
 #   author:
 #     name: Your name here

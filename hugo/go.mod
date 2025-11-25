@@ -1,4 +1,4 @@
-module github.com/2425-3ahitm-itp/02-projekte-helpr
+module github.com/2526-4ahitm-itp/2526-4ahitm-music-voting
 
 go 1.23
 

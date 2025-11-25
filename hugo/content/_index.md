@@ -9,15 +9,13 @@
 
 ## Current Agreement
 
-{{< article link="project/mom/2025-11-25-hugo_template/" >}}
-<br>
 {{< article link="project/mom/2025-11-18_vision/" >}}
+<br>
+{{< article link="project/mom/2025-11-25-hugo_architektur/" >}}
 
 ## Other
 
 {{< article link="project/projectassignment/" >}}
-<br>
-{{< article link="project/sysspec/" >}}
 <br>
 {{< article link="project/userstories/" >}}
 

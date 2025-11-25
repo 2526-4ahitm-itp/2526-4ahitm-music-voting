@@ -1,5 +1,5 @@
 ---
-title: 2025.11.25
+title: Hugo Pages & Systemarchitektur 25.11.2025
 description: Hugo Startseite - Architektur
 tags: [ mom ]
 showDate: false
@@ -18,7 +18,7 @@ authors:
 
 ## Ort und Zeit
 
-| Ort     | Online-Unterricht (Discord)  |
+| Ort     | Schule                       |
 |---------|------------------------------|
 | von-bis | Di. 25.11.2025, 1. und 2. EH |
 | Dauer   | 70 min                       |
