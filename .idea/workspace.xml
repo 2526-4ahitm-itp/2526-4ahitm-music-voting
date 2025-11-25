@@ -5,9 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="091d9342-2bcf-4731-bbf9-8956d5b55506" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/hugo/content/project/mom/2025-11-18_vision.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hugo/content/project/mom/2025-11-10_user-stories_systemarchitektur.md" beforeDir="false" afterPath="$PROJECT_DIR$/hugo/content/project/mom/2025-11-10_user-stories_systemarchitektur.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hugo/config/_default/languages.en.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/hugo/config/_default/languages.en.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hugo/config/_default/menus.en.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/hugo/config/_default/menus.en.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hugo/content/_index.md" beforeDir="false" afterPath="$PROJECT_DIR$/hugo/content/_index.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hugo/content/project/mom/2025-11-25-hugo_architektur.md" beforeDir="false" afterPath="$PROJECT_DIR$/hugo/content/project/mom/2025-11-25-hugo_architektur.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hugo/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/hugo/go.mod" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +35,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "hugo-docs/mom",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/home/miriam/Documents/4ahitm/2526-4ahitm-music-voting/hugo/content/project/mom",
     "node.js.detected.package.eslint": "true",
@@ -51,8 +55,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.28238.7" />
+        <option value="bundled-js-predefined-d6986cc7102b-a71380e98a7c-JavaScript-IU-252.28238.7" />
       </set>
     </attachedChunks>
   </component>
@@ -73,6 +77,7 @@
       <workItem from="1763393696659" duration="861000" />
       <workItem from="1763394664698" duration="4465000" />
       <workItem from="1763457077668" duration="632000" />
+      <workItem from="1764065869688" duration="2187000" />
     </task>
     <servers />
   </component>
