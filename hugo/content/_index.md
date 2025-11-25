@@ -9,7 +9,7 @@
 
 ## Current Agreement
 
-{{< article link="project/mom/2025-11-10_user-stories_systemarchitektur/" >}}
+{{< article link="project/mom/2025-11-25-hugo_template/" >}}
 <br>
 {{< article link="project/mom/2025-11-18_vision/" >}}
 
