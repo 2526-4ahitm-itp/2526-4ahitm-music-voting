@@ -25,10 +25,13 @@ Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwicke
 
 ## Current Agreement
 
-{{< article link="project/mom/2025-11-18_vision/" >}}
-<br>
 {{< article link="project/mom/2025-11-25-hugo_architektur/" >}}
 
+
+## Other Documents
+
+{{< article link="project/projectassignment/" >}}
+{{< article link="project/userstories/" >}}
 
 # Team
 
