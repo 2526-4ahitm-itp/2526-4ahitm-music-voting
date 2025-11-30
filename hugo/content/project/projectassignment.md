@@ -1,16 +1,15 @@
 ---
 title: Project Assignment
-date: 2024-11-03
-lastmod: 2024-11-03
+date: 2025-11-30
+lastmod: 2025-11-30
 authors:
-  - jakob
   - miriam
   - simone
   - marlies
-tags: [project]
+tags: [ project ]
 weight: 50
 ---
-    
+
 ## Projektbezeichnung
 
 MusicVoting
@@ -18,48 +17,69 @@ MusicVoting
 ## Projektauftraggeber
 
 HTBLA Leonding im Zuge des ITP Unterrichts
-
+Professor Thomas Stütz
 
 ## Projekthintergrund
 
-+++
+Gäste auf Partys erwarten zunehmend ein interaktives Erlebnis. Oft scheitert die Musikauswahl an unterschiedlichen Geschmäckern oder fehlender Zeit des Gastgebers. MusicVoting soll dieses Problem durch eine digitale Lösung adressieren, die sowohl Gastgeber als auch Gäste aktiv einbindet und für gute Stimmung sorgt.
 
 ## Projektendergebnis
 
-+++
+Das Projekt soll mit einer funktionierenden Webanwendung enden, die es ermöglicht:
 
+- Songs zur Playlist hinzuzufügen
+
+- Songs zu bewerten (Voting-System)
+
+- Playlist in Echtzeit anzupassen
+
+- Integration mit dem Spotify Premium-Account des Gastgebers
+
+- Eine einfache, responsive Oberfläche für Smartphones und Tablets
 
 ## Projektziel
 
-++
-
+Ziel ist die Entwicklung einer intuitiven, interaktiven Plattform, die es allen Partygästen erlaubt, die Musikauswahl zu steuern, ohne den Gastgeber zu überlasten. So soll die Stimmung auf Partys verbessert und das Erlebnis für alle Gäste angenehmer gestaltet werden.
 
 ## Projektbeschreibung
 
-+++
+Eine Webplattform, auf der Gäste über ihr Smartphone auf die Party-Playlist zugreifen können.
 
+- Gäste können eigene Songs vorschlagen und über ein Voting-System die Reihenfolge der Songs bestimmen.
+
+- Die Musik wird über den Spotify-Account des Gastgebers abgespielt.
+
+- Ein Bewertungssystem zeigt in Echtzeit die beliebtesten Songs an und ermöglicht Feedback zu den Vorschlägen.
+
+- Die Anwendung bietet eine einfache, benutzerfreundliche Oberfläche und sorgt dafür, dass jeder Gast aktiv mitgestalten kann.
 
 ## Projektstart
 
-In Absprache mit der Lehrperson.
+Herbst 2025
 
 ## Projektende
 
-In Absprache mit der Lehrperson.
+Nach Vollenden sämtlicher User Stories und erfolgreichem Testen der Anwendung.
 
 ## Projektressourcen
 
 - Zeit
 - Wissen
-- möglicherweise Hilfe der Lehrpersonen
+- Hilfe der Lehrpersonen
 
 ## Projektrisiken
 
-+++
+- Technische Risiken: Schnittstellenänderungen bei Spotify, Ausfälle des Streaming-Dienstes, Browser-Inkompatibilitäten
+
+- Zeitliche Risiken: Unerwartete Verzögerungen bei der Implementierung von Voting-Mechanismen
+
+- Nutzerakzeptanz: Komplexität der Anwendung könnte Nutzer abschrecken
+
+- Datenschutz: Umgang mit Spotify-Account-Daten muss DSGVO-konform sein
 
 ## Projektorganisation
 
-Projektleiter:
+Projektleiterin:
 
 - Miriam Gnadlinger
 
@@ -70,7 +90,7 @@ Projektteam:
 
 ## Abschluss des Projektauftrags
 
-14.10.202
+Ende der 5. Klasse HTBLA Leonding im ITP Unterricht
 
 Miriam Gnadlinger
 
@@ -78,9 +98,7 @@ Marlies Winklbauer
 
 Simone Sperrer
 
-
 ## Stakeholder Analyse (Nicht aktuell)
-
 
 | *Umfeldgruppe*                           | Lehrperson                                           | Private Auftraggeber                                 | Freiberufliche Dienstleister   | Versicherung                    |
 |------------------------------------------|------------------------------------------------------|------------------------------------------------------|--------------------------------|---------------------------------|

@@ -1,0 +1,26 @@
+= MusicVoting
+:author: Miriam Gnadlinger
+:toc:
+:sectnums:
+
+
+== Website
+
+**https://2526-4ahitm-itp.github.io/2526-4ahitm-music-voting/**
+
+== Beschreibung
+
+MusicVoting ist eine interaktive Webanwendung, die Partygästen ermöglicht, die Musikauswahl aktiv mitzugestalten.
+Gäste können Songs vorschlagen, über ein Voting-System die Reihenfolge der Playlist bestimmen und die beliebtesten Songs in Echtzeit sehen.
+Die Musik wird direkt über den Spotify-Premium-Account des Gastgebers abgespielt, sodass die Partyatmosphäre dynamisch und unterhaltsam bleibt.
+
+== Starten des Programms
+
+In unserem Projekt gibt es noch nichts zum Ausführen.
+Sobald das der Fall ist, werden hier die Anweisungen zum Starten des Programms dokumentiert.
+
+== Team
+
+* link:https://github.com/mGnadlinger[Miriam Gnadlinger], 4AHITM, Project Lead
+* link:https://github.com/SimoneSperrer[Simone Sperrer], 4AHITM, Team Member
+* link:https://github.com/MarliesWkbr[Marlies Winklbauer], 4AHITM, Team Member

@@ -33,7 +33,6 @@ authors:
 * Systemarchitektur Diagramm erstellen (Farben verwenden)
 * Im Readme auf GitHub: Wo findet man die Dokumentation
     * In unserem Fall auf der Hugo Seite, weil man da einen schönen Überblick hat.
-*
 
 ## Vereinbarungen und Entscheidungen
 
