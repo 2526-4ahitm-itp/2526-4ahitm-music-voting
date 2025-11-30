@@ -5,6 +5,13 @@ tags: [mom]
 showDate: false
 authors:
   - simone
+
+_hideContent: true
+showReadingTime: false
+showToc: false
+draft: false
+_build:
+  list: never
 ---
 
 ## Teilnehmer
