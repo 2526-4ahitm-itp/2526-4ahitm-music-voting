@@ -1,5 +1,12 @@
-Author: Marlies Winklbauer <br>
-Date: 01.12.2025
+---
+title: Wireframes
+description: Wirreframes für die Benutzeroberfläche. (Stand 01.12.2025)
+tags: [ mom ]
+showDate: false
+authors:
+- marlies
+---
+
 
 # Wireframes
 
