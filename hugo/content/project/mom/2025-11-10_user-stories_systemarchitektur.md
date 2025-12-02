@@ -4,7 +4,7 @@ description: Meeting-Notizen vom 10.11.2025 zu User Stories und Systemarchitektu
 tags: [mom]
 showDate: true
 authors:
-  - marlies.winklbauer
+  - marlies
 ---
 
 ## Teilnehmer
