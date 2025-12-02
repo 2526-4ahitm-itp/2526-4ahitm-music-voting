@@ -22,7 +22,7 @@ authors:
 | Ort     | Schule                                       |
 |---------|----------------------------------------------|
 | von-bis | Mo. 01.12.2025, 5. EH + Di. 02.12.20025, 1EH |
-| Dauer   | 30 min                                        |
+| Dauer   | 30 min                                       |
 
 ## Besprochene Themen
 
@@ -33,17 +33,17 @@ authors:
 
 
 * Sprint Planning
-  * Gastgeber bekommt eine fixe Suchkategorie 
-  * Gastgeber API sucht die Songs raus 
+    * Gastgeber bekommt eine fixe Suchkategorie
+    * Gastgeber API sucht die Songs raus
 
-kurz erklären wie das Konzept funktioniert und herzeigen was herauskommt  
+kurz erklären wie das Konzept funktioniert und herzeigen was herauskommt
 
 ## Vereinbarungen und Entscheidungen
 
 ### Was wurde vereinbart?
 
-| wer                | macht was | bis wann   |
-|--------------------|-----------|------------|
-| Miriam Gnadlinger  |           | 15.12.2025 |
-| Simone Sperrer     |           | 15.12.2025 |
-| Marlies Winklbauer |           | 15.12.2025 |
+| wer                | macht was                        | bis wann   |
+|--------------------|----------------------------------|------------|
+| Miriam Gnadlinger  | Spotify API verbindung aufbauen, | 15.12.2025 |
+| Simone Sperrer     | Systemarchitektur, Angular App   | 15.12.2025 |
+| Marlies Winklbauer | Angular App                      | 15.12.2025 |

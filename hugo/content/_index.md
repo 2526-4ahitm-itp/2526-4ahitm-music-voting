@@ -25,7 +25,7 @@ Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwicke
 
 ## Current Agreement
 
-{{< article link="project/mom/2025-11-25-hugo_architektur/" >}}
+{{< article link="project/mom/2025-01-12_systemarchitektur_sprintplanning/" >}}
 
 
 ## Other Documents
