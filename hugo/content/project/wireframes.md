@@ -8,8 +8,6 @@ authors:
 ---
 
 
-# Wireframes
-
 ## Startseite
 Eine Übersicht wo man sieht welcher Song gerade abgespielt wird, welche Songs sich in der Warteschlange befinden und ein QR-Code um sich selbst beteiligen zu können.
 ![Wireframe Homepage](hugo/assets/img/wireframes/wireframe_startseite.png)
