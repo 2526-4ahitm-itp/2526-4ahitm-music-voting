@@ -2,7 +2,7 @@
 title: Template yyyy.mm.dd
 description: A template for new moms
 tags: [mom]
-showDate: false
+showDate: true
 authors:
   - simone
 

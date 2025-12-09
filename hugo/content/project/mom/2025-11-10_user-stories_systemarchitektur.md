@@ -2,6 +2,7 @@
 title: User Stories & Systemarchitektur 10.11.2025
 description: Meeting-Notizen vom 10.11.2025 zu User Stories und Systemarchitektur
 tags: [mom]
+date: 2025-11-10
 showDate: true
 authors:
   - marlies

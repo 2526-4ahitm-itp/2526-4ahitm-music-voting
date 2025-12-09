@@ -2,6 +2,7 @@
 title: Systemarchitektur & Sprint Planning 01.12.2025
 description: Meeting-Notizen vom 01.12.2025 zu Systemarchitektur & Sprint Planning
 tags: [ mom ]
+date: 2025-12-01
 showDate: true
 authors:
   - miriam

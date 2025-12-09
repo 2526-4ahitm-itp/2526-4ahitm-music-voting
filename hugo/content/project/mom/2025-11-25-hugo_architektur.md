@@ -2,7 +2,8 @@
 title: Hugo Pages & Systemarchitektur 25.11.2025
 description: Hugo Startseite - Architektur
 tags: [ mom ]
-showDate: false
+date: 2025-11-25
+showDate: true
 authors:
   - simone
 ---
