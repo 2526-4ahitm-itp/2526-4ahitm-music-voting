@@ -25,7 +25,7 @@ Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwicke
 
 ## Current Agreement
 
-{{< article link="project/mom/2025-01-12_systemarchitektur_sprintplanning/" >}}
+{{< article link="project/mom/2025-12-15-spotify_prototyp/" >}}
 
 
 ## Other Documents
