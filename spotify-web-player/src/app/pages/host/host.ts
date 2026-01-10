@@ -8,26 +8,27 @@ import { SpotifyPlayerService } from '../../services/spotify-player';
   imports: [CommonModule],
   templateUrl: './host.html'
 })
+
 export class Host implements OnInit {
+
+  tracks: any[] = [];
 
   constructor(private spotify: SpotifyPlayerService) {}
 
   ngOnInit(): void {
     this.spotify.initPlayer();
-
+    this.search();
   }
-
-
-  //https://open.spotify.com/track/0GMXiUAsc2pO9vNx70dliv?si=ce8093a4d37a4d0e
-  //https://open.spotify.com/track/1D4PL9B8gOg78jiHg3FvBb?si=1ae83b30e0054ecf
-  //https://open.spotify.com/track/1BxfuPKGuaTgP7aM0Bbdwr?si=78f69a26731b403e
 
   search() {
-    this.spotify.searchTracks("Taylor Swift");
+    this.spotify.searchTracks("Taylor Swift").subscribe(result => {
+      this.tracks = result.tracks.items;
+      console.log(this.tracks);
+    });
   }
 
-  play() {
-    this.spotify.playTrack('spotify:track:1BxfuPKGuaTgP7aM0Bbdwr');
+  play(uri: string) {
+    this.spotify.playTrack(uri);
   }
 
   pause() {
@@ -41,9 +42,4 @@ export class Host implements OnInit {
   next() {
     this.spotify.next();
   }
-
-
-
-
-
 }

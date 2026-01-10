@@ -1,4 +1,6 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -7,7 +9,9 @@ export class SpotifyPlayerService {
 
   private player: any;
   private deviceId!: string;
-  private token = 'BQBZqBrK0WrKUsUrEa4YkRYbQ59yzz3j_f8SAMpqiHaz8vFYDU2BnXGSWv9NYJEPpHhvYgVKDHgIFmfrUrlSSN9kkeWx6KpcJ7Gv8PiXrwbCRnDAIoIQRY7FyOU6B_BjJoXW-fU3oYtWro-j7rhytEZwESiOa_qtp-jkN9emItirtBJV_kQ9bCSUMfoHOpP01qwU4shqN5jJpBc7G0CTR2D6UbOmLn98w6AhAPpJ-epJeAXjEo7Oemp2FDNTTE_5lC988ISp';
+  private token = 'BQD6MnSpUdZzdlIHxUGpagAtiq1--41lvzNiq-ZkBlvTf2lmMrARYNUTFrGHgu7fSnSVir0LmR-_ihH7mzJmuJmBqQkBowQoKtzF0394oensEgZZMYcha8lsL18cxK96Qaxp64t1kexLqwFNq7MYLjapdWTjh79_FwKTRA9yZW3QalL_z_SIt7_TLfbf03WXsdoIAHGY9VjVOK_0N_E1WijpABWIbNerYYzlq4qVNXbEgrP4xLOU1Oe4LFAOJwq78e1QumD5';
+
+  constructor(private http: HttpClient) {}
 
   initPlayer(): void {
     (window as any).onSpotifyWebPlaybackSDKReady = () => {
@@ -89,5 +93,16 @@ export class SpotifyPlayerService {
     else this.onReadyCallbacks.push(cb);
   }
 
+
+  searchTracks(query: string): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.token}`
+    });
+
+    return this.http.get(
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10`,
+      { headers }
+    );
+  }
 
 }
