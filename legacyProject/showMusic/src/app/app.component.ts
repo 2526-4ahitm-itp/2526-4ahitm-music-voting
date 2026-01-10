@@ -80,7 +80,7 @@ export class AppComponent implements OnInit {
         });
     }
 
-    // Player initialisieren
+    // Host initialisieren
     initPlayer(videoId: string) {
         if (!this.apiReady) {
             console.warn('YouTube API noch nicht bereit!');
