@@ -1,13 +1,16 @@
 <div class="host">
   <h1>🎧 Angular Spotify Host</h1>
 
-  <div class="controls">
-    <button class="icon-btn" (click)="previous()">⏮</button>
+  <div class="search-results">
+    @for (track of tracks; track track.id) {
+      <div class="track">
+        <strong>{{ track.name }}</strong><br>
+        <small>{{ track.artists[0].name }}</small>
 
-    <button class="play-btn" (click)="play()">▶</button>
-    <button class="icon-btn" (click)="pause()">⏸</button>
-
-    <button class="icon-btn" (click)="next()">⏭</button>
+        <button (click)="play(track.uri)">
+          ▶ Play
+        </button>
+      </div>
+    }
   </div>
-
 </div>

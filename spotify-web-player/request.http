@@ -1,0 +1,4 @@
+GET https://api.spotify.com/v1/search?q=remaster%2520track%3ADoxy%2520artist%3AMiles%2520Davis&type=track&limit=2
+Authorization: Bearer BQCxnYiunPVZiCwXCSpwbQRIiQoFnc0aeNINRj6fCF3r0V4XKTEx6CYV1pQIat-em0dbOs9aSlz-a3wfPXixo76JggxnvC5vEc6Nhvs3k4HuAYs9QVtnllbdjeMcyE7xCqDpMMHOkFxjLhn7hnIfu17_S62Y_ohOI78vv9fdth7yQmMKgcplAmgZCzR7JomSqmfNFZhzO19dJioDVJ89gCLtbDNPRoN3E3qEW_q9LTZXuGep-w1onjiQ7lH2Bzb00rrgMIZO
+
+
