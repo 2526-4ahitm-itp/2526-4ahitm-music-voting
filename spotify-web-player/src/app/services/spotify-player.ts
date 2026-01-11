@@ -9,7 +9,7 @@ export class SpotifyPlayerService {
 
   private player: any;
   private deviceId!: string;
-  private token = 'BQD6MnSpUdZzdlIHxUGpagAtiq1--41lvzNiq-ZkBlvTf2lmMrARYNUTFrGHgu7fSnSVir0LmR-_ihH7mzJmuJmBqQkBowQoKtzF0394oensEgZZMYcha8lsL18cxK96Qaxp64t1kexLqwFNq7MYLjapdWTjh79_FwKTRA9yZW3QalL_z_SIt7_TLfbf03WXsdoIAHGY9VjVOK_0N_E1WijpABWIbNerYYzlq4qVNXbEgrP4xLOU1Oe4LFAOJwq78e1QumD5';
+  private token = 'YOUR_SPOTIFY_TOKEN';
 
   constructor(private http: HttpClient) {}
 
