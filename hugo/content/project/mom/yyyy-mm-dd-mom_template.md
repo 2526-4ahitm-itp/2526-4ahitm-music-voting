@@ -5,13 +5,6 @@ tags: [mom]
 showDate: true
 authors:
   - simone
-
-_hideContent: true
-showReadingTime: false
-showToc: false
-draft: false
-_build:
-  list: never
 ---
 
 ## Teilnehmer
@@ -49,3 +42,15 @@ _build:
 | Simone  |           | 20.06.2020 |
 | Miriam  |           | 1.06.2020  |
 | Marlies |           | 3.06.2020  |
+
+
+
+
+<!---
+_hideContent: true
+showReadingTime: false
+showToc: false
+draft: false
+_build:
+  list: never
+--->

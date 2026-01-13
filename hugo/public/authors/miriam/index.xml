@@ -6,15 +6,35 @@
     <description>Recent content in Miriam on MusicVoting</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <copyright>Copyright © 2025 MusicVoting, HTBLA Leonding. &lt;br&gt;Licensed under the &lt;u&gt;[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)&lt;/u&gt;.</copyright>
-    <lastBuildDate>Sun, 03 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="//localhost:1313/authors/miriam/index.xml" rel="self" type="application/rss+xml" />
+    <copyright>Copyright © 2025 MusicVoting, HTBLA Leonding. &lt;br&gt; Based on the original Hugo site by &lt;a href=&#34;https://github.com/JakobHuemer&#34;&gt;Jakob Huemer-Fistelberger&lt;/a&gt; . &lt;br&gt;Licensed under the &lt;u&gt;[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)&lt;/u&gt;.</copyright>
+    <lastBuildDate>Mon, 01 Dec 2025 00:00:00 +0000</lastBuildDate><atom:link href="//localhost:1313/authors/miriam/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Project Assignment</title>
       <link>//localhost:1313/project/projectassignment/</link>
-      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <pubDate>Sun, 30 Nov 2025 00:00:00 +0000</pubDate>
       
       <guid>//localhost:1313/project/projectassignment/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Systemarchitektur &amp; Sprint Planning 01.12.2025</title>
+      <link>//localhost:1313/project/mom/2025-12-01_systemarchitektur_sprintplanning/</link>
+      <pubDate>Mon, 01 Dec 2025 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/2025-12-01_systemarchitektur_sprintplanning/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Vision des Projektes 18.11.2025</title>
+      <link>//localhost:1313/project/mom/2025-11-18_vision/</link>
+      <pubDate>Tue, 18 Nov 2025 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/2025-11-18_vision/</guid>
       <description></description>
       
     </item>

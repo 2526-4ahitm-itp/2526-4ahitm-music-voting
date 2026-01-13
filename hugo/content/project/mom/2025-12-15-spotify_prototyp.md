@@ -1,17 +1,10 @@
 ---
-title: Template yyyy.mm.dd
-description: A template for new moms
+title: Spotify Prototyp 
+description: Kriterien für unseren Spotify Prototyp. (Stand 15.12.2025)
 tags: [ mom ]
 showDate: false
 authors:
   - simone
-
-_hideContent: true
-showReadingTime: false
-showToc: false
-draft: false
-_build:
-  list: never
 ---
 
 ## Teilnehmer

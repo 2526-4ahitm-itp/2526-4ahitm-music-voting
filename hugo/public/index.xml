@@ -6,15 +6,65 @@
     <description>Recent content on MusicVoting</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <copyright>Copyright © 2025 MusicVoting, HTBLA Leonding. &lt;br&gt;Licensed under the &lt;u&gt;[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)&lt;/u&gt;.</copyright>
-    <lastBuildDate>Mon, 03 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <copyright>Copyright © 2025 MusicVoting, HTBLA Leonding. &lt;br&gt; Based on the original Hugo site by &lt;a href=&#34;https://github.com/JakobHuemer&#34;&gt;Jakob Huemer-Fistelberger&lt;/a&gt; . &lt;br&gt;Licensed under the &lt;u&gt;[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)&lt;/u&gt;.</copyright>
+    <lastBuildDate>Mon, 01 Dec 2025 00:00:00 +0000</lastBuildDate><atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Project Assignment</title>
       <link>//localhost:1313/project/projectassignment/</link>
-      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <pubDate>Sun, 30 Nov 2025 00:00:00 +0000</pubDate>
       
       <guid>//localhost:1313/project/projectassignment/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Systemarchitektur &amp; Sprint Planning 01.12.2025</title>
+      <link>//localhost:1313/project/mom/2025-12-01_systemarchitektur_sprintplanning/</link>
+      <pubDate>Mon, 01 Dec 2025 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/2025-12-01_systemarchitektur_sprintplanning/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Userstories</title>
+      <link>//localhost:1313/project/userstories/</link>
+      <pubDate>Sun, 30 Nov 2025 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/userstories/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Hugo Pages &amp; Systemarchitektur 25.11.2025</title>
+      <link>//localhost:1313/project/mom/2025-11-25-hugo_architektur/</link>
+      <pubDate>Tue, 25 Nov 2025 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/2025-11-25-hugo_architektur/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Vision des Projektes 18.11.2025</title>
+      <link>//localhost:1313/project/mom/2025-11-18_vision/</link>
+      <pubDate>Tue, 18 Nov 2025 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/2025-11-18_vision/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>User Stories &amp; Systemarchitektur 10.11.2025</title>
+      <link>//localhost:1313/project/mom/2025-11-10_user-stories_systemarchitektur/</link>
+      <pubDate>Mon, 10 Nov 2025 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/2025-11-10_user-stories_systemarchitektur/</guid>
       <description></description>
       
     </item>
@@ -25,16 +75,6 @@
       <pubDate>Mon, 03 Mar 2025 00:00:00 +0000</pubDate>
       
       <guid>//localhost:1313/docs/hugo/</guid>
-      <description></description>
-      
-    </item>
-    
-    <item>
-      <title>Userstories</title>
-      <link>//localhost:1313/project/userstories/</link>
-      <pubDate>Tue, 19 Nov 2024 00:00:00 +0000</pubDate>
-      
-      <guid>//localhost:1313/project/userstories/</guid>
       <description></description>
       
     </item>
@@ -60,11 +100,31 @@
     </item>
     
     <item>
-      <title>Template yyyy.mm.dd</title>
-      <link>//localhost:1313/project/mom/yyyy-mm-dd-mom_template/</link>
+      <title>Spotify Prototyp</title>
+      <link>//localhost:1313/project/mom/2025-12-15-spotify_prototyp/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>//localhost:1313/project/mom/yyyy-mm-dd-mom_template/</guid>
+      <guid>//localhost:1313/project/mom/2025-12-15-spotify_prototyp/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Systemarchitektur</title>
+      <link>//localhost:1313/project/systemarchitektur/systemarchitektur/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/systemarchitektur/systemarchitektur/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Wireframes</title>
+      <link>//localhost:1313/project/wireframes/wireframes/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/wireframes/wireframes/</guid>
       <description></description>
       
     </item>

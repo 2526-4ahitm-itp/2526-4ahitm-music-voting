@@ -10,7 +10,7 @@ authors:
 
 
 Eine Übersciht der Systemarchitektur ist unten dargestellt:
-![Systemarchitektur Diagramm](hugo/assets/img/systemarchitektur/sys_img.png)
+![Systemarchitektur Diagramm](../sys_img.png)
 
 <!--
 Link to PlantUML source: https:
