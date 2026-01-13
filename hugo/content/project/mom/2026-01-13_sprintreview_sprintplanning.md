@@ -31,6 +31,7 @@ authors:
     * 80% erfüllt
     * Vereinbarung ist erfüllt worden
     * waren begeistert von unserem Figma Design
+    * API Verbindung funktioniert
 
 * Projektziele noch besser aufschreiben - dokumentieren
 
