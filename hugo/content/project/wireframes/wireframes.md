@@ -4,9 +4,11 @@ description: Wirreframes für die Benutzeroberfläche. (Stand 01.12.2025)
 tags: [ mom ]
 showDate: false
 authors:
-- marlies
+- simone
 ---
 
+## Wireframes auf Figma
+https://www.figma.com/design/UR3Gwva9d533kWPva10zl1/MusicVoting?t=OoYKLtxkYeSUTBGI-1
 
 ## Startseite
 Eine Übersicht wo man sieht welcher Song gerade abgespielt wird, welche Songs sich in der Warteschlange befinden und ein QR-Code um sich selbst beteiligen zu können. <br>
