@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct AdminDashboard: View {
+    
+    @State private var progress: Double = 0.13
+    
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
 
                 // Gerade Spielender Song
-                
-                
                 
                 
                 
