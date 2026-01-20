@@ -1,9 +1,6 @@
-package at.htl.entity;
+package at.htl.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "MV_Song")

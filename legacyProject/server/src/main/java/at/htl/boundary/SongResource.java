@@ -1,7 +1,7 @@
 package at.htl.boundary;
 
 import at.htl.control.SongRepository;
-import at.htl.entity.Song;
+import at.htl.model.Song;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 

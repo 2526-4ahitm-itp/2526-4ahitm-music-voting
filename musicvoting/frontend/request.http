@@ -1,5 +1,4 @@
-GET https://api.spotify.com/v1/search?q=remaster%2520track%3ADoxy%2520artist%3AMiles%2520Davis&type=track&limit=1
-Authorization: Bearer BQBuPjV-QS5pBs0XFvD2wQxWTTWgcFIDyyAS2QvZEsf5jfsJ2FD_mUDDXtDZTKC-DTasPnxRlT-QECxDX-Ti4ful-c_joay7TRYLASsb4K0ruIumdiuq_33GFP2GSwbFT6W0eVr6UOMstS04QFGK78zQjcUn54cQSwkV8IHm-VsBs2PwALhhmVJ2fNEhF_B2HmJ_x7JL468SxF7WMOT3Xqx0hqQzPYXiafwQTurAkQfTKtyY3LLnm_IGt12E_MJKxFCyNG8F
-
+GET https://api.spotify.com/v1/search?q=remaster%2520track%3ADoxy%2520artist%3AMiles%2520Davis&type=track&limit=6
+Authorization: Bearer BQDOxutl7H3vVKoWSviLzjlMa2C4nfUXgOgwtj5ltqcKS_Cum42IHVvKzPWYXVvYV8yR4VFYCY-9lGz1SKusVa4A_d7yfS-zE6Y4G2YG6h_R5uDcHH7F0pgGgH4b1Zl4O5PTkYeZ9g-rgurTxUonjJS91tYyhImp9Zi0-SH127H951Tk3jnoNe30fH3j5HzS4AYfbhfSEEq2y2-ZvJ4Xrk405JdqEzn7t_N-Z5Ty_m3mFu_L-YSVOthx1TU85ppeaFz1GlTV
 
 

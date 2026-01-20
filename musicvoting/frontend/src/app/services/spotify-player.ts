@@ -1,108 +1,73 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class SpotifyPlayerService {
-
+@Injectable({ providedIn: 'root' })
+export class SpotifyWebPlayerService {
   private player: any;
   private deviceId!: string;
-  private token = 'YOUR_SPOTIFY_TOKEN';
+  private onReadyCallbacks: (() => void)[] = [];
+  private token!: string;
 
   constructor(private http: HttpClient) {}
 
-  initPlayer(): void {
+  async initPlayer() {
+    const res: any = await this.http.get('/api/spotify/token').toPromise();
+    this.token = res.token;
+
     (window as any).onSpotifyWebPlaybackSDKReady = () => {
       this.player = new Spotify.Player({
-        name: 'Angular Spotify Player',
+        name: 'Web Player MusicVoting',
         getOAuthToken: (cb: any) => cb(this.token),
         volume: 0.5
       });
 
       this.player.addListener('ready', ({ device_id }: any) => {
         this.deviceId = device_id;
-
         this.onReadyCallbacks.forEach(cb => cb());
         this.onReadyCallbacks = [];
       });
 
-
-      this.player.addListener('not_ready', ({ device_id }: any) => {
-        console.log('Device ID offline', device_id);
-      });
-
       this.player.addListener('player_state_changed', (state: any) => {
-        if (state?.track_window?.current_track) {
-          console.log('Now playing:', state.track_window.current_track.name);
-        }
-      });
-      this.player.setName("SDK Web Player").then(() => {
-        console.log('Player name updated!');
+        console.log('Now playing:', state?.track_window?.current_track?.name);
       });
 
       this.player.connect();
     };
+
+    await this.loadSpotifySDK();
   }
 
-  playTrack(uri: string): void {
-    if (!this.deviceId) return;
-
-    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${this.deviceId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ uris: [uri] }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.token}`
+  private loadSpotifySDK(): Promise<void> {
+    return new Promise((resolve) => {
+      const existingScript = document.getElementById('spotify-sdk');
+      if (existingScript) {
+        resolve(); // SDK schon geladen
+        return;
       }
+
+      const scriptTag = document.createElement('script');
+      scriptTag.id = 'spotify-sdk';
+      scriptTag.src = 'https://sdk.scdn.co/spotify-player.js';
+      scriptTag.onload = () => resolve();
+      document.body.appendChild(scriptTag);
     });
   }
 
-  pause(): void {
-    this.player?.pause().then(() => {
-      console.log('Paused!');
-    });
-  }
 
-  previous() {
-    this.player?.previousTrack().then(() => {
-      console.log('Set to previous track!');
-    });
-  }
-
-  next() {
-    this.player?.nextTrack().then(() => {
-      console.log('Skipped to next track!');
-    });
-  }
-
-  addToQueue(uri: string): void {
-    fetch(`https://api.spotify.com/v1/me/player/queue?uri=${encodeURIComponent(uri)}&device_id=${this.deviceId}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.token}`
-      }
-    });
-  }
-
-  private onReadyCallbacks: (() => void)[] = [];
 
   onReady(cb: () => void) {
     if (this.deviceId) cb();
     else this.onReadyCallbacks.push(cb);
   }
 
+  playTrack(uri: string) {
+    if (!this.deviceId) {
+      console.error("Player noch nicht bereit!");
+      return;
+    }
 
-  searchTracks(query: string): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.token}`
-    });
 
-    return this.http.get(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10`,
-      { headers }
-    );
+    this.http.put(`/api/track/play?deviceId=${this.deviceId}`, { uri: uri })
+      .subscribe(() => console.log("Playing..."));
   }
-
 }
