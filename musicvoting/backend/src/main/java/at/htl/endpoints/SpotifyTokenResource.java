@@ -1,4 +1,4 @@
-package at.htl.service;
+package at.htl.endpoints;
 
 import at.htl.service.SpotifyPlayer;
 import jakarta.inject.Inject;
