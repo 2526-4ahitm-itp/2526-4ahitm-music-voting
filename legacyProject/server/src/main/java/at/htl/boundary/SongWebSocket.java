@@ -1,6 +1,6 @@
 package at.htl.boundary;
 
-import at.htl.entity.Song;
+import at.htl.model.Song;
 import at.htl.control.SongRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;

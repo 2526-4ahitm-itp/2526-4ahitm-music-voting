@@ -1,7 +1,7 @@
 package at.htl.boundary;
 
 import at.htl.control.BlacklistRepository;
-import at.htl.entity.BlacklistItem;
+import at.htl.model.BlacklistItem;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import jakarta.inject.Inject;

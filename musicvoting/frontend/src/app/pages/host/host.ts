@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SpotifyPlayerService } from '../../services/spotify-player';
+import {SpotifyWebPlayerService} from '../../services/spotify-player';
+import {TrackService } from '../../services/spotify-tracks';
 
 @Component({
   selector: 'app-player',
@@ -9,37 +10,33 @@ import { SpotifyPlayerService } from '../../services/spotify-player';
   templateUrl: './host.html'
 })
 
-export class Host implements OnInit {
 
+export class Host implements OnInit {
   tracks: any[] = [];
 
-  constructor(private spotify: SpotifyPlayerService) {}
+  constructor(
+    private spotifyService: SpotifyWebPlayerService,
+    private trackApi: TrackService
+  ) {}
 
-  ngOnInit(): void {
-    this.spotify.initPlayer();
-    this.search();
+  async ngOnInit() {
+    await this.spotifyService.initPlayer();
   }
 
   search() {
-    this.spotify.searchTracks("Taylor Swift").subscribe(result => {
-      this.tracks = result.tracks.items;
-      console.log(this.tracks);
+    console.log("Suche wird gestartet...");
+    this.trackApi.searchTracks("Taylor Swift").subscribe({
+      next: (res) => {
+        this.tracks = res.tracks.items;
+      },
+      error: (err) => {
+        console.error("Fehler bei der Suche:", err);
+      }
     });
+
   }
 
   play(uri: string) {
-    this.spotify.playTrack(uri);
-  }
-
-  pause() {
-    this.spotify.pause();
-  }
-
-  previous() {
-    this.spotify.previous();
-  }
-
-  next() {
-    this.spotify.next();
+    this.spotifyService.playTrack(uri);
   }
 }

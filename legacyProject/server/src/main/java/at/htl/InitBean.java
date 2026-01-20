@@ -3,7 +3,7 @@ package at.htl;
 
 import at.htl.control.ArtistRepository;
 import at.htl.control.SongRepository;
-import at.htl.entity.Artist;
+import at.htl.model.Artist;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.StartupEvent;
 

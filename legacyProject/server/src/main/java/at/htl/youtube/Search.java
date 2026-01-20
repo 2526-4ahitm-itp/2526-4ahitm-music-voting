@@ -1,6 +1,6 @@
 package at.htl.youtube;
 
-import at.htl.entity.Song;
+import at.htl.model.Song;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.jsoup.Jsoup;

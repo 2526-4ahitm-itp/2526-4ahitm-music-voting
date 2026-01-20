@@ -1,8 +1,8 @@
 package at.htl.control;
 
 import at.htl.boundary.SongWebSocket;
-import at.htl.entity.Song;
-import at.htl.entity.Artist;
+import at.htl.model.Song;
+import at.htl.model.Artist;
 import at.htl.youtube.Search;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;

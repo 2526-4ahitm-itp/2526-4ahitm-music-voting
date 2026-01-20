@@ -1,16 +1,26 @@
 <div class="host">
-  <h1>🎧 Angular Spotify Host</h1>
+  <h1>🎧 Spotify Host</h1>
 
-  <div class="search-results">
-    @for (track of tracks; track track.id) {
-      <div class="track">
-        <strong>{{ track.name }}</strong><br>
-        <small>{{ track.artists[0].name }}</small>
+  <div class="search-action">
+    <button class="fetch-btn" (click)="search()">
+      Suche 10 Taylor Swift Lieder
+    </button>
+  </div>
 
-        <button (click)="play(track.uri)">
-          ▶ Play
-        </button>
+  <div class="track-list" *ngIf="tracks.length > 0">
+    <div class="track-card" *ngFor="let track of tracks">
+      <img *ngIf="track.album?.images?.length"
+           [src]="track.album.images[track.album.images.length - 1].url"
+           alt="Cover">
+
+      <div class="track-info">
+        <span class="track-name">{{ track.name }}</span>
+        <span class="artist-name">{{ track.artists[0]?.name }}</span>
       </div>
-    }
+
+      <button class="play-btn" (click)="play(track.uri)">
+        ▶
+      </button>
+    </div>
   </div>
 </div>
