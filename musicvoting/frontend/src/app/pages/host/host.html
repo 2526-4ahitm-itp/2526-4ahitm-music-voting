@@ -1,26 +1,30 @@
-<div class="host">
-  <h1>🎧 Spotify Host</h1>
+<div class="guest">
+  <h1>🎧 Spotify Guest</h1>
 
   <div class="search-action">
     <button class="fetch-btn" (click)="search()">
-      Suche 10 Taylor Swift Lieder
+      Suchen nach 10 Taylor Swift Songs
     </button>
   </div>
 
-  <div class="track-list" *ngIf="tracks.length > 0">
-    <div class="track-card" *ngFor="let track of tracks">
-      <img *ngIf="track.album?.images?.length"
-           [src]="track.album.images[track.album.images.length - 1].url"
-           alt="Cover">
+  @if (tracks.length > 0) {
+    <div class="track-list">
+      @for (track of tracks; track track.id || track.uri) {
+        <div class="track-card">
+          @if (track.album?.images?.length) {
+            <img [src]="track.album.images.at(-1)?.url" alt="Cover">
+          }
 
-      <div class="track-info">
-        <span class="track-name">{{ track.name }}</span>
-        <span class="artist-name">{{ track.artists[0]?.name }}</span>
-      </div>
+          <div class="track-info">
+            <span class="track-name">{{ track.name }}</span>
+            <span class="artist-name">{{ track.artists[0]?.name }}</span>
+          </div>
 
-      <button class="play-btn" (click)="play(track.uri)">
-        ▶
-      </button>
+          <button class="play-btn" (click)="play(track.uri)">
+            ▶
+          </button>
+        </div>
+      }
     </div>
-  </div>
+  }
 </div>
