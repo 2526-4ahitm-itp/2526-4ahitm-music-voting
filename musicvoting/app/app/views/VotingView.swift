@@ -9,7 +9,16 @@ import SwiftUI
 
 struct VotingView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            ScrollView {
+
+                Image(systemName: "heart.fill")
+                Text("Voten")
+
+            }
+            .navigationTitle("Music Voting")
+            .navigationBarTitleDisplayMode(.inline)
+        }
     }
 }
 
