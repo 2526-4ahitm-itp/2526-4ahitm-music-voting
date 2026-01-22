@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct CurrentSongPlaying: View {
-    
+
     @State private var progress: Double = 0.13
     let song: Song
-    
+
     var body: some View {
         VStack(spacing: 24) {
-            
+
             // Album Cover
             AsyncImage(url: URL(string: song.imageUrl)) { phase in
                 switch phase {
@@ -35,31 +35,29 @@ struct CurrentSongPlaying: View {
                             .foregroundColor(.gray)
                     }
 
-
                 @unknown default:
                     EmptyView()
                 }
             }
-            .frame(width: 250, height: 250)
+            .frame(width: 300, height: 300)
             .cornerRadius(6)
             .clipped()
-            
-            
+
             // Song Title
             Text(song.title)
                 .font(.title)
                 .fontWeight(.bold)
                 .foregroundColor(.black)
-            
+
             Text(song.artist)
                 .font(.subheadline)
                 .foregroundColor(.gray)
-            
+
             // Progress Bar
             VStack {
                 Slider(value: $progress)
                     .accentColor(.black)
-                
+
                 HStack {
                     Text("0:13")
                     Spacer()
@@ -69,27 +67,29 @@ struct CurrentSongPlaying: View {
                 .foregroundColor(.black)
             }
             .padding(.horizontal)
-            
+
             // Controls
             HStack(spacing: 50) {
                 Button(action: {}) {
                     Image(systemName: "backward.fill")
-                        .font(.title)
+                        .font(.system(size: 30))
                 }
-                
+
                 Button(action: {}) {
                     Image(systemName: "play.fill")
-                        .font(.largeTitle)
+                        .font(.system(size: 60))
                 }
-                
+
                 Button(action: {}) {
                     Image(systemName: "forward.fill")
-                        .font(.title)
+                        .font(
+                            .system(size: 30)
+                        )
                 }
             }
             .foregroundColor(.black)
             .padding(.top, 10)
-            
+
             Spacer()
         }
         .padding()
@@ -105,5 +105,12 @@ struct CurrentSongPlaying: View {
 }
 
 #Preview {
-    CurrentSongPlaying(song: .init(title: "Test", artist: "Test", imageUrl: "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"))
+    CurrentSongPlaying(
+        song: .init(
+            title: "Test",
+            artist: "Test",
+            imageUrl:
+                "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"
+        )
+    )
 }

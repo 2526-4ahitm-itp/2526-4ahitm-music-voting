@@ -14,6 +14,10 @@ struct ContentView: View {
                 .tabItem {
                     Label("Admin", systemImage: "person.crop.circle")
                 }
+            QRCodeView()
+                .tabItem {
+                    Label("QR-Code", systemImage: "qrcode")
+                }
             VotingView()
                 .tabItem {
                     Label("Voting", systemImage: "heart")
