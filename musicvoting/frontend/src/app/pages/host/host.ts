@@ -7,7 +7,8 @@ import {TrackService } from '../../services/spotify-tracks';
   selector: 'app-player',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './host.html'
+  templateUrl: './host.html',
+  styleUrl:'./host.css'
 })
 
 
