@@ -8,6 +8,7 @@ import { TrackService } from '../../services/spotify-tracks';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './guest.html',
+  styleUrl: './guest.css',
 })
 export class Guest implements OnInit {
   tracks: any[] = [];
