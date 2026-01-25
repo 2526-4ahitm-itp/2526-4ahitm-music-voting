@@ -1,0 +1,51 @@
+.player {
+  min-height: 100vh;
+  width: 100vw;
+
+  background: linear-gradient(135deg, #8303A6, #121212);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  color: white;
+  text-align: center;
+  overflow: hidden;
+  font-family: var(--font), serif;
+}
+
+.player h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.button-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.page-switch-btn {
+  min-width: 10rem;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 2rem;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  color: black;
+}
+
+.page-switch-btn:hover {
+  transform: translateY(-0.2rem) scale(1.05);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+}
+
+.page-switch-btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+}
