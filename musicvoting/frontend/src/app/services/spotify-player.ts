@@ -11,8 +11,11 @@ export class SpotifyWebPlayerService {
   constructor(private http: HttpClient) {}
 
   async initPlayer() {
-    const res: any = await this.http.get('/api/spotify/token').toPromise();
-    this.token = res.token;
+    // Token aus URL holen oder /token abfragen
+    if (!this.token) {
+      const urlParams = new URLSearchParams(window.location.search);
+      this.token = urlParams.get('token') || '';
+    }
 
     (window as any).onSpotifyWebPlaybackSDKReady = () => {
       this.player = new Spotify.Player({
@@ -70,4 +73,15 @@ export class SpotifyWebPlayerService {
     this.http.put(`/api/track/play?deviceId=${this.deviceId}`, { uri: uri })
       .subscribe(() => console.log("Playing..."));
   }
+
+  login() {
+    window.location.href = '/api/spotify/login';
+  }
+
+  setToken(token: string) {
+    this.token = token;
+  }
+
+
+
 }

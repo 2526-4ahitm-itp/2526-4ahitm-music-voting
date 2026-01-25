@@ -17,8 +17,8 @@ import java.util.Map;
 @ApplicationScoped
 public class SpotifyPlayer {
 
-    @ConfigProperty(name = "spotify.token")
-    String token;
+
+    public String token;
 
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
@@ -162,4 +162,8 @@ public class SpotifyPlayer {
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
+    public void setToken(String token) {
+        this.token = token;
+    }
+
 }

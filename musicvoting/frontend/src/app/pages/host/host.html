@@ -1,11 +1,19 @@
 <div class="guest">
-  <h1>🎧 Spotify Guest</h1>
+  <h1>🎧 Spotify Host</h1>
 
   <div class="search-action">
     <button class="fetch-btn" (click)="search()">
       Suchen nach 10 Taylor Swift Songs
     </button>
   </div>
+
+  <div class="search-action">
+    <button class="fetch-btn" (click)="loginSpotify()">
+      Anmelden bei Spotify
+    </button>
+  </div>
+
+
 
   @if (tracks.length > 0) {
     <div class="track-list">

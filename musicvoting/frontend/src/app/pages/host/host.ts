@@ -20,8 +20,17 @@ export class Host implements OnInit {
   ) {}
 
   async ngOnInit() {
-    await this.spotifyService.initPlayer();
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (token) {
+      this.spotifyService.setToken(token);
+      await this.spotifyService.initPlayer();
+    } else {
+      console.log("Bitte zuerst Spotify Login durchführen.");
+    }
   }
+
 
   search() {
     console.log("Suche wird gestartet...");
@@ -38,5 +47,9 @@ export class Host implements OnInit {
 
   play(uri: string) {
     this.spotifyService.playTrack(uri);
+  }
+
+  loginSpotify() {
+    this.spotifyService.login();
   }
 }
