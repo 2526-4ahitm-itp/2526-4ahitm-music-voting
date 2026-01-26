@@ -1,5 +1,8 @@
 .idea
 
+# Ignoriert eine Datei in der client id und client secret stehen
+musicvoting/backend/src/main/resources/application.properties
+
 hugo/public
 
 # Node modules
