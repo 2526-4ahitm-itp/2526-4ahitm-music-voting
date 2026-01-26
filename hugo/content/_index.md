@@ -28,9 +28,13 @@ Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwicke
 
 
 ## Other Documents
-
 {{< article link="project/projectassignment/" >}}
-{{< article link="project/userstories/" >}}
+
+## For Developers
+### Run Instructions
+{{< article link="docs/runinstructions/" >}}
+### Developer Instructions
+{{< article link="docs/developerinstructions/" >}}
 
 # Team
 
