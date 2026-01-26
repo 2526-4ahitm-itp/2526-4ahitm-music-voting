@@ -15,6 +15,10 @@ Die Daten stehen im Whats App Gruppenchat zur Verfügung.
 
 
 ```properties
+spotify.client.id=client_id_here
+spotify.client.secret=client_secret_here
+spotify.redirect.uri=http://127.0.0.1:8080/api/spotify/callback
+```
 
 ## Starten des Backends 
 
