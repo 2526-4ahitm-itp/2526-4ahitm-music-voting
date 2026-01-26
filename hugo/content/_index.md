@@ -7,7 +7,7 @@
 
 <br>
 
-## Unser Projekt 
+# Unser Projekt 
 
 ### Problemstellung
 Bei vielen Partys oder Veranstaltungen ist es öfters so, dass der Gastgeber entweder nicht die Zeit hat sich um die Musikauswahl zu kümmern oder einfach nicht den gleichen Musikgeschmack wie die Gäste hat.
@@ -23,18 +23,22 @@ Die Musik wird über den Spotify Premium-Account des Gastgebers abgespielt, um e
 ### Ziel des Projektes
 Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwickeln, die es den Gästen ermöglicht, aktiv an der Musikauswahl teilzunehmen und so für eine bessere Stimmung auf der Party zu sorgen.
 
-## Current Agreement
+# Current Agreement
 {{< article link="project/mom/2026-01-13_sprintreview_sprintplanning/" >}}
 
 
-## Other Documents
+# Other Documents
 {{< article link="project/projectassignment/" >}}
+{{< article link="project/wireframes/wireframes" >}}
+{{< article link="project/systemarchitektur/systemarchitektur" >}}
 
 ## For Developers
 ### Run Instructions
 {{< article link="docs/runinstructions/" >}}
 ### Developer Instructions
 {{< article link="docs/developerinstructions/" >}}
+
+<br>
 
 # Team
 
