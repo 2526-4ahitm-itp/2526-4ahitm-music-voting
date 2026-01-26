@@ -15,9 +15,125 @@ Gäste können Songs vorschlagen, über ein Voting-System die Reihenfolge der Pl
 Die Musik wird direkt über den Spotify-Premium-Account des Gastgebers abgespielt, sodass die Partyatmosphäre dynamisch und unterhaltsam bleibt.
 
 == Starten des Programms
+=== Konfiguration der Anwendung
 
-In unserem Projekt gibt es noch nichts zum Ausführen.
-Sobald das der Fall ist, werden hier die Anweisungen zum Starten des Programms dokumentiert.
+==== Spotify-Zugangsdaten hinterlegen
+Die `Client ID`, das `Client Secret` und die `Redirect URI` müssen in der Konfigurationsdatei des Backends eingetragen werden.
+
+*Datei:* `musicvoting/backend/src/main/resources/application.properties`
+
+[NOTE]
+====
+Falls Sie noch keine eigenen Zugangsdaten haben,
+müssen Sie ein Spotify Developer Konto unter
+link:https://developer.spotify.com/dashboard/applications[developer.spotify.com] anlegen.
+====
+
+[TIP]
+.Wie erstelle ich ein Spotify Developer Konto?
+Siehe unter Projektübernahme!
+
+
+[source,properties]
+----
+spotify.client.id=client_id_here
+spotify.client.secret=client_secret_here
+spotify.redirect.uri=http://127.0.0.1:8080/api/spotify/callback
+----
+
+=== Backend starten
+
+Um das Quarkus-Backend im Entwicklungsmodus zu starten, folgen Sie diesen Schritten:
+
+. Navigieren Sie in das Backend-Verzeichnis:
++
+[source,bash]
+----
+cd musicvoting/backend
+----
+
+. Starten Sie Quarkus über den Maven-Wrapper:
++
+[source,bash]
+----
+./mvnw quarkus:dev
+----
+
+=== Frontend starten
+
+Sobald das Backend läuft, kann die Angular-Anwendung gestartet werden:
+
+. Navigieren Sie in das Frontend-Verzeichnis:
++
+[source,bash]
+----
+cd musicvoting/frontend
+----
+
+. Installieren Sie die notwendigen Abhängigkeiten:
++
+[source,bash]
+----
+npm install
+----
+
+. Starten Sie den Angular-Entwicklungsserver:
++
+[source,bash]
+----
+ng serve --host 0.0.0.0 --port 4200
+----
+
+[IMPORTANT]
+.Hinweis zum Netzwerkzugriff
+Der Parameter `--host 0.0.0.0` sorgt dafür, dass die Anwendung über alle Netzwerkschnittstellen erreichbar ist. Dies ist besonders nützlich für Tests mit Mobilgeräten im selben Netzwerk oder in Container-Umgebungen, um Probleme mit der Spotify Redirect URI zu vermeiden. Dieser Modus ist ausschließlich für die *lokale Entwicklung* vorgesehen.
+
+== Projektübernahme
+Falls Sie dieses Projekt übernehmen möchten, folgen Sie bitte diesen Schritten:
+
+=== Voraussetzungen
+
+* *Premium Spotify Account*
+** Wird benötigt, um die Spotify API nutzen zu können.
+* *Spotify Developer Konto*
+
+=== Allgemeine Entwicklungshinweise
+
+==== Nutzung der Spotify API mit einem Developer Account
+Mit einem Developer Account ist die Nutzung der Applikation initial auf **25 vorgemerkte Spotify-Nutzer** beschränkt.
+
+[IMPORTANT]
+.Nutzerregistrierung
+Diese User müssen manuell mit ihrer E-Mail-Adresse im Spotify Developer Dashboard zu einer Liste hinzugefügt werden.
+
+=== Erstellen eines Spotify Developer Kontos
+Falls noch kein Konto vorhanden ist, folgen Sie diesen Schritten:
+
+. Gehen Sie zu link:https://developer.spotify.com/[Spotify for Developers].
+. Melden Sie sich mit Ihrem Spotify-Konto an oder erstellen Sie ein neues.
+. Klicken Sie auf *Create an App*.
+. Geben Sie einen Namen und eine Beschreibung für Ihre Anwendung ein.
+. Akzeptieren Sie die Nutzungsbedingungen und klicken Sie auf *Create*.
+
+=== Applikation konfigurieren
+1. Navigieren Sie zu Ihrem *Spotify Developer Dashboard*.
+2. Wählen Sie die Anwendung aus, die Sie mit MusicVoting verbinden möchten.
+3. Notieren Sie sich die `Client ID` und das `Client Secret`.
+4. Fügen Sie die Redirect URI `http://127.0.0.1:8080/api/spotify/callback` in die Liste der *Redirect URIs* ein.
+5. Speichern Sie die Änderungen.
+6. Tragen Sie die Zugangsdaten in der Datei `musicvoting/backend/src/main/resources/application.properties` ein:
+
+[source,properties]
+----
+spotify.client.id=your_client_id
+spotify.client.secret=your_client_secret
+spotify.redirect.uri=http://127.0.0.1:8080/api/spotify/callback
+----
+
+NOTE: Ersetzen Sie `your_client_id` und `your_client_secret` durch die tatsächlichen Werte aus Ihrem Dashboard.
+
+=== Veröffentlichen der Applikation
+Um die Anwendung offiziell zu veröffentlichen, muss ein **Antrag bei Spotify** gestellt werden. Nach der Genehmigung ist die Anwendung für alle Spotify-Nutzer zugänglich, und die Beschränkung auf 25 Nutzer entfällt.
 
 == Team
 
