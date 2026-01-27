@@ -1,7 +1,7 @@
 ---
 title: Systemarchitektur
 description: Systemarchitektur für das Programm. (Stand 09.12.2025)
-tags: [ systemarchitektur ]
+tags: [ documentation ]
 showDate: false
 authors:
 - simone
