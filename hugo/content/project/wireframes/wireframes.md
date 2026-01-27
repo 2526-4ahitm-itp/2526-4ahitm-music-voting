@@ -1,7 +1,7 @@
 ---
 title: Wireframes
 description: Wirreframes für die Benutzeroberfläche. (Stand 01.12.2025)
-tags: [ mom ]
+tags: [ documentation ]
 showDate: false
 authors:
 - simone
