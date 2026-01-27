@@ -1,6 +1,7 @@
 ---
 title: How To Develop
 description: How to further develop the application
+tags: [ Developer ]
 showDate: true
 authors:
   - simone
