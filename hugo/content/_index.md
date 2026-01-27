@@ -29,8 +29,8 @@ Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwicke
 
 # Other Documents
 {{< article link="project/projectassignment/" >}}
-{{< article link="project/wireframes/wireframes" >}}
-{{< article link="project/systemarchitektur/systemarchitektur" >}}
+{{< article link="project/wireframes/wireframes/" >}}
+{{< article link="project/systemarchitektur/systemarchitektur/" >}}
 
 ## For Developers
 ### Run Instructions
