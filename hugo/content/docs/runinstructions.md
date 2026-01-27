@@ -1,6 +1,7 @@
 ---
 title: How To Run
 description: How to run the application
+tags: [ Developer ]
 ---
 
 
