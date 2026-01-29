@@ -1,10 +1,11 @@
 package at.htl.service;
 
+import at.htl.endpoints.SpotifyTokenResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -17,14 +18,14 @@ import java.util.Map;
 @ApplicationScoped
 public class SpotifyPlayer {
 
-
-    public String token;
+    @Inject
+    SpotifyTokenResource spotifyTokenResource;
 
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
     private String authHeader() {
-        return "Bearer " + token;
+        return "Bearer " + spotifyTokenResource.getToken();
     }
 
     /**
@@ -161,9 +162,6 @@ public class SpotifyPlayer {
         } catch (Exception e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
-    }
-    public void setToken(String token) {
-        this.token = token;
     }
 
 }
