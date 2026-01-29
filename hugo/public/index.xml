@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <copyright>Copyright © 2025 MusicVoting, HTBLA Leonding. &lt;br&gt; Based on the original Hugo site by &lt;a href=&#34;https://github.com/JakobHuemer&#34;&gt;Jakob Huemer-Fistelberger&lt;/a&gt; . &lt;br&gt;Licensed under the &lt;u&gt;[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.html)&lt;/u&gt;.</copyright>
-    <lastBuildDate>Mon, 01 Dec 2025 00:00:00 +0000</lastBuildDate><atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 26 Jan 2026 00:00:00 +0000</lastBuildDate><atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Project Assignment</title>
@@ -15,6 +15,26 @@
       <pubDate>Sun, 30 Nov 2025 00:00:00 +0000</pubDate>
       
       <guid>//localhost:1313/project/projectassignment/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Sprint Review &amp; Sprint Planning 26.01.2026</title>
+      <link>//localhost:1313/project/mom/2026-01-26_sprintreview_startseite-befuellen/</link>
+      <pubDate>Mon, 26 Jan 2026 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/2026-01-26_sprintreview_startseite-befuellen/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Sprint Review &amp; Sprint Planning 13.01.2026</title>
+      <link>//localhost:1313/project/mom/2026-01-13_sprintreview_sprintplanning/</link>
+      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/2026-01-13_sprintreview_sprintplanning/</guid>
       <description></description>
       
     </item>
@@ -80,6 +100,16 @@
     </item>
     
     <item>
+      <title>How To Develop</title>
+      <link>//localhost:1313/docs/developerinstructions/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/docs/developerinstructions/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
       <title>How To Run</title>
       <link>//localhost:1313/docs/runinstructions/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -115,6 +145,16 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>//localhost:1313/project/systemarchitektur/systemarchitektur/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Template yyyy.mm.dd</title>
+      <link>//localhost:1313/project/mom/yyyy-mm-dd-mom_template/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/project/mom/yyyy-mm-dd-mom_template/</guid>
       <description></description>
       
     </item>

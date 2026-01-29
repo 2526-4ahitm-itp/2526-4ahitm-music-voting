@@ -26,8 +26,8 @@
   
   
   
-  <link type="text/css" rel="stylesheet" href="/css/main.bundle.min.d8dc22c40687442dcfcc648e6429544ad93131d728326a312fed4214315ba565a89372cf4cc163e1ed08095cb29b459ecb908f3a66777c6a9e61b1decd33612c.css"
-    integrity="sha512-2NwixAaHRC3PzGSOZClUStkxMdcoMmoxL&#43;1CFDFbpWWok3LPTMFj4e0ICVyym0Wey5CPOmZ3fGqeYbHezTNhLA==" />
+  <link type="text/css" rel="stylesheet" href="/css/main.bundle.min.661a4bd70a41625d0c5640e7a227f63d308eb176dd6c2807a7b83575ff0f678e71e3e8cf21f68f5cd36294c699f0d8d8648a630c4a322a139e4e946fdbc8e476.css"
+    integrity="sha512-ZhpL1wpBYl0MVkDnoif2PTCOsXbdbCgHp7g1df8PZ45x4&#43;jPIfaPXNNilMaZ8NjYZIpjDEoyKhOeTpRv28jkdg==" />
   
   
   <script type="text/javascript" src="/js/appearance.min.516a16745bea5a9bd011138d254cc0fd3973cd55ce6e15f3dec763e7c7c2c7448f8fe7b54cca811cb821b0c7e12cd161caace1dd794ac3d34d40937cbcc9ee12.js"
@@ -105,7 +105,7 @@
     
     
     "mainEntityOfPage": "true",
-    "wordCount": "44"
+    "wordCount": "136"
   }]
   </script>
 
@@ -632,7 +632,7 @@
 <div class="flex flex-row flex-wrap items-center">
   
   
-  <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time><span class="px-2 text-primary-500">&middot;</span><span>44 words</span><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">1 min</span><span class="px-2 text-primary-500">&middot;</span>
+  <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time><span class="px-2 text-primary-500">&middot;</span><span>136 words</span><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">1 min</span><span class="px-2 text-primary-500">&middot;</span>
 
 
   
@@ -738,12 +738,10 @@
     class="min-w-[220px] py-2 border-dotted ltr:-ml-5 ltr:border-l ltr:pl-5 rtl:-mr-5 rtl:border-r rtl:pr-5 dark:border-neutral-600">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#starten-des-programms">Starten des Programms</a>
+    <li><a href="#voraussetzungen">Voraussetzungen</a></li>
+    <li><a href="#starten-des-backends">Starten des Backends</a>
       <ul>
-        <li><a href="#voraussetzungen">Voraussetzungen</a></li>
-        <li><a href="#starten-der-datenbank">Starten der Datenbank</a></li>
         <li><a href="#starten-der-anwendung">Starten der Anwendung</a></li>
-        <li><a href="#troubleshooting">Troubleshooting</a></li>
       </ul>
     </li>
   </ul>
@@ -759,12 +757,10 @@
     class="py-2 border-dotted border-neutral-300 ltr:-ml-5 ltr:border-l ltr:pl-5 rtl:-mr-5 rtl:border-r rtl:pr-5 dark:border-neutral-600">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#starten-des-programms">Starten des Programms</a>
+    <li><a href="#voraussetzungen">Voraussetzungen</a></li>
+    <li><a href="#starten-des-backends">Starten des Backends</a>
       <ul>
-        <li><a href="#voraussetzungen">Voraussetzungen</a></li>
-        <li><a href="#starten-der-datenbank">Starten der Datenbank</a></li>
         <li><a href="#starten-der-anwendung">Starten der Anwendung</a></li>
-        <li><a href="#troubleshooting">Troubleshooting</a></li>
       </ul>
     </li>
   </ul>
@@ -848,23 +844,9 @@
 
 
         <div class="article-content max-w-prose mb-20">
-          <p>In unserem Projekt gibt es noch nichts zum Ausführen. Sobald das der Fall ist, werden hier die Anweisungen zum Starten des Programms dokumentiert.</p>
-<p>Diese Datei existiert nur vollständigkeitshalber.</p>
+          
 
-
-<h2 class="relative group">Starten des Programms 
-    <div id="starten-des-programms" class="anchor"></div>
-    
-    <span
-        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
-        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
-            style="text-decoration-line: none !important;" href="#starten-des-programms" aria-label="Anchor">#</a>
-    </span>        
-    
-</h2>
-
-
-<h3 class="relative group">Voraussetzungen 
+<h2 class="relative group">Voraussetzungen 
     <div id="voraussetzungen" class="anchor"></div>
     
     <span
@@ -873,19 +855,38 @@
             style="text-decoration-line: none !important;" href="#voraussetzungen" aria-label="Anchor">#</a>
     </span>        
     
-</h3>
+</h2>
+<ol>
+<li>in application.properties die Spotify Daten eintragen
+Spotify Client ID, Client Secret und Redirect URI müssen in der Datei <code>musicvoting/backend/src/main/resources/application.properties</code> eingetragen werden.</li>
+</ol>
+<p>(Für die Daten muss sich ein Spotify Developer Konto angelegt werden: <a href="https://developer.spotify.com/dashboard/applications" target="_blank">https://developer.spotify.com/dashboard/applications</a>)</p>
+<p>Die Daten stehen im Whats App Gruppenchat zur Verfügung.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-properties" data-lang="properties"><span class="line"><span class="cl"><span class="na">spotify.client.id</span><span class="o">=</span><span class="s">client_id_here</span>
+</span></span><span class="line"><span class="cl"><span class="na">spotify.client.secret</span><span class="o">=</span><span class="s">client_secret_here</span>
+</span></span><span class="line"><span class="cl"><span class="na">spotify.redirect.uri</span><span class="o">=</span><span class="s">http://127.0.0.1:8080/api/spotify/callback</span>
+</span></span></code></pre></div>
 
-
-<h3 class="relative group">Starten der Datenbank 
-    <div id="starten-der-datenbank" class="anchor"></div>
+<h2 class="relative group">Starten des Backends 
+    <div id="starten-des-backends" class="anchor"></div>
     
     <span
         class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
         <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
-            style="text-decoration-line: none !important;" href="#starten-der-datenbank" aria-label="Anchor">#</a>
+            style="text-decoration-line: none !important;" href="#starten-des-backends" aria-label="Anchor">#</a>
     </span>        
     
-</h3>
+</h2>
+<ol>
+<li>
+<p>Navigieren Sie zum Backend-Verzeichnis:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> musicvoting/backend
+</span></span></code></pre></div></li>
+<li>
+<p>Quarkus starten:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">./mvnw quarkus:dev
+</span></span></code></pre></div></li>
+</ol>
 
 
 <h3 class="relative group">Starten der Anwendung 
@@ -898,18 +899,22 @@
     </span>        
     
 </h3>
-
-
-<h3 class="relative group">Troubleshooting 
-    <div id="troubleshooting" class="anchor"></div>
-    
-    <span
-        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
-        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
-            style="text-decoration-line: none !important;" href="#troubleshooting" aria-label="Anchor">#</a>
-    </span>        
-    
-</h3>
+<ol>
+<li>
+<p>Navigieren Sie zum Backend-Verzeichnis:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> musicvoting/frontend
+</span></span></code></pre></div></li>
+<li>
+<p>Installieren Sie die Abhängigkeiten:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">npm install
+</span></span></code></pre></div></li>
+<li>
+<p>Starten Sie die Anwendung:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ng serve --host 0.0.0.0 --port <span class="m">4200</span>
+</span></span></code></pre></div></li>
+</ol>
+<p>Startet den Angular-Entwicklungsserver auf Port 4200 und bindet ihn an alle Netzwerkschnittstellen (0.0.0.0), sodass die Anwendung nicht nur über localhost, sondern auch von anderen Geräten oder Containern im selben Netzwerk erreichbar ist.
+Der Befehl ist ausschließlich für Entwicklungszwecke gedacht, um die keine Probleme bei der redirect URI zu bekommen.</p>
 
           
           
@@ -1054,15 +1059,15 @@
         </span>
         <span>
           
-            <a class="flex text-right group ml-3" href="/docs/hugo/">
+            <a class="flex text-right group ml-3" href="/docs/developerinstructions/">
               <span class="flex flex-col">
                 <span
                   class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
-                  >Hugo</span
+                  >How To Develop</span
                 >
                 <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
                   
-                    <time datetime="2025-03-03T00:00:00&#43;00:00">3 March 2025</time>
+                    <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time>
                   
                 </span>
               </span>

@@ -26,8 +26,8 @@
   
   
   
-  <link type="text/css" rel="stylesheet" href="/css/main.bundle.min.d8dc22c40687442dcfcc648e6429544ad93131d728326a312fed4214315ba565a89372cf4cc163e1ed08095cb29b459ecb908f3a66777c6a9e61b1decd33612c.css"
-    integrity="sha512-2NwixAaHRC3PzGSOZClUStkxMdcoMmoxL&#43;1CFDFbpWWok3LPTMFj4e0ICVyym0Wey5CPOmZ3fGqeYbHezTNhLA==" />
+  <link type="text/css" rel="stylesheet" href="/css/main.bundle.min.661a4bd70a41625d0c5640e7a227f63d308eb176dd6c2807a7b83575ff0f678e71e3e8cf21f68f5cd36294c699f0d8d8648a630c4a322a139e4e946fdbc8e476.css"
+    integrity="sha512-ZhpL1wpBYl0MVkDnoif2PTCOsXbdbCgHp7g1df8PZ45x4&#43;jPIfaPXNNilMaZ8NjYZIpjDEoyKhOeTpRv28jkdg==" />
   
   
   <script type="text/javascript" src="/js/appearance.min.516a16745bea5a9bd011138d254cc0fd3973cd55ce6e15f3dec763e7c7c2c7448f8fe7b54cca811cb821b0c7e12cd161caace1dd794ac3d34d40937cbcc9ee12.js"
@@ -106,7 +106,7 @@
     "keywords": ["mom"],
     
     "mainEntityOfPage": "true",
-    "wordCount": "66"
+    "wordCount": "64"
   }]
   </script>
 
@@ -614,6 +614,8 @@
 
 
 
+  
+
 
 
 
@@ -631,7 +633,7 @@
 <div class="flex flex-row flex-wrap items-center">
   
   
-  <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time><span class="px-2 text-primary-500">&middot;</span><span>66 words</span><span class="px-2 text-primary-500">&middot;</span>
+  <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time><span class="px-2 text-primary-500">&middot;</span><span>64 words</span><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">1 min</span><span class="px-2 text-primary-500">&middot;</span>
 
 
   
@@ -809,6 +811,7 @@
     class="min-w-[220px] py-2 border-dotted ltr:-ml-5 ltr:border-l ltr:pl-5 rtl:-mr-5 rtl:border-r rtl:pr-5 dark:border-neutral-600">
     <nav id="TableOfContents">
   <ul>
+    <li><a href="#teilnehmer">Teilnehmer</a></li>
     <li><a href="#ort-und-zeit">Ort und Zeit</a></li>
     <li><a href="#besprochene-themen">Besprochene Themen</a></li>
     <li><a href="#vereinbarungen-und-entscheidungen">Vereinbarungen und Entscheidungen</a>
@@ -829,6 +832,7 @@
     class="py-2 border-dotted border-neutral-300 ltr:-ml-5 ltr:border-l ltr:pl-5 rtl:-mr-5 rtl:border-r rtl:pr-5 dark:border-neutral-600">
     <nav id="TableOfContents">
   <ul>
+    <li><a href="#teilnehmer">Teilnehmer</a></li>
     <li><a href="#ort-und-zeit">Ort und Zeit</a></li>
     <li><a href="#besprochene-themen">Besprochene Themen</a></li>
     <li><a href="#vereinbarungen-und-entscheidungen">Vereinbarungen und Entscheidungen</a>
@@ -917,10 +921,42 @@
 
 
         <div class="article-content max-w-prose mb-20">
-          <p>A. Anton (teilweise) |
-| B. Berta             |
-| C. Cäsar             |
-|                      |</p>
+          
+
+<h2 class="relative group">Teilnehmer 
+    <div id="teilnehmer" class="anchor"></div>
+    
+    <span
+        class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100">
+        <a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700"
+            style="text-decoration-line: none !important;" href="#teilnehmer" aria-label="Anchor">#</a>
+    </span>        
+    
+</h2>
+<table>
+  <thead>
+      <tr>
+          <th>anwesend</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Vorname Nachname</td>
+      </tr>
+      <tr>
+          <td>A. Anton (teilweise)</td>
+      </tr>
+      <tr>
+          <td>B. Berta</td>
+      </tr>
+      <tr>
+          <td>C. Cäsar</td>
+      </tr>
+      <tr>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
 
 
 <h2 class="relative group">Ort und Zeit 
@@ -1027,7 +1063,8 @@ showReadingTime: false
 showToc: false
 draft: false
 _build:
-  li
+  list: never
+--->
           
           
           
@@ -1159,6 +1196,65 @@ _build:
   <footer class="pt-8 max-w-prose print:hidden">
 
     
+  
+    
+    
+    
+    <div class="pt-8">
+      <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+      <div class="flex justify-between pt-3">
+        <span>
+          
+            <a class="flex group mr-3" href="/project/wireframes/wireframes/">
+              <span
+                class="mr-3 text-neutral-700 group-hover:text-primary-600 ltr:inline rtl:hidden dark:text-neutral dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+              <span
+                class="ml-3 text-neutral-700 group-hover:text-primary-600 ltr:hidden rtl:inline dark:text-neutral dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Wireframes</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time>
+                  
+                </span>
+              </span>
+            </a>
+          
+        </span>
+        <span>
+          
+            <a class="flex text-right group ml-3" href="/project/systemarchitektur/systemarchitektur/">
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Systemarchitektur</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="0001-01-01T00:00:00&#43;00:00">1 January 0001</time>
+                  
+                </span>
+              </span>
+              <span
+                class="ml-3 text-neutral-700 group-hover:text-primary-600 ltr:inline rtl:hidden dark:text-neutral dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span
+                class="mr-3 text-neutral-700 group-hover:text-primary-600 ltr:hidden rtl:inline dark:text-neutral dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+            </a>
+          
+        </span>
+      </div>
+    </div>
   
 
 

@@ -1,6 +1,7 @@
 package at.htl.endpoints;
 
 import at.htl.service.SpotifyPlayer;
+import at.htl.service.TokenStore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -14,8 +15,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Path("/spotify")
 @Produces(MediaType.APPLICATION_JSON)
@@ -24,7 +26,9 @@ public class SpotifyTokenResource {
     @Inject
     SpotifyPlayer spotifyPlayer;
 
-    private String token;
+    @Inject
+    TokenStore tokenStore;
+
 
     @ConfigProperty(name = "spotify.client.id")
     String clientId;
@@ -37,12 +41,10 @@ public class SpotifyTokenResource {
 
     @GET
     @Path("/token")
-    public Map<String, String> getToken() {
-        Map<String, String> map = new HashMap<>();
-        map.put("token", token);
-        return map;
-    }
+    public String getToken() {
 
+        return this.tokenStore.getToken();
+    }
 
 
     @GET
@@ -81,10 +83,9 @@ public class SpotifyTokenResource {
 
             Map<String, String> tokenMap = new ObjectMapper().readValue(response.body(), Map.class);
 
-            this.token = tokenMap.get("access_token");
-            spotifyPlayer.setToken(this.token);
+            this.tokenStore.setToken(tokenMap.get("access_token"));
 
-            return Response.seeOther(URI.create("http://localhost:4200/host/?token=" + this.token)).build();
+            return Response.seeOther(URI.create("http://localhost:4200/host/?token=" + this.tokenStore.getToken())).build();
         } catch (Exception e) {
             return Response.serverError()
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
