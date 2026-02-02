@@ -36,7 +36,4 @@ export class Guest implements OnInit {
     });
   }
 
-  play(uri: string) {
-    this.spotifyService.playTrack(uri);
-  }
 }
