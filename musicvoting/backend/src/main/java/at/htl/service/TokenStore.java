@@ -14,10 +14,6 @@ public class TokenStore {
         return token.get();
     }
 
-    public void setToken(String newToken) {
-        token.set(newToken);
-    }
-
     public void setToken(AtomicReference<String> token) {
         this.token = token;
     }
