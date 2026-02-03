@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+
+</nav>
+
+<!-- Songs -->
+<div>
+  <div class="current-song">
+
+  </div>
+    @if (tracks.length > 0) {
+      <div class="queue">
+        @for (track of tracks; track track.id || track.uri) {
+          <div class="track-card">
+            @if (track.album?.images?.length) {
+              <img [src]="track.album.images.at(-1)?.url" alt="Cover">
+            }
+            <div class="track-info">
+              <span class="track-name">{{ track.name }}</span>
+              <span class="artist-name">{{ track.artists[0]?.name }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+</div>
+</body>
+</html>
