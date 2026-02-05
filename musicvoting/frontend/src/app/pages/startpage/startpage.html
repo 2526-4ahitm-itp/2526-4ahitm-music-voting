@@ -6,31 +6,90 @@
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar">
+<div class="layout">
 
-</nav>
+  <div class="left">
+    <!-- Navbar -->
+    <nav class="navbar">
+    <button class="burger" (click)="toggleMenu()">☰</button>
+    </nav>
 
-<!-- Songs -->
-<div>
-  <div class="current-song">
+    <!-- SIDE MENU -->
+    <div class="side-menu" [class.open]="menuOpen">
+      <ul>
+        <li><a routerLink="/startpage" (click)="toggleMenu()">Loren</a></li>
+        <li><a routerLink="/queue" (click)="toggleMenu()">Lorem</a></li>
+        <li><a routerLink="/vote" (click)="toggleMenu()">Lorem</a></li>
+      </ul>
+    </div>
+
+    <div class="overlay" *ngIf="menuOpen" (click)="toggleMenu()"></div>
+
+
+
+
+    <!-- Songs -->
+    <section class="current-song">
+      <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Cover">
+      <div class="song-info">
+        <h1>Song Titel</h1>
+        <p>Künstler</p>
+
+        <div class="progress">
+          <span>0:00</span>
+          <span>2:46</span>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <section class="queue">
+      <h2>Warteschlange</h2>
+
+      <div class="queue-grid">
+        <div class="track">
+          <img src="https://via.placeholder.com/60">
+          <div>
+            <strong>Songtitel</strong>
+            <div>Künstler</div>
+          </div>
+        </div>
+
+        <div class="track">
+          <img src="https://via.placeholder.com/60">
+          <div>
+            <strong>Songtitel</strong>
+            <div>Künstler</div>
+          </div>
+        </div>
+
+        <div class="track">
+          <img src="https://via.placeholder.com/60">
+          <div>
+            <strong>Songtitel</strong>
+            <div>Künstler</div>
+          </div>
+        </div>
+
+        <div class="track">
+          <img src="https://via.placeholder.com/60">
+          <div>
+            <strong>Songtitel</strong>
+            <div>Künstler</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
   </div>
-    @if (tracks.length > 0) {
-      <div class="queue">
-        @for (track of tracks; track track.id || track.uri) {
-          <div class="track-card">
-            @if (track.album?.images?.length) {
-              <img [src]="track.album.images.at(-1)?.url" alt="Cover">
-            }
-            <div class="track-info">
-              <span class="track-name">{{ track.name }}</span>
-              <span class="artist-name">{{ track.artists[0]?.name }}</span>
-            </div>
-          </div>
-        }
+  <div class="right">
+      <div class="qr-code">
+        <img class="cover" src="https://placehold.co/400" height="250px" width="250px" alt="Cover">
+        <p class="qr-code-text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor.</p>
       </div>
-    }
+      <span class="logo">MusicVoting</span>
+  </div>
 </div>
 </body>
 </html>

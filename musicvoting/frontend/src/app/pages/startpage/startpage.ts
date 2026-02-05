@@ -13,6 +13,7 @@ import {TrackService} from '../../services/spotify-tracks';
 
 export class Startpage implements OnInit{
   tracks: any[] = [];
+  menuOpen = false;
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
@@ -21,6 +22,10 @@ export class Startpage implements OnInit{
 
   async ngOnInit() {
     await this.spotifyService.initPlayer();
+  }
+
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
   }
 }
 
