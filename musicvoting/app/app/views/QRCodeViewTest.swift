@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct QRCodeView: View {
+struct QRCodeViewTest: View {
     @State private var qrCodeImage: UIImage?
     @State private var textInput = "https://www.apple.com"
 
@@ -16,37 +16,15 @@ struct QRCodeView: View {
             Text("QR-Code Generator")
                 .font(.headline)
 
-            // QR-Code Bild oder Platzhalter
+            // Anzeige des QR-Codes
             if let image = qrCodeImage {
                 Image(uiImage: image)
-                    .interpolation(.none)
+                    .interpolation(.none) // Wichtig: Damit das Bild scharf bleibt
                     .resizable()
                     .frame(width: 300, height: 300)
             } else {
                 Rectangle()
-                    .fill(
-                    
-                        MeshGradient(
-                                    width: 3,
-                                    height: 3,
-                                    points: [
-                                        [0, 0], [0.5, 0], [1, 0],       // Zeile 1
-                                        [0, 0.5], [0.5, 0.5], [1, 0.5], // Zeile 2
-                                        [0, 1], [0.5, 1], [1, 1]        // Zeile 3
-                                    ],
-                                    colors: [
-                                        .red, .orange, .yellow,
-                                        .blue, .purple, .pink,
-                                        .green, .mint, .cyan
-                                    ]
-                        ).opacity(0.2)
-                    
-                    
-                    
-                    
-                    
-                    
-                    )
+                    .fill(Color.secondary.opacity(0.2))
                     .frame(width: 300, height: 300)
                     .overlay(Text("Es wurde noch kein QR-Code generiert.").multilineTextAlignment(.center))
             }
@@ -87,7 +65,6 @@ struct QRCodeView: View {
         .padding()
     }
 }
-
 #Preview {
-    QRCodeView()
+    QRCodeViewTest()
 }
