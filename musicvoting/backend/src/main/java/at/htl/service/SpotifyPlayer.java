@@ -69,26 +69,18 @@ public class SpotifyPlayer {
      */
     public Response play(String deviceId, String uri) {
         try {
-            String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
+            // Build URL: only append device_id if it's actually there
+            String url = "https://api.spotify.com/v1/me/player/play?device_id=";
+            if (deviceId != null && !deviceId.isEmpty()) {
+                url += "?device_id=" + deviceId;
+            }
 
-            // Spotify erwartet ein JSON Objekt mit dem Key "uris" als Array
             Map<String, String[]> bodyMap = Map.of("uris", new String[]{uri});
             String body = mapper.writeValueAsString(bodyMap);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", authHeader())
-                    .header("Content-Type", "application/json")
-                    .PUT(HttpRequest.BodyPublishers.ofString(body))
-                    .build();
-
-            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            return Response.status(res.statusCode()).build();
+            return sendPut(url, body);
         } catch (Exception e) {
-            return Response.serverError()
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .build();
+            return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         }
     }
 
@@ -110,12 +102,21 @@ public class SpotifyPlayer {
      * Fügt einen Track zur Warteschlange hinzu.
      */
     public Response queue(String deviceId, String uri) {
-        String url = "https://api.spotify.com/v1/me/player/queue?device_id=" + deviceId + "&uri=" + uri;
+        String url = "https://api.spotify.com/v1/me/player/queue?uri=" + URLEncoder.encode(uri, StandardCharsets.UTF_8);
+
+        if (deviceId != null && !deviceId.isEmpty()) {
+            url += "&device_id=" + deviceId;
+        }
+
         return sendPost(url);
     }
 
-    // --- Private Hilfsmethoden für HTTP Requests ---
+    public Response getQueue() {
+        String url = "https://api.spotify.com/v1/me/player/queue";
+        return sendGet(url);
+    }
 
+    // --- Private Hilfsmethoden für HTTP Requests ---
     private Response sendGet(String url) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -136,14 +137,15 @@ public class SpotifyPlayer {
 
     private Response sendPut(String url, String body) {
         try {
-            HttpRequest.Builder builder = HttpRequest.newBuilder()
+            HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Authorization", authHeader())
                     .header("Content-Type", "application/json")
-                    .PUT(body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(body));
+                    .PUT(body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(body))
+                    .build();
 
-            HttpResponse<String> res = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-            return Response.status(res.statusCode()).build();
+            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return Response.status(res.statusCode()).entity(res.body()).build();
         } catch (Exception e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
@@ -157,8 +159,12 @@ public class SpotifyPlayer {
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
 
-            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return Response.status(res.statusCode()).build();
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            return Response.ok("{\"status\":\"queued\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+
         } catch (Exception e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
