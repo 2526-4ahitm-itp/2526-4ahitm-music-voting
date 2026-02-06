@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {SpotifyWebPlayerService} from '../../services/spotify-player';
 import {TrackService } from '../../services/spotify-tracks';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-player',
@@ -9,6 +10,7 @@ import {TrackService } from '../../services/spotify-tracks';
   imports: [CommonModule],
   templateUrl: './host.html',
   styleUrl:'./host.css'
+
 })
 
 
@@ -33,18 +35,33 @@ export class Host implements OnInit {
   }
 
 
-  search() {
+  //search and add to the queue
+  async search() {
     console.log("Suche wird gestartet...");
-    this.trackApi.searchTracks("Taylor Swift").subscribe({
-      next: (res) => {
-        this.tracks = res.tracks.items;
-      },
-      error: (err) => {
-        console.error("Fehler bei der Suche:", err);
-      }
-    });
 
+    try {
+      const res: any = await lastValueFrom(this.trackApi.searchTracks("Taylor Swift"));
+      this.tracks = res.tracks.items;
+
+      for (const track of this.tracks) {
+        console.log("Track gefunden: ", track.name);
+
+        try {
+          await lastValueFrom(this.spotifyService.addToQueue(track.uri));
+          console.log(`${track.name} wurde zur Queue hinzugefügt`);
+        } catch (err) {
+          console.error("Queue Fehler:", err);
+        }
+      }
+
+      const queue = await lastValueFrom(this.spotifyService.getQueue());
+      console.log("Echte Queue Daten:", queue);
+
+    } catch (err) {
+      console.error("Fehler bei der Suche oder Queue:", err);
+    }
   }
+
 
   play(uri: string) {
     this.spotifyService.playTrack(uri);

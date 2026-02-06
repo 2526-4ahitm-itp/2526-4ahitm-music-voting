@@ -37,4 +37,25 @@ public class TrackRessource {
         }
         return spotify.play(deviceId, body.get("uri"));
     }
+
+    @POST
+    @Path("/queue")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response queue(@QueryParam("deviceId") String deviceId, Map<String, String> body)
+ {
+        if (deviceId == null || body == null || !body.containsKey("uri")) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"Missing deviceId or uri\"}").build();
+        }
+        return spotify.queue(deviceId, body.get("uri"));
+    }
+
+    @GET
+    @Path("/queue")
+    public Response getQueue() {
+        return spotify.getQueue();
+    }
+
+
+
 }

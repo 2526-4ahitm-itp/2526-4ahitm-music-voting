@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import {Observable} from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class SpotifyWebPlayerService {
@@ -11,7 +12,6 @@ export class SpotifyWebPlayerService {
   constructor(private http: HttpClient) {}
 
   async initPlayer() {
-    // Token aus URL holen oder /token abfragen
     if (!this.token) {
       const urlParams = new URLSearchParams(window.location.search);
       this.token = urlParams.get('token') || '';
@@ -69,6 +69,7 @@ export class SpotifyWebPlayerService {
       return;
     }
 
+    console.log(this.deviceId)
 
     this.http.put(`/api/track/play?deviceId=${this.deviceId}`, { uri: uri })
       .subscribe(() => console.log("Playing..."));
@@ -80,6 +81,19 @@ export class SpotifyWebPlayerService {
 
   setToken(token: string) {
     this.token = token;
+  }
+
+  addToQueue(uri: string): Observable<any> {
+    const params = new HttpParams().set('deviceId', this.deviceId);
+    return this.http.post<any>(`/api/track/queue`, { uri }, { params });
+  }
+
+
+
+  getQueue(): Observable<any> {
+    var response = this.http.get<any>(`/api/track/queue`);
+
+    return response;
   }
 
 

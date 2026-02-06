@@ -50,7 +50,7 @@ public class SpotifyTokenResource {
     @GET
     @Path("/login")
     public Response login() {
-        String scope = "streaming user-read-email user-read-private user-modify-playback-state";
+        String scope = "streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state";
         String spotifyUri = "https://accounts.spotify.com/authorize" +
                 "?response_type=code" +
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
