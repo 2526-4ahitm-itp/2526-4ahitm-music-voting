@@ -120,7 +120,8 @@ hr{
 .queue-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-auto-flow: row; /* WICHTIG */
+  gap: 16px;
 }
 
 .track {
@@ -142,11 +143,11 @@ hr{
 
 .song-title{
   margin-top: .2rem;
-  font-size: 20px;
+  font-size: 15px;
 }
 
 .song-artist{
-  font-size: 15px;
+  font-size: 12px;
 }
 
 /* RIGHT SIDE */

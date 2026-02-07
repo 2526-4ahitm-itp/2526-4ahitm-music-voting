@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>Startpage</title>
 </head>
 <body>
 
@@ -25,8 +25,7 @@
 
     <div class="overlay" *ngIf="menuOpen" (click)="toggleMenu()"></div>
 
-
-    <!-- Songs -->
+    <!-- Current Song -->
     <section class="current-song">
       <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Cover">
       <div class="song-info">
@@ -45,26 +44,35 @@
     <section class="queue">
       <h2>Warteschlange</h2>
 
-      <div class="queue-grid">
-        <div class="track">
-          <img src="https://placehold.co/400"  height="60px" width="60px" alt="Cover">
+      <div *ngIf="tracks.length === 0">Keine Songs geladen!</div>
+
+      <div *ngIf="tracks.length > 0" class="queue-grid">
+        <div *ngFor="let track of tracks; trackBy: trackById" class="track">
+
+          <img *ngIf="track.album?.images?.length"
+               [src]="track.album.images[track.album.images.length - 1].url"
+               alt="Cover">
+
           <div class="track-info">
-            <div class="song-title">Songtitel</div>
-            <div class="song-artist">Künstler</div>
+            <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
+            <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
           </div>
         </div>
       </div>
     </section>
 
   </div>
+  <!-- RIGHT PANEL -->
   <div class="right">
     <div class="qr-code">
       <img class="cover" src="https://placehold.co/400" height="250px" width="250px" alt="Cover">
-      <p class="qr-code-text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
-        tempor.</p>
+      <p class="qr-code-text">
+        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor.
+      </p>
     </div>
     <span class="logo">MusicVoting</span>
   </div>
+
 </div>
 </body>
 </html>
