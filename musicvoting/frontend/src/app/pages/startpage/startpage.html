@@ -11,7 +11,7 @@
   <div class="left">
     <!-- Navbar -->
     <nav class="navbar">
-    <button class="burger" (click)="toggleMenu()">☰</button>
+      <button class="burger" (click)="toggleMenu()">☰</button>
     </nav>
 
     <!-- SIDE MENU -->
@@ -24,8 +24,6 @@
     </div>
 
     <div class="overlay" *ngIf="menuOpen" (click)="toggleMenu()"></div>
-
-
 
 
     <!-- Songs -->
@@ -49,34 +47,10 @@
 
       <div class="queue-grid">
         <div class="track">
-          <img src="https://via.placeholder.com/60">
-          <div>
-            <strong>Songtitel</strong>
-            <div>Künstler</div>
-          </div>
-        </div>
-
-        <div class="track">
-          <img src="https://via.placeholder.com/60">
-          <div>
-            <strong>Songtitel</strong>
-            <div>Künstler</div>
-          </div>
-        </div>
-
-        <div class="track">
-          <img src="https://via.placeholder.com/60">
-          <div>
-            <strong>Songtitel</strong>
-            <div>Künstler</div>
-          </div>
-        </div>
-
-        <div class="track">
-          <img src="https://via.placeholder.com/60">
-          <div>
-            <strong>Songtitel</strong>
-            <div>Künstler</div>
+          <img src="https://placehold.co/400"  height="60px" width="60px" alt="Cover">
+          <div class="track-info">
+            <div class="song-title">Songtitel</div>
+            <div class="song-artist">Künstler</div>
           </div>
         </div>
       </div>
@@ -84,11 +58,12 @@
 
   </div>
   <div class="right">
-      <div class="qr-code">
-        <img class="cover" src="https://placehold.co/400" height="250px" width="250px" alt="Cover">
-        <p class="qr-code-text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor.</p>
-      </div>
-      <span class="logo">MusicVoting</span>
+    <div class="qr-code">
+      <img class="cover" src="https://placehold.co/400" height="250px" width="250px" alt="Cover">
+      <p class="qr-code-text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
+        tempor.</p>
+    </div>
+    <span class="logo">MusicVoting</span>
   </div>
 </div>
 </body>
