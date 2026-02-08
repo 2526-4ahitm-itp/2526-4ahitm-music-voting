@@ -11,10 +11,9 @@ struct VotingView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-
-                Image(systemName: "heart.fill")
-                Text("Voten")
-
+                Text("Voten Sie für Ihre Libelingssongs").font(.largeTitle).padding(.leading, 20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
             }
             .navigationTitle("Music Voting")
             .navigationBarTitleDisplayMode(.inline)

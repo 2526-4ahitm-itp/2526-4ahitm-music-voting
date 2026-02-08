@@ -9,7 +9,7 @@ import SwiftUI
 
 struct QRCodeView: View {
     @State private var qrCodeImage: UIImage?
-    @State private var textInput = "https://www.apple.com"
+    @State private var textInput = "https://2526-4ahitm-itp.github.io/2526-4ahitm-music-voting/"
 
     var body: some View {
         VStack(spacing: 20) {
@@ -26,20 +26,12 @@ struct QRCodeView: View {
                 Rectangle()
                     .fill(
                     
-                        MeshGradient(
-                                    width: 3,
-                                    height: 3,
-                                    points: [
-                                        [0, 0], [0.5, 0], [1, 0],       // Zeile 1
-                                        [0, 0.5], [0.5, 0.5], [1, 0.5], // Zeile 2
-                                        [0, 1], [0.5, 1], [1, 1]        // Zeile 3
-                                    ],
-                                    colors: [
-                                        .red, .orange, .yellow,
-                                        .blue, .purple, .pink,
-                                        .green, .mint, .cyan
-                                    ]
-                        ).opacity(0.2)
+                        RadialGradient(
+                                            gradient: Gradient(colors: [Color("accent"), Color("secondary"), Color("primary")]),
+                                            center: .center,
+                                            startRadius: 30,
+                                            endRadius: 300
+                        ).opacity(0.7)
                     
                     
                     
