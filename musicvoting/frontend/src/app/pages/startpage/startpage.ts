@@ -20,12 +20,17 @@ export class Startpage implements OnInit {
 
   async ngOnInit() {
     await this.spotifyService.initPlayer();
+    this.loadQueue();
+  }
 
-    this.spotifyService.getQueue().subscribe((queueData: any) => {
+  loadQueue() {
+    this.spotifyService.getQueue().subscribe(queueData => {
       this.ngZone.run(() => {
         if (Array.isArray(queueData.queue)) {
-          // Duplikate anhand der track.id entfernen
-          const uniqueTracksMap = new Map(queueData.queue.map((t: any) => [t.id, t]));
+          // Duplikate entfernen
+          const uniqueTracksMap = new Map(
+            queueData.queue.map((t: any) => [t.id, t])
+          );
           this.tracks = Array.from(uniqueTracksMap.values()).slice(0, 9);
         } else {
           this.tracks = [];
