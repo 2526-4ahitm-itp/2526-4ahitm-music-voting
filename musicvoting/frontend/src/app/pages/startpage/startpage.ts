@@ -27,7 +27,6 @@ export class Startpage implements OnInit {
     this.spotifyService.getQueue().subscribe(queueData => {
       this.ngZone.run(() => {
         if (Array.isArray(queueData.queue)) {
-          // Duplikate entfernen
           const uniqueTracksMap = new Map(
             queueData.queue.map((t: any) => [t.id, t])
           );
