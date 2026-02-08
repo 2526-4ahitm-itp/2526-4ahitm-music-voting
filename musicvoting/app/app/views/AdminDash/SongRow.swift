@@ -68,3 +68,4 @@ struct SongRow: View {
 #Preview {
     SongRow(song: .init(title: "Test", artist: "Test", imageUrl: "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"))
 }
+	
