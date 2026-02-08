@@ -114,13 +114,12 @@ hr{
   padding-top: 1rem;
   padding-left: 3rem;
   padding-right: 3rem;
-
 }
 
 .queue-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-auto-flow: row; /* WICHTIG */
+  grid-auto-flow: row;
   gap: 16px;
 }
 
@@ -150,6 +149,34 @@ hr{
   font-size: 12px;
 }
 
+.cover-wrapper {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  overflow: hidden;
+}
+
+.cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.queue-number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 28px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.85);
+
+  background: rgba(0,0,0,0.4);
+}
+
+
 /* RIGHT SIDE */
 
 .qr-code{
@@ -170,3 +197,5 @@ span.logo {
   left: 87%;
   transform: translateX(-50%);
 }
+
+
