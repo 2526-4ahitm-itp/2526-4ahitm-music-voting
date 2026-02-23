@@ -20,7 +20,6 @@ export class Guest implements OnInit {
   ) {}
 
   async ngOnInit() {
-    await this.spotifyService.initPlayer();
   }
 
   async search() {

@@ -1,70 +1,84 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {SpotifyWebPlayerService} from '../../services/spotify-player';
-import {TrackService } from '../../services/spotify-tracks';
+import { SpotifyWebPlayerService } from '../../services/spotify-player';
+import { TrackService } from '../../services/spotify-tracks';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
-  selector: 'app-player',
+  selector: 'app-host',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './host.html',
-  styleUrl:'./host.css'
-
+  styleUrl: './host.css'
 })
-
-
 export class Host implements OnInit {
   tracks: any[] = [];
+  isSearching = false;
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
-    private trackApi: TrackService
+    private trackApi: TrackService,
+    private cdr: ChangeDetectorRef // Ermöglicht das manuelle Aktualisieren der Ansicht
   ) {}
 
   async ngOnInit() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-
-    if (token) {
-      this.spotifyService.setToken(token);
-      await this.spotifyService.initPlayer();
-    } else {
-      console.log("Bitte zuerst Spotify Login durchführen.");
-    }
+    // Initialisierung falls nötig
   }
 
+  /**
+   * Sucht nach Tracks, zeigt sie sofort an und fügt sie dann der Queue hinzu.
+   */
+  async search(query: string = "Taylor Swift") {
+    // Sicherstellen, dass wir einen validen Suchstring haben
+    const searchTerm = typeof query === 'string' ? query : "Taylor Swift";
 
-  //search and add to the queue
-  async search() {
-    console.log("Suche wird gestartet...");
+    this.isSearching = true;
+    this.tracks = [];
 
     try {
-      const res: any = await lastValueFrom(this.trackApi.searchTracks("Taylor Swift"));
-      this.tracks = res.tracks.items;
+      console.log(`Suche läuft für: ${searchTerm}`);
+      const res: any = await lastValueFrom(this.trackApi.searchTracks(searchTerm));
 
-      for (const track of this.tracks) {
-        console.log("Track gefunden: ", track.name);
+      if (res && res.tracks && res.tracks.items) {
+        // 1. Daten zuweisen
+        this.tracks = res.tracks.items;
 
-        try {
-          await lastValueFrom(this.spotifyService.addToQueue(track.uri));
-          console.log(`${track.name} wurde zur Queue hinzugefügt`);
-        } catch (err) {
-          console.error("Queue Fehler:", err);
+        // 2. UI-Update erzwingen, damit die Liste sofort sichtbar wird
+        this.cdr.detectChanges();
+
+        console.log(`${this.tracks.length} Tracks gefunden.`);
+
+        // 3. Im Hintergrund zur Queue hinzufügen
+        for (const track of this.tracks) {
+          try {
+            await lastValueFrom(this.spotifyService.addToQueue(track.uri));
+            console.log(`Hinzugefügt: ${track.name}`);
+          } catch (queueErr) {
+            console.error(`Fehler beim Hinzufügen von ${track.name}:`, queueErr);
+          }
         }
+      } else {
+        console.warn("Keine Tracks gefunden.");
       }
-
-      const queue = await lastValueFrom(this.spotifyService.getQueue());
-      console.log("Echte Queue Daten:", queue);
-
     } catch (err) {
-      console.error("Fehler bei der Suche oder Queue:", err);
+      console.error("Allgemeiner Fehler bei der Suche:", err);
+    } finally {
+      this.isSearching = false;
+      // Finales Update (z.B. um den Lade-Button-Status zu ändern)
+      this.cdr.detectChanges();
     }
   }
 
-
-  play(uri: string) {
-    this.spotifyService.playTrack(uri);
+  /**
+   * Manueller Add für einzelne Tracks
+   */
+  async addToQueue(uri: string) {
+    try {
+      await lastValueFrom(this.spotifyService.addToQueue(uri));
+      console.log("Erfolgreich hinzugefügt");
+    } catch (err) {
+      console.error("Fehler beim manuellen Hinzufügen:", err);
+    }
   }
 
   loginSpotify() {

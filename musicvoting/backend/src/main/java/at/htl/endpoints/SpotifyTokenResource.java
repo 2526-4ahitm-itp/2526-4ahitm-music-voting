@@ -46,6 +46,34 @@ public class SpotifyTokenResource {
         return this.tokenStore.getToken();
     }
 
+    @GET
+    @Path("/deviceId")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getDeviceId() {
+        String deviceId = this.tokenStore.getDeviceId();
+        if (deviceId == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("")
+                    .build();
+        }
+        return Response.ok(deviceId).build();
+    }
+
+
+    @PUT
+    @Path("/deviceId")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public Response setDeviceId(String deviceId) {
+        if (deviceId == null || deviceId.isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"Device ID darf nicht leer sein\"}")
+                    .build();
+        }
+
+        this.tokenStore.setDeviceId(deviceId);
+        return Response.ok("{\"status\":\"Device ID gesetzt\"}").build();
+    }
+
 
     @GET
     @Path("/login")

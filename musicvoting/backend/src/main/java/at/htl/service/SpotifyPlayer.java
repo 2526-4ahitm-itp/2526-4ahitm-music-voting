@@ -21,57 +21,40 @@ public class SpotifyPlayer {
     @Inject
     SpotifyTokenResource spotifyTokenResource;
 
+    @Inject
+    TokenStore tokenStore;
+
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
     private String authHeader() {
-        return "Bearer " + spotifyTokenResource.getToken();
+        return "Bearer " + tokenStore.getToken();
     }
 
-    /**
-     * Sucht nach Tracks (z.B. Taylor Swift) und limitiert das Ergebnis auf 10.
-     */
+    private String getStoredDeviceId() {
+        return tokenStore.getDeviceId();
+    }
+
     public Response searchTracks(String query) {
         try {
             String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
             String url = "https://api.spotify.com/v1/search?q=" + encoded + "&type=track&limit=10";
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", authHeader())
-                    .GET()
-                    .build();
-
-            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            return Response.status(res.statusCode())
-                    .entity(res.body())
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
-
+            return sendGet(url);
         } catch (Exception e) {
-            return Response.serverError()
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         }
     }
 
-    /**
-     * Holt Details zu einem spezifischen Track.
-     */
     public Response getTrack(String id) {
         return sendGet("https://api.spotify.com/v1/tracks/" + id);
     }
 
-    /**
-     * Startet das Abspielen eines Tracks auf einem bestimmten Gerät.
-     */
-    public Response play(String deviceId, String uri) {
+    public Response play(String uri) {
         try {
-            // Build URL: only append device_id if it's actually there
-            String url = "https://api.spotify.com/v1/me/player/play?device_id=";
-            if (deviceId != null && !deviceId.isEmpty()) {
+            String deviceId = getStoredDeviceId();
+            String url = "https://api.spotify.com/v1/me/player/play";
+            if (deviceId != null && !deviceId.isBlank()) {
                 url += "?device_id=" + deviceId;
             }
 
@@ -84,27 +67,29 @@ public class SpotifyPlayer {
         }
     }
 
-    /**
-     * Pausiert die Wiedergabe auf dem Gerät.
-     */
-    public Response pause(String deviceId) {
-        return sendPut("https://api.spotify.com/v1/me/player/pause?device_id=" + deviceId, null);
+    public Response pause() {
+        String deviceId = getStoredDeviceId();
+        String url = "https://api.spotify.com/v1/me/player/pause";
+        if (deviceId != null && !deviceId.isBlank()) {
+            url += "?device_id=" + deviceId;
+        }
+        return sendPut(url, null);
     }
 
-    /**
-     * Springt zum nächsten Track.
-     */
-    public Response next(String deviceId) {
-        return sendPost("https://api.spotify.com/v1/me/player/next?device_id=" + deviceId);
+    public Response next() {
+        String deviceId = getStoredDeviceId();
+        String url = "https://api.spotify.com/v1/me/player/next";
+        if (deviceId != null && !deviceId.isBlank()) {
+            url += "?device_id=" + deviceId;
+        }
+        return sendPost(url);
     }
 
-    /**
-     * Fügt einen Track zur Warteschlange hinzu.
-     */
-    public Response queue(String deviceId, String uri) {
+    public Response queue(String uri) {
+        String deviceId = getStoredDeviceId();
         String url = "https://api.spotify.com/v1/me/player/queue?uri=" + URLEncoder.encode(uri, StandardCharsets.UTF_8);
 
-        if (deviceId != null && !deviceId.isEmpty()) {
+        if (deviceId != null && !deviceId.isBlank()) {
             url += "&device_id=" + deviceId;
         }
 
@@ -112,11 +97,10 @@ public class SpotifyPlayer {
     }
 
     public Response getQueue() {
-        String url = "https://api.spotify.com/v1/me/player/queue";
-        return sendGet(url);
+        return sendGet("https://api.spotify.com/v1/me/player/queue");
     }
 
-    // --- Private Hilfsmethoden für HTTP Requests ---
+    // --- Hilfsmethoden ---
     private Response sendGet(String url) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -126,10 +110,7 @@ public class SpotifyPlayer {
                     .build();
 
             HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return Response.status(res.statusCode())
-                    .entity(res.body())
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            return Response.status(res.statusCode()).entity(res.body()).type(MediaType.APPLICATION_JSON).build();
         } catch (Exception e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
@@ -159,15 +140,10 @@ public class SpotifyPlayer {
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
 
-            client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            return Response.ok("{\"status\":\"queued\"}")
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
-
+            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return Response.status(res.statusCode()).entity("{\"status\":\"success\"}").type(MediaType.APPLICATION_JSON).build();
         } catch (Exception e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
-
 }
