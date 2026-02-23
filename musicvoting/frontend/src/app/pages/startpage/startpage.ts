@@ -18,9 +18,16 @@ export class Startpage implements OnInit {
     private ngZone: NgZone
   ) {}
 
+
   async ngOnInit() {
+    // 1. Player initialisieren (erzeugt die DeviceID im Backend)
     await this.spotifyService.initPlayer();
+
+    // 2. Queue laden
     this.loadQueue();
+
+    // 3. Optional: Polling oder WebSocket, um die Queue aktuell zu halten
+    setInterval(() => this.loadQueue(), 5000);
   }
 
   loadQueue() {
@@ -30,7 +37,7 @@ export class Startpage implements OnInit {
           const uniqueTracksMap = new Map(
             queueData.queue.map((t: any) => [t.id, t])
           );
-          this.tracks = Array.from(uniqueTracksMap.values()).slice(0, 9);
+          this.tracks = Array.from(uniqueTracksMap.values());
         } else {
           this.tracks = [];
         }
