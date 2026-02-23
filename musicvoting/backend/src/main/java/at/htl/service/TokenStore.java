@@ -9,6 +9,7 @@ public class TokenStore {
 
     private AtomicReference<String> token = new AtomicReference<>("");
     private AtomicReference<String> refreshToken = new AtomicReference<>("");
+    private AtomicReference<String> deviceId = new AtomicReference<>("");
 
     public String getToken() {
         return token.get();
@@ -17,6 +18,16 @@ public class TokenStore {
     public void setToken(String newToken) {
         token.set(newToken);
     }
+
+    public String getDeviceId() {
+        return deviceId.get();
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId.set(deviceId);
+    }
+
+
 
 
     public AtomicReference<String> getRefreshToken() {
