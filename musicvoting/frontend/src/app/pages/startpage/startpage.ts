@@ -1,6 +1,8 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
+import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-startpage',
@@ -15,35 +17,41 @@ export class Startpage implements OnInit {
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private http: HttpClient
   ) {}
 
-
   async ngOnInit() {
-    // 1. Player initialisieren (erzeugt die DeviceID im Backend)
+    // Player initialisieren (DeviceID etc.)
     await this.spotifyService.initPlayer();
 
-    // 2. Queue laden
-    this.loadQueue();
+    // Aktuelle Playlist laden
+    this.loadPlaylist();
 
-    // 3. Optional: Polling oder WebSocket, um die Queue aktuell zu halten
-    setInterval(() => this.loadQueue(), 5000);
+    // Optional: Polling alle 5s, um die Playlist aktuell zu halten
+    setInterval(() => this.loadPlaylist(), 5000);
   }
 
-  loadQueue() {
-    this.spotifyService.getQueue().subscribe(queueData => {
+  /**
+   * Aktuelle „Musicvoting party“ Playlist laden
+   */
+  async loadPlaylist() {
+    try {
+      const res: any = await lastValueFrom(this.spotifyService.getQueue());
+
       this.ngZone.run(() => {
-        if (Array.isArray(queueData.queue)) {
-          const uniqueTracksMap = new Map(
-            queueData.queue.map((t: any) => [t.id, t])
-          );
-          this.tracks = Array.from(uniqueTracksMap.values());
+        // Res hat das Format { queue: [...] }
+        if (Array.isArray(res.queue)) {
+          this.tracks = res.queue;
+          console.log('Tracks geladen:', this.tracks);
         } else {
           this.tracks = [];
         }
-        console.log('Tracks geladen (einzigartig):', this.tracks);
       });
-    });
+    } catch (err) {
+      console.error('Fehler beim Laden der Playlist:', err);
+      this.tracks = [];
+    }
   }
 
   trackById(index: number, track: any) {
@@ -53,4 +61,5 @@ export class Startpage implements OnInit {
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
   }
+
 }

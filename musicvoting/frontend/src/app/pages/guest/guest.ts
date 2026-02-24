@@ -1,56 +1,77 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { lastValueFrom } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-guest',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './guest.html',
-  styleUrl: './guest.css',
+  styleUrls: ['./guest.css'],
 })
 export class Guest implements OnInit {
   tracks: any[] = [];
+  searchQuery: string = '';
+  isSearching = false;
+  addingTrackId: string | null = null;
 
   constructor(
+    private trackApi: TrackService,
     private spotifyService: SpotifyWebPlayerService,
-    private trackApi: TrackService
+    private cdr: ChangeDetectorRef
   ) {}
 
-  async ngOnInit() {
-  }
+  ngOnInit(): void {}
 
-  async search() {
-    const query = (document.getElementById("search-input") as HTMLInputElement).value;
-    if (!query) return;
+  /** Suche nach Tracks */
+  async search(query?: string) {
+    const searchTerm = query || this.searchQuery?.trim();
+    if (!searchTerm) return;
 
-    console.log("Suche wird gestartet (Guest über Host)...");
+    this.isSearching = true;
+    this.tracks = [];
+    this.cdr.detectChanges();
 
     try {
-      const res: any = await lastValueFrom(this.trackApi.searchTracks(query));
+      const res: any = await lastValueFrom(this.trackApi.searchTracks(searchTerm));
+      console.log('Search Response:', res); // Debug
 
-      const uniqueTracksMap = new Map(res.tracks.items.map((t: any) => [t.id, t]));
-      const uniqueTracks = Array.from(uniqueTracksMap.values()).slice(0, 9);
+      if (res?.tracks?.items?.length) {
+        const seen = new Set<string>();
+        this.tracks = res.tracks.items
+          .filter((track: any) => track?.id && !seen.has(track.id) && seen.add(track.id))
+          .slice(0, 10);
 
-      this.tracks = uniqueTracks;
-
-      for (const track of this.tracks) {
-        try {
-          await lastValueFrom(this.spotifyService.addToQueue(track.uri));
-          console.log(`${track.name} wurde zur Queue hinzugefügt`);
-        } catch (err) {
-          console.error("Queue Fehler:", err);
-        }
       }
-
-      const queue = await lastValueFrom(this.spotifyService.getQueue());
-      console.log("Echte Queue Daten (Host):", queue);
-
     } catch (err) {
-      console.error("Fehler bei der Suche oder Queue:", err);
+      console.error('Fehler bei der Suche:', err);
+    } finally {
+      this.isSearching = false;
+      this.cdr.detectChanges();
     }
+  }
+
+  /** Track zur Playlist hinzufügen */
+  async addToPlaylist(track: any) {
+    this.addingTrackId = track.id;
+    this.cdr.detectChanges();
+
+    try {
+      await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
+      console.log(`${track.name} wurde zur Playlist hinzugefügt`);
+    } catch (err) {
+      console.error('Fehler beim Hinzufügen:', err);
+    } finally {
+      this.addingTrackId = null;
+      this.cdr.detectChanges();
+    }
+  }
+
+  trackById(index: number, track: any): string {
+    return track.id + '-' + index;
   }
 
 }

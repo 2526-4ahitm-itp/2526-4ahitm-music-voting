@@ -78,7 +78,8 @@ public class SpotifyTokenResource {
     @GET
     @Path("/login")
     public Response login() {
-        String scope = "streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state";
+
+        String scope = "streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state playlist-modify-private playlist-read-private";
         String spotifyUri = "https://accounts.spotify.com/authorize" +
                 "?response_type=code" +
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
@@ -94,6 +95,7 @@ public class SpotifyTokenResource {
     @Path("/callback")
     public Response callback(@QueryParam("code") String code) {
         try {
+
             String body = "grant_type=authorization_code" +
                     "&code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
                     "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
@@ -109,17 +111,26 @@ public class SpotifyTokenResource {
             HttpResponse<String> response = HttpClient.newHttpClient()
                     .send(request, HttpResponse.BodyHandlers.ofString());
 
-            Map<String, String> tokenMap = new ObjectMapper().readValue(response.body(), Map.class);
+            Map<String, String> tokenMap =
+                    new ObjectMapper().readValue(response.body(), Map.class);
 
-            this.tokenStore.setToken(tokenMap.get("access_token"));
+            tokenStore.setToken(tokenMap.get("access_token"));
 
-            return Response.seeOther(URI.create("http://localhost:4200/host/?token=" + this.tokenStore.getToken())).build();
+            spotifyPlayer.fetchAndStoreUserId();
+
+            spotifyPlayer.ensurePartyPlaylistExists();
+
+            return Response.seeOther(
+                            URI.create("http://localhost:4200/host"))
+                    .build();
+
         } catch (Exception e) {
             return Response.serverError()
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
                     .build();
         }
     }
+
 
 
 }
