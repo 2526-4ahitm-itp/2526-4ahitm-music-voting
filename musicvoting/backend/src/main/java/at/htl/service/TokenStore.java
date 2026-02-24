@@ -1,7 +1,6 @@
 package at.htl.service;
 
 import jakarta.enterprise.context.ApplicationScoped;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 @ApplicationScoped
@@ -10,6 +9,9 @@ public class TokenStore {
     private AtomicReference<String> token = new AtomicReference<>("");
     private AtomicReference<String> refreshToken = new AtomicReference<>("");
     private AtomicReference<String> deviceId = new AtomicReference<>("");
+
+    private AtomicReference<String> playlistId = new AtomicReference<>("");
+    private AtomicReference<String> spotifyUserId = new AtomicReference<>("");
 
     public String getToken() {
         return token.get();
@@ -27,14 +29,19 @@ public class TokenStore {
         this.deviceId.set(deviceId);
     }
 
-
-
-
-    public AtomicReference<String> getRefreshToken() {
-        return refreshToken;
+    public String getPlaylistId() {
+        return playlistId.get();
     }
 
-    public void setRefreshToken(AtomicReference<String> refreshToken) {
-        this.refreshToken = refreshToken;
+    public void setPlaylistId(String playlistId) {
+        this.playlistId.set(playlistId);
+    }
+
+    public String getSpotifyUserId() {
+        return spotifyUserId.get();
+    }
+
+    public void setSpotifyUserId(String spotifyUserId) {
+        this.spotifyUserId.set(spotifyUserId);
     }
 }

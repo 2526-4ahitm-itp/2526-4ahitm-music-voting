@@ -82,12 +82,12 @@ export class SpotifyWebPlayerService {
     window.location.href = '/api/spotify/login';
   }
 
+
   /**
-   * Fügt einen Song zur Warteschlange hinzu.
-   * Das Backend nutzt automatisch die im TokenStore hinterlegte Device ID.
+   * Fügt einen Song zur Party-Playlist hinzu
    */
-  addToQueue(uri: string): Observable<any> {
-    return this.http.post('/api/track/queue', { uri });
+  addToPlaylist(uri: string): Observable<any> {
+    return this.http.post('/api/track/addToPlaylist', [uri]);
   }
 
   /**
