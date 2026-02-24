@@ -3,18 +3,13 @@
 
   <div class="btn-group">
     <div class="search-action">
-      <button class="fetch-btn" (click)="search()">
-        Suchen nach 10 Taylor Swift Songs
-      </button>
+      <button class="fetch-btn" (click)="search()">Suchen nach 10 Taylor Swift Songs</button>
     </div>
 
     <div class="search-action">
-      <button class="fetch-btn" (click)="loginSpotify()">
-        Anmelden bei Spotify
-      </button>
+      <button class="fetch-btn" (click)="loginSpotify()">Anmelden bei Spotify</button>
     </div>
   </div>
-
 
   @if (tracks.length > 0) {
     <div class="track-list">
@@ -29,8 +24,15 @@
             <span class="artist-name">{{ track.artists[0]?.name }}</span>
           </div>
 
+          <div class="track-action">
+            <button class="add-queue-btn" (click)="addToPlaylist(track.uri)">
+              Zur Playlist hinzufügen
+            </button>
+          </div>
         </div>
       }
     </div>
+  } @else {
+    <div>Keine Songs geladen!</div>
   }
 </div>

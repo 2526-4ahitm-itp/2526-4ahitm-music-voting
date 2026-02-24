@@ -5,19 +5,23 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.util.List;
 import java.util.Map;
 
 @Path("/track")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class TrackRessource {
+public class TrackResource {
 
     @Inject
     SpotifyPlayer spotify;
 
     @GET
     @Path("/search")
-    public Response search(@QueryParam("q") String q) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, Object> search(@QueryParam("q") String q) {
+
         return spotify.searchTracks(q);
     }
 
@@ -37,19 +41,34 @@ public class TrackRessource {
         return spotify.play(body.get("uri"));
     }
 
+
     @POST
-    @Path("/queue")
-    public Response queue(Map<String, String> body) {
-        if (body == null || !body.containsKey("uri")) {
+    @Path("/saveToPlaylist")
+    public Response saveToPlaylist(List<String> uris) {
+        if (uris == null || uris.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"error\":\"Missing uri\"}").build();
+                    .entity("{\"error\":\"No tracks provided\"}")
+                    .build();
         }
-        return spotify.queue(body.get("uri"));
+
+        return spotify.overwritePlaylist(uris);
     }
 
     @GET
     @Path("/queue")
     public Response getQueue() {
-        return spotify.getQueue();
+        List<Map<String, Object>> queue = spotify.getQueue();
+        return Response.ok(Map.of("queue", queue)).build();
+    }
+
+    @POST
+    @Path("/addToPlaylist")
+    public Response addToPlaylist(List<String> uris) {
+        if (uris == null || uris.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"No tracks provided\"}")
+                    .build();
+        }
+        return spotify.addTracksToPlaylist(uris);
     }
 }
