@@ -60,11 +60,21 @@
     </item>
     
     <item>
-      <title>Systemarchitektur</title>
-      <link>//localhost:1313/tags/systemarchitektur/</link>
+      <title>Developer</title>
+      <link>//localhost:1313/tags/developer/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>//localhost:1313/tags/systemarchitektur/</guid>
+      <guid>//localhost:1313/tags/developer/</guid>
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Documentation</title>
+      <link>//localhost:1313/tags/documentation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/tags/documentation/</guid>
       <description></description>
       
     </item>
