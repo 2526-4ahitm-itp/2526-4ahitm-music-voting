@@ -18,20 +18,20 @@ main:
   - identifier: slides
     name: Presentation
     url: /slides/
-    weight: 10
+    weight: 20
 
   - name: Project
     pageRef: project
-    weight: 20
-
-  - name: Releases
-    pageRef: releases
     weight: 30
+
+  - name: Mobile Computing
+    pageRef: swift
+    weight: 40
 
   - identifier: github
     pre: github
     url: https://github.com/2526-4ahitm-itp/2526-4ahitm-music-voting
-    weight: 40
+    weight: 50
 
 
 #   - name: Blog
