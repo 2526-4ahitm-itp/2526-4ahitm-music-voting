@@ -39,12 +39,6 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>//localhost:1313/project/userstories/</loc>
-    <lastmod>2025-11-30T00:00:00+00:00</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>//localhost:1313/project/mom/2025-11-25-hugo_architektur/</loc>
     <lastmod>2025-11-25T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
@@ -75,6 +69,11 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>//localhost:1313/project/specification/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>//localhost:1313/docs/developerinstructions/</loc>
     <changefreq>daily</changefreq>
     <priority>0.5</priority>
@@ -86,6 +85,11 @@
   </url>
   <url>
     <loc>//localhost:1313/slides/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>//localhost:1313/swift/</loc>
     <changefreq>daily</changefreq>
     <priority>0.5</priority>
   </url>

@@ -24,7 +24,7 @@ main:
     pageRef: project
     weight: 30
 
-  - name: Mobile Computing
+  - name: Swift-App
     pageRef: swift
     weight: 40
 
