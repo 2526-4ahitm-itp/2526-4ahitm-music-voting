@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, lastValueFrom } from 'rxjs';
+import {Observable, lastValueFrom, Subject} from 'rxjs';
+import { Injectable } from '@angular/core';
 
 declare var Spotify: any;
 
@@ -9,24 +9,26 @@ export class SpotifyWebPlayerService {
   private player: any;
   private token: string | null = null;
 
+  // Neues Subject, um Statusänderungen an Komponenten zu senden
+  private playerStateSubject = new Subject<any>();
+
   constructor(private http: HttpClient) {}
 
   /**
-   * Initialisiert den Spotify Player und registriert die Device ID im Backend.
+   * Gibt den Stream der Statusänderungen zurück
    */
+  getPlayerStatus(): Observable<any> {
+    return this.playerStateSubject.asObservable();
+  }
+
   async initPlayer() {
     try {
-      // 1. Token vom Backend holen (Proxy leitet an Quarkus weiter)
       this.token = await lastValueFrom(
         this.http.get('/api/spotify/token', { responseType: 'text' })
       );
 
-      if (!this.token) {
-        console.warn("Kein Spotify-Token erhalten. Login erforderlich?");
-        return;
-      }
+      if (!this.token) return;
 
-      // 2. Spotify SDK Callback definieren
       (window as any).onSpotifyWebPlaybackSDKReady = () => {
         this.player = new Spotify.Player({
           name: 'Web Player MusicVoting',
@@ -34,36 +36,29 @@ export class SpotifyWebPlayerService {
           volume: 0.5
         });
 
-        // Wenn der Player bereit ist, registrieren wir die ID im Backend
-        this.player.addListener('ready', ({ device_id }: any) => {
-          console.log('Spotify Player bereit mit Device ID:', device_id);
-
-          // Wir senden die ID an das Backend, damit der TokenStore sie speichert
-          this.http.put('/api/spotify/deviceId', device_id, {
-            headers: new HttpHeaders({ 'Content-Type': 'text/plain' })
-          }).subscribe({
-            next: () => console.log('Device ID erfolgreich im Backend hinterlegt.'),
-            error: (err) => console.error('Fehler bei Device ID Registrierung:', err)
-          });
+        // WICHTIG: Der Listener für Statusänderungen
+        this.player.addListener('player_state_changed', (state: any) => {
+          if (!state) return;
+          console.log('Player Status geändert:', state);
+          this.playerStateSubject.next(state); // Status an alle Abonnenten schicken
         });
 
-        this.player.addListener('not_ready', ({ device_id }: any) => {
-          console.log('Device ID ist offline gegangen:', device_id);
+        this.player.addListener('ready', ({ device_id }: any) => {
+          this.http.put('/api/spotify/deviceId', device_id, {
+            headers: new HttpHeaders({ 'Content-Type': 'text/plain' })
+          }).subscribe();
         });
 
         this.player.connect();
       };
 
-      // 3. SDK Skript laden
       await this.loadSpotifySDK();
     } catch (error) {
       console.error("Player Init fehlgeschlagen", error);
     }
   }
 
-  /**
-   * Lädt das externe Spotify Playback SDK Skript.
-   */
+  // Restliche Methoden (login, addToPlaylist, etc.) bleiben gleich...
   private loadSpotifySDK(): Promise<void> {
     return new Promise((resolve) => {
       if (document.getElementById('spotify-sdk')) return resolve();

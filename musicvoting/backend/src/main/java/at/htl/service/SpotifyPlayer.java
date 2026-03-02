@@ -292,6 +292,51 @@ public class SpotifyPlayer {
         }
     }
 
+    public Response playNextAndRemove() {
+        try {
+            List<Map<String, Object>> currentQueue = getQueue();
+
+            if (currentQueue == null || currentQueue.isEmpty()) {
+                // Wenn nichts mehr da ist, senden wir einen Hinweis
+                return Response.ok("{\"status\":\"empty\", \"message\":\"Warteschlange ist leer\"}").build();
+            }
+
+            // 1. Hol den ersten Track aus der Liste
+            Map<String, Object> nextTrack = currentQueue.get(0);
+            String uri = (String) nextTrack.get("uri");
+            String trackId = (String) nextTrack.get("id");
+
+            // 2. Abspielen starten
+            play(uri);
+
+            // 3. Aus der Spotify-Playlist löschen
+            String playlistId = tokenStore.getPlaylistId();
+            // Spotify erwartet für DELETE ein spezielles Format: { "tracks": [{ "uri": "..." }] }
+            Map<String, Object> trackObj = Map.of("uri", uri);
+            Map<String, Object> deleteBody = Map.of("tracks", List.of(trackObj));
+
+            String jsonDelete = mapper.writeValueAsString(deleteBody);
+
+            HttpRequest deleteRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
+                    .header("Authorization", authHeader())
+                    .header("Content-Type", "application/json")
+                    .method("DELETE", HttpRequest.BodyPublishers.ofString(jsonDelete))
+                    .build();
+
+            client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+
+            return Response.ok(Map.of(
+                    "status", "playing",
+                    "trackName", nextTrack.get("name")
+            )).build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+        }
+    }
+
     // --- Hilfsmethoden ---
     private Response sendGet(String url) {
         try {
