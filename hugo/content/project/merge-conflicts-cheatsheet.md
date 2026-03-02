@@ -24,6 +24,7 @@ treten merge conflicts auf, wenn wir versuchen, unseren Branch mit main zu merge
 ````
 git swichth <branch-name>
 ````
+![01](../intern-img/01_merge_conflict.png)
 ### 2. Main fetchen
 
 ````
@@ -40,7 +41,12 @@ git rebase origin/main
 git push --force-with-lease
 ````
 ### 5. Nun kann man im Web den Branch mergen.
+![02](../intern-img/02_merge_conflict.png)
+![03](../intern-img/03_merge_conflict.png)
+
 ### 6. Wenn der Branch gemerged ist, kann man den Branch löschen.
+![04](../intern-img/04_merge_conflict.png)
+
 ### 7. anschließend den Branch in der IDE löschen.
 #### Lokales Git-Repository aktualisieren
 
