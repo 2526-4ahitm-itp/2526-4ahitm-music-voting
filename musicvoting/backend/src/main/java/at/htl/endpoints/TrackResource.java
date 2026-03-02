@@ -71,4 +71,11 @@ public class TrackResource {
         }
         return spotify.addTracksToPlaylist(uris);
     }
+
+    @POST
+    @Path("/next")
+    public Response playNext() {
+        // Ruft die neue Logik im SpotifyPlayer auf
+        return spotify.playNextAndRemove();
+    }
 }

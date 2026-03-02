@@ -11,9 +11,13 @@ import { lastValueFrom } from 'rxjs';
   templateUrl: './startpage.html',
   styleUrls: ['./startpage.css'],
 })
+
+
 export class Startpage implements OnInit {
   tracks: any[] = [];
   menuOpen = false;
+
+  currentTrack: any = null;
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
@@ -22,14 +26,39 @@ export class Startpage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    // Player initialisieren (DeviceID etc.)
     await this.spotifyService.initPlayer();
-
-    // Aktuelle Playlist laden
     this.loadPlaylist();
 
-    // Optional: Polling alle 5s, um die Playlist aktuell zu halten
+    this.spotifyService.getPlayerStatus().subscribe(state => {
+      if (!state) return;
+
+      this.ngZone.run(() => {
+        this.currentTrack = state.track_window.current_track;
+      });
+
+      if (state.paused && state.position === 0 && state.track_window.previous_tracks.length > 0) {
+        this.playNext();
+      }
+    });
+
     setInterval(() => this.loadPlaylist(), 5000);
+  }
+
+  formatTime(ms: number): string {
+    if (!ms) return '0:00';
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  async playNext() {
+    try {
+      await lastValueFrom(this.http.post('/api/track/next', {}));
+      this.loadPlaylist();
+    } catch (err) {
+      console.error("Fehler beim Weiterschalten", err);
+    }
   }
 
   /**

@@ -26,16 +26,27 @@
     }
 
     <section class="current-song">
-      <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Cover">
-      <div class="song-info">
-        <h1>Song Titel</h1>
-        <p>Künstler</p>
+      @if (currentTrack) {
+        <img class="cover"
+             [src]="currentTrack.album.images[0]?.url"
+             height="300px" width="300px" alt="Cover">
 
-        <div class="progress">
-          <span>0:00</span>
-          <span>2:46</span>
+        <div class="song-info">
+          <h1>{{ currentTrack.name }}</h1>
+          <p>{{ currentTrack.artists[0]?.name }}</p>
+
+          <div class="progress">
+            <span>Aktiv</span>
+            <span>{{ formatTime(currentTrack.duration_ms) }}</span>
+          </div>
         </div>
-      </div>
+      } @else {
+        <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Kein Song">
+        <div class="song-info">
+          <h1>Kein Song aktiv</h1>
+          <p>Starte die Playlist über die Steuerung</p>
+        </div>
+      }
     </section>
 
     <hr>
