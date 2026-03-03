@@ -24,7 +24,7 @@ Die Musik wird über den Spotify Premium-Account des Gastgebers abgespielt, um e
 Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwickeln, die es den Gästen ermöglicht, aktiv an der Musikauswahl teilzunehmen und so für eine bessere Stimmung auf der Party zu sorgen.
 
 # Current Agreement
-{{< article link="project/mom/2026-01-13_sprintreview_sprintplanning/" >}}
+{{< article link="project/mom/2026-03-02_sprintreview_playlist-spielen/" >}}
 
 
 # Other Documents
