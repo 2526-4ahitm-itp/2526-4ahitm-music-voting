@@ -1,6 +1,6 @@
 ---
 title: Sprint Review & Sprint Planning 26.01.2026
-description: Meeting-Notizen vom 13.01.2026 zu Sprint Review & Sprint Planning
+description: Meeting-Notizen vom 26.01.2026 zu Sprint Review & Sprint Planning
 tags: [ mom ]
 date: 2026-01-26
 showDate: true

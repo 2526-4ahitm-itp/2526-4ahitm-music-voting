@@ -38,7 +38,7 @@ spotify.redirect.uri=http://127.0.0.1:8080/api/spotify/callback
 ### Starten der Anwendung
 
 
-1. Navigieren Sie zum Backend-Verzeichnis:
+1. Navigieren Sie zum Frontend-Verzeichnis:
    ```bash
    cd musicvoting/frontend
    ```

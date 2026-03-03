@@ -1,73 +1,64 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {SpotifyWebPlayerService} from '../../services/spotify-player';
-import {TrackService } from '../../services/spotify-tracks';
+import { SpotifyWebPlayerService } from '../../services/spotify-player';
+import { TrackService } from '../../services/spotify-tracks';
 import { lastValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-player',
+  selector: 'app-host',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './host.html',
-  styleUrl:'./host.css'
-
+  styleUrls: ['./host.css']
 })
-
-
 export class Host implements OnInit {
   tracks: any[] = [];
+  isSearching = false;
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
-    private trackApi: TrackService
+    private trackApi: TrackService,
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
-  async ngOnInit() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+  ngOnInit() {}
 
-    if (token) {
-      this.spotifyService.setToken(token);
-      await this.spotifyService.initPlayer();
-    } else {
-      console.log("Bitte zuerst Spotify Login durchführen.");
-    }
-  }
-
-
-  //search and add to the queue
-  async search() {
-    console.log("Suche wird gestartet...");
-
+  /**
+   * Suche nach Tracks
+   */
+  async search(query: string = "Taylor Swift") {
+    this.isSearching = true;
+    this.tracks = [];
     try {
-      const res: any = await lastValueFrom(this.trackApi.searchTracks("Taylor Swift"));
-      this.tracks = res.tracks.items;
-
-      for (const track of this.tracks) {
-        console.log("Track gefunden: ", track.name);
-
-        try {
-          await lastValueFrom(this.spotifyService.addToQueue(track.uri));
-          console.log(`${track.name} wurde zur Queue hinzugefügt`);
-        } catch (err) {
-          console.error("Queue Fehler:", err);
-        }
+      const res: any = await lastValueFrom(this.trackApi.searchTracks(query));
+      if (res?.tracks?.items) {
+        this.tracks = res.tracks.items;
+        this.cdr.detectChanges();
       }
-
-      const queue = await lastValueFrom(this.spotifyService.getQueue());
-      console.log("Echte Queue Daten:", queue);
-
     } catch (err) {
-      console.error("Fehler bei der Suche oder Queue:", err);
+      console.error("Fehler bei der Suche:", err);
+    } finally {
+      this.isSearching = false;
+      this.cdr.detectChanges();
     }
   }
 
-
-  play(uri: string) {
-    this.spotifyService.playTrack(uri);
-  }
-
+  /**
+   * Spotify Login
+   */
   loginSpotify() {
     this.spotifyService.login();
+  }
+
+
+  async addToPlaylist(uri: string) {
+    try {
+      await lastValueFrom(this.spotifyService.addToPlaylist(uri));
+      console.log('Track zur Playlist hinzugefügt:', uri);
+    } catch (err) {
+      console.error('Fehler beim Hinzufügen zur Playlist:', err);
+    }
   }
 }

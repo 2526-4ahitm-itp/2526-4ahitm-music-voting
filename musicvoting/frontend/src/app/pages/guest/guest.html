@@ -2,27 +2,32 @@
   <h1>🎧 Spotify Guest</h1>
 
   <div class="search-action">
-    <input type="text" name="search-input" id="search-input">
-    <button class="fetch-btn" (click)="search()">
-      Suchen
+    <input type="text" placeholder="Song suchen..." [(ngModel)]="searchQuery">
+    <button class="fetch-btn" (click)="search()" [disabled]="isSearching">
+      {{ isSearching ? 'Suche läuft...' : 'Suchen' }}
     </button>
   </div>
 
-  @if (tracks.length > 0) {
-    <div class="track-list">
-      @for (track of tracks; track track.id || track.uri) {
-        <div class="track-card">
-          @if (track.album?.images?.length) {
-            <img [src]="track.album.images.at(-1)?.url" alt="Cover">
-          }
+  <div *ngIf="tracks.length > 0" class="track-list">
+    <div *ngFor="let track of tracks; trackBy: trackById" class="track-card">
+      <img *ngIf="track.album?.images?.length" [src]="track.album.images.at(-1)?.url" alt="Cover">
 
-          <div class="track-info">
-            <span class="track-name">{{ track.name }}</span>
-            <span class="artist-name">{{ track.artists[0]?.name }}</span>
-          </div>
+      <div class="track-info">
+        <span class="track-name">{{ track.name }}</span>
+        <span class="artist-name">{{ track.artists[0]?.name }}</span>
+      </div>
 
-        </div>
-      }
+      <div class="track-action">
+        <button class="add-queue-btn"
+                (click)="addToPlaylist(track)"
+                [disabled]="addingTrackId === track.id">
+          {{ addingTrackId === track.id ? 'Hinzufügen...' : 'Zur Playlist hinzufügen' }}
+        </button>
+      </div>
     </div>
-  }
+  </div>
+
+  <div *ngIf="!tracks.length && !isSearching">
+    Keine Songs geladen!
+  </div>
 </div>
