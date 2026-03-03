@@ -71,11 +71,16 @@ public class SpotifyPlayer {
 
     public Response play(String uri) {
         try {
-            String deviceId = getStoredDeviceId();
-            String url = "https://api.spotify.com/v1/me/player/play";
-            if (deviceId != null && !deviceId.isBlank()) {
-                url += "?device_id=" + deviceId;
+            String deviceId = resolvePlayableDeviceId();
+            if (deviceId == null || deviceId.isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"No active Spotify device found.\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
             }
+
+            String url = "https://api.spotify.com/v1/me/player/play";
+            url += "?device_id=" + deviceId;
 
             Map<String, String[]> bodyMap = Map.of("uris", new String[]{uri});
             String body = mapper.writeValueAsString(bodyMap);
@@ -307,7 +312,13 @@ public class SpotifyPlayer {
             String trackId = (String) nextTrack.get("id");
 
             // 2. Abspielen starten
-            play(uri);
+            Response playResponse = play(uri);
+            if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
+                return Response.status(playResponse.getStatus())
+                        .entity(playResponse.getEntity())
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
 
             // 3. Aus der Spotify-Playlist löschen
             String playlistId = tokenStore.getPlaylistId();
@@ -334,6 +345,26 @@ public class SpotifyPlayer {
         } catch (Exception e) {
             e.printStackTrace();
             return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+        }
+    }
+
+    public Response pausePlayback() {
+        try {
+            String deviceId = resolvePlayableDeviceId();
+            if (deviceId == null || deviceId.isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"No active Spotify device found.\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            String url = "https://api.spotify.com/v1/me/player/pause?device_id=" + deviceId;
+            return sendPut(url, null);
+        } catch (Exception e) {
+            return Response.serverError()
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
         }
     }
 
@@ -381,6 +412,47 @@ public class SpotifyPlayer {
             return Response.status(res.statusCode()).entity("{\"status\":\"success\"}").type(MediaType.APPLICATION_JSON).build();
         } catch (Exception e) {
             return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    private String resolvePlayableDeviceId() {
+        String stored = getStoredDeviceId();
+        if (stored != null && !stored.isBlank()) {
+            return stored;
+        }
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.spotify.com/v1/me/player/devices"))
+                    .header("Authorization", authHeader())
+                    .GET()
+                    .build();
+
+            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return null;
+            }
+
+            Map<String, Object> map = mapper.readValue(res.body(), Map.class);
+            List<Map<String, Object>> devices = (List<Map<String, Object>>) map.get("devices");
+            if (devices == null || devices.isEmpty()) {
+                return null;
+            }
+
+            String active = devices.stream()
+                    .filter(d -> Boolean.TRUE.equals(d.get("is_active")))
+                    .map(d -> (String) d.get("id"))
+                    .filter(id -> id != null && !id.isBlank())
+                    .findFirst()
+                    .orElse(null);
+
+            String selected = active != null ? active : (String) devices.get(0).get("id");
+            if (selected != null && !selected.isBlank()) {
+                tokenStore.setDeviceId(selected);
+            }
+            return selected;
+        } catch (Exception e) {
+            return null;
         }
     }
 

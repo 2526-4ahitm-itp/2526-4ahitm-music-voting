@@ -78,4 +78,10 @@ public class TrackResource {
         // Ruft die neue Logik im SpotifyPlayer auf
         return spotify.playNextAndRemove();
     }
+
+    @POST
+    @Path("/pause")
+    public Response pause() {
+        return spotify.pausePlayback();
+    }
 }

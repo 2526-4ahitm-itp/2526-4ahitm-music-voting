@@ -16,8 +16,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Path("/spotify")
 @Produces(MediaType.APPLICATION_JSON)
@@ -39,6 +37,12 @@ public class SpotifyTokenResource {
     @ConfigProperty(name = "spotify.client.secret")
     String clientSecret;
 
+    @ConfigProperty(name = "spotify.web.redirect.uri", defaultValue = "http://localhost:4200/host")
+    String webRedirectUri;
+
+    @ConfigProperty(name = "spotify.ios.redirect.uri", defaultValue = "musicvotingapp://callback")
+    String iosRedirectUri;
+
     @GET
     @Path("/token")
     public String getToken() {
@@ -47,11 +51,19 @@ public class SpotifyTokenResource {
     }
 
     @GET
+    @Path("/status")
+    public Map<String, Boolean> status() {
+        String token = this.tokenStore.getToken();
+        boolean loggedIn = token != null && !token.isBlank();
+        return Map.of("loggedIn", loggedIn);
+    }
+
+    @GET
     @Path("/deviceId")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getDeviceId() {
         String deviceId = this.tokenStore.getDeviceId();
-        if (deviceId == null) {
+        if (deviceId == null || deviceId.isBlank()) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("")
                     .build();
@@ -70,21 +82,24 @@ public class SpotifyTokenResource {
                     .build();
         }
 
-        this.tokenStore.setDeviceId(deviceId);
+        this.tokenStore.setDeviceId(deviceId.trim());
         return Response.ok("{\"status\":\"Device ID gesetzt\"}").build();
     }
 
 
     @GET
     @Path("/login")
-    public Response login() {
+    public Response login(@QueryParam("source") @DefaultValue("web") String source) {
+
+        String normalizedSource = "ios".equalsIgnoreCase(source) ? "ios" : "web";
 
         String scope = "streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state playlist-modify-private playlist-read-private";
         String spotifyUri = "https://accounts.spotify.com/authorize" +
                 "?response_type=code" +
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
                 "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8) +
-                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
+                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+                "&state=" + URLEncoder.encode(normalizedSource, StandardCharsets.UTF_8);
 
 
         return Response.seeOther(java.net.URI.create(spotifyUri)).build();
@@ -93,7 +108,7 @@ public class SpotifyTokenResource {
 
     @GET
     @Path("/callback")
-    public Response callback(@QueryParam("code") String code) {
+    public Response callback(@QueryParam("code") String code, @QueryParam("state") String state) {
         try {
 
             String body = "grant_type=authorization_code" +
@@ -120,9 +135,13 @@ public class SpotifyTokenResource {
 
             spotifyPlayer.ensurePartyPlaylistExists();
 
-            return Response.seeOther(
-                            URI.create("http://localhost:4200/host"))
-                    .build();
+            boolean iosSource = "ios".equalsIgnoreCase(state);
+            if (iosSource) {
+                String iosTarget = iosRedirectUri + (iosRedirectUri.contains("?") ? "&" : "?") + "success=1";
+                return Response.seeOther(URI.create(iosTarget)).build();
+            }
+
+            return Response.seeOther(URI.create(webRedirectUri)).build();
 
         } catch (Exception e) {
             return Response.serverError()
@@ -134,7 +153,5 @@ public class SpotifyTokenResource {
 
 
 }
-
-
 
 
