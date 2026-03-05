@@ -26,7 +26,7 @@ export class Startpage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    await this.spotifyService.initPlayer();
+    await this.spotifyService.initPlayer(true);
     this.loadPlaylist();
 
     this.spotifyService.getPlayerStatus().subscribe(state => {

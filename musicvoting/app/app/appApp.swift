@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct appApp: App {
+    @StateObject private var auth = SpotifyAuthViewModel()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(auth)
+                .onOpenURL { url in
+                    auth.handleCallback(url)
+                }
         }
     }
 }

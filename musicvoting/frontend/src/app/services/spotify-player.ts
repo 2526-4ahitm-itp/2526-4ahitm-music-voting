@@ -21,7 +21,7 @@ export class SpotifyWebPlayerService {
     return this.playerStateSubject.asObservable();
   }
 
-  async initPlayer() {
+  async initPlayer(registerPlaybackDevice: boolean = false) {
     try {
       this.token = await lastValueFrom(
         this.http.get('/api/spotify/token', { responseType: 'text' })
@@ -29,43 +29,81 @@ export class SpotifyWebPlayerService {
 
       if (!this.token) return;
 
-      (window as any).onSpotifyWebPlaybackSDKReady = () => {
-        this.player = new Spotify.Player({
-          name: 'Web Player MusicVoting',
-          getOAuthToken: (cb: any) => cb(this.token),
-          volume: 0.5
-        });
-
-        // WICHTIG: Der Listener für Statusänderungen
-        this.player.addListener('player_state_changed', (state: any) => {
-          if (!state) return;
-          console.log('Player Status geändert:', state);
-          this.playerStateSubject.next(state); // Status an alle Abonnenten schicken
-        });
-
-        this.player.addListener('ready', ({ device_id }: any) => {
-          this.http.put('/api/spotify/deviceId', device_id, {
-            headers: new HttpHeaders({ 'Content-Type': 'text/plain' })
-          }).subscribe();
-        });
-
-        this.player.connect();
-      };
-
       await this.loadSpotifySDK();
+      this.createAndConnectPlayer(registerPlaybackDevice);
     } catch (error) {
       console.error("Player Init fehlgeschlagen", error);
     }
   }
 
+  private createAndConnectPlayer(registerPlaybackDevice: boolean) {
+    if (!(window as any).Spotify) {
+      console.error('Spotify SDK ist nicht verfügbar.');
+      return;
+    }
+
+    this.player = new Spotify.Player({
+      name: 'Web Player MusicVoting',
+      getOAuthToken: (cb: any) => cb(this.token),
+      volume: 0.5
+    });
+
+    this.player.addListener('player_state_changed', (state: any) => {
+      if (!state) return;
+      this.playerStateSubject.next(state);
+    });
+
+    this.player.addListener('initialization_error', ({ message }: any) => {
+      console.error('Spotify init error:', message);
+    });
+    this.player.addListener('authentication_error', ({ message }: any) => {
+      console.error('Spotify auth error:', message);
+    });
+    this.player.addListener('account_error', ({ message }: any) => {
+      console.error('Spotify account error:', message);
+    });
+    this.player.addListener('playback_error', ({ message }: any) => {
+      console.error('Spotify playback error:', message);
+    });
+
+    this.player.addListener('ready', ({ device_id }: any) => {
+      console.log('Spotify ready, device:', device_id);
+      if (!registerPlaybackDevice) return;
+
+      this.http.put('/api/spotify/deviceId', device_id, {
+        headers: new HttpHeaders({ 'Content-Type': 'text/plain' })
+      }).subscribe({
+        next: () => console.log('Device ID an Backend gesendet:', device_id),
+        error: (err) => console.error('Fehler beim Senden der Device ID:', err)
+      });
+    });
+
+    this.player.addListener('not_ready', ({ device_id }: any) => {
+      console.warn('Spotify device not ready:', device_id);
+    });
+
+    this.player.connect().then((connected: boolean) => {
+      console.log('Spotify connect result:', connected);
+    });
+  }
+
   // Restliche Methoden (login, addToPlaylist, etc.) bleiben gleich...
   private loadSpotifySDK(): Promise<void> {
     return new Promise((resolve) => {
-      if (document.getElementById('spotify-sdk')) return resolve();
+      if ((window as any).Spotify) {
+        resolve();
+        return;
+      }
+
+      if (document.getElementById('spotify-sdk')) {
+        (window as any).onSpotifyWebPlaybackSDKReady = () => resolve();
+        return;
+      }
+
       const script = document.createElement('script');
       script.id = 'spotify-sdk';
       script.src = 'https://sdk.scdn.co/spotify-player.js';
-      script.onload = () => resolve();
+      (window as any).onSpotifyWebPlaybackSDKReady = () => resolve();
       document.body.appendChild(script);
     });
   }
@@ -74,7 +112,7 @@ export class SpotifyWebPlayerService {
    * Leitet den User zum Spotify Login (Backend) weiter.
    */
   login() {
-    window.location.href = '/api/spotify/login';
+    window.location.href = '/api/spotify/login?source=web';
   }
 
 

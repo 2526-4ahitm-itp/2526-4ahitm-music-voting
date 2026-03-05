@@ -10,46 +10,50 @@ import SwiftUI
 struct CurrentSongPlaying: View {
 
     @State private var progress: Double = 0.13
-    let song: Song
+    let song: Song?
+    let isPlaying: Bool
+    var onPlayPause: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 24) {
 
-            // Album Cover
-            AsyncImage(url: URL(string: song.imageUrl)) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
+            if let song {
+                // Album Cover
+                AsyncImage(url: URL(string: song.imageUrl)) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
 
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
 
-                case .failure:
-                    ZStack {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
+                    case .failure:
+                        ZStack {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
 
-                        Image(systemName: "music.note")
-                            .foregroundColor(.gray)
+                            Image(systemName: "music.note")
+                                .foregroundColor(.gray)
+                        }
+
+                    @unknown default:
+                        EmptyView()
                     }
-
-                @unknown default:
-                    EmptyView()
                 }
+                .frame(width: 300, height: 300)
+                .cornerRadius(6)
+                .clipped()
             }
-            .frame(width: 300, height: 300)
-            .cornerRadius(6)
-            .clipped()
 
             // Song Title
-            Text(song.title)
+            Text(song?.title ?? "Noch nichts abgespielt")
                 .font(.title)
                 .fontWeight(.bold)
                 .foregroundColor(.black)
 
-            Text(song.artist)
+            Text(song?.artist ?? "Druecke auf Play")
                 .font(.subheadline)
                 .foregroundColor(.gray)
 
@@ -75,8 +79,8 @@ struct CurrentSongPlaying: View {
                         .font(.system(size: 30))
                 }
 
-                Button(action: {}) {
-                    Image(systemName: "play.fill")
+                Button(action: onPlayPause) {
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                         .font(.system(size: 60))
                 }
 
@@ -111,6 +115,7 @@ struct CurrentSongPlaying: View {
             artist: "Test",
             imageUrl:
                 "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"
-        )
+        ),
+        isPlaying: true
     )
 }

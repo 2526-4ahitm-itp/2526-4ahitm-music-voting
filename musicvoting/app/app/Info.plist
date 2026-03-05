@@ -17,6 +17,14 @@
       <string>spotify-ios-quick-start</string>
     </array>
   </dict>
+  <dict>
+    <key>CFBundleURLName</key>
+    <string>com.musicvoting.app</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>musicvotingapp</string>
+    </array>
+  </dict>
 </array>
 
 </dict>

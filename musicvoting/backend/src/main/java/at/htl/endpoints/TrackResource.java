@@ -84,4 +84,22 @@ public class TrackResource {
     public Response pause() {
         return spotify.pausePlayback();
     }
+
+    @POST
+    @Path("/resume")
+    public Response resume() {
+        return spotify.resumePlayback();
+    }
+
+    @POST
+    @Path("/start")
+    public Response startFromQueue() {
+        return spotify.startFirstSongWithoutRemoving();
+    }
+
+    @GET
+    @Path("/current")
+    public Response current() {
+        return spotify.getCurrentPlayback();
+    }
 }
