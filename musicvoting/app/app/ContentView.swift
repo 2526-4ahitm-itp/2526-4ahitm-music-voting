@@ -17,15 +17,40 @@ final class SpotifyAuthViewModel: ObservableObject {
     @Published var isLoggedIn = false
     @Published var errorMessage: String?
 
-    let loginURL = URL(string: "http://localhost:8080/api/spotify/login?source=ios")!
-    private let statusURL = URL(string: "http://localhost:8080/api/spotify/status")!
+    private let installIdKey = "spotify.installation.id"
+    private lazy var installationId: String = {
+        if let existing = UserDefaults.standard.string(forKey: installIdKey), !existing.isEmpty {
+            return existing
+        }
+
+        let created = UUID().uuidString
+        UserDefaults.standard.set(created, forKey: installIdKey)
+        return created
+    }()
+
+    var loginURL: URL {
+        var components = URLComponents(string: "http://localhost:8080/api/spotify/login")!
+        components.queryItems = [
+            URLQueryItem(name: "source", value: "ios"),
+            URLQueryItem(name: "installationId", value: installationId)
+        ]
+        return components.url!
+    }
+
+    private var statusURL: URL {
+        var components = URLComponents(string: "http://localhost:8080/api/spotify/status")!
+        components.queryItems = [URLQueryItem(name: "source", value: "ios")]
+        return components.url!
+    }
 
     func checkLoginStatus() async {
         isChecking = true
         errorMessage = nil
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: statusURL)
+            var request = URLRequest(url: statusURL)
+            request.setValue(installationId, forHTTPHeaderField: "X-Install-Id")
+            let (data, _) = try await URLSession.shared.data(for: request)
             let status = try JSONDecoder().decode(SpotifyStatusResponse.self, from: data)
             isLoggedIn = status.loggedIn
         } catch {

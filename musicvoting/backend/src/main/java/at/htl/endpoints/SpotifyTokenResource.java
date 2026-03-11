@@ -15,6 +15,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Map;
 
 @Path("/spotify")
@@ -52,9 +53,25 @@ public class SpotifyTokenResource {
 
     @GET
     @Path("/status")
-    public Map<String, Boolean> status() {
+    public Map<String, Boolean> status(
+            @QueryParam("source") @DefaultValue("web") String source,
+            @HeaderParam("X-Install-Id") String installId
+    ) {
         String token = this.tokenStore.getToken();
-        boolean loggedIn = token != null && !token.isBlank();
+        boolean tokenAvailable = token != null && !token.isBlank();
+        boolean iosSource = "ios".equalsIgnoreCase(source);
+
+        boolean loggedIn;
+        if (iosSource) {
+            String storedInstallId = this.tokenStore.getIosInstallationId();
+            boolean installMatches = installId != null
+                    && !installId.isBlank()
+                    && installId.equals(storedInstallId);
+            loggedIn = tokenAvailable && installMatches;
+        } else {
+            loggedIn = tokenAvailable;
+        }
+
         return Map.of("loggedIn", loggedIn);
     }
 
@@ -89,9 +106,16 @@ public class SpotifyTokenResource {
 
     @GET
     @Path("/login")
-    public Response login(@QueryParam("source") @DefaultValue("web") String source) {
+    public Response login(
+            @QueryParam("source") @DefaultValue("web") String source,
+            @QueryParam("installationId") String installationId
+    ) {
 
         String normalizedSource = "ios".equalsIgnoreCase(source) ? "ios" : "web";
+        String normalizedState = normalizedSource;
+        if ("ios".equals(normalizedSource) && installationId != null && !installationId.isBlank()) {
+            normalizedState = "ios:" + installationId.trim();
+        }
 
         String scope = "streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state playlist-modify-private playlist-read-private";
         String spotifyUri = "https://accounts.spotify.com/authorize" +
@@ -99,7 +123,7 @@ public class SpotifyTokenResource {
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
                 "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8) +
                 "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-                "&state=" + URLEncoder.encode(normalizedSource, StandardCharsets.UTF_8);
+                "&state=" + URLEncoder.encode(normalizedState, StandardCharsets.UTF_8);
 
 
         return Response.seeOther(java.net.URI.create(spotifyUri)).build();
@@ -135,7 +159,14 @@ public class SpotifyTokenResource {
 
             spotifyPlayer.ensurePartyPlaylistExists();
 
-            boolean iosSource = "ios".equalsIgnoreCase(state);
+            boolean iosSource = state != null && state.toLowerCase(Locale.ROOT).startsWith("ios");
+            if (iosSource) {
+                String[] parts = state.split(":", 2);
+                if (parts.length == 2 && !parts[1].isBlank()) {
+                    tokenStore.setIosInstallationId(parts[1].trim());
+                }
+            }
+
             if (iosSource) {
                 String iosTarget = iosRedirectUri + (iosRedirectUri.contains("?") ? "&" : "?") + "success=1";
                 return Response.seeOther(URI.create(iosTarget)).build();
@@ -153,5 +184,3 @@ public class SpotifyTokenResource {
 
 
 }
-
-
