@@ -36,9 +36,15 @@
           <p>{{ currentTrack.artists[0]?.name }}</p>
 
           <div class="progress">
-            <span>Aktiv</span>
+            <span>{{ formatTime(currentPosition) }}</span>
+
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="progressPercent"></div>
+            </div>
+
             <span>{{ formatTime(currentTrack.duration_ms) }}</span>
           </div>
+
         </div>
       } @else {
         <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Kein Song">

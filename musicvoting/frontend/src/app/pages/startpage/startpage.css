@@ -101,10 +101,28 @@ hr{
   padding-left: 2rem;
 }
 
-.progress{
+
+.progress {
+  margin-top: 10rem;
+  width: 100%;
   display: flex;
-  gap: 30rem;
-  margin-top: 11rem;
+  align-items: center;
+  gap: 15px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background-color: #eee;
+  border-radius: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #1db954;
+  width: 0%;
+  transition: width 0.5s linear;
+  border-radius: 4px 0 0 4px;
 }
 
 
