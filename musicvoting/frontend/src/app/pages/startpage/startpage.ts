@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { HttpClient } from '@angular/common/http';
@@ -11,18 +11,21 @@ import { lastValueFrom } from 'rxjs';
   templateUrl: './startpage.html',
   styleUrls: ['./startpage.css'],
 })
-
-
-export class Startpage implements OnInit {
+export class Startpage implements OnInit, OnDestroy {
   tracks: any[] = [];
   menuOpen = false;
-
   currentTrack: any = null;
+
+  // Progress bar & Zeit Logik
+  currentPosition = 0;
+  progressPercent = 0;
+  progressInterval: any;
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
     private ngZone: NgZone,
-    private http: HttpClient
+    private http: HttpClient,
+    private cd: ChangeDetectorRef
   ) {}
 
   async ngOnInit() {
@@ -33,19 +36,57 @@ export class Startpage implements OnInit {
       if (!state) return;
 
       this.ngZone.run(() => {
-        this.currentTrack = state.track_window.current_track;
-      });
+        const sdkTrack = state.track_window.current_track;
+        this.currentTrack = {
+          ...sdkTrack,
+          duration_ms: sdkTrack.duration_ms || sdkTrack.duration
+        };
 
-      if (state.paused && state.position === 0 && state.track_window.previous_tracks.length > 0) {
-        this.playNext();
-      }
+        this.currentPosition = state.position || 0;
+        this.updateProgressPercent();
+
+        if (!state.paused) {
+          this.startProgressTimer();
+        } else {
+          this.stopProgressTimer();
+        }
+
+        if (state.paused && state.position === 0 && state.track_window.previous_tracks.length > 0) {
+          this.playNext();
+        }
+
+        this.cd.detectChanges();
+      });
     });
 
     setInterval(() => this.loadPlaylist(), 5000);
   }
 
+  startProgressTimer() {
+    if (this.progressInterval) return;
+    this.progressInterval = setInterval(() => {
+      this.currentPosition += 1000;
+      this.updateProgressPercent();
+      this.cd.detectChanges();
+    }, 1000);
+  }
+
+  stopProgressTimer() {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
+    }
+  }
+
+  updateProgressPercent() {
+    const duration = this.currentTrack?.duration_ms || 0;
+    if (duration > 0) {
+      this.progressPercent = Math.min((this.currentPosition / duration) * 100, 100);
+    }
+  }
+
   formatTime(ms: number): string {
-    if (!ms) return '0:00';
+    if (!ms || isNaN(ms)) return '0:00';
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
@@ -61,25 +102,16 @@ export class Startpage implements OnInit {
     }
   }
 
-  /**
-   * Aktuelle „Musicvoting party“ Playlist laden
-   */
   async loadPlaylist() {
     try {
       const res: any = await lastValueFrom(this.spotifyService.getQueue());
-
       this.ngZone.run(() => {
-        // Res hat das Format { queue: [...] }
         if (Array.isArray(res.queue)) {
           this.tracks = res.queue;
-          console.log('Tracks geladen:', this.tracks);
-        } else {
-          this.tracks = [];
         }
       });
     } catch (err) {
       console.error('Fehler beim Laden der Playlist:', err);
-      this.tracks = [];
     }
   }
 
@@ -91,4 +123,7 @@ export class Startpage implements OnInit {
     this.menuOpen = !this.menuOpen;
   }
 
+  ngOnDestroy() {
+    this.stopProgressTimer();
+  }
 }
