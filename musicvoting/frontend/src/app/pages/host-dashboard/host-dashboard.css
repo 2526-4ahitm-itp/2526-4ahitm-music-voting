@@ -1,0 +1,227 @@
+body{
+  font-family: var(--font), serif;
+}
+
+.layout{
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.left{
+  width: 75vw;
+}
+
+.right{
+  width: 25vw;
+  border-left: 0.1px solid black;
+}
+
+
+/* NAVBAR */
+.navbar {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+}
+
+.burger {
+  font-size: 26px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Side Menu */
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: white;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+
+
+.side-menu.open {
+  transform: translateX(0);
+}
+
+.side-menu ul {
+  list-style: none;
+  padding: 0 20px;
+}
+
+.side-menu li {
+  padding: .5rem;
+  margin-bottom: 20px;
+  border-radius: .5rem;
+  transition: font-weight 0.3s, background-color 0.3s;
+}
+
+.side-menu a {
+  text-decoration: none;
+  font-size: 18px;
+  color: black;
+}
+
+.side-menu li:hover {
+  padding: .5rem;
+  font-weight: 700;
+  background-color: #f1f1f1;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 999;
+}
+
+hr{
+  color: white;
+}
+
+/* CURRENT SONG */
+
+.current-song{
+  padding-left: 7rem;
+  padding-right: 7rem;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  display: flex;
+}
+
+.song-info{
+  padding-left: 2rem;
+}
+
+.player-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  margin-top: 5rem;
+}
+
+.play-icon, .skip-icon {
+  font-size: 40px;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.play-icon:hover {
+  transform: scale(1.3);
+}
+
+.skip-icon:hover {
+  transform: scale(1.2);
+}
+
+/* WARTESCHLANGE */
+
+.queue{
+  padding-top: 1rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+.queue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: row;
+  gap: 16px;
+}
+
+.track {
+  display: flex;
+  gap: 2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.track-info{
+  display: flex;
+  gap: 4rem;
+  height: 60px;
+}
+
+
+.track-info .delete-icon {
+  margin-top: .8rem;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.song-artist,
+.song-title{
+  margin-bottom: .5rem;
+}
+
+.song-title{
+  margin-top: .2rem;
+  font-size: 15px;
+}
+
+.song-artist{
+  font-size: 12px;
+}
+
+.cover-wrapper {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  overflow: hidden;
+}
+
+.cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.queue-number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 28px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.85);
+
+  background: rgba(0,0,0,0.4);
+}
+
+
+/* RIGHT SIDE */
+
+.qr-code{
+  padding-top: 3rem;
+  padding-left: 3.5rem;
+  padding-right: 3.5rem;
+}
+
+.qr-code-btn{
+  text-align: center;
+  margin-top: 1rem;
+  padding: .5rem 1.5rem;
+}
+
+span.logo {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+
