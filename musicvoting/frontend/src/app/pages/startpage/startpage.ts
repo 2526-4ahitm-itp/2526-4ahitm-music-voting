@@ -59,7 +59,7 @@ export class Startpage implements OnInit, OnDestroy {
       });
     });
 
-    setInterval(() => this.loadPlaylist(), 5000);
+    setInterval(() => this.loadPlaylist(), 10000);
   }
 
   startProgressTimer() {
