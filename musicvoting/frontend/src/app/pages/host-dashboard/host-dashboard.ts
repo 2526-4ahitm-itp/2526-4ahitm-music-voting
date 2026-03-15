@@ -27,10 +27,8 @@ export class HostDashboard implements OnInit {
   ) {}
 
   async ngOnInit() {
-    // 1. Initiale Playlist laden
     await this.loadPlaylist();
 
-    // 2. Status vom Player auf der Startseite abonnieren
     this.spotifyService.getPlayerStatus().subscribe((state) => {
       if (!state) return;
 
@@ -49,18 +47,7 @@ export class HostDashboard implements OnInit {
       });
     });
 
-    // 3. Queue-Update-Intervall
-    setInterval(() => this.loadPlaylist(), 5000);
-  }
-
-  // Hilfsmethode bleibt nur für die Anzeige der statischen Gesamtdauer im HTML
-  formatTime(ms: any): string {
-    const msec = parseInt(ms, 10);
-    if (isNaN(msec) || msec <= 0) return '0:00';
-    const totalSeconds = Math.floor(msec / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    setInterval(() => this.loadPlaylist(), 10000);
   }
 
   async loadPlaylist() {
@@ -92,6 +79,4 @@ export class HostDashboard implements OnInit {
       this.loadPlaylist();
     });
   }
-
-
 }
