@@ -9,13 +9,7 @@ import SwiftUI
 
 struct QueueCard: View {
 
-    let songs: [Song] = [
-        Song(title: "Songtitel", artist: "Künstler", imageUrl: "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"),
-        Song(title: "Songtitel", artist: "Künstler", imageUrl: "https://i.scdn.co/image/ab67616d0000b27342a04303e6eb1100df3ea036"),
-        Song(title: "Songtitel", artist: "Künstler", imageUrl: "https://i.scdn.co/image/ab67616d0000b2735e10a5aca3763224e2050016"),
-        Song(title: "Songtitel", artist: "Künstler", imageUrl: "https://i.scdn.co/image/ab67616d0000b273cf5ec3a531c72644f0d69b2e"),
-        Song(title: "Songtitel", artist: "Künstler", imageUrl: "https://i.scdn.co/image/ab67616d0000b2730ebc17239b6b18ba88cfb8ca")
-    ]
+    let songs: [Song]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -26,8 +20,15 @@ struct QueueCard: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 4)
 
-            ForEach(songs) { song in
-                SongRow(song: song)
+            if songs.isEmpty {
+                Text("Keine Songs in der Warteschlange")
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 12)
+            } else {
+                ForEach(songs) { song in
+                    SongRow(song: song)
+                }
             }
         }
         .padding()
@@ -40,5 +41,5 @@ struct QueueCard: View {
 }
 
 #Preview {
-    QueueCard()
+    QueueCard(songs: [])
 }

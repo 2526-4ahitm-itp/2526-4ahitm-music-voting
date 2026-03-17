@@ -13,6 +13,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -71,11 +72,16 @@ public class SpotifyPlayer {
 
     public Response play(String uri) {
         try {
-            String deviceId = getStoredDeviceId();
-            String url = "https://api.spotify.com/v1/me/player/play";
-            if (deviceId != null && !deviceId.isBlank()) {
-                url += "?device_id=" + deviceId;
+            String deviceId = resolvePlayableDeviceId();
+            if (deviceId == null || deviceId.isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"No active Spotify device found.\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
             }
+
+            String url = "https://api.spotify.com/v1/me/player/play";
+            url += "?device_id=" + deviceId;
 
             Map<String, String[]> bodyMap = Map.of("uris", new String[]{uri});
             String body = mapper.writeValueAsString(bodyMap);
@@ -307,7 +313,13 @@ public class SpotifyPlayer {
             String trackId = (String) nextTrack.get("id");
 
             // 2. Abspielen starten
-            play(uri);
+            Response playResponse = play(uri);
+            if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
+                return Response.status(playResponse.getStatus())
+                        .entity(playResponse.getEntity())
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
 
             // 3. Aus der Spotify-Playlist löschen
             String playlistId = tokenStore.getPlaylistId();
@@ -334,6 +346,137 @@ public class SpotifyPlayer {
         } catch (Exception e) {
             e.printStackTrace();
             return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+        }
+    }
+
+    public Response pausePlayback() {
+        try {
+            String deviceId = resolvePlayableDeviceId();
+            if (deviceId == null || deviceId.isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"No active Spotify device found.\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            String url = "https://api.spotify.com/v1/me/player/pause?device_id=" + deviceId;
+            return sendPut(url, null);
+        } catch (Exception e) {
+            return Response.serverError()
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+    }
+
+    public Response resumePlayback() {
+        try {
+            String deviceId = resolvePlayableDeviceId();
+            if (deviceId == null || deviceId.isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"No active Spotify device found.\"}")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
+            return sendPut(url, null);
+        } catch (Exception e) {
+            return Response.serverError()
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+    }
+
+    public Response startFirstSongWithoutRemoving() {
+        try {
+            List<Map<String, Object>> currentQueue = getQueue();
+            if (currentQueue == null || currentQueue.isEmpty()) {
+                return Response.ok(Map.of(
+                        "status", "empty",
+                        "message", "Warteschlange ist leer"
+                )).build();
+            }
+
+            Map<String, Object> firstTrack = currentQueue.get(0);
+            String uri = (String) firstTrack.get("uri");
+            Response playResponse = play(uri);
+            if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
+                return Response.status(playResponse.getStatus())
+                        .entity(playResponse.getEntity())
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("status", "playing");
+            payload.put("track", firstTrack);
+            return Response.ok(payload).build();
+        } catch (Exception e) {
+            return Response.serverError()
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+    }
+
+    public Response getCurrentPlayback() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.spotify.com/v1/me/player/currently-playing"))
+                    .header("Authorization", authHeader())
+                    .GET()
+                    .build();
+
+            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (res.statusCode() == 204) {
+                return Response.ok(Map.of("isPlaying", false)).build();
+            }
+
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return Response.status(res.statusCode())
+                        .entity(res.body())
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            Map<String, Object> json = mapper.readValue(res.body(), Map.class);
+            boolean isPlaying = Boolean.TRUE.equals(json.get("is_playing"));
+
+            Object itemObj = json.get("item");
+            if (!(itemObj instanceof Map<?, ?> item)) {
+                return Response.ok(Map.of("isPlaying", isPlaying)).build();
+            }
+
+            List<Map<String, Object>> artists = (List<Map<String, Object>>) item.get("artists");
+            Map<String, Object> album = (Map<String, Object>) item.get("album");
+            List<Map<String, Object>> images = album == null
+                    ? List.of()
+                    : (List<Map<String, Object>>) album.getOrDefault("images", List.of());
+
+            Map<String, Object> albumPayload = new HashMap<>();
+            albumPayload.put("name", album == null ? null : album.get("name"));
+            albumPayload.put("images", images);
+
+            Map<String, Object> trackPayload = new HashMap<>();
+            trackPayload.put("id", item.get("id"));
+            trackPayload.put("uri", item.get("uri"));
+            trackPayload.put("name", item.get("name"));
+            trackPayload.put("artists", artists == null ? List.of() : artists);
+            trackPayload.put("album", albumPayload);
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("isPlaying", isPlaying);
+            payload.put("track", trackPayload);
+
+            return Response.ok(payload).build();
+        } catch (Exception e) {
+            return Response.serverError()
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
         }
     }
 
@@ -381,6 +524,47 @@ public class SpotifyPlayer {
             return Response.status(res.statusCode()).entity("{\"status\":\"success\"}").type(MediaType.APPLICATION_JSON).build();
         } catch (Exception e) {
             return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    private String resolvePlayableDeviceId() {
+        String stored = getStoredDeviceId();
+        if (stored != null && !stored.isBlank()) {
+            return stored;
+        }
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.spotify.com/v1/me/player/devices"))
+                    .header("Authorization", authHeader())
+                    .GET()
+                    .build();
+
+            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return null;
+            }
+
+            Map<String, Object> map = mapper.readValue(res.body(), Map.class);
+            List<Map<String, Object>> devices = (List<Map<String, Object>>) map.get("devices");
+            if (devices == null || devices.isEmpty()) {
+                return null;
+            }
+
+            String active = devices.stream()
+                    .filter(d -> Boolean.TRUE.equals(d.get("is_active")))
+                    .map(d -> (String) d.get("id"))
+                    .filter(id -> id != null && !id.isBlank())
+                    .findFirst()
+                    .orElse(null);
+
+            String selected = active != null ? active : (String) devices.get(0).get("id");
+            if (selected != null && !selected.isBlank()) {
+                tokenStore.setDeviceId(selected);
+            }
+            return selected;
+        } catch (Exception e) {
+            return null;
         }
     }
 

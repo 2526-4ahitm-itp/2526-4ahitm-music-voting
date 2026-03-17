@@ -12,6 +12,7 @@ public class TokenStore {
 
     private AtomicReference<String> playlistId = new AtomicReference<>("");
     private AtomicReference<String> spotifyUserId = new AtomicReference<>("");
+    private AtomicReference<String> iosInstallationId = new AtomicReference<>("");
 
     public String getToken() {
         return token.get();
@@ -43,5 +44,13 @@ public class TokenStore {
 
     public void setSpotifyUserId(String spotifyUserId) {
         this.spotifyUserId.set(spotifyUserId);
+    }
+
+    public String getIosInstallationId() {
+        return iosInstallationId.get();
+    }
+
+    public void setIosInstallationId(String iosInstallationId) {
+        this.iosInstallationId.set(iosInstallationId);
     }
 }

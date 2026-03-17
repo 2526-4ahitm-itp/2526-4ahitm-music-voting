@@ -29,7 +29,7 @@ export class Startpage implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    await this.spotifyService.initPlayer();
+    await this.spotifyService.initPlayer(true);
     this.loadPlaylist();
 
     this.spotifyService.getPlayerStatus().subscribe(state => {
