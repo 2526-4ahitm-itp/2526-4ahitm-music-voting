@@ -15,6 +15,7 @@ export class Startpage implements OnInit, OnDestroy {
   tracks: any[] = [];
   menuOpen = false;
   currentTrack: any = null;
+  private eventSource?: EventSource;
 
   // Progress bar & Zeit Logik
   currentPosition = 0;
@@ -29,6 +30,7 @@ export class Startpage implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
+    this.startLoginEventStream();
     await this.spotifyService.initPlayer(true);
     this.loadPlaylist();
 
@@ -125,5 +127,21 @@ export class Startpage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopProgressTimer();
+    this.eventSource?.close();
+  }
+
+  private startLoginEventStream() {
+    this.eventSource?.close();
+    this.eventSource = new EventSource('/api/spotify/events?source=web');
+    this.eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data?.type === 'login-success') {
+          this.spotifyService.initPlayer(true);
+        }
+      } catch {
+        // ignore malformed events
+      }
+    };
   }
 }

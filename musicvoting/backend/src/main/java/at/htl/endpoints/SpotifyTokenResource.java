@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.reactive.RestStreamElementType;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.net.URI;
@@ -27,6 +28,9 @@ public class SpotifyTokenResource {
 
     @Inject
     TokenStore tokenStore;
+
+    @Inject
+    LoginEventBus loginEventBus;
 
 
     @ConfigProperty(name = "spotify.client.id")
@@ -160,18 +164,33 @@ public class SpotifyTokenResource {
             spotifyPlayer.ensurePartyPlaylistExists();
 
             boolean iosSource = state != null && state.toLowerCase(Locale.ROOT).startsWith("ios");
+            String installationId = null;
             if (iosSource) {
                 String[] parts = state.split(":", 2);
                 if (parts.length == 2 && !parts[1].isBlank()) {
-                    tokenStore.setIosInstallationId(parts[1].trim());
+                    installationId = parts[1].trim();
+                    tokenStore.setIosInstallationId(installationId);
                 }
             }
 
             if (iosSource) {
+                loginEventBus.emit(new LoginEvent(
+                        "login-success",
+                        java.time.Instant.now(),
+                        Map.of(
+                                "source", "ios",
+                                "installationId", installationId == null ? "" : installationId
+                        )
+                ));
                 String iosTarget = iosRedirectUri + (iosRedirectUri.contains("?") ? "&" : "?") + "success=1";
                 return Response.seeOther(URI.create(iosTarget)).build();
             }
 
+            loginEventBus.emit(new LoginEvent(
+                    "login-success",
+                    java.time.Instant.now(),
+                    Map.of("source", "web")
+            ));
             return Response.seeOther(URI.create(webRedirectUri)).build();
 
         } catch (Exception e) {
@@ -179,6 +198,26 @@ public class SpotifyTokenResource {
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
                     .build();
         }
+    }
+
+    @GET
+    @Path("/events")
+    @Produces(MediaType.SERVER_SENT_EVENTS)
+    @RestStreamElementType(MediaType.APPLICATION_JSON)
+    public io.smallrye.mutiny.Multi<LoginEvent> events(
+            @QueryParam("source") @DefaultValue("web") String source,
+            @QueryParam("installationId") String installationId
+    ) {
+        var stream = loginEventBus.stream();
+        if ("ios".equalsIgnoreCase(source) && installationId != null && !installationId.isBlank()) {
+            return stream.select().where(event ->
+                    "ios".equalsIgnoreCase(event.payload().get("source"))
+                            && installationId.equals(event.payload().get("installationId")));
+        }
+        if ("web".equalsIgnoreCase(source)) {
+            return stream.select().where(event -> "web".equalsIgnoreCase(event.payload().get("source")));
+        }
+        return stream;
     }
 
 
