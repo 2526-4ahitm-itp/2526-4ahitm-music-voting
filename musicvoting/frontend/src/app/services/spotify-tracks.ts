@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -11,6 +11,8 @@ export class TrackService {
     return this.http.get<any>(`/api/track/search?q=${encodeURIComponent(query)}`);
   }
 
+  startParty(): Observable<any> {
+    return this.http.post('/api/track/next', {});
+  }
 
 }
-

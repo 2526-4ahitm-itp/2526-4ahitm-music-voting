@@ -66,6 +66,7 @@ export class SpotifyWebPlayerService {
       console.error('Spotify playback error:', message);
     });
 
+
     this.player.addListener('ready', ({ device_id }: any) => {
       console.log('Spotify ready, device:', device_id);
       if (!registerPlaybackDevice) return;

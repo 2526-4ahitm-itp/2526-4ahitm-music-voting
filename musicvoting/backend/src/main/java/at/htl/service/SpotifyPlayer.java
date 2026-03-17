@@ -313,13 +313,7 @@ public class SpotifyPlayer {
             String trackId = (String) nextTrack.get("id");
 
             // 2. Abspielen starten
-            Response playResponse = play(uri);
-            if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
-                return Response.status(playResponse.getStatus())
-                        .entity(playResponse.getEntity())
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
-            }
+            play(uri);
 
             // 3. Aus der Spotify-Playlist löschen
             String playlistId = tokenStore.getPlaylistId();

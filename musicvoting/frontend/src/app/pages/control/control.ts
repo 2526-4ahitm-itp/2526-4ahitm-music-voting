@@ -1,19 +1,20 @@
 import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http'; // Import fehlt!
+import {TrackService} from '../../services/spotify-tracks';
+
 
 @Component({
   selector: 'app-control',
-  standalone: true, // Falls du Angular 17/18 nutzt
+  standalone: true,
   imports: [],
   templateUrl: './control.html',
   styleUrl: './control.css',
 })
 export class Control {
 
-  constructor(private http: HttpClient) {}
+  constructor(private trackService: TrackService) {}
 
   startParty() {
-    this.http.post('/api/track/next', {}).subscribe({
+    this.trackService.startParty().subscribe({
       next: () => {
         console.log("Erstes Lied gestartet");
       },
@@ -22,4 +23,5 @@ export class Control {
       }
     });
   }
+
 }
