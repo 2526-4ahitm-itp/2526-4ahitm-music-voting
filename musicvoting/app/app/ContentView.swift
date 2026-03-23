@@ -178,9 +178,8 @@ struct ContentView: View {
             }
     }
         .task {
-            if auth.isChecking {
-                await auth.checkLoginStatus()
-            }
+            // Always verify login status on startup, then listen for login events if not logged in.
+            await auth.checkLoginStatus()
             if !auth.isLoggedIn {
                 auth.startLoginEventStream()
             }
