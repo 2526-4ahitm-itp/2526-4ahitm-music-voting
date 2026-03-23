@@ -31,6 +31,10 @@ export class Guest implements OnInit {
     const searchTerm = query || this.searchQuery?.trim();
     if (!searchTerm) return;
 
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     this.isSearching = true;
     this.tracks = [];
     this.cdr.detectChanges();
@@ -42,7 +46,11 @@ export class Guest implements OnInit {
       if (res?.tracks?.items?.length) {
         const seen = new Set<string>();
         this.tracks = res.tracks.items
-          .filter((track: any) => track?.id && !seen.has(track.id) && seen.add(track.id))
+          .filter((track: any) => track?.id && !seen.has(track.id))
+          .map((track: any) => {
+            seen.add(track.id);
+            return track;
+          })
           .slice(0, 10);
 
       }
