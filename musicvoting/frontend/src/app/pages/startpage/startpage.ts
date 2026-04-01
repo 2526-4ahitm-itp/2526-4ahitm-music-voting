@@ -120,7 +120,13 @@ export class Startpage implements OnInit, OnDestroy {
       const res: any = await lastValueFrom(this.spotifyService.getQueue());
       this.ngZone.run(() => {
         if (Array.isArray(res.queue)) {
-          this.tracks = res.queue;
+          const currentUri = this.currentTrack?.uri;
+          const currentId = this.currentTrack?.id;
+          this.tracks = res.queue.filter((track: any) => {
+            if (currentUri && track?.uri === currentUri) return false;
+            if (currentId && track?.id === currentId) return false;
+            return true;
+          });
         }
       });
     } catch (err) {

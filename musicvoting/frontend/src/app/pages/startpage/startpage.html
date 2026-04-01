@@ -49,8 +49,13 @@
       } @else {
         <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Kein Song">
         <div class="song-info">
-          <h1>Kein Song aktiv</h1>
-          <p>Starte die Playlist über die Steuerung</p>
+          @if (tracks.length > 0) {
+            <h1>Playlist nicht gestartet</h1>
+            <p>Der Host kann den ersten Song im Dashboard starten.</p>
+          } @else {
+            <h1>Kein Song aktiv</h1>
+            <p>Füge Songs hinzu oder starte die Playlist über die Steuerung.</p>
+          }
         </div>
       }
     </section>

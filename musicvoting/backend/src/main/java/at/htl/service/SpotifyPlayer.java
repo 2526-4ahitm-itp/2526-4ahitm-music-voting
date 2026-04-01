@@ -40,7 +40,7 @@ public class SpotifyPlayer {
     public Map<String, Object> searchTracks(String query) {
         try {
             String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
-            String url = "https://api.spotify.com/v1/search?q=" + encoded + "&type=track&limit=10";
+            String url = "https://api.spotify.com/v1/search?q=" + encoded + "&type=track&limit=25";
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
