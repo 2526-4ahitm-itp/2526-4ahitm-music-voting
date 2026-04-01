@@ -13,6 +13,8 @@ public class TokenStore {
     private AtomicReference<String> playlistId = new AtomicReference<>("");
     private AtomicReference<String> spotifyUserId = new AtomicReference<>("");
     private AtomicReference<String> iosInstallationId = new AtomicReference<>("");
+    private AtomicReference<String> lastPlaybackUri = new AtomicReference<>("");
+    private AtomicReference<Boolean> lastPlaybackActive = new AtomicReference<>(false);
 
     public String getToken() {
         return token.get();
@@ -52,5 +54,21 @@ public class TokenStore {
 
     public void setIosInstallationId(String iosInstallationId) {
         this.iosInstallationId.set(iosInstallationId);
+    }
+
+    public String getLastPlaybackUri() {
+        return lastPlaybackUri.get();
+    }
+
+    public void setLastPlaybackUri(String lastPlaybackUri) {
+        this.lastPlaybackUri.set(lastPlaybackUri == null ? "" : lastPlaybackUri);
+    }
+
+    public Boolean getLastPlaybackActive() {
+        return lastPlaybackActive.get();
+    }
+
+    public void setLastPlaybackActive(Boolean lastPlaybackActive) {
+        this.lastPlaybackActive.set(Boolean.TRUE.equals(lastPlaybackActive));
     }
 }

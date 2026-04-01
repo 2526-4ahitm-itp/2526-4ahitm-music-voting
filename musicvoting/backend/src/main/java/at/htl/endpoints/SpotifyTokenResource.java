@@ -103,7 +103,9 @@ public class SpotifyTokenResource {
                     .build();
         }
 
-        this.tokenStore.setDeviceId(deviceId.trim());
+        String normalizedDeviceId = deviceId.trim();
+        this.tokenStore.setDeviceId(normalizedDeviceId);
+        spotifyPlayer.restoreCurrentTrackFromBeginningOnDevice(normalizedDeviceId);
         return Response.ok("{\"status\":\"Device ID gesetzt\"}").build();
     }
 

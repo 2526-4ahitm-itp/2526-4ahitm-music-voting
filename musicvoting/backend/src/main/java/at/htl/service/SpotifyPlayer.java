@@ -86,7 +86,11 @@ public class SpotifyPlayer {
             Map<String, String[]> bodyMap = Map.of("uris", new String[]{uri});
             String body = mapper.writeValueAsString(bodyMap);
 
-            return sendPut(url, body);
+            Response response = sendPut(url, body);
+            if (response.getStatus() >= 200 && response.getStatus() < 300) {
+                updateCachedPlayback(uri, true);
+            }
+            return response;
         } catch (Exception e) {
             return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
         }
@@ -365,7 +369,11 @@ public class SpotifyPlayer {
             }
 
             String url = "https://api.spotify.com/v1/me/player/pause?device_id=" + deviceId;
-            return sendPut(url, null);
+            Response response = sendPut(url, null);
+            if (response.getStatus() >= 200 && response.getStatus() < 300) {
+                tokenStore.setLastPlaybackActive(false);
+            }
+            return response;
         } catch (Exception e) {
             return Response.serverError()
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
@@ -385,12 +393,47 @@ public class SpotifyPlayer {
             }
 
             String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
-            return sendPut(url, null);
+            Response response = sendPut(url, null);
+            if (response.getStatus() >= 200 && response.getStatus() < 300) {
+                tokenStore.setLastPlaybackActive(true);
+            }
+            return response;
         } catch (Exception e) {
             return Response.serverError()
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
                     .type(MediaType.APPLICATION_JSON)
                     .build();
+        }
+    }
+
+    public void restoreCurrentTrackFromBeginningOnDevice(String deviceId) {
+        try {
+            if (deviceId == null || deviceId.isBlank()) {
+                return;
+            }
+
+            String uri = null;
+            Map<String, Object> snapshot = getCurrentPlaybackSnapshot();
+            if (snapshot != null && Boolean.TRUE.equals(snapshot.get("isPlaying"))) {
+                uri = (String) snapshot.get("uri");
+            }
+
+            if ((uri == null || uri.isBlank()) && Boolean.TRUE.equals(tokenStore.getLastPlaybackActive())) {
+                uri = tokenStore.getLastPlaybackUri();
+            }
+
+            if (uri == null || uri.isBlank()) {
+                return;
+            }
+
+            Map<String, Object> bodyMap = Map.of("uris", List.of(uri));
+            String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
+            Response response = sendPut(url, mapper.writeValueAsString(bodyMap));
+            if (response.getStatus() >= 200 && response.getStatus() < 300) {
+                updateCachedPlayback(uri, true);
+            }
+        } catch (Exception ignored) {
+            // Device registration should still succeed even if restore fails.
         }
     }
 
@@ -437,7 +480,10 @@ public class SpotifyPlayer {
             HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (res.statusCode() == 204) {
-                return Response.ok(Map.of("isPlaying", false)).build();
+                return Response.ok(Map.of(
+                        "isPlaying", false,
+                        "progressMs", 0
+                )).build();
             }
 
             if (res.statusCode() < 200 || res.statusCode() >= 300) {
@@ -449,10 +495,15 @@ public class SpotifyPlayer {
 
             Map<String, Object> json = mapper.readValue(res.body(), Map.class);
             boolean isPlaying = Boolean.TRUE.equals(json.get("is_playing"));
+            Number progressMs = (Number) json.get("progress_ms");
 
             Object itemObj = json.get("item");
             if (!(itemObj instanceof Map<?, ?> item)) {
-                return Response.ok(Map.of("isPlaying", isPlaying)).build();
+                tokenStore.setLastPlaybackActive(isPlaying);
+                return Response.ok(Map.of(
+                        "isPlaying", isPlaying,
+                        "progressMs", progressMs == null ? 0 : progressMs.intValue()
+                )).build();
             }
 
             List<Map<String, Object>> artists = (List<Map<String, Object>>) item.get("artists");
@@ -474,7 +525,9 @@ public class SpotifyPlayer {
 
             Map<String, Object> payload = new HashMap<>();
             payload.put("isPlaying", isPlaying);
+            payload.put("progressMs", progressMs == null ? 0 : progressMs.intValue());
             payload.put("track", trackPayload);
+            updateCachedPlayback((String) item.get("uri"), isPlaying);
 
             return Response.ok(payload).build();
         } catch (Exception e) {
@@ -592,21 +645,50 @@ public class SpotifyPlayer {
         client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
     }
 
+    private Map<String, Object> getCurrentPlaybackSnapshot() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.spotify.com/v1/me/player/currently-playing"))
+                .header("Authorization", authHeader())
+                .GET()
+                .build();
+
+        HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() == 204) {
+            return null;
+        }
+
+        if (res.statusCode() < 200 || res.statusCode() >= 300) {
+            throw new IllegalStateException(res.body());
+        }
+
+        Map<String, Object> json = mapper.readValue(res.body(), Map.class);
+        Map<String, Object> snapshot = new HashMap<>();
+        snapshot.put("isPlaying", Boolean.TRUE.equals(json.get("is_playing")));
+
+        Object itemObj = json.get("item");
+        if (itemObj instanceof Map<?, ?> item) {
+            snapshot.put("item", item);
+            snapshot.put("uri", item.get("uri"));
+        }
+
+        return snapshot;
+    }
+
+    private void updateCachedPlayback(String uri, boolean isPlaying) {
+        if (uri != null && !uri.isBlank()) {
+            tokenStore.setLastPlaybackUri(uri);
+        }
+        tokenStore.setLastPlaybackActive(isPlaying);
+    }
+
     private String getCurrentlyPlayingUri() {
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.spotify.com/v1/me/player/currently-playing"))
-                    .header("Authorization", authHeader())
-                    .GET()
-                    .build();
-
-            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (res.statusCode() == 204 || res.statusCode() < 200 || res.statusCode() >= 300) {
+            Map<String, Object> snapshot = getCurrentPlaybackSnapshot();
+            if (snapshot == null) {
                 return null;
             }
 
-            Map<String, Object> json = mapper.readValue(res.body(), Map.class);
-            Object itemObj = json.get("item");
+            Object itemObj = snapshot.get("item");
             if (!(itemObj instanceof Map<?, ?> item)) {
                 return null;
             }

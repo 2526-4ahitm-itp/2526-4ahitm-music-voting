@@ -16,6 +16,7 @@ export class Startpage implements OnInit, OnDestroy {
   menuOpen = false;
   currentTrack: any = null;
   private eventSource?: EventSource;
+  private ignoreInitialEndedState = true;
 
   // Progress bar & Zeit Logik
   currentPosition = 0;
@@ -31,6 +32,7 @@ export class Startpage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.startLoginEventStream();
+    this.ignoreInitialEndedState = true;
     await this.spotifyService.initPlayer(true);
     this.loadPlaylist();
 
@@ -53,7 +55,16 @@ export class Startpage implements OnInit, OnDestroy {
           this.stopProgressTimer();
         }
 
-        if (state.paused && state.position === 0 && state.track_window.previous_tracks.length > 0) {
+        if (!state.paused || state.position > 0) {
+          this.ignoreInitialEndedState = false;
+        }
+
+        if (
+          !this.ignoreInitialEndedState &&
+          state.paused &&
+          state.position === 0 &&
+          state.track_window.previous_tracks.length > 0
+        ) {
           this.playNext();
         }
 
@@ -137,6 +148,7 @@ export class Startpage implements OnInit, OnDestroy {
       try {
         const data = JSON.parse(event.data);
         if (data?.type === 'login-success') {
+          this.ignoreInitialEndedState = true;
           this.spotifyService.initPlayer(true);
         }
       } catch {
