@@ -144,6 +144,18 @@ public class SpotifyPlayer {
         }
     }
 
+    public Response removeTrack(String uri) {
+        try {
+            removeTrackFromPlaylist(uri);
+            return Response.ok(Map.of("status", "removed")).build();
+        } catch (Exception e) {
+            return Response.serverError()
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+    }
+
 
     public List<Map<String, Object>> getQueue() {
         try {
@@ -307,30 +319,29 @@ public class SpotifyPlayer {
                 return Response.ok("{\"status\":\"empty\", \"message\":\"Warteschlange ist leer\"}").build();
             }
 
-            // 1. Hol den ersten Track aus der Liste
+            // If the currently playing track is still at the top of the queue,
+            // remove it first to avoid replaying the same song after it ended.
+            String currentUri = getCurrentlyPlayingUri();
+            if (currentUri != null && !currentUri.isBlank()) {
+                String firstUri = (String) currentQueue.get(0).get("uri");
+                if (currentUri.equals(firstUri)) {
+                    removeTrackFromPlaylist(currentUri);
+                    currentQueue = getQueue();
+                    if (currentQueue == null || currentQueue.isEmpty()) {
+                        return Response.ok("{\"status\":\"empty\", \"message\":\"Warteschlange ist leer\"}").build();
+                    }
+                }
+            }
+
+            // 1. Hol den (neuen) ersten Track aus der Liste
             Map<String, Object> nextTrack = currentQueue.get(0);
             String uri = (String) nextTrack.get("uri");
-            String trackId = (String) nextTrack.get("id");
 
             // 2. Abspielen starten
             play(uri);
 
             // 3. Aus der Spotify-Playlist löschen
-            String playlistId = tokenStore.getPlaylistId();
-            // Spotify erwartet für DELETE ein spezielles Format: { "tracks": [{ "uri": "..." }] }
-            Map<String, Object> trackObj = Map.of("uri", uri);
-            Map<String, Object> deleteBody = Map.of("tracks", List.of(trackObj));
-
-            String jsonDelete = mapper.writeValueAsString(deleteBody);
-
-            HttpRequest deleteRequest = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
-                    .header("Authorization", authHeader())
-                    .header("Content-Type", "application/json")
-                    .method("DELETE", HttpRequest.BodyPublishers.ofString(jsonDelete))
-                    .build();
-
-            client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+            removeTrackFromPlaylist(uri);
 
             return Response.ok(Map.of(
                     "status", "playing",
@@ -557,6 +568,49 @@ public class SpotifyPlayer {
                 tokenStore.setDeviceId(selected);
             }
             return selected;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void removeTrackFromPlaylist(String uri) throws Exception {
+        if (uri == null || uri.isBlank()) return;
+        String playlistId = tokenStore.getPlaylistId();
+        if (playlistId == null || playlistId.isBlank()) return;
+
+        Map<String, Object> trackObj = Map.of("uri", uri);
+        Map<String, Object> deleteBody = Map.of("tracks", List.of(trackObj));
+        String jsonDelete = mapper.writeValueAsString(deleteBody);
+
+        HttpRequest deleteRequest = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
+                .header("Authorization", authHeader())
+                .header("Content-Type", "application/json")
+                .method("DELETE", HttpRequest.BodyPublishers.ofString(jsonDelete))
+                .build();
+
+        client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String getCurrentlyPlayingUri() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.spotify.com/v1/me/player/currently-playing"))
+                    .header("Authorization", authHeader())
+                    .GET()
+                    .build();
+
+            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() == 204 || res.statusCode() < 200 || res.statusCode() >= 300) {
+                return null;
+            }
+
+            Map<String, Object> json = mapper.readValue(res.body(), Map.class);
+            Object itemObj = json.get("item");
+            if (!(itemObj instanceof Map<?, ?> item)) {
+                return null;
+            }
+            return (String) item.get("uri");
         } catch (Exception e) {
             return null;
         }

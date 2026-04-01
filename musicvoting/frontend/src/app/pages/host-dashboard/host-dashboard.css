@@ -92,18 +92,25 @@ hr {
   margin-top: 1rem;
   margin-bottom: 2rem;
   display: flex;
+  gap: 2rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .song-info {
   padding-left: 2rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .player-controls {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 1.56rem;
   margin-top: 5rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .play-icon, .skip-icon {
