@@ -51,25 +51,9 @@ export class VotingComp implements OnInit {
     }
   }
 
-  // Suche mittels Signals
   async onSearch(event: Event) {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
-
-    // Falls du eine echte API-Suche starten willst:
-    if (input.value.length > 2) {
-      this.executeApiSearch(input.value);
-    }
   }
 
-  private async executeApiSearch(term: string) {
-    this.isSearching.set(true);
-    try {
-
-    } catch (err) {
-      console.error('Suche fehlgeschlagen', err);
-    } finally {
-      this.isSearching.set(false);
-    }
-  }
 }
