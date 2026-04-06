@@ -2,7 +2,7 @@
 
   <nav class="footer-nav">
     <a href="/voting" class="nav-item active">
-      <span class="nav-text">Voten</span>
+      <span class="nav-text">Vote</span>
     </a>
     <a href="/guest" class="nav-item">
       <span class="nav-text">Hinzufügen</span>
@@ -13,7 +13,7 @@
 
     <div class="sticky-top">
       <header class="header">
-        <h1 style="color: black;">MusicVoting</h1>
+        <h1 style="color: black;">Vote für deine Lieblingssongs!</h1>
       </header>
 
       <div class="search-section">
@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <main class="main-content">
+    <div class="main-content">
       <div class="track-list">
         @for (track of filteredTracks(); track track.id) {
           <div class="track-card">
@@ -48,7 +48,8 @@
           <p>Keine Songs gefunden.</p>
         }
       </div>
-    </main>
+    </div>
 
   </div>
+</div>
 </div>
