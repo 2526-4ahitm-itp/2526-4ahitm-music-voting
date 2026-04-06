@@ -252,3 +252,66 @@ html, body {
   background-color: #e2e8f0;
   color: #ef4444;
 }
+
+
+@media (max-width: 48rem) {
+  .music-voting-container {
+    flex-direction: column;
+  }
+
+  .footer-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4.6875rem;
+    flex-direction: row;
+    padding: 0 0.5rem;
+    border-right: none;
+    border-top: 0.0625rem solid #eee;
+    background-color: #fff;
+    z-index: 1000;
+    box-shadow: 0 -0.25rem 0.625rem rgba(0, 0, 0, 0.02);
+  }
+
+  .nav-item {
+    flex: 1;
+    flex-direction: column;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    padding: 0;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+
+  .nav-item.active {
+    background-color: transparent;
+  }
+
+  .nav-item.active::before {
+    top: 0;
+    left: 50%;
+    width: 40%;
+    height: 0.1875rem;
+    transform: translateX(-50%);
+    border-radius: 0 0 0.25rem 0.25rem;
+  }
+
+  .header {
+    padding: 1.125rem 1.25rem;
+    text-align: center;
+  }
+
+  .header h1 {
+    font-size: 1.375rem;
+  }
+
+  .search-section {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .main-content {
+    padding: 0.625rem 0.75rem 5.625rem 0.75rem;
+  }
+}
+
