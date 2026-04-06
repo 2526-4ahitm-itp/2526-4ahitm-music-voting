@@ -5,6 +5,7 @@ import {Guest} from './pages/guest/guest';
 import {Startpage} from './pages/startpage/startpage';
 import {Control} from './pages/control/control';
 import {HostDashboard} from './pages/host-dashboard/host-dashboard';
+import {VotingComp} from './pages/voting-comp/voting-comp';
 
 export const routes: Routes = [
   {path: 'startpage', component: Startpage},
@@ -12,6 +13,7 @@ export const routes: Routes = [
   { path: 'host', component: Host },
   {path: 'guest', component: Guest},
   {path: 'dashboard-host', component: HostDashboard},
+  {path: 'voting', component: VotingComp},
   {path: '', component: Home}
 
 ];

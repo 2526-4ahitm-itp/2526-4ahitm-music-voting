@@ -1,0 +1,234 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background-color: #f0f2f5;
+  font-family: sans-serif;
+}
+
+.music-voting-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f0f2f5;
+}
+
+.footer-nav {
+  width: 17.5rem;
+  background-color: #fff;
+  border-right: 0.0625rem solid #eee;
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem 0.625rem;
+  flex-shrink: 0;
+  box-shadow: 0.125rem 0 0.625rem rgba(0, 0, 0, 0.03);
+}
+
+.nav-item {
+  text-decoration: none;
+  flex-shrink: 0;
+  color: #a0aec0;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  gap: 0.9375rem;
+  border-radius: 0.75rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nav-item:visited {
+  color: #a0aec0;
+}
+
+.nav-item.active {
+  color: #8b00a5;
+  background-color: #fdfaff;
+}
+
+.nav-item.active:visited {
+  color: #8b00a5;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.25rem;
+  height: 1.5rem;
+  background: #8b00a5;
+  border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.sticky-top {
+  flex-shrink: 0;
+  z-index: 100;
+  background: #fff;
+  border-bottom: 0.0625rem solid #eee;
+}
+
+.header {
+  padding: 1.5625rem 2.5rem;
+  text-align: left;
+  background: linear-gradient(to right, #ffffff, #faf5ff, #ffffff);
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(45deg, #111, #8b00a5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.0313rem;
+}
+
+.search-section {
+  padding: 1.25rem 2.5rem;
+}
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 37.5rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  font-size: 1rem;
+  border: 0.0625rem solid #e5e5e5;
+  border-radius: 0.75rem;
+  outline: none;
+  background: #f9f9f9;
+  transition: all 0.3s ease;
+}
+
+.search-bar input:focus {
+  background: #fff;
+  border-color: #8b00a5;
+  box-shadow: 0 0.25rem 0.75rem rgba(139, 0, 165, 0.08);
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 2.5rem;
+  scrollbar-width: none;
+}
+
+.main-content::-webkit-scrollbar {
+  display: none;
+}
+
+.track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 50rem;
+}
+
+.track-card {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  border-bottom: 0.0625rem solid #f9f9f9;
+}
+
+.track-card:hover {
+  background-color: #fdfaff;
+}
+
+.track-card.voted {
+  opacity: 0.6;
+  pointer-events: none;
+  background-color: #f1f5f9;
+  filter: grayscale(0.5);
+}
+
+.album-cover {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  margin-right: 0.875rem;
+  flex-shrink: 0;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.track-name {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #111;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist-name {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.vote-button {
+  background-color: #f3e8ff;
+  border: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  color: #8b00a5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.1s ease, background-color 0.1s;
+}
+
+.vote-button:active {
+  background-color: #8b00a5;
+  color: #ffffff;
+  transform: scale(0.85);
+}
+
+.track-card.voted .vote-button {
+  background-color: #e2e8f0;
+  color: #ef4444;
+}
