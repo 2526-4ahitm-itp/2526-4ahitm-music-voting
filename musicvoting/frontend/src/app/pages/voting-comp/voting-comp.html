@@ -1,0 +1,54 @@
+<div class="music-voting-container">
+
+  <nav class="footer-nav">
+    <a href="/voting" class="nav-item active">
+      <span class="nav-text">Voten</span>
+    </a>
+    <a href="/guest" class="nav-item">
+      <span class="nav-text">Hinzufügen</span>
+    </a>
+  </nav>
+
+  <div class="main-wrapper">
+
+    <div class="sticky-top">
+      <header class="header">
+        <h1 style="color: black;">MusicVoting</h1>
+      </header>
+
+      <div class="search-section">
+        <div class="search-bar">
+          <form class="search-wrapper" (submit)="$event.preventDefault()">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="search"
+              placeholder="In Playlist suchen..."
+              [ngModel]="searchQuery()"
+              (input)="onSearch($event)"
+              name="search">
+          </form>
+        </div>
+    </div>
+
+    <main class="main-content">
+      <div class="track-list">
+        @for (track of filteredTracks(); track track.id) {
+          <div class="track-card">
+            <img class="album-cover" [src]="track.album?.images[0]?.url" alt="Cover">
+            <div class="track-info">
+              <span class="track-name">{{ track.name }}</span>
+              <span class="artist-name">{{ track.artists[0]?.name }}</span>
+            </div>
+            <button class="vote-button">♡</button>
+          </div>
+        } @empty {
+          <p>Keine Songs gefunden.</p>
+        }
+      </div>
+    </main>
+
+  </div>
+</div>
