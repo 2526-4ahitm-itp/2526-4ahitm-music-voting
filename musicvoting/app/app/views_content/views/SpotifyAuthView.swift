@@ -13,6 +13,7 @@ private struct SpotifyStatusResponse: Decodable {
 
 @MainActor
 final class SpotifyAuthViewModel: ObservableObject {
+    
     @Published var isChecking = true
     @Published var isLoggedIn = false
     @Published var errorMessage: String?
@@ -55,7 +56,7 @@ final class SpotifyAuthViewModel: ObservableObject {
             isLoggedIn = status.loggedIn
         } catch {
             isLoggedIn = false
-            errorMessage = "Backend nicht erreichbar. Bitte Backend starten und erneut versuchen."
+            errorMessage = "Spotify-Anmeldung ist derzeit nicht erreichbar. Bitte versuche es erneut."
         }
 
         isChecking = false
@@ -69,74 +70,102 @@ final class SpotifyAuthViewModel: ObservableObject {
 
 struct SpotifyAuthView: View {
     @EnvironmentObject private var auth: SpotifyAuthViewModel
+    @EnvironmentObject private var appState: AppState
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        Group {
-            if auth.isChecking {
-                ProgressView("Spotify Login wird gepruft...")
-            } else if auth.isLoggedIn {
-                MainTabsView()
-            } else {
-                NavigationStack {
-                    VStack(spacing: 16) {
-                        Text("Music Voting")
-                            .font(.largeTitle)
-                            .bold()
+        NavigationStack {
+            ZStack {
+                LinearGradient(
+                    colors: [Color("primary"), Color("secondary"), Color("accent")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-                        Text("Bitte melde dich zuerst mit Spotify an.")
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                ScrollView {
+                    VStack(spacing: 24) {
+                        Image("note")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 170)
+                            .padding(.top, 100)
 
-                        Button("Mit Spotify anmelden") {
-                            openURL(auth.loginURL)
+                        VStack(spacing: 12) {
+                            Text("Spotify Login")
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundStyle(.white)
+
+                            if auth.isChecking {
+                                ProgressView("Spotify Login wird gepruft...")
+                                    .tint(.white)
+                                    .foregroundStyle(.white)
+                            } else {
+                                Text("Bitte melde dich zuerst mit Spotify an, für das Hosten der Party.")
+                                    .foregroundStyle(.white)
+                                    .multilineTextAlignment(.center)
+                                    .font(.title3)
+                            }
                         }
-                        .buttonStyle(.borderedProminent)
+                        .padding(.horizontal, 24)
 
-                        Button("Erneut pruefen") {
-                            Task { await auth.checkLoginStatus() }
-                        }
-                        .buttonStyle(.bordered)
+                        if !auth.isChecking {
+                            VStack(spacing: 15) {
+                                Button {
+                                    openURL(auth.loginURL)
+                                } label: {
+                                    Label("Bei Spotify anmelden", systemImage: "music.note")
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(20)
+                                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 30))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 30)
+                                                .stroke(.white.opacity(0.3), lineWidth: 1)
+                                        )
+                                }
+                                .foregroundStyle(.white)
 
-                        if let error = auth.errorMessage {
-                            Text(error)
-                                .font(.footnote)
-                                .foregroundColor(.red)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
+                                if let error = auth.errorMessage {
+                                    Text(error)
+                                        .font(.footnote)
+                                        .foregroundStyle(.white)
+                                        .multilineTextAlignment(.center)
+                                        .padding(16)
+                                        .frame(maxWidth: .infinity)
+                                        .background(.red.opacity(0.25), in: RoundedRectangle(cornerRadius: 20))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 20)
+                                                .stroke(.white.opacity(0.2), lineWidth: 1)
+                                        )
+                                }
+                            }
+                            .padding(.horizontal, 40)
+                            .padding(.top, 20)
                         }
                     }
-                    .padding()
+                    .padding(.bottom, 40)
                 }
             }
+            .navigationTitle("Music Voting")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
         .task {
             if auth.isChecking {
                 await auth.checkLoginStatus()
             }
+            if auth.isLoggedIn {
+                appState.currentSite = .admin
+            }
         }
-    }
-}
-
-private struct MainTabsView: View {
-    var body: some View {
-        TabView {
-            AdminDashboard()
-                .tabItem {
-                    Label("Admin", systemImage: "person.crop.circle")
-                }
-            QRCodeView()
-                .tabItem {
-                    Label("QR-Code", systemImage: "qrcode")
-                }
-            VotingView()
-                .tabItem {
-                    Label("Voting", systemImage: "heart")
-                }
-            SongAddView()
-                .tabItem {
-                    Label("Add Song", systemImage: "plus")
-                }
+        .onChange(of: auth.isLoggedIn) { isLoggedIn in
+            if isLoggedIn {
+                appState.currentSite = .admin
+            }
         }
     }
 }
@@ -144,4 +173,5 @@ private struct MainTabsView: View {
 #Preview {
     SpotifyAuthView()
         .environmentObject(SpotifyAuthViewModel())
+        .environmentObject(AppState())
 }

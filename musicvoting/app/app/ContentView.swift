@@ -9,6 +9,7 @@ import SwiftUI
 
 enum SiteState {
     case start
+    case spotifyAuth
     case admin
     case guest
     case codeInput
@@ -26,6 +27,8 @@ struct ContentView: View {
         switch appState.currentSite {
         case .start:
             StartView()
+        case .spotifyAuth:
+            SpotifyAuthView()
         case .admin:
             Admin_ContentView()
         case .guest:

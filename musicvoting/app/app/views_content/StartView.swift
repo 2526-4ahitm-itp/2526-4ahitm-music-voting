@@ -71,7 +71,7 @@ struct StartView: View {
                                 // Button 2: Gastgeber
                                 Button {
                                     withAnimation(.easeInOut) {
-                                        appState.currentSite = .admin
+                                        appState.currentSite = .spotifyAuth
                                     }
                                 } label: {
                                     Label("Gastgeber auf einer Party", systemImage: "crown")
