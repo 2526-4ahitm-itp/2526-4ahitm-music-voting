@@ -73,8 +73,7 @@ struct ExitView: View {
         }
         
         private func handleGuestExit() {
-            // 🔜 HIER KOMMT DEINE LOGIK HIN
-            // z.B.:
+            // HIER KOMMT DEINE LOGIK HIN
             // - Verbindung trennen
             // - User aus Session entfernen
             
@@ -84,8 +83,7 @@ struct ExitView: View {
         }
         
         private func handleAdminExit() {
-            // 🔜 HIER KOMMT DEINE LOGIK HIN
-            // z.B.:
+            // HIER KOMMT DEINE LOGIK HIN
             // - Party schließen
             // - Alle User kicken
             // - Daten speichern

@@ -38,6 +38,14 @@ struct Admin_ContentView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarColorScheme(.light, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: ExitView()) {
+                        Image(systemName: "rectangle.portrait.and.arrow.forward")
+                            .foregroundStyle(.black)
+                    }
+                }
+            }
         }
         .tint(Color("secondary"))
     }
