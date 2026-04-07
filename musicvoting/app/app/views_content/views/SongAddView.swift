@@ -146,7 +146,6 @@ struct SongAddView: View {
     @StateObject private var viewModel = SongAddViewModel()
 
     var body: some View {
-        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     searchField
@@ -161,9 +160,7 @@ struct SongAddView: View {
                     resultsCard
                 }
                 .padding()
-            }
-            .navigationTitle("Music Voting")
-            .navigationBarTitleDisplayMode(.inline)
+            
         }
     }
 

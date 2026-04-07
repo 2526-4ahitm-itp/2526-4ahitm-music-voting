@@ -15,7 +15,7 @@ enum SiteState {
 }
 
 class AppState: ObservableObject {
-    @Published var currentSite: SiteState = .start
+    @Published var currentSite: SiteState = .guest
 }
 
 

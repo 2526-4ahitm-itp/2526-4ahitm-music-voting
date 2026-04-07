@@ -136,7 +136,6 @@ struct AdminDashboard: View {
     @StateObject private var viewModel = AdminDashboardViewModel()
 
     var body: some View {
-        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Gerade Spielender Song
@@ -153,9 +152,7 @@ struct AdminDashboard: View {
 
                 }
                 .padding()
-            }
-            .navigationTitle("Music Voting")
-            .navigationBarTitleDisplayMode(.inline)
+            
         }
         .task {
             await viewModel.refreshDashboardState()
