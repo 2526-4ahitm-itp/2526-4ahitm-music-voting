@@ -52,7 +52,7 @@ struct StartView: View {
                                 // Button 1: Gast
                                 Button {
                                     withAnimation(.easeInOut) {
-                                        appState.currentSite = .guest
+                                        appState.currentSite = .codeInput
                                     }
                                 } label: {
                                     Label("Gast auf einer Party", systemImage: "party.popper")
@@ -95,6 +95,14 @@ struct StartView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(.visible, for: .navigationBar)
                 .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: InfoView()) {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(.white)
+                        }
+                    }
+                }
             
         }
     }

@@ -8,16 +8,14 @@
 import SwiftUI
 
 struct ExitView: View {
-    
-    var body: some View {
-        @EnvironmentObject var appState: AppState
+    @EnvironmentObject var appState: AppState
 
-        
+    var body: some View {
+
             NavigationStack {
                 Spacer(minLength: 260)
                 ScrollView {
                     
-                                    
                     if (appState.currentSite == .guest)  {
                         Text("Möchstest du die Party wirklich verlassen?")
                             .font(.title2).bold(true)
@@ -44,7 +42,7 @@ struct ExitView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 40)
                         
-                    } else if appState.currentSite == .admin {
+                    } else if (appState.currentSite == .admin){
                         Text("Möchstest du die Party wirklich beenden?")
                             .font(.title2).bold(true)
                             .multilineTextAlignment(.center)
@@ -52,7 +50,7 @@ struct ExitView: View {
                         Button {
                             appState.currentSite = .start
                         } label: {
-                            Label("Ja, Party verlassen", systemImage: "party.popper")
+                            Label("Ja, Party beenden", systemImage: "party.popper")
                                 .font(.headline)
                                 .bold()
                                 .frame(maxWidth: 240, alignment: .center)
@@ -71,24 +69,22 @@ struct ExitView: View {
                         .padding(.horizontal, 40)
                     }
                     
+                                    
+                    
+                    
+                    
+                    
                     
                     
                     
                     }
                     .navigationTitle("Music Voting")
                     .navigationBarTitleDisplayMode(.inline)
-                    
                 }
-                    
-                    
-            
         }
-        
-        
-       
-    
 }
 
 #Preview {
     ExitView()
+        .environmentObject(AppState())
 }

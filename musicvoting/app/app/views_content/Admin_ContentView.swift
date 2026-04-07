@@ -34,4 +34,5 @@ struct Admin_ContentView: View {
 
 #Preview {
     Admin_ContentView()
+        .environmentObject(AppState())
 }

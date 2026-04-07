@@ -11,6 +11,7 @@ enum SiteState {
     case start
     case admin
     case guest
+    case codeInput
 }
 
 class AppState: ObservableObject {
@@ -29,10 +30,13 @@ struct ContentView: View {
             Admin_ContentView()
         case .guest:
             Gast_ContentView()
+        case .codeInput:
+            CodeInputView()
         }
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AppState())
 }

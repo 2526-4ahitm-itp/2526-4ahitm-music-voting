@@ -63,7 +63,7 @@ struct QRCodeView: View {
                             endPoint: .trailing
                         )
                     )
-                    .cornerRadius(15)
+                    .cornerRadius(30)
                     .shadow(
                         color: Color.black.opacity(0.2),
                         radius: 10,

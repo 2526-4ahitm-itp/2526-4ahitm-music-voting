@@ -25,6 +25,8 @@ struct Gast_ContentView: View {
                     Label("Verlassen", systemImage: "rectangle.portrait.and.arrow.forward")
                 }
             
+            
+            
         }.tint(Color("secondary"))
         
         
@@ -34,4 +36,5 @@ struct Gast_ContentView: View {
 
 #Preview {
     Gast_ContentView()
+        .environmentObject(AppState())
 }
