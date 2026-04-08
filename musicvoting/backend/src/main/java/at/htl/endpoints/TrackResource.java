@@ -72,6 +72,17 @@ public class TrackResource {
         return spotify.addTracksToPlaylist(uris);
     }
 
+    @DELETE
+    @Path("/remove")
+    public Response removeFromPlaylist(Map<String, String> body) {
+        if (body == null || !body.containsKey("uri") || body.get("uri") == null || body.get("uri").isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"Missing uri\"}")
+                    .build();
+        }
+        return spotify.removeTrack(body.get("uri"));
+    }
+
     @POST
     @Path("/next")
     public Response playNext() {

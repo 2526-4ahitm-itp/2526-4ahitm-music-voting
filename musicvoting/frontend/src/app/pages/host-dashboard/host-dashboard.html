@@ -36,17 +36,17 @@
           <p>{{ currentTrack.artists[0]?.name }} </p>
 
           <div class="player-controls">
-            <span class="skip-icon" >⏮</span>
+            <span class="skip-icon" (click)="onRestartCurrent()">⏮</span>
             @if (!partyStarted) {
-              <span class="play-icon" (click)="startParty()">▶</span>
+              <span class="play-icon" (click)="onPlayPause()">▶</span>
             } @else {
               @if (isPaused) {
-                <span class="play-icon" >▶</span>
+                <span class="play-icon" (click)="onPlayPause()">▶</span>
               } @else {
-                <span class="play-icon" >⏸</span>
+                <span class="play-icon" (click)="onPlayPause()">⏸</span>
               }
             }
-            <span class="skip-icon" >⏭</span>
+            <span class="skip-icon" (click)="onSkip()">⏭</span>
           </div>
 
 
@@ -56,6 +56,12 @@
         <div class="song-info">
           <h1>Kein Song aktiv</h1>
           <p>Starte die Playlist über die Steuerung</p>
+
+          <div class="player-controls">
+            <span class="skip-icon" (click)="onRestartCurrent()">⏮</span>
+            <span class="play-icon" (click)="onPlayPause()">▶</span>
+            <span class="skip-icon" (click)="onSkip()">⏭</span>
+          </div>
         </div>
       }
     </section>
@@ -86,7 +92,7 @@
                   <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
                   <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
                 </div>
-                <div class="delete-icon">
+                <div class="delete-icon" (click)="onDeleteTrack(track)">
                   <img src="./assets/img/trash-bin.png" height="20px" width="20px" alt="delete">
                 </div>
               </div>

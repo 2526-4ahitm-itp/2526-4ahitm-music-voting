@@ -45,13 +45,13 @@ export class Guest implements OnInit {
 
       if (res?.tracks?.items?.length) {
         const seen = new Set<string>();
-        this.tracks = res.tracks.items
-          .filter((track: any) => track?.id && !seen.has(track.id))
-          .map((track: any) => {
-            seen.add(track.id);
-            return track;
-          })
-          .slice(0, 10);
+          this.tracks = res.tracks.items
+            .filter((track: any) => track?.id && !seen.has(track.id))
+            .map((track: any) => {
+              seen.add(track.id);
+              return track;
+            })
+            .slice(0, 25);
 
       }
     } catch (err) {
