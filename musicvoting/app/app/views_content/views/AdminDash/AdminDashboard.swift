@@ -50,7 +50,11 @@ final class AdminDashboardViewModel: ObservableObject {
         do {
             let (data, _) = try await URLSession.shared.data(from: queueURL)
             let response = try JSONDecoder().decode(QueueResponse.self, from: data)
-            queueSongs = response.queue.map(Self.mapTrackToSong)
+            let newQueue = response.queue.map(Self.mapTrackToSong)
+            
+            if newQueue != queueSongs {
+                queueSongs = newQueue
+            }
         } catch {
             queueSongs = []
         }

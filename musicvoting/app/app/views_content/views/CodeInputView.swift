@@ -115,6 +115,31 @@ struct CodeInputView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        appState.currentSite = .start
+                    } label: {
+                        Label("Zurück", systemImage: "chevron.left")
+                            .font(.headline)
+                            .bold()
+                            .frame(maxWidth: 120)
+                            .padding(12)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color("primary"),
+                                        Color("accent")
+                                    ]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                ),
+                                in: RoundedRectangle(cornerRadius: 30)
+                            )
+                    }
+                    .foregroundStyle(.white)
+                }
+            }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isFocused = true
