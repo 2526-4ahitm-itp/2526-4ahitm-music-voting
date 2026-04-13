@@ -4,7 +4,6 @@ import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { lastValueFrom } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-guest',
@@ -22,8 +21,7 @@ export class Guest implements OnInit {
   constructor(
     private trackApi: TrackService,
     private spotifyService: SpotifyWebPlayerService,
-    private cdr: ChangeDetectorRef,
-    private router: Router
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {}
@@ -82,14 +80,6 @@ export class Guest implements OnInit {
 
   trackById(index: number, track: any): string {
     return track.id + '-' + index;
-  }
-
-  goToVoting() {
-    this.router.navigate(['/vote']);
-  }
-
-  goToAddSongs() {
-    this.router.navigate(['/guest']);
   }
 
 }

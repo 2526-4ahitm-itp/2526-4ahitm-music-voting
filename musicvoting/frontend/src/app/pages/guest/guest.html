@@ -1,71 +1,75 @@
 <div class="music-voting-container">
-
-  <div class="sticky-top">
-    <header class="header">
-      <h1>MusicVoting</h1>
-    </header>
-
-    <div class="search-section">
-      <div class="search-bar">
-        <form (submit)="search(); $event.preventDefault()" class="search-wrapper">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-               stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input
-            type="search"
-            placeholder="Suchen..."
-            [(ngModel)]="searchQuery"
-            name="search"
-            enterkeyhint="search"
-          >
-          <button type="submit" style="display: none;"></button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <main class="main-content">
-    <div class="track-list">
-      @for (track of tracks; track track.id) {
-        <div class="track-card">
-          <img class="album-cover"
-               [src]="track.album?.images?.[0]?.url || 'assets/placeholder.png'"
-               alt="Cover">
-
-          <div class="track-info">
-            <span class="track-name">{{ track.name }}</span>
-            <span class="artist-name">{{ track.artists[0]?.name }}</span>
-          </div>
-
-          <button class="add-button" (click)="addToPlaylist(track)" [disabled]="addingTrackId === track.id">
-            @if (addingTrackId === track.id) {
-              <span>...</span>
-            } @else {
-              <span>⊕</span>
-            }
-          </button>
-        </div>
-      } @empty {
-        <div class="empty-state">
-          @if (!isSearching) {
-            <div class="welcome-screen">
-              <div class="icon-circle">
-                <span class="main-icon">🎵</span>
-              </div>
-              <h2>Bereit für Musik?</h2>
-              <p>Gib einen Song oder Künstler oben ein, um deine Playlist zu füllen.</p>
-            </div>
-          }
-        </div>
-      }
-    </div>
-  </main>
-
   <nav class="footer-nav">
-    <button class="nav-item" type="button" (click)="goToVoting()">Voten</button>
-    <button class="nav-item active" type="button" (click)="goToAddSongs()">Hinzufügen</button>
+    <a href="/voting" class="nav-item">
+      <span class="nav-text">Voten</span>
+    </a>
+    <a href="/guest" class="nav-item active">
+      <span class="nav-text">Songs hinzufügen</span>
+    </a>
   </nav>
 
+  <div class="main-wrapper">
+    <div class="sticky-top">
+      <header class="header">
+        <h1>MusicVoting</h1>
+      </header>
+
+      <div class="search-section">
+        <div class="search-bar">
+          <form (submit)="search(); $event.preventDefault()" class="search-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="search"
+              placeholder="Suchen..."
+              [(ngModel)]="searchQuery"
+              name="search"
+              enterkeyhint="search"
+            >
+            <button type="submit" style="display: none;"></button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <main class="main-content">
+      <div class="track-list">
+        @for (track of tracks; track track.id) {
+          <div class="track-card">
+            <img class="album-cover"
+                 [src]="track.album?.images?.[0]?.url || 'assets/placeholder.png'"
+                 alt="Cover">
+
+            <div class="track-info">
+              <span class="track-name">{{ track.name }}</span>
+              <span class="artist-name">{{ track.artists[0]?.name }}</span>
+            </div>
+
+            <button class="add-button" (click)="addToPlaylist(track)" [disabled]="addingTrackId === track.id">
+              @if (addingTrackId === track.id) {
+                <span>...</span>
+              } @else {
+                <span>⊕</span>
+              }
+            </button>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            @if (!isSearching) {
+              <div class="welcome-screen">
+                <div class="icon-circle">
+                  <span class="main-icon">🎵</span>
+                </div>
+                <h2>Bereit für Musik?</h2>
+                <p>Gib einen Song oder Künstler oben ein, um deine Playlist zu füllen.</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </main>
+  </div>
 </div>
