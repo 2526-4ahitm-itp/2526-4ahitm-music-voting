@@ -189,11 +189,10 @@ public class SpotifyTokenResource {
                                 "installationId", installationId == null ? "" : installationId
                         )
                 ));
-                loginEventBus.emit(new LoginEvent(
-                        "login-success",
-                        java.time.Instant.now(),
-                        Map.of("source", "web")
-                ));
+                // Do NOT emit a web login-success for iOS logins. Emitting a web event causes the
+                // web client to re-initialize its player and may transfer playback away from the
+                // currently active device. Keeping the event restricted to iOS avoids interrupting
+                // playback on other clients.
                 String iosTarget = iosRedirectUri + (iosRedirectUri.contains("?") ? "&" : "?") + "success=1";
                 return Response.seeOther(URI.create(iosTarget)).build();
             }

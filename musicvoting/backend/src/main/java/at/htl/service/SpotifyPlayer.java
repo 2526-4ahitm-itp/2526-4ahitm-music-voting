@@ -434,6 +434,43 @@ public class SpotifyPlayer {
                 return;
             }
 
+            // Before attempting to transfer playback, check if another device is currently active.
+            // If there is an active device different from the registering device, skip restoring to avoid interrupting playback.
+            try {
+                HttpRequest devReq = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.spotify.com/v1/me/player/devices"))
+                        .header("Authorization", authHeader())
+                        .GET()
+                        .build();
+                HttpResponse<String> devRes = client.send(devReq, HttpResponse.BodyHandlers.ofString());
+                if (devRes.statusCode() >= 200 && devRes.statusCode() < 300) {
+                    Map<String, Object> devJson = mapper.readValue(devRes.body(), Map.class);
+                    List<Map<String, Object>> devices = (List<Map<String, Object>>) devJson.get("devices");
+                    if (devices != null) {
+                        boolean otherActive = devices.stream().anyMatch(d -> Boolean.TRUE.equals(d.get("is_active")) && !deviceId.equals(d.get("id")));
+                        if (otherActive) {
+                            // Another device is active — do not transfer playback to the newly registered device.
+                            // Still update the cached playback snapshot so other clients (iOS/web) know what's playing.
+                            try {
+                                Map<String, Object> currentSnapshot = getCurrentPlaybackSnapshot();
+                                if (currentSnapshot != null) {
+                                    String snapUri = (String) currentSnapshot.get("uri");
+                                    Boolean snapPlaying = Boolean.TRUE.equals(currentSnapshot.get("isPlaying"));
+                                    if (snapUri != null && !snapUri.isBlank()) {
+                                        updateCachedPlayback(snapUri, snapPlaying);
+                                    }
+                                }
+                            } catch (Exception ignoredSnapshot) {
+                                // ignore snapshot failures
+                            }
+                            return;
+                        }
+                    }
+                }
+            } catch (Exception ignoredDevCheck) {
+                // If device check fails, continue with restore attempt (best effort).
+            }
+
             String uri = null;
             Map<String, Object> snapshot = getCurrentPlaybackSnapshot();
             if (snapshot != null && Boolean.TRUE.equals(snapshot.get("isPlaying"))) {

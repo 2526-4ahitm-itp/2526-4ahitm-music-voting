@@ -43,6 +43,8 @@ private struct QueueTrack: Decodable {
 final class AdminDashboardViewModel: ObservableObject {
     @Published var currentSong: Song?
     @Published var isPlaying = false
+    @Published var isLoading = false
+    @Published var partyStarted = false
     @Published var queueSongs: [Song] = []
 
     let pollInterval: TimeInterval = 2
@@ -85,6 +87,9 @@ final class AdminDashboardViewModel: ObservableObject {
     }
 
     func togglePlayPause() async {
+        isLoading = true
+        defer { isLoading = false }
+
         if isPlaying {
             await pauseCurrentSong()
         } else if currentSong != nil {
@@ -95,14 +100,23 @@ final class AdminDashboardViewModel: ObservableObject {
     }
 
     private func startPlaylist() async {
+        let previousIsPlaying = isPlaying
+        isPlaying = true
+        partyStarted = true
+        if currentSong == nil, let firstQueuedSong = queueSongs.first {
+            currentSong = firstQueuedSong
+        }
+
         if let response: StartPlaybackResponse = await performPostRequest(url: startURL, decode: StartPlaybackResponse.self) {
+            // success: confirm UI and set track if provided
             isPlaying = true
             if let track = response.track {
                 currentSong = Self.mapTrackToSong(track)
-            } else if let firstQueuedSong = queueSongs.first {
-                currentSong = firstQueuedSong
             }
             schedulePlaybackStateRefresh()
+        } else {
+            // revert UI on failure
+            isPlaying = previousIsPlaying
         }
     }
 
@@ -198,6 +212,7 @@ struct AdminDashboard: View {
                     CurrentSongPlaying(
                         song: viewModel.currentSong,
                         isPlaying: viewModel.isPlaying,
+                        isLoading: viewModel.isLoading,
                         onPlayPause: {
                             Task { await viewModel.togglePlayPause() }
                         }

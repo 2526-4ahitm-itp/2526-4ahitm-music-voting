@@ -12,6 +12,7 @@ struct CurrentSongPlaying: View {
     @State private var progress: Double = 0.13
     let song: Song?
     let isPlaying: Bool
+    let isLoading: Bool
     var onPlayPause: () -> Void = {}
 
     var body: some View {
@@ -79,9 +80,18 @@ struct CurrentSongPlaying: View {
                         .font(.system(size: 30))
                 }
 
-                Button(action: onPlayPause) {
-                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 60))
+                ZStack {
+                    Button(action: onPlayPause) {
+                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 60))
+                    }
+                    .disabled(isLoading)
+
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .scaleEffect(1.2)
+                    }
                 }
 
                 Button(action: {}) {
@@ -116,6 +126,7 @@ struct CurrentSongPlaying: View {
             imageUrl:
                 "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"
         ),
-        isPlaying: true
+        isPlaying: true,
+        isLoading: false
     )
 }

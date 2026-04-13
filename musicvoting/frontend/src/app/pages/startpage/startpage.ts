@@ -34,7 +34,20 @@ export class Startpage implements OnInit, OnDestroy {
   async ngOnInit() {
     this.startLoginEventStream();
     this.ignoreInitialEndedState = true;
-    await this.spotifyService.initPlayer(true);
+
+    // Check current playback on the backend. If playback is already active on another device,
+    // avoid registering the web player as the active device to prevent interrupting playback.
+    try {
+      const res: any = await lastValueFrom(this.http.get('/api/track/current'));
+      const isPlaying = !!res?.isPlaying;
+      const hasTrack = !!res?.track;
+      const register = !(isPlaying || hasTrack);
+      await this.spotifyService.initPlayer(register);
+    } catch (err) {
+      // If the check fails, fall back to registering the web player.
+      await this.spotifyService.initPlayer(true);
+    }
+
     this.loadPlaylist();
 
     this.spotifyService.getPlayerStatus().subscribe(state => {
@@ -154,7 +167,10 @@ export class Startpage implements OnInit, OnDestroy {
     this.eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data?.type === 'login-success') {
+        // Only react to login-success events that target the web client.
+        // The backend may emit both an ios and web login-success when logging in from iOS,
+        // avoid re-initializing the web player on the iOS event which can transfer/pause playback.
+        if (data?.type === 'login-success' && data?.payload?.source === 'web') {
           this.ignoreInitialEndedState = true;
           this.spotifyService.initPlayer(true);
         }

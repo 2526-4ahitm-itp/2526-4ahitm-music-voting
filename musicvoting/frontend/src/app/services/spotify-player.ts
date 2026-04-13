@@ -23,6 +23,19 @@ export class SpotifyWebPlayerService {
   }
 
   async initPlayer(registerPlaybackDevice: boolean = false) {
+    // Only initialize/connect the Web Playback SDK when the user is on the Startpage.
+    // This ensures playback only happens on the Startpage and opening other routes
+    // or components does not register/steal the active Spotify device.
+    try {
+      const path = typeof window !== 'undefined' ? window.location.pathname : '';
+      if (!path.includes('/startpage') && path !== '/startpage') {
+        // If not on the Startpage, do nothing.
+        return;
+      }
+    } catch (e) {
+      // ignore and proceed in case of unexpected environment
+    }
+
     if (this.isConnecting) return;
     this.isConnecting = true;
     try {

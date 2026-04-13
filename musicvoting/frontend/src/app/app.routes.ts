@@ -10,7 +10,6 @@ export const routes: Routes = [
   { path: '', component: Home },
   { path: 'guest', component: Guest },
   { path: 'startpage', component: Startpage },
-  { path: 'queue', component: Startpage },
   { path: 'control', component: Control },
   { path: 'dashboard-host', component: HostDashboard },
   { path: 'dashboard', component: HostDashboard },
