@@ -2,11 +2,12 @@ import { Component, OnInit, NgZone, signal, computed, ChangeDetectorRef } from '
 import { FormsModule } from "@angular/forms";
 import { lastValueFrom } from 'rxjs';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-voting-comp',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './voting-comp.html',
   styleUrl: './voting-comp.css',
 })

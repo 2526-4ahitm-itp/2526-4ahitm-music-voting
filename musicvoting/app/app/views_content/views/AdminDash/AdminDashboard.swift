@@ -16,6 +16,11 @@ private struct CurrentPlaybackResponse: Decodable {
     let track: QueueTrack?
 }
 
+private struct StartPlaybackResponse: Decodable {
+    let status: String?
+    let track: QueueTrack?
+}
+
 private struct QueueTrack: Decodable {
     let name: String
     let artists: [Artist]
@@ -40,6 +45,7 @@ final class AdminDashboardViewModel: ObservableObject {
     @Published var isPlaying = false
     @Published var queueSongs: [Song] = []
 
+    let pollInterval: TimeInterval = 2
     private let queueURL = URL(string: "http://localhost:8080/api/track/queue")!
     private let startURL = URL(string: "http://localhost:8080/api/track/start")!
     private let pauseURL = URL(string: "http://localhost:8080/api/track/pause")!
@@ -89,22 +95,36 @@ final class AdminDashboardViewModel: ObservableObject {
     }
 
     private func startPlaylist() async {
-        if await performPostRequest(url: startURL) {
-            await loadCurrentPlayback()
-            await loadQueue()
+        if let response: StartPlaybackResponse = await performPostRequest(url: startURL, decode: StartPlaybackResponse.self) {
+            isPlaying = true
+            if let track = response.track {
+                currentSong = Self.mapTrackToSong(track)
+            } else if let firstQueuedSong = queueSongs.first {
+                currentSong = firstQueuedSong
+            }
+            schedulePlaybackStateRefresh()
         }
     }
 
     private func pauseCurrentSong() async {
+        let previousIsPlaying = isPlaying
+        isPlaying = false
+
         if await performPostRequest(url: pauseURL) {
-            isPlaying = false
-            await loadCurrentPlayback()
+            schedulePlaybackStateRefresh()
+        } else {
+            isPlaying = previousIsPlaying
         }
     }
 
     private func resumeCurrentSong() async {
+        let previousIsPlaying = isPlaying
+        isPlaying = true
+
         if await performPostRequest(url: resumeURL) {
-            await loadCurrentPlayback()
+            schedulePlaybackStateRefresh()
+        } else {
+            isPlaying = previousIsPlaying
         }
     }
 
@@ -122,6 +142,38 @@ final class AdminDashboardViewModel: ObservableObject {
             return (200...299).contains(httpResponse.statusCode)
         } catch {
             return false
+        }
+    }
+
+    private func performPostRequest<T: Decodable>(url: URL, decode type: T.Type) async -> T? {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = Data("{}".utf8)
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                return nil
+            }
+
+            if data.isEmpty {
+                return nil
+            }
+
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            return nil
+        }
+    }
+
+    private func schedulePlaybackStateRefresh() {
+        Task {
+            for delay in [0.25, 0.75, 1.5] {
+                try? await Task.sleep(for: .seconds(delay))
+                await refreshDashboardState()
+            }
         }
     }
 
@@ -162,7 +214,7 @@ struct AdminDashboard: View {
             await viewModel.refreshDashboardState()
         }
         .onReceive(
-            Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+            Timer.publish(every: viewModel.pollInterval, on: .main, in: .common).autoconnect()
         ) { _ in
             Task { await viewModel.refreshDashboardState() }
         }

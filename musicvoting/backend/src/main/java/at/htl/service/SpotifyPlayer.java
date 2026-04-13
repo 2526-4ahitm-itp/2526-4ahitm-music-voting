@@ -4,6 +4,7 @@ import at.htl.endpoints.SpotifyTokenResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -49,6 +50,9 @@ public class SpotifyPlayer {
                     .build();
 
             HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                throw SpotifyApiErrors.asException(res, "Die Spotify-Suche");
+            }
 
             Map<String, Object> json = mapper.readValue(res.body(), Map.class);
 
@@ -60,8 +64,10 @@ public class SpotifyPlayer {
 
             return json;
         } catch (Exception e) {
-            e.printStackTrace();
-            return Map.of("tracks", Map.of("items", List.of()));
+            if (e instanceof WebApplicationException webApplicationException) {
+                throw webApplicationException;
+            }
+            throw new WebApplicationException(SpotifyApiErrors.unexpectedError("Die Spotify-Suche", e));
         }
     }
 
@@ -75,7 +81,7 @@ public class SpotifyPlayer {
             String deviceId = resolvePlayableDeviceId();
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\":\"No active Spotify device found.\"}")
+                        .entity(Map.of("error", "No active Spotify device found."))
                         .type(MediaType.APPLICATION_JSON)
                         .build();
             }
@@ -92,7 +98,7 @@ public class SpotifyPlayer {
             }
             return response;
         } catch (Exception e) {
-            return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+            return propagateOrUnexpected("Das Starten der Wiedergabe", e);
         }
     }
 
@@ -101,7 +107,8 @@ public class SpotifyPlayer {
             String playlistId = tokenStore.getPlaylistId();
             if (playlistId == null || playlistId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\":\"No playlist available\"}")
+                        .entity(Map.of("error", "No playlist available"))
+                        .type(MediaType.APPLICATION_JSON)
                         .build();
             }
 
@@ -112,6 +119,9 @@ public class SpotifyPlayer {
                     .build();
 
             HttpResponse<String> getRes = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
+            if (getRes.statusCode() < 200 || getRes.statusCode() >= 300) {
+                throw SpotifyApiErrors.asException(getRes, "Das Laden der Playlist");
+            }
             Map<String, Object> json = mapper.readValue(getRes.body(), Map.class);
             List<Map<String, Object>> items = (List<Map<String, Object>>) json.get("items");
 
@@ -137,14 +147,16 @@ public class SpotifyPlayer {
                     .build();
 
             HttpResponse<String> postRes = client.send(postRequest, HttpResponse.BodyHandlers.ofString());
+            if (postRes.statusCode() < 200 || postRes.statusCode() >= 300) {
+                return SpotifyApiErrors.buildResponse(postRes, "Das Hinzufuegen des Songs zur Playlist");
+            }
             return Response.status(postRes.statusCode())
                     .entity(postRes.body())
                     .type(MediaType.APPLICATION_JSON)
                     .build();
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+            return propagateOrUnexpected("Das Hinzufuegen des Songs zur Playlist", e);
         }
     }
 
@@ -153,10 +165,7 @@ public class SpotifyPlayer {
             removeTrackFromPlaylist(uri);
             return Response.ok(Map.of("status", "removed")).build();
         } catch (Exception e) {
-            return Response.serverError()
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            return propagateOrUnexpected("Das Entfernen des Songs aus der Playlist", e);
         }
     }
 
@@ -176,6 +185,9 @@ public class SpotifyPlayer {
                     .build();
 
             HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                throw SpotifyApiErrors.asException(res, "Das Laden der Warteschlange");
+            }
             Map<String, Object> json = mapper.readValue(res.body(), Map.class);
             List<Map<String, Object>> items = (List<Map<String, Object>>) json.get("items");
 
@@ -200,8 +212,10 @@ public class SpotifyPlayer {
             }).toList();
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return List.of();
+            if (e instanceof WebApplicationException webApplicationException) {
+                throw webApplicationException;
+            }
+            throw new WebApplicationException(SpotifyApiErrors.unexpectedError("Das Laden der Warteschlange", e));
         }
     }
 
@@ -214,6 +228,9 @@ public class SpotifyPlayer {
 
         HttpResponse<String> res =
                 client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() < 200 || res.statusCode() >= 300) {
+            throw SpotifyApiErrors.asException(res, "Das Laden des Spotify-Profils");
+        }
 
         Map<String, Object> map =
                 mapper.readValue(res.body(), Map.class);
@@ -243,6 +260,9 @@ public class SpotifyPlayer {
 
         HttpResponse<String> res =
                 client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() < 200 || res.statusCode() >= 300) {
+            throw SpotifyApiErrors.asException(res, "Das Laden der Playlists");
+        }
 
         Map<String, Object> map =
                 mapper.readValue(res.body(), Map.class);
@@ -279,6 +299,9 @@ public class SpotifyPlayer {
 
         HttpResponse<String> res =
                 client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() < 200 || res.statusCode() >= 300) {
+            throw SpotifyApiErrors.asException(res, "Das Anlegen der Party-Playlist");
+        }
 
         Map<String, Object> map =
                 mapper.readValue(res.body(), Map.class);
@@ -303,6 +326,9 @@ public class SpotifyPlayer {
 
             HttpResponse<String> res =
                     client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return SpotifyApiErrors.buildResponse(res, "Das Speichern der Playlist");
+            }
 
             return Response.status(res.statusCode())
                     .entity(res.body())
@@ -310,7 +336,7 @@ public class SpotifyPlayer {
                     .build();
 
         } catch (Exception e) {
-            return Response.serverError().entity(e.getMessage()).build();
+            return propagateOrUnexpected("Das Speichern der Playlist", e);
         }
     }
 
@@ -320,7 +346,7 @@ public class SpotifyPlayer {
 
             if (currentQueue == null || currentQueue.isEmpty()) {
                 // Wenn nichts mehr da ist, senden wir einen Hinweis
-                return Response.ok("{\"status\":\"empty\", \"message\":\"Warteschlange ist leer\"}").build();
+                return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
             }
 
             // If the currently playing track is still at the top of the queue,
@@ -332,7 +358,7 @@ public class SpotifyPlayer {
                     removeTrackFromPlaylist(currentUri);
                     currentQueue = getQueue();
                     if (currentQueue == null || currentQueue.isEmpty()) {
-                        return Response.ok("{\"status\":\"empty\", \"message\":\"Warteschlange ist leer\"}").build();
+                        return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
                     }
                 }
             }
@@ -342,7 +368,10 @@ public class SpotifyPlayer {
             String uri = (String) nextTrack.get("uri");
 
             // 2. Abspielen starten
-            play(uri);
+            Response playResponse = play(uri);
+            if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
+                return playResponse;
+            }
 
             // 3. Aus der Spotify-Playlist löschen
             removeTrackFromPlaylist(uri);
@@ -353,8 +382,7 @@ public class SpotifyPlayer {
             )).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+            return propagateOrUnexpected("Das Wechseln zum naechsten Song", e);
         }
     }
 
@@ -363,7 +391,7 @@ public class SpotifyPlayer {
             String deviceId = resolvePlayableDeviceId();
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\":\"No active Spotify device found.\"}")
+                        .entity(Map.of("error", "No active Spotify device found."))
                         .type(MediaType.APPLICATION_JSON)
                         .build();
             }
@@ -375,10 +403,7 @@ public class SpotifyPlayer {
             }
             return response;
         } catch (Exception e) {
-            return Response.serverError()
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            return propagateOrUnexpected("Das Pausieren der Wiedergabe", e);
         }
     }
 
@@ -387,7 +412,7 @@ public class SpotifyPlayer {
             String deviceId = resolvePlayableDeviceId();
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\":\"No active Spotify device found.\"}")
+                        .entity(Map.of("error", "No active Spotify device found."))
                         .type(MediaType.APPLICATION_JSON)
                         .build();
             }
@@ -399,10 +424,7 @@ public class SpotifyPlayer {
             }
             return response;
         } catch (Exception e) {
-            return Response.serverError()
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            return propagateOrUnexpected("Das Fortsetzen der Wiedergabe", e);
         }
     }
 
@@ -462,10 +484,7 @@ public class SpotifyPlayer {
             payload.put("track", firstTrack);
             return Response.ok(payload).build();
         } catch (Exception e) {
-            return Response.serverError()
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            return propagateOrUnexpected("Das Starten des ersten Songs", e);
         }
     }
 
@@ -487,10 +506,7 @@ public class SpotifyPlayer {
             }
 
             if (res.statusCode() < 200 || res.statusCode() >= 300) {
-                return Response.status(res.statusCode())
-                        .entity(res.body())
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
+                return SpotifyApiErrors.buildResponse(res, "Das Laden der aktuellen Wiedergabe");
             }
 
             Map<String, Object> json = mapper.readValue(res.body(), Map.class);
@@ -531,10 +547,7 @@ public class SpotifyPlayer {
 
             return Response.ok(payload).build();
         } catch (Exception e) {
-            return Response.serverError()
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            return propagateOrUnexpected("Das Laden der aktuellen Wiedergabe", e);
         }
     }
 
@@ -548,9 +561,12 @@ public class SpotifyPlayer {
                     .build();
 
             HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return SpotifyApiErrors.buildResponse(res, "Die Spotify-Anfrage");
+            }
             return Response.status(res.statusCode()).entity(res.body()).type(MediaType.APPLICATION_JSON).build();
         } catch (Exception e) {
-            return Response.serverError().entity(e.getMessage()).build();
+            return propagateOrUnexpected("Die Spotify-Anfrage", e);
         }
     }
 
@@ -564,9 +580,15 @@ public class SpotifyPlayer {
                     .build();
 
             HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return Response.status(res.statusCode()).entity(res.body()).build();
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return SpotifyApiErrors.buildResponse(res, "Die Spotify-Wiedergabeanfrage");
+            }
+            return Response.status(res.statusCode())
+                    .entity(res.body())
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
         } catch (Exception e) {
-            return Response.serverError().entity(e.getMessage()).build();
+            return propagateOrUnexpected("Die Spotify-Wiedergabeanfrage", e);
         }
     }
 
@@ -579,17 +601,17 @@ public class SpotifyPlayer {
                     .build();
 
             HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return SpotifyApiErrors.buildResponse(res, "Die Spotify-POST-Anfrage");
+            }
             return Response.status(res.statusCode()).entity("{\"status\":\"success\"}").type(MediaType.APPLICATION_JSON).build();
         } catch (Exception e) {
-            return Response.serverError().entity(e.getMessage()).build();
+            return propagateOrUnexpected("Die Spotify-POST-Anfrage", e);
         }
     }
 
     private String resolvePlayableDeviceId() {
         String stored = getStoredDeviceId();
-        if (stored != null && !stored.isBlank()) {
-            return stored;
-        }
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -600,13 +622,26 @@ public class SpotifyPlayer {
 
             HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (res.statusCode() < 200 || res.statusCode() >= 300) {
-                return null;
+                throw SpotifyApiErrors.asException(res, "Das Laden der Spotify-Geraete");
             }
 
             Map<String, Object> map = mapper.readValue(res.body(), Map.class);
             List<Map<String, Object>> devices = (List<Map<String, Object>>) map.get("devices");
             if (devices == null || devices.isEmpty()) {
                 return null;
+            }
+
+            String validatedStored = devices.stream()
+                    .filter(d -> {
+                        String id = (String) d.get("id");
+                        return stored != null && !stored.isBlank() && stored.equals(id);
+                    })
+                    .map(d -> (String) d.get("id"))
+                    .filter(id -> id != null && !id.isBlank())
+                    .findFirst()
+                    .orElse(null);
+            if (validatedStored != null) {
+                return validatedStored;
             }
 
             String active = devices.stream()
@@ -622,7 +657,13 @@ public class SpotifyPlayer {
             }
             return selected;
         } catch (Exception e) {
-            return null;
+            if (stored != null && !stored.isBlank()) {
+                return stored;
+            }
+            if (e instanceof WebApplicationException webApplicationException) {
+                throw webApplicationException;
+            }
+            throw new WebApplicationException(SpotifyApiErrors.unexpectedError("Das Laden der Spotify-Geraete", e));
         }
     }
 
@@ -642,7 +683,10 @@ public class SpotifyPlayer {
                 .method("DELETE", HttpRequest.BodyPublishers.ofString(jsonDelete))
                 .build();
 
-        client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw SpotifyApiErrors.asException(response, "Das Entfernen des Songs aus der Playlist");
+        }
     }
 
     private Map<String, Object> getCurrentPlaybackSnapshot() throws Exception {
@@ -658,7 +702,7 @@ public class SpotifyPlayer {
         }
 
         if (res.statusCode() < 200 || res.statusCode() >= 300) {
-            throw new IllegalStateException(res.body());
+            throw SpotifyApiErrors.asException(res, "Das Laden der aktuellen Wiedergabe");
         }
 
         Map<String, Object> json = mapper.readValue(res.body(), Map.class);
@@ -696,6 +740,13 @@ public class SpotifyPlayer {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private Response propagateOrUnexpected(String actionLabel, Exception exception) {
+        if (exception instanceof WebApplicationException webApplicationException) {
+            return webApplicationException.getResponse();
+        }
+        return SpotifyApiErrors.unexpectedError(actionLabel, exception);
     }
 
 

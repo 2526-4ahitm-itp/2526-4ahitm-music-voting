@@ -8,6 +8,7 @@ declare var Spotify: any;
 export class SpotifyWebPlayerService {
   private player: any;
   private token: string | null = null;
+  private isConnecting = false;
 
   // Neues Subject, um Statusänderungen an Komponenten zu senden
   private playerStateSubject = new Subject<any>();
@@ -22,6 +23,8 @@ export class SpotifyWebPlayerService {
   }
 
   async initPlayer(registerPlaybackDevice: boolean = false) {
+    if (this.isConnecting) return;
+    this.isConnecting = true;
     try {
       this.token = await lastValueFrom(
         this.http.get('/api/spotify/token', { responseType: 'text' })
@@ -30,16 +33,27 @@ export class SpotifyWebPlayerService {
       if (!this.token) return;
 
       await this.loadSpotifySDK();
-      this.createAndConnectPlayer(registerPlaybackDevice);
+      await this.createAndConnectPlayer(registerPlaybackDevice);
     } catch (error) {
       console.error("Player Init fehlgeschlagen", error);
+    } finally {
+      this.isConnecting = false;
     }
   }
 
-  private createAndConnectPlayer(registerPlaybackDevice: boolean) {
+  private async createAndConnectPlayer(registerPlaybackDevice: boolean) {
     if (!(window as any).Spotify) {
       console.error('Spotify SDK ist nicht verfügbar.');
       return;
+    }
+
+    if (this.player) {
+      try {
+        await this.player.disconnect();
+      } catch (error) {
+        console.warn('Vorheriger Spotify Player konnte nicht getrennt werden:', error);
+      }
+      this.player = null;
     }
 
     this.player = new Spotify.Player({
@@ -83,7 +97,7 @@ export class SpotifyWebPlayerService {
       console.warn('Spotify device not ready:', device_id);
     });
 
-    this.player.connect().then((connected: boolean) => {
+    await this.player.connect().then((connected: boolean) => {
       console.log('Spotify connect result:', connected);
     });
   }

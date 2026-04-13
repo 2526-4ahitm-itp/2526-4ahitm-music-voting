@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-startpage',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './startpage.html',
   styleUrls: ['./startpage.css'],
 })
