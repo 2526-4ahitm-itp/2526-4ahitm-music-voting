@@ -1,23 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Startpage</title>
-</head>
-<body>
-
 <div class="layout">
 
   <div class="left">
     <nav class="navbar">
-      <button class="burger" (click)="toggleMenu()">☰</button>
+      <button class="burger" type="button" (click)="toggleMenu()">☰</button>
     </nav>
 
     <div class="side-menu" [class.open]="menuOpen">
       <ul>
-        <li><a routerLink="/startpage" (click)="toggleMenu()">Loren</a></li>
-        <li><a routerLink="/queue" (click)="toggleMenu()">Lorem</a></li>
-        <li><a routerLink="/vote" (click)="toggleMenu()">Lorem</a></li>
+        <li><a routerLink="/queue" (click)="toggleMenu()">Queue</a></li>
+        <li><a routerLink="/vote" (click)="toggleMenu()">Voting</a></li>
+        <li><a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a></li>
       </ul>
     </div>
 
@@ -96,12 +88,10 @@
     <div class="qr-code">
       <img class="cover" src="https://placehold.co/400" height="250px" width="250px" alt="Cover">
       <p class="qr-code-text">
-        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor.
+        Scanne den Code, um Songs hinzuzufügen oder für deine Favoriten zu voten.
       </p>
     </div>
     <span class="logo">MusicVoting</span>
   </div>
 
 </div>
-</body>
-</html>

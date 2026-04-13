@@ -1,6 +1,7 @@
 package at.htl.endpoints;
 
 import at.htl.service.SpotifyPlayer;
+import at.htl.service.SpotifyApiErrors;
 import at.htl.service.TokenStore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
@@ -99,14 +100,15 @@ public class SpotifyTokenResource {
     public Response setDeviceId(String deviceId) {
         if (deviceId == null || deviceId.isBlank()) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"error\":\"Device ID darf nicht leer sein\"}")
+                    .entity(Map.of("error", "Device ID darf nicht leer sein"))
+                    .type(MediaType.APPLICATION_JSON)
                     .build();
         }
 
         String normalizedDeviceId = deviceId.trim();
         this.tokenStore.setDeviceId(normalizedDeviceId);
         spotifyPlayer.restoreCurrentTrackFromBeginningOnDevice(normalizedDeviceId);
-        return Response.ok("{\"status\":\"Device ID gesetzt\"}").build();
+        return Response.ok(Map.of("status", "Device ID gesetzt")).build();
     }
 
 
@@ -155,6 +157,9 @@ public class SpotifyTokenResource {
 
             HttpResponse<String> response = HttpClient.newHttpClient()
                     .send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                return SpotifyApiErrors.buildResponse(response, "Die Spotify-Anmeldung");
+            }
 
             Map<String, String> tokenMap =
                     new ObjectMapper().readValue(response.body(), Map.class);
@@ -184,6 +189,11 @@ public class SpotifyTokenResource {
                                 "installationId", installationId == null ? "" : installationId
                         )
                 ));
+                loginEventBus.emit(new LoginEvent(
+                        "login-success",
+                        java.time.Instant.now(),
+                        Map.of("source", "web")
+                ));
                 String iosTarget = iosRedirectUri + (iosRedirectUri.contains("?") ? "&" : "?") + "success=1";
                 return Response.seeOther(URI.create(iosTarget)).build();
             }
@@ -196,9 +206,10 @@ public class SpotifyTokenResource {
             return Response.seeOther(URI.create(webRedirectUri)).build();
 
         } catch (Exception e) {
-            return Response.serverError()
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .build();
+            if (e instanceof WebApplicationException webApplicationException) {
+                return webApplicationException.getResponse();
+            }
+            return SpotifyApiErrors.unexpectedError("Die Spotify-Anmeldung", e);
         }
     }
 

@@ -1,23 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Startpage</title>
-</head>
-<body>
-
 <div class="layout">
 
   <div class="left">
     <nav class="navbar">
-      <button class="burger" (click)="toggleMenu()">☰</button>
+      <button class="burger" type="button" (click)="toggleMenu()">☰</button>
     </nav>
 
     <div class="side-menu" [class.open]="menuOpen">
       <ul>
-        <li><a routerLink="/startpage" (click)="toggleMenu()">Loren</a></li>
-        <li><a routerLink="/queue" (click)="toggleMenu()">Lorem</a></li>
-        <li><a routerLink="/vote" (click)="toggleMenu()">Lorem</a></li>
+        <li><a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a></li>
+        <li><a routerLink="/queue" (click)="toggleMenu()">Queue</a></li>
+        <li><a routerLink="/vote" (click)="toggleMenu()">Voting</a></li>
       </ul>
     </div>
 
@@ -36,17 +28,17 @@
           <p>{{ currentTrack.artists[0]?.name }} </p>
 
           <div class="player-controls">
-            <span class="skip-icon" (click)="onRestartCurrent()">⏮</span>
+            <button class="skip-icon" type="button" (click)="onRestartCurrent()">⏮</button>
             @if (!partyStarted) {
-              <span class="play-icon" (click)="onPlayPause()">▶</span>
+              <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
             } @else {
               @if (isPaused) {
-                <span class="play-icon" (click)="onPlayPause()">▶</span>
+                <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
               } @else {
-                <span class="play-icon" (click)="onPlayPause()">⏸</span>
+                <button class="play-icon" type="button" (click)="onPlayPause()">⏸</button>
               }
             }
-            <span class="skip-icon" (click)="onSkip()">⏭</span>
+            <button class="skip-icon" type="button" (click)="onSkip()">⏭</button>
           </div>
 
 
@@ -58,9 +50,9 @@
           <p>Starte die Playlist über die Steuerung</p>
 
           <div class="player-controls">
-            <span class="skip-icon" (click)="onRestartCurrent()">⏮</span>
-            <span class="play-icon" (click)="onPlayPause()">▶</span>
-            <span class="skip-icon" (click)="onSkip()">⏭</span>
+            <button class="skip-icon" type="button" (click)="onRestartCurrent()">⏮</button>
+            <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
+            <button class="skip-icon" type="button" (click)="onSkip()">⏭</button>
           </div>
         </div>
       }
@@ -92,9 +84,9 @@
                   <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
                   <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
                 </div>
-                <div class="delete-icon" (click)="onDeleteTrack(track)">
-                  <img src="./assets/img/trash-bin.png" height="20px" width="20px" alt="delete">
-                </div>
+                <button class="delete-icon" type="button" (click)="onDeleteTrack(track)">
+                  <img src="./assets/img/trash-bin.png" height="20" width="20" alt="delete">
+                </button>
               </div>
             </div>
           }
@@ -107,7 +99,7 @@
   <div class="right">
     <div class="qr-code">
       <img class="cover" src="https://placehold.co/400" height="250px" width="250px" alt="Cover">
-      <button class="qr-code-btn">
+      <button class="qr-code-btn" type="button">
         Generiere einen neuen QR-Code
       </button>
     </div>
@@ -115,5 +107,3 @@
   </div>
 
 </div>
-</body>
-</html>

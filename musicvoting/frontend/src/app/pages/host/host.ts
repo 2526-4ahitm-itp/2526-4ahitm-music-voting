@@ -4,6 +4,7 @@ import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { lastValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-host',
@@ -20,10 +21,25 @@ export class Host implements OnInit {
     private spotifyService: SpotifyWebPlayerService,
     private trackApi: TrackService,
     private cdr: ChangeDetectorRef,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
-  ngOnInit() {}
+  async ngOnInit() {
+    try {
+      const token = await lastValueFrom(this.http.get('/api/spotify/token', { responseType: 'text' }));
+      if (token) {
+        // already logged in -> go to dashboard
+        this.router.navigate(['/dashboard-host']);
+      } else {
+        // not logged in -> start spotify login flow
+        this.loginSpotify();
+      }
+    } catch (err) {
+      // token check failed -> start login flow
+      this.loginSpotify();
+    }
+  }
 
   /**
    * Suche nach Tracks
