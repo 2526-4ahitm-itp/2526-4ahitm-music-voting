@@ -179,7 +179,7 @@ struct SongAddView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 30)
                 .stroke(Color.black, lineWidth: 2)
         )
     }
@@ -194,12 +194,26 @@ struct SongAddView: View {
                 }
                 .padding(.vertical, 12)
             } else if viewModel.results.isEmpty {
-                Text(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2
-                     ? ""
-                     : "Keine Ergebnisse gefunden.")
-                    .foregroundColor(.gray)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 12)
+                // Logik für den Platzhalter-Text
+                Group {
+                    if viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
+                        // Dies wird angezeigt, wenn noch nichts (oder zu wenig) eingegeben wurde
+                        Text("Suche nach Songs, Künstlern oder Alben!")
+                            .italic()
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .center).bold()
+                    } else {
+                        // Dies wird angezeigt, wenn gesucht wurde, aber nichts gefunden wurde
+                        Text(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2
+                             ? ""
+                             : "Keine Ergebnisse gefunden.")
+                            .foregroundColor(Color("accent"))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 12)
+                    }
+                }
+                
+                
             } else {
                 ForEach(viewModel.results) { track in
                     SearchResultRow(
@@ -214,8 +228,8 @@ struct SongAddView: View {
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 35)
-                .stroke(Color.black, lineWidth: 3)
+            RoundedRectangle(cornerRadius: 30)
+                .stroke(Color.black, lineWidth: 2)
         )
     }
 }
