@@ -129,15 +129,15 @@ struct SpotifyAuthView: View {
 
                                 if let error = auth.errorMessage {
                                     Text(error)
-                                        .font(.footnote)
+                                        .font(.callout)
                                         .foregroundStyle(.white)
-                                        .multilineTextAlignment(.center)
+                                        .multilineTextAlignment(.center).bold()
                                         .padding(16)
                                         .frame(maxWidth: .infinity)
-                                        .background(.red.opacity(0.25), in: RoundedRectangle(cornerRadius: 20))
+                                        .background(Color("primary").opacity(0.30), in: RoundedRectangle(cornerRadius: 30))
                                         .overlay(
-                                            RoundedRectangle(cornerRadius: 20)
-                                                .stroke(.white.opacity(0.2), lineWidth: 1)
+                                            RoundedRectangle(cornerRadius: 30)
+                                                .stroke(.white.opacity(0.2), lineWidth: 2)
                                         )
                                 }
                             }
