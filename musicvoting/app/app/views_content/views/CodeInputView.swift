@@ -6,18 +6,29 @@
 //
 import SwiftUI
 
+struct ShakeEffect: GeometryEffect {
+    var amount: CGFloat = 10
+    var shakesPerUnit = 3
+    var animatableData: CGFloat
+
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        ProjectionTransform(CGAffineTransform(translationX:
+            amount * sin(animatableData * .pi * CGFloat(shakesPerUnit)), y: 0))
+    }
+}
 struct CodeInputView: View {
     @State private var code: String = ""
     @State private var showError: Bool = false
+    @State private var attempts: Int = 0 // Für den Shake-Trigger
     @FocusState private var isFocused: Bool
     @EnvironmentObject var appState: AppState
     
-    // Festgelegt auf 5 Ziffern
     private let codeLength = 5
     
     var body: some View {
         NavigationStack {
             ZStack {
+                // Dein Original Gradient
                 LinearGradient(
                     colors: [Color("primary"), Color("secondary"), Color("accent")],
                     startPoint: .topLeading,
@@ -32,7 +43,6 @@ struct CodeInputView: View {
                         .bold()
                     
                     ZStack {
-                        // Unsichtbares TextField
                         TextField("", text: $code)
                             .keyboardType(.numberPad)
                             .textContentType(.oneTimeCode)
@@ -43,33 +53,30 @@ struct CodeInputView: View {
                                 let filtered = newValue.filter { "0123456789".contains($0) }
                                 let trimmed = String(filtered.prefix(codeLength))
                                 
-                                
-                                // Nur bei echter Änderung → Fehler zurücksetzen
-                                    showError = false
-                                
+                                showError = false
                                 code = trimmed
                                 
                                 if code.count == codeLength {
                                     if checkCode() {
                                         isFocused = false
-                                        
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                             withAnimation(.easeInOut) {
                                                 appState.currentSite = .guest
                                             }
                                         }
-                                        
-                                        print("Code korrekt: \(code)")
                                     } else {
-                                        withAnimation {
+                                        let generator = UINotificationFeedbackGenerator()
+                                        generator.notificationOccurred(.error)
+                                            
+                                        withAnimation(.default) {
                                             showError = true
+                                            attempts += 1
                                         }
-                                        //  Kein automatisches Zurücksetzen → Fehler bleibt sichtbar
                                     }
                                 }
                             }
                         
-                        // Die 5 Eingabefelder
+                        // Deine Original Eingabefelder
                         HStack(spacing: 15) {
                             ForEach(0..<codeLength, id: \.self) { index in
                                 ZStack {
@@ -96,9 +103,10 @@ struct CodeInputView: View {
                                 }
                             }
                         }
+                        // Nur dieser Modifier wurde zur HStack hinzugefügt:
+                        .modifier(ShakeEffect(animatableData: CGFloat(attempts)))
                     }
                     
-                    // Fehlermeldung bleibt stehen bis Eingabe sich ändert
                     if showError {
                         Text("Falscher Code")
                             .foregroundColor(.red)
@@ -109,7 +117,7 @@ struct CodeInputView: View {
                     Spacer()
                 }
                 .padding(.top, 50)
-            }	
+            }
             .navigationTitle("Music Voting")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -155,7 +163,6 @@ struct CodeInputView: View {
     }
     
     private func checkCode() -> Bool {
-        // Beispiel-Code
         return code == "12345"
     }
 }
