@@ -44,7 +44,7 @@
         <h2>Warteschlange</h2>
 
         @if (tracks.length === 0) {
-          <div>Keine Songs in der Warteschlange!</div>
+          <div class="queue-text-default">Keine Songs in der Warteschlange!</div>
         } @else {
           <div class="queue-grid">
             @for (track of tracks; track track.id; let i = $index) {
