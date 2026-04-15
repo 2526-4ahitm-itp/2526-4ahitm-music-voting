@@ -1,109 +1,113 @@
 <div class="layout">
+  <nav class="navbar">
+    <button class="burger" type="button" (click)="toggleMenu()">☰</button>
+  </nav>
+  <div class="content-cards">
+    <div class="left">
 
-  <div class="left">
-    <nav class="navbar">
-      <button class="burger" type="button" (click)="toggleMenu()">☰</button>
-    </nav>
 
-    <div class="side-menu" [class.open]="menuOpen">
-      <ul>
-        <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
-        <li><a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a></li>
-        <li><a routerLink="/vote" (click)="toggleMenu()">Voting</a></li>
-      </ul>
-    </div>
+      <div class="side-menu" [class.open]="menuOpen">
+        <ul>
+          <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
+          <li><a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a></li>
+          <li><a routerLink="/vote" (click)="toggleMenu()">Voting</a></li>
+        </ul>
+      </div>
 
-    @if (menuOpen) {
-      <div class="overlay" (click)="toggleMenu()"></div>
-    }
+      @if (menuOpen) {
+        <div class="overlay" (click)="toggleMenu()"></div>
+      }
 
-    <section class="current-song">
-      @if (currentTrack) {
-        <img class="cover"
-             [src]="currentTrack.album.images[0]?.url"
-             height="300px" width="300px" alt="Cover">
+      <section class="current-song">
+        @if (currentTrack) {
+          <img class="cover"
+              [src]="currentTrack.album.images[0]?.url"
+              height="300px" width="300px" alt="Cover">
 
-        <div class="song-info">
-          <h1>{{ currentTrack.name }}</h1>
-          <p>{{ currentTrack.artists[0]?.name }} </p>
+          <div class="song-info">
+            <h1>{{ currentTrack.name }}</h1>
+            <p>{{ currentTrack.artists[0]?.name }} </p>
 
-          <div class="player-controls">
-            <button class="skip-icon" type="button" (click)="onRestartCurrent()">⏮</button>
-            @if (!partyStarted) {
-              <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
-            } @else {
-              @if (isPaused) {
+            <div class="player-controls">
+              <button class="skip-icon" type="button" (click)="onRestartCurrent()">⏮</button>
+              @if (!partyStarted) {
                 <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
               } @else {
-                <button class="play-icon" type="button" (click)="onPlayPause()">⏸</button>
-              }
-            }
-            <button class="skip-icon" type="button" (click)="onSkip()">⏭</button>
-          </div>
-
-
-        </div>
-      } @else {
-        <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Kein Song">
-        <div class="song-info">
-          <h1>Kein Song aktiv</h1>
-          <p>Starte die Playlist über die Steuerung</p>
-
-          <div class="player-controls">
-            <button class="skip-icon" type="button" (click)="onRestartCurrent()">⏮</button>
-            <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
-            <button class="skip-icon" type="button" (click)="onSkip()">⏭</button>
-          </div>
-        </div>
-      }
-    </section>
-
-
-    <hr>
-
-    <section class="queue">
-      <h2>Warteschlange</h2>
-
-      @if (tracks.length === 0) {
-        <div>Keine Songs geladen!</div>
-      } @else {
-        <div class="queue-grid">
-          @for (track of tracks; track track.id; let i = $index) {
-            <div class="track">
-              <div class="cover-wrapper">
-                <span class="queue-number">{{ i + 1 }}</span>
-
-                @if (track.album?.images?.length) {
-                  <img [src]="track.album.images[track.album.images.length - 1].url"
-                       alt="Cover">
+                @if (isPaused) {
+                  <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
+                } @else {
+                  <button class="play-icon" type="button" (click)="onPlayPause()">⏸</button>
                 }
-              </div>
-
-              <div class="track-info">
-                <div class="info">
-                  <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
-                  <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
-                </div>
-                <button class="delete-icon" type="button" (click)="onDeleteTrack(track)">
-                  <img src="./assets/img/trash-bin.png" height="20" width="20" alt="delete">
-                </button>
-              </div>
+              }
+              <button class="skip-icon" type="button" (click)="onSkip()">⏭</button>
             </div>
-          }
-        </div>
-      }
 
-    </section>
 
-  </div>
-  <div class="right">
-    <div class="qr-code">
-      <img class="cover" src="https://placehold.co/400" height="250px" width="250px" alt="Cover">
-      <button class="qr-code-btn" type="button">
-        Generiere einen neuen QR-Code
-      </button>
+          </div>
+        } @else {
+          <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Kein Song">
+          <div class="song-info">
+            <h1>Kein Song aktiv</h1>
+            <p>Starte die Playlist über die Steuerung</p>
+
+            <div class="player-controls">
+              <button class="skip-icon" type="button" (click)="onRestartCurrent()">⏮</button>
+              <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
+              <button class="skip-icon" type="button" (click)="onSkip()">⏭</button>
+            </div>
+          </div>
+        }
+      </section>
+
+
+
+      <section class="queue">
+        <h2>Warteschlange</h2>
+
+        @if (tracks.length === 0) {
+          <div>Keine Songs geladen!</div>
+        } @else {
+          <div class="queue-grid">
+            @for (track of tracks; track track.id; let i = $index) {
+              <div class="track">
+                <div class="cover-wrapper">
+                  <span class="queue-number">{{ i + 1 }}</span>
+
+                  @if (track.album?.images?.length) {
+                    <img [src]="track.album.images[track.album.images.length - 1].url"
+                        alt="Cover">
+                  }
+                </div>
+
+                <div class="track-info">
+                  <div class="info">
+                    <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
+                    <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
+                  </div>
+                  <button class="delete-icon" type="button" (click)="onDeleteTrack(track)">
+                    <img src="./assets/img/trash-bin.png" height="20" width="20" alt="delete">
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+      </section>
+
     </div>
-    <span class="logo">MusicVoting</span>
-  </div>
+    <div class="right">
+      <div class="qr-code">
+        <img class="cover" src="../../../assets/img/default-qr.png" alt="QR-Code">
+        <button class="qr-code-btn" type="button">
+          Generiere einen neuen QR-Code
+        </button>
+      </div>
+      
+      <div class="logo-box">
+        <span class="logo">MusicVoting</span>
+      </div>
 
+    </div>
+  </div>
 </div>
