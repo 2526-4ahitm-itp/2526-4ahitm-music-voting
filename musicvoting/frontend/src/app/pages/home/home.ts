@@ -36,15 +36,15 @@ export class Home implements OnInit {
       if (res.ok) {
         const token = await res.text();
         if (token && token.trim().length > 0) {
-          this.router.navigate(['/dashboard-host']);
+          this.router.navigate(['/dashboard']);
           return;
         }
       }
       // mark that we want to redirect to dashboard after login then start login flow
-      try { sessionStorage.setItem('postLoginRedirect', 'dashboard-host'); } catch (e) { /* ignore */ }
+      try { sessionStorage.setItem('postLoginRedirect', 'dashboard'); } catch (e) { /* ignore */ }
       window.location.href = '/api/spotify/login?source=web';
     } catch (err) {
-      try { sessionStorage.setItem('postLoginRedirect', 'dashboard-host'); } catch (e) { /* ignore */ }
+      try { sessionStorage.setItem('postLoginRedirect', 'dashboard'); } catch (e) { /* ignore */ }
       window.location.href = '/api/spotify/login?source=web';
     }
   }
