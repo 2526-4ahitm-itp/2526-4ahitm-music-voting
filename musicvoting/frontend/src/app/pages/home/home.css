@@ -1,34 +1,40 @@
-.player {
+body {
   min-height: 100vh;
-  width: 100vw;
 
-  background: linear-gradient(135deg, #8303A6, #121212);
+  background: linear-gradient(135deg, #8403A6, #F2594B);
 
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
 
   color: white;
   text-align: center;
   overflow: hidden;
   font-family: var(--font), serif;
+
+  padding: 2rem;
+  
 }
 
-.player h1 {
-  font-size: 2.5rem;
+body h1 {
+  font-size: 10rem;
   margin-bottom: 0.5rem;
+}
+
+body p {
+  font-size: 1.5rem;
+  width: 50vw;
 }
 
 .button-row {
   display: flex;
   flex-direction: row;
-  gap: 1.5rem;
+  gap: 2rem;
   margin-top: 2rem;
 }
 
 .page-switch-btn {
-  min-width: 10rem;
+  min-width: 15rem;
   padding: 0.75rem 2rem;
   font-size: 1rem;
   font-weight: 600;
@@ -42,7 +48,10 @@
 
 .page-switch-btn:hover {
   transform: translateY(-0.2rem) scale(1.05);
-  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
+  color: #8403A6;
+  font-weight: 1000;
+  background-color: white;
 }
 
 .page-switch-btn:active {
