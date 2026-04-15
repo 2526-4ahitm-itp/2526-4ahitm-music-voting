@@ -287,6 +287,9 @@ body{
   z-index: 1000;
 }
 
+.side-menu > h2 {
+  margin-left: 1rem;
+}
 
 .side-menu.open {
   transform: translateX(0);
@@ -354,6 +357,13 @@ body{
   min-width: 0;
 }
 
+.song-info > h1 {
+  font-size: 2.5rem;
+}
+.song-info > p {
+  font-size: 1.5rem;
+}
+
 .player-controls {
   display: flex;
   justify-content: flex-start;
@@ -389,7 +399,7 @@ body{
   width: auto;
   height: max-content;
   box-sizing: border-box;
-  padding: 2rem;
+  padding: 2rem 2rem 0 2rem;
 
   flex-grow: 1;
   overflow: auto;
@@ -401,21 +411,28 @@ body{
   box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
 }
 
+.queue > h2{
+  font-size: 2rem;
+  margin: 0 0 0 1.5rem;
+}
+
 .queue-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-auto-flow: row;
   gap: 1rem;
+  margin: 1.5rem;
 }
 
 .track {
   display: flex;
   gap: 1rem;
-  border-radius: 0.5rem;
   font-weight: bold;
   font-size: 1.2rem;
   position: relative;
   align-items: center;
+  box-shadow: 0 0 0.4rem 0.4rem rgba(0, 0, 0, 0.1);
+  margin: 0.75rem;
 }
 
 .track-info {
@@ -438,9 +455,10 @@ body{
 }
 
 .track-info .delete-icon img {
-  width: 1.2rem;
+  width: 1.6rem;
   height: auto;
   display: block;
+  margin: 1rem;
 }
 
 .song-artist,
@@ -459,8 +477,8 @@ body{
 
 .cover-wrapper {
   position: relative;
-  width: 3.75rem;
-  height: 3.75rem;
+  width: 5.2rem;
+  height: 5.2rem;
   overflow: hidden;
 }
 
@@ -476,10 +494,14 @@ body{
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
+  font-size: 2.5rem;
   font-weight: 900;
   color: rgba(255,255,255,0.85);
   background: rgba(0,0,0,0.4);
+}
+
+.queue-text-default {
+  margin: 1rem 2rem 3rem 1.5rem;
 }
 
 /* RIGHT SIDE */
@@ -535,7 +557,7 @@ body{
   box-sizing: border-box;
   align-content: center;
   text-align: center;
-  margin: 0 2rem 0 0;
+  margin: 0 2rem 2rem 0;
 }
 
 span.logo {
