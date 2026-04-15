@@ -1,3 +1,4 @@
+/*
 body {
   font-family: var(--font), serif;
 }
@@ -16,8 +17,9 @@ body {
   width: 25vw;
   border-left: 0.01vw solid black;
 }
-
+*/
 /* NAVBAR */
+/*
 .navbar {
   height: 3.75rem;
   display: flex;
@@ -32,8 +34,9 @@ body {
   border: none;
   cursor: pointer;
 }
-
+*/
 /* Side Menu */
+/*
 .side-menu {
   position: fixed;
   top: 0;
@@ -84,8 +87,9 @@ body {
 hr {
   color: white;
 }
-
+*/
 /* CURRENT SONG */
+/*
 .current-song {
   padding-left: 7rem;
   padding-right: 7rem;
@@ -103,35 +107,9 @@ hr {
   min-width: 0;
 }
 
-.player-controls {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 1.56rem;
-  margin-top: 5rem;
-  width: 100%;
-  min-width: 0;
-}
-
-.play-icon, .skip-icon {
-  font-size: 2.5rem;
-  cursor: pointer;
-  transition: transform 0.2s ease, color 0.2s ease;
-  background: transparent;
-  border: none;
-  padding: 0;
-  line-height: 1;
-}
-
-.play-icon:hover {
-  transform: scale(1.3);
-}
-
-.skip-icon:hover {
-  transform: scale(1.2);
-}
-
+*/
 /* WARTESCHLANGE */
+/*
 .queue {
   padding-top: 1rem;
   padding-left: 3rem;
@@ -218,8 +196,9 @@ hr {
   color: rgba(255,255,255,0.85);
   background: rgba(0,0,0,0.4);
 }
-
+*/
 /* RIGHT SIDE */
+/*
 .qr-code {
   padding-top: 3rem;
   padding-left: 3.5rem;
@@ -245,3 +224,322 @@ span.logo {
   font-size: 3rem;
   font-weight: bold;
 }
+*/
+
+
+
+
+body{
+  font-family: var(--font), sans-serif;
+  background: linear-gradient(135deg, #8403A6, #F2594B);
+}
+
+.layout{
+  width: 100vw;
+  min-height: 100vh;
+  font-family: var(--font), sans-serif;
+  background: linear-gradient(135deg, #8403A6, #F2594B);
+}
+
+.content-cards{
+  display: flex;
+  width: 100vw  
+}
+
+.left{
+  width: 80vw;
+}
+
+.right{
+  width: 20vw;
+  display: flex;
+  flex-direction: column;
+  min-height: 90vh;
+  margin-left: 2rem;
+}
+
+/* NAVBAR */
+.navbar {
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+}
+
+.burger {
+  font-size: 2.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Side Menu */
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: white;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+
+
+.side-menu.open {
+  transform: translateX(0);
+}
+
+.side-menu ul {
+  list-style: none;
+  padding: 0.1em;
+}
+
+.side-menu li {
+  padding: 0.7rem 0.7rem 0.7rem 1rem;
+  margin: 0.5rem 0.5rem 0.5rem 0;
+
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+
+  transition: font-weight 0.3s, background-color 0.3s;
+  background-color: #f1f1f1;
+    transition: all 0.3s ease-in-out;
+
+}
+
+.side-menu a {
+  text-decoration: none;
+  font-size: 18px;
+  color: black;
+}
+
+.side-menu li:hover {
+  padding: 1rem;
+  background-color: #f1f1f1;
+  background-color: #c826b83f;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 999;
+}
+
+
+/* CURRENT SONG */
+
+.current-song{
+  display: flex;
+  gap: 2rem;
+  width: auto;
+  box-sizing: border-box;
+  padding: 2rem;
+
+  margin: 0 0 2rem 2rem;
+  background-color: white;
+
+  border-radius: 30px;
+  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
+}
+
+.song-info{
+  padding-left: 2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.player-controls {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1.56rem;
+  margin-top: 5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.play-icon, .skip-icon {
+  font-size: 4.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+  background: transparent;
+  border: none;
+  padding: 0;
+  line-height: 1;
+}
+
+.play-icon:hover {
+  transform: scale(1.3);
+}
+
+.skip-icon:hover {
+  transform: scale(1.2);
+}
+
+/* WARTESCHLANGE */
+
+.queue{
+  gap: 2rem;
+  width: auto;
+  height: max-content;
+  box-sizing: border-box;
+  padding: 2rem;
+
+  flex-grow: 1;
+  overflow: auto;
+
+  margin: 0 0 2rem 2rem;
+  background-color: white;
+
+  border-radius: 30px;
+  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
+}
+
+.queue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: row;
+  gap: 1rem;
+}
+
+.track {
+  display: flex;
+  gap: 1rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  font-size: 1.2rem;
+  position: relative;
+  align-items: center;
+}
+
+.track-info {
+  display: flex;
+  gap: 5rem;
+  height: 3.75rem;
+  flex: 1;
+}
+
+.track-info .delete-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.track-info .delete-icon img {
+  width: 1.2rem;
+  height: auto;
+  display: block;
+}
+
+.song-artist,
+.song-title {
+  margin-bottom: 0.5rem;
+}
+
+.song-title {
+  margin-top: 0.2rem;
+  font-size: 0.9375rem;
+}
+
+.song-artist {
+  font-size: 0.75rem;
+}
+
+.cover-wrapper {
+  position: relative;
+  width: 3.75rem;
+  height: 3.75rem;
+  overflow: hidden;
+}
+
+.cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.queue-number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: rgba(255,255,255,0.85);
+  background: rgba(0,0,0,0.4);
+}
+
+/* RIGHT SIDE */
+
+.qr-code{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+
+  gap: 2rem;
+  width: auto;
+  box-sizing: border-box;
+  padding: 2rem;
+
+  flex-grow: 1;
+  overflow: auto;
+
+  margin: 0 2rem 2rem 0;
+  background-color: white;
+
+  border-radius: 30px;
+  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
+}
+
+.qr-code > .cover {
+  width: 100%;
+}
+
+.qr-code-btn {
+  text-align: center;
+  padding: 0.5rem 1rem;
+  color: white;
+  background-color: #8303A6;
+  font-weight: bold;
+  font-family: var(--font), serif;;
+  border-radius: 30px;
+  border: none;
+  height: 2.5rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.qr-code-btn:hover {
+  transform: translateY(-0.2rem) scale(1.02);
+  box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
+  font-weight: 1000;
+  background-color: #C826B8;
+}
+
+.logo-box {
+  width: auto;
+  height: 5rem;
+  box-sizing: border-box;
+  align-content: center;
+  text-align: center;
+  margin: 0 2rem 0 0;
+}
+
+span.logo {
+  font-size: 3rem;
+  font-weight: bold;
+}
+
