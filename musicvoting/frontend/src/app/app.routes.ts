@@ -7,13 +7,35 @@ import { Startpage } from './pages/startpage/startpage';
 import { VotingComp } from './pages/voting-comp/voting-comp';
 
 export const routes: Routes = [
-  { path: '', component: Home },
-  { path: 'guest', component: Guest },
-  { path: 'startpage', component: Startpage },
-  { path: 'control', component: Control },
-  { path: 'dashboard-host', component: HostDashboard },
-  { path: 'dashboard', component: HostDashboard },
-  { path: 'voting', component: VotingComp },
-  { path: 'vote', component: VotingComp },
+  { 
+    path: '', 
+    component: Home,
+    title: 'MusicVoting'
+  },
+
+  { 
+    path: 'guest', 
+    component: Guest,
+    title: 'Partygast - MusicVoting'
+  },
+
+  { 
+    path: 'startpage', 
+    component: Startpage ,
+    title: 'Player - MusicVoting'
+  },
+
+  { 
+    path: 'dashboard', 
+    component: HostDashboard ,
+    title: 'Übersicht - MusicVoting'
+  },
+
+  { 
+    path: 'voting', 
+    component: VotingComp,
+    title: 'Partygast - MusicVoting'
+  },
+
   { path: '**', redirectTo: '' }
 ];
