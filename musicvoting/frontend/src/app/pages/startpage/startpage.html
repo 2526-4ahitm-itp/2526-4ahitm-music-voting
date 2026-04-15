@@ -1,97 +1,90 @@
 <div class="layout">
+  <div class="content-cards">
 
-  <div class="left">
-    <nav class="navbar">
-      <button class="burger" type="button" (click)="toggleMenu()">☰</button>
-    </nav>
+    <div class="left">
 
-    <div class="side-menu" [class.open]="menuOpen">
-      <ul>
-        <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
-        <li><a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a></li>
-        <li><a routerLink="/vote" (click)="toggleMenu()">Voting</a></li>
-      </ul>
-    </div>
+      <section class="current-song">
+        @if (currentTrack) {
+          <img class="cover"
+              [src]="currentTrack.album.images[0]?.url"
+              height="300px" width="300px" alt="Cover">
 
-    @if (menuOpen) {
-      <div class="overlay" (click)="toggleMenu()"></div>
-    }
+          <div class="song-info">
+            <h1>{{ currentTrack.name }}</h1>
+            <p>{{ currentTrack.artists[0]?.name }}</p>
 
-    <section class="current-song">
-      @if (currentTrack) {
-        <img class="cover"
-             [src]="currentTrack.album.images[0]?.url"
-             height="300px" width="300px" alt="Cover">
+            <div class="progress">
+              <span>{{ formatTime(currentPosition) }}</span>
 
-        <div class="song-info">
-          <h1>{{ currentTrack.name }}</h1>
-          <p>{{ currentTrack.artists[0]?.name }}</p>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="progressPercent"></div>
+              </div>
 
-          <div class="progress">
-            <span>{{ formatTime(currentPosition) }}</span>
-
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="progressPercent"></div>
+              <span>{{ formatTime(currentTrack.duration_ms) }}</span>
             </div>
 
-            <span>{{ formatTime(currentTrack.duration_ms) }}</span>
           </div>
+        } @else {
+          <img class="cover" src="../../../assets/img/placeholder.png" height="300px" width="300px" alt="Kein Song">
+          <div class="song-info">
+            @if (tracks.length > 0) {
+              <h1>Playlist nicht gestartet</h1>
+              <p>Der Host kann den ersten Song im Dashboard starten.</p>
+            } @else {
+              <h1>Kein Song aktiv</h1>
+              <p>Füge Songs hinzu oder starte die Playlist über die Steuerung.</p>
+            }
+          </div>
+        }
+      </section>
 
-        </div>
-      } @else {
-        <img class="cover" src="https://placehold.co/400" height="300px" width="300px" alt="Kein Song">
-        <div class="song-info">
-          @if (tracks.length > 0) {
-            <h1>Playlist nicht gestartet</h1>
-            <p>Der Host kann den ersten Song im Dashboard starten.</p>
-          } @else {
-            <h1>Kein Song aktiv</h1>
-            <p>Füge Songs hinzu oder starte die Playlist über die Steuerung.</p>
-          }
-        </div>
-      }
-    </section>
+      
 
-    <hr>
+      <section class="queue">
+        <h2>Warteschlange</h2>
 
-    <section class="queue">
-      <h2>Warteschlange</h2>
+        @if (tracks.length === 0) {
+          <div>Keine Songs in der Warteschlange!</div>
+        } @else {
+          <div class="queue-grid">
+            @for (track of tracks; track track.id; let i = $index) {
+              <div class="track">
+                <div class="cover-wrapper">
+                  <span class="queue-number">{{ i + 1 }}</span>
 
-      @if (tracks.length === 0) {
-        <div>Keine Songs geladen!</div>
-      } @else {
-        <div class="queue-grid">
-          @for (track of tracks; track track.id; let i = $index) {
-            <div class="track">
-              <div class="cover-wrapper">
-                <span class="queue-number">{{ i + 1 }}</span>
+                  @if (track.album?.images?.length) {
+                    <img [src]="track.album.images[track.album.images.length - 1].url"
+                        alt="Cover">
+                  }
+                </div>
 
-                @if (track.album?.images?.length) {
-                  <img [src]="track.album.images[track.album.images.length - 1].url"
-                       alt="Cover">
-                }
+                <div class="track-info">
+                  <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
+                  <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
+                </div>
               </div>
+            }
+          </div>
+        }
 
-              <div class="track-info">
-                <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
-                <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
-              </div>
-            </div>
-          }
-        </div>
-      }
+      </section>
 
-    </section>
-
-  </div>
-  <div class="right">
-    <div class="qr-code">
-      <img class="cover" src="https://placehold.co/400" height="250px" width="250px" alt="Cover">
-      <p class="qr-code-text">
-        Scanne den Code, um Songs hinzuzufügen oder für deine Favoriten zu voten.
-      </p>
     </div>
-    <span class="logo">MusicVoting</span>
-  </div>
 
+    <div class="right">
+
+      <div class="qr-code">
+        <img class="cover" src="../../../assets/img/default-qr.png" alt="Cover">
+        <p class="qr-code-text">
+          Scanne den QR-Code, um Songs hinzuzufügen oder für deine Favoriten zu voten.
+        </p>
+      </div>
+
+      <div class="logo-box">
+        <span class="logo">MusicVoting</span>
+      </div>
+
+    </div>
+
+  </div>
 </div>
