@@ -39,6 +39,11 @@ export class HostDashboard implements OnInit {
     setInterval(() => this.loadPlaylist(), 10000);
   }
 
+  openPlayer() {
+    const url = '/startpage';
+    window.open(url, '_blank');
+  }
+
   async loadPlaylist() {
     try {
       const res: any = await lastValueFrom(this.http.get('/api/track/queue'));
