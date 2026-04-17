@@ -48,11 +48,11 @@ final class AdminDashboardViewModel: ObservableObject {
     @Published var queueSongs: [Song] = []
 
     let pollInterval: TimeInterval = 2
-    private let queueURL = URL(string: "http://localhost:8080/api/track/queue")!
-    private let startURL = URL(string: "http://localhost:8080/api/track/start")!
-    private let pauseURL = URL(string: "http://localhost:8080/api/track/pause")!
-    private let resumeURL = URL(string: "http://localhost:8080/api/track/resume")!
-    private let currentURL = URL(string: "http://localhost:8080/api/track/current")!
+    private var queueURL: URL { BackendConfiguration.endpoint("/api/track/queue") }
+    private var startURL: URL { BackendConfiguration.endpoint("/api/track/start") }
+    private var pauseURL: URL { BackendConfiguration.endpoint("/api/track/pause") }
+    private var resumeURL: URL { BackendConfiguration.endpoint("/api/track/resume") }
+    private var currentURL: URL { BackendConfiguration.endpoint("/api/track/current") }
 
     func loadQueue() async {
         do {
