@@ -282,13 +282,10 @@ body{
   align-items: center;
   justify-content: start;
 
-  gap: 2rem;
   width: calc(20vw - 2rem);
   height: 76vh;
   box-sizing: border-box;
   padding: 2rem;
-  align-content: start;
-  justify-content: center;
 
   margin: 0 0 2rem 0;
   background-color: white;
@@ -308,7 +305,6 @@ body{
   color: white;
   background-color: #8303A6;
   font-weight: bold;
-  font-family: var(--font), serif;;
   border-radius: 30px;
   border: none;
   height: 2.5rem;
@@ -316,7 +312,7 @@ body{
 }
 
 .qr-code-btn:hover {
-  transform: translateY(-0.2rem) scale(1.02);
+  transform: translateY(-0.2rem) scale(1.01);
   box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
   font-weight: 1000;
   background-color: #C826B8;
@@ -340,3 +336,30 @@ span.logo {
   text-align: center;
 }
 
+.open-player {
+  width: calc(20vw - 7rem);
+  text-align: center;
+  margin: 3rem 0 0 0;
+  font-weight: bold;
+}
+
+.open-player-btn {
+  border: none;
+  height: 2.5rem;
+  transition: all 0.3s ease-in-out;
+
+  margin: 1rem 0 0 0;
+
+  color: white;
+  background-color: #8303A6;
+  border-radius: 30px;  
+  width: calc(20vw - 15rem);
+  font-weight: bold;
+}
+
+.open-player-btn:hover {
+  transform: translateY(-0.2rem) scale(1.04);
+  box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
+  font-weight: 1000;
+  background-color: #C826B8;
+}
