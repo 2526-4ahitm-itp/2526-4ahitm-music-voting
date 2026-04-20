@@ -1,8 +1,10 @@
 package at.htl.endpoints;
 
-import at.htl.service.SpotifyPlayer;
+import at.htl.domain.Party;
+import at.htl.domain.PartyRegistry;
+import at.htl.provider.spotify.SpotifyCredentials;
+import at.htl.provider.spotify.SpotifyMusicProvider;
 import at.htl.service.SpotifyApiErrors;
-import at.htl.service.TokenStore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -25,14 +27,13 @@ import java.util.Map;
 public class SpotifyTokenResource {
 
     @Inject
-    SpotifyPlayer spotifyPlayer;
+    PartyRegistry partyRegistry;
 
     @Inject
-    TokenStore tokenStore;
+    SpotifyMusicProvider spotifyMusicProvider;
 
     @Inject
     LoginEventBus loginEventBus;
-
 
     @ConfigProperty(name = "spotify.client.id")
     String clientId;
@@ -49,11 +50,14 @@ public class SpotifyTokenResource {
     @ConfigProperty(name = "spotify.ios.redirect.uri", defaultValue = "musicvotingapp://callback")
     String iosRedirectUri;
 
+    private SpotifyCredentials credentials() {
+        return partyRegistry.getOrCreateDefault().getSpotifyCredentials();
+    }
+
     @GET
     @Path("/token")
     public String getToken() {
-
-        return this.tokenStore.getToken();
+        return credentials().getToken();
     }
 
     @GET
@@ -62,13 +66,14 @@ public class SpotifyTokenResource {
             @QueryParam("source") @DefaultValue("web") String source,
             @HeaderParam("X-Install-Id") String installId
     ) {
-        String token = this.tokenStore.getToken();
+        SpotifyCredentials creds = credentials();
+        String token = creds.getToken();
         boolean tokenAvailable = token != null && !token.isBlank();
         boolean iosSource = "ios".equalsIgnoreCase(source);
 
         boolean loggedIn;
         if (iosSource) {
-            String storedInstallId = this.tokenStore.getIosInstallationId();
+            String storedInstallId = creds.getIosInstallationId();
             boolean installMatches = installId != null
                     && !installId.isBlank()
                     && installId.equals(storedInstallId);
@@ -84,7 +89,7 @@ public class SpotifyTokenResource {
     @Path("/deviceId")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getDeviceId() {
-        String deviceId = this.tokenStore.getDeviceId();
+        String deviceId = credentials().getDeviceId();
         if (deviceId == null || deviceId.isBlank()) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("")
@@ -92,7 +97,6 @@ public class SpotifyTokenResource {
         }
         return Response.ok(deviceId).build();
     }
-
 
     @PUT
     @Path("/deviceId")
@@ -106,11 +110,11 @@ public class SpotifyTokenResource {
         }
 
         String normalizedDeviceId = deviceId.trim();
-        this.tokenStore.setDeviceId(normalizedDeviceId);
-        spotifyPlayer.restoreCurrentTrackFromBeginningOnDevice(normalizedDeviceId);
+        Party party = partyRegistry.getOrCreateDefault();
+        party.getSpotifyCredentials().setDeviceId(normalizedDeviceId);
+        spotifyMusicProvider.restoreCurrentTrackFromBeginningOnDevice(party, normalizedDeviceId);
         return Response.ok(Map.of("status", "Device ID gesetzt")).build();
     }
-
 
     @GET
     @Path("/login")
@@ -133,10 +137,8 @@ public class SpotifyTokenResource {
                 "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
                 "&state=" + URLEncoder.encode(normalizedState, StandardCharsets.UTF_8);
 
-
         return Response.seeOther(java.net.URI.create(spotifyUri)).build();
     }
-
 
     @GET
     @Path("/callback")
@@ -164,11 +166,13 @@ public class SpotifyTokenResource {
             Map<String, String> tokenMap =
                     new ObjectMapper().readValue(response.body(), Map.class);
 
-            tokenStore.setToken(tokenMap.get("access_token"));
+            Party party = partyRegistry.getOrCreateDefault();
+            SpotifyCredentials creds = party.getSpotifyCredentials();
+            creds.setToken(tokenMap.get("access_token"));
+            creds.setRefreshToken(tokenMap.get("refresh_token"));
 
-            spotifyPlayer.fetchAndStoreUserId();
-
-            spotifyPlayer.ensurePartyPlaylistExists();
+            spotifyMusicProvider.fetchAndStoreUserId(party);
+            spotifyMusicProvider.ensurePartyPlaylistExists(party);
 
             boolean iosSource = state != null && state.toLowerCase(Locale.ROOT).startsWith("ios");
             String installationId = null;
@@ -176,7 +180,7 @@ public class SpotifyTokenResource {
                 String[] parts = state.split(":", 2);
                 if (parts.length == 2 && !parts[1].isBlank()) {
                     installationId = parts[1].trim();
-                    tokenStore.setIosInstallationId(installationId);
+                    creds.setIosInstallationId(installationId);
                 }
             }
 
@@ -231,7 +235,4 @@ public class SpotifyTokenResource {
         }
         return stream;
     }
-
-
-
 }

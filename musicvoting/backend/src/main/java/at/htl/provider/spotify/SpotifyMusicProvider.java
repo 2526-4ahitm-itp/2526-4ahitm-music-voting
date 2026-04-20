@@ -1,9 +1,10 @@
-package at.htl.service;
+package at.htl.provider.spotify;
 
-import at.htl.endpoints.SpotifyTokenResource;
+import at.htl.domain.Party;
+import at.htl.provider.MusicProvider;
+import at.htl.service.SpotifyApiErrors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -19,33 +20,24 @@ import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
-public class SpotifyPlayer {
-
-    @Inject
-    SpotifyTokenResource spotifyTokenResource;
-
-    @Inject
-    TokenStore tokenStore;
+public class SpotifyMusicProvider implements MusicProvider {
 
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private String authHeader() {
-        return "Bearer " + tokenStore.getToken();
+    private String authHeader(Party party) {
+        return "Bearer " + party.getSpotifyCredentials().getToken();
     }
 
-    private String getStoredDeviceId() {
-        return tokenStore.getDeviceId();
-    }
-
-    public Map<String, Object> searchTracks(String query) {
+    @Override
+    public Map<String, Object> searchTracks(Party party, String query) {
         try {
             String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
             String url = "https://api.spotify.com/v1/search?q=" + encoded + "&type=track&limit=25";
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .GET()
                     .build();
 
@@ -71,14 +63,15 @@ public class SpotifyPlayer {
         }
     }
 
-
-    public Response getTrack(String id) {
-        return sendGet("https://api.spotify.com/v1/tracks/" + id);
+    @Override
+    public Response getTrack(Party party, String id) {
+        return sendGet(party, "https://api.spotify.com/v1/tracks/" + id);
     }
 
-    public Response play(String uri) {
+    @Override
+    public Response play(Party party, String uri) {
         try {
-            String deviceId = resolvePlayableDeviceId();
+            String deviceId = resolvePlayableDeviceId(party);
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(Map.of("error", "No active Spotify device found."))
@@ -92,9 +85,9 @@ public class SpotifyPlayer {
             Map<String, String[]> bodyMap = Map.of("uris", new String[]{uri});
             String body = mapper.writeValueAsString(bodyMap);
 
-            Response response = sendPut(url, body);
+            Response response = sendPut(party, url, body);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
-                updateCachedPlayback(uri, true);
+                updateCachedPlayback(party, uri, true);
             }
             return response;
         } catch (Exception e) {
@@ -102,9 +95,10 @@ public class SpotifyPlayer {
         }
     }
 
-    public Response addTracksToPlaylist(List<String> uris) {
+    @Override
+    public Response addTracksToPlaylist(Party party, List<String> uris) {
         try {
-            String playlistId = tokenStore.getPlaylistId();
+            String playlistId = party.getSpotifyCredentials().getPlaylistId();
             if (playlistId == null || playlistId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(Map.of("error", "No playlist available"))
@@ -114,7 +108,7 @@ public class SpotifyPlayer {
 
             HttpRequest getRequest = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .GET()
                     .build();
 
@@ -141,7 +135,7 @@ public class SpotifyPlayer {
             Map<String, Object> bodyMap = Map.of("uris", newUris);
             HttpRequest postRequest = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(bodyMap)))
                     .build();
@@ -160,19 +154,20 @@ public class SpotifyPlayer {
         }
     }
 
-    public Response removeTrack(String uri) {
+    @Override
+    public Response removeTrack(Party party, String uri) {
         try {
-            removeTrackFromPlaylist(uri);
+            removeTrackFromPlaylist(party, uri);
             return Response.ok(Map.of("status", "removed")).build();
         } catch (Exception e) {
             return propagateOrUnexpected("Das Entfernen des Songs aus der Playlist", e);
         }
     }
 
-
-    public List<Map<String, Object>> getQueue() {
+    @Override
+    public List<Map<String, Object>> getQueue(Party party) {
         try {
-            String playlistId = tokenStore.getPlaylistId();
+            String playlistId = party.getSpotifyCredentials().getPlaylistId();
             if (playlistId == null || playlistId.isBlank()) {
                 return List.of();
             }
@@ -180,7 +175,7 @@ public class SpotifyPlayer {
             String url = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .GET()
                     .build();
 
@@ -219,10 +214,10 @@ public class SpotifyPlayer {
         }
     }
 
-    public void fetchAndStoreUserId() throws Exception {
+    public void fetchAndStoreUserId(Party party) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.spotify.com/v1/me"))
-                .header("Authorization", authHeader())
+                .header("Authorization", authHeader(party))
                 .GET()
                 .build();
 
@@ -235,26 +230,24 @@ public class SpotifyPlayer {
         Map<String, Object> map =
                 mapper.readValue(res.body(), Map.class);
 
-        tokenStore.setSpotifyUserId((String) map.get("id"));
+        party.getSpotifyCredentials().setSpotifyUserId((String) map.get("id"));
     }
 
-    public void ensurePartyPlaylistExists() throws Exception {
-
-        String existingId = findExistingPlaylist();
+    public void ensurePartyPlaylistExists(Party party) throws Exception {
+        String existingId = findExistingPlaylist(party);
 
         if (existingId != null) {
-            tokenStore.setPlaylistId(existingId);
+            party.getSpotifyCredentials().setPlaylistId(existingId);
             return;
         }
 
-        createPartyPlaylist();
+        createPartyPlaylist(party);
     }
 
-    private String findExistingPlaylist() throws Exception {
-
+    private String findExistingPlaylist(Party party) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.spotify.com/v1/me/playlists?limit=50"))
-                .header("Authorization", authHeader())
+                .header("Authorization", authHeader(party))
                 .GET()
                 .build();
 
@@ -279,9 +272,8 @@ public class SpotifyPlayer {
         return null;
     }
 
-    private void createPartyPlaylist() throws Exception {
-
-        String userId = tokenStore.getSpotifyUserId();
+    private void createPartyPlaylist(Party party) throws Exception {
+        String userId = party.getSpotifyCredentials().getSpotifyUserId();
 
         Map<String, Object> bodyMap = Map.of(
                 "name", "Musicvoting party",
@@ -291,7 +283,7 @@ public class SpotifyPlayer {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.spotify.com/v1/users/" + userId + "/playlists"))
-                .header("Authorization", authHeader())
+                .header("Authorization", authHeader(party))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(
                         mapper.writeValueAsString(bodyMap)))
@@ -306,19 +298,19 @@ public class SpotifyPlayer {
         Map<String, Object> map =
                 mapper.readValue(res.body(), Map.class);
 
-        tokenStore.setPlaylistId((String) map.get("id"));
+        party.getSpotifyCredentials().setPlaylistId((String) map.get("id"));
     }
 
-    public Response overwritePlaylist(List<String> uris) {
-
+    @Override
+    public Response overwritePlaylist(Party party, List<String> uris) {
         try {
-            String playlistId = tokenStore.getPlaylistId();
+            String playlistId = party.getSpotifyCredentials().getPlaylistId();
 
             Map<String, Object> bodyMap = Map.of("uris", uris);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .header("Content-Type", "application/json")
                     .PUT(HttpRequest.BodyPublishers.ofString(
                             mapper.writeValueAsString(bodyMap)))
@@ -340,41 +332,38 @@ public class SpotifyPlayer {
         }
     }
 
-    public Response playNextAndRemove() {
+    @Override
+    public Response playNextAndRemove(Party party) {
         try {
-            List<Map<String, Object>> currentQueue = getQueue();
+            List<Map<String, Object>> currentQueue = getQueue(party);
 
             if (currentQueue == null || currentQueue.isEmpty()) {
-                // Wenn nichts mehr da ist, senden wir einen Hinweis
                 return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
             }
 
             // If the currently playing track is still at the top of the queue,
             // remove it first to avoid replaying the same song after it ended.
-            String currentUri = getCurrentlyPlayingUri();
+            String currentUri = getCurrentlyPlayingUri(party);
             if (currentUri != null && !currentUri.isBlank()) {
                 String firstUri = (String) currentQueue.get(0).get("uri");
                 if (currentUri.equals(firstUri)) {
-                    removeTrackFromPlaylist(currentUri);
-                    currentQueue = getQueue();
+                    removeTrackFromPlaylist(party, currentUri);
+                    currentQueue = getQueue(party);
                     if (currentQueue == null || currentQueue.isEmpty()) {
                         return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
                     }
                 }
             }
 
-            // 1. Hol den (neuen) ersten Track aus der Liste
             Map<String, Object> nextTrack = currentQueue.get(0);
             String uri = (String) nextTrack.get("uri");
 
-            // 2. Abspielen starten
-            Response playResponse = play(uri);
+            Response playResponse = play(party, uri);
             if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
                 return playResponse;
             }
 
-            // 3. Aus der Spotify-Playlist löschen
-            removeTrackFromPlaylist(uri);
+            removeTrackFromPlaylist(party, uri);
 
             return Response.ok(Map.of(
                     "status", "playing",
@@ -386,9 +375,10 @@ public class SpotifyPlayer {
         }
     }
 
-    public Response pausePlayback() {
+    @Override
+    public Response pausePlayback(Party party) {
         try {
-            String deviceId = resolvePlayableDeviceId();
+            String deviceId = resolvePlayableDeviceId(party);
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(Map.of("error", "No active Spotify device found."))
@@ -397,9 +387,9 @@ public class SpotifyPlayer {
             }
 
             String url = "https://api.spotify.com/v1/me/player/pause?device_id=" + deviceId;
-            Response response = sendPut(url, null);
+            Response response = sendPut(party, url, null);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
-                tokenStore.setLastPlaybackActive(false);
+                party.getSpotifyCredentials().setLastPlaybackActive(false);
             }
             return response;
         } catch (Exception e) {
@@ -407,9 +397,10 @@ public class SpotifyPlayer {
         }
     }
 
-    public Response resumePlayback() {
+    @Override
+    public Response resumePlayback(Party party) {
         try {
-            String deviceId = resolvePlayableDeviceId();
+            String deviceId = resolvePlayableDeviceId(party);
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(Map.of("error", "No active Spotify device found."))
@@ -418,9 +409,9 @@ public class SpotifyPlayer {
             }
 
             String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
-            Response response = sendPut(url, null);
+            Response response = sendPut(party, url, null);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
-                tokenStore.setLastPlaybackActive(true);
+                party.getSpotifyCredentials().setLastPlaybackActive(true);
             }
             return response;
         } catch (Exception e) {
@@ -428,18 +419,16 @@ public class SpotifyPlayer {
         }
     }
 
-    public void restoreCurrentTrackFromBeginningOnDevice(String deviceId) {
+    public void restoreCurrentTrackFromBeginningOnDevice(Party party, String deviceId) {
         try {
             if (deviceId == null || deviceId.isBlank()) {
                 return;
             }
 
-            // Before attempting to transfer playback, check if another device is currently active.
-            // If there is an active device different from the registering device, skip restoring to avoid interrupting playback.
             try {
                 HttpRequest devReq = HttpRequest.newBuilder()
                         .uri(URI.create("https://api.spotify.com/v1/me/player/devices"))
-                        .header("Authorization", authHeader())
+                        .header("Authorization", authHeader(party))
                         .GET()
                         .build();
                 HttpResponse<String> devRes = client.send(devReq, HttpResponse.BodyHandlers.ofString());
@@ -449,15 +438,13 @@ public class SpotifyPlayer {
                     if (devices != null) {
                         boolean otherActive = devices.stream().anyMatch(d -> Boolean.TRUE.equals(d.get("is_active")) && !deviceId.equals(d.get("id")));
                         if (otherActive) {
-                            // Another device is active — do not transfer playback to the newly registered device.
-                            // Still update the cached playback snapshot so other clients (iOS/web) know what's playing.
                             try {
-                                Map<String, Object> currentSnapshot = getCurrentPlaybackSnapshot();
+                                Map<String, Object> currentSnapshot = getCurrentPlaybackSnapshot(party);
                                 if (currentSnapshot != null) {
                                     String snapUri = (String) currentSnapshot.get("uri");
                                     Boolean snapPlaying = Boolean.TRUE.equals(currentSnapshot.get("isPlaying"));
                                     if (snapUri != null && !snapUri.isBlank()) {
-                                        updateCachedPlayback(snapUri, snapPlaying);
+                                        updateCachedPlayback(party, snapUri, snapPlaying);
                                     }
                                 }
                             } catch (Exception ignoredSnapshot) {
@@ -472,13 +459,14 @@ public class SpotifyPlayer {
             }
 
             String uri = null;
-            Map<String, Object> snapshot = getCurrentPlaybackSnapshot();
+            Map<String, Object> snapshot = getCurrentPlaybackSnapshot(party);
             if (snapshot != null && Boolean.TRUE.equals(snapshot.get("isPlaying"))) {
                 uri = (String) snapshot.get("uri");
             }
 
-            if ((uri == null || uri.isBlank()) && Boolean.TRUE.equals(tokenStore.getLastPlaybackActive())) {
-                uri = tokenStore.getLastPlaybackUri();
+            SpotifyCredentials creds = party.getSpotifyCredentials();
+            if ((uri == null || uri.isBlank()) && Boolean.TRUE.equals(creds.getLastPlaybackActive())) {
+                uri = creds.getLastPlaybackUri();
             }
 
             if (uri == null || uri.isBlank()) {
@@ -487,18 +475,19 @@ public class SpotifyPlayer {
 
             Map<String, Object> bodyMap = Map.of("uris", List.of(uri));
             String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
-            Response response = sendPut(url, mapper.writeValueAsString(bodyMap));
+            Response response = sendPut(party, url, mapper.writeValueAsString(bodyMap));
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
-                updateCachedPlayback(uri, true);
+                updateCachedPlayback(party, uri, true);
             }
         } catch (Exception ignored) {
             // Device registration should still succeed even if restore fails.
         }
     }
 
-    public Response startFirstSongWithoutRemoving() {
+    @Override
+    public Response startFirstSongWithoutRemoving(Party party) {
         try {
-            List<Map<String, Object>> currentQueue = getQueue();
+            List<Map<String, Object>> currentQueue = getQueue(party);
             if (currentQueue == null || currentQueue.isEmpty()) {
                 return Response.ok(Map.of(
                         "status", "empty",
@@ -508,7 +497,7 @@ public class SpotifyPlayer {
 
             Map<String, Object> firstTrack = currentQueue.get(0);
             String uri = (String) firstTrack.get("uri");
-            Response playResponse = play(uri);
+            Response playResponse = play(party, uri);
             if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
                 return Response.status(playResponse.getStatus())
                         .entity(playResponse.getEntity())
@@ -525,11 +514,12 @@ public class SpotifyPlayer {
         }
     }
 
-    public Response getCurrentPlayback() {
+    @Override
+    public Response getCurrentPlayback(Party party) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.spotify.com/v1/me/player/currently-playing"))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .GET()
                     .build();
 
@@ -552,7 +542,7 @@ public class SpotifyPlayer {
 
             Object itemObj = json.get("item");
             if (!(itemObj instanceof Map<?, ?> item)) {
-                tokenStore.setLastPlaybackActive(isPlaying);
+                party.getSpotifyCredentials().setLastPlaybackActive(isPlaying);
                 return Response.ok(Map.of(
                         "isPlaying", isPlaying,
                         "progressMs", progressMs == null ? 0 : progressMs.intValue()
@@ -580,7 +570,7 @@ public class SpotifyPlayer {
             payload.put("isPlaying", isPlaying);
             payload.put("progressMs", progressMs == null ? 0 : progressMs.intValue());
             payload.put("track", trackPayload);
-            updateCachedPlayback((String) item.get("uri"), isPlaying);
+            updateCachedPlayback(party, (String) item.get("uri"), isPlaying);
 
             return Response.ok(payload).build();
         } catch (Exception e) {
@@ -588,12 +578,13 @@ public class SpotifyPlayer {
         }
     }
 
-    // --- Hilfsmethoden ---
-    private Response sendGet(String url) {
+    // --- helpers ---
+
+    private Response sendGet(Party party, String url) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .GET()
                     .build();
 
@@ -607,11 +598,11 @@ public class SpotifyPlayer {
         }
     }
 
-    private Response sendPut(String url, String body) {
+    private Response sendPut(Party party, String url, String body) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .header("Content-Type", "application/json")
                     .PUT(body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(body))
                     .build();
@@ -629,31 +620,14 @@ public class SpotifyPlayer {
         }
     }
 
-    private Response sendPost(String url) {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", authHeader())
-                    .POST(HttpRequest.BodyPublishers.noBody())
-                    .build();
-
-            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (res.statusCode() < 200 || res.statusCode() >= 300) {
-                return SpotifyApiErrors.buildResponse(res, "Die Spotify-POST-Anfrage");
-            }
-            return Response.status(res.statusCode()).entity("{\"status\":\"success\"}").type(MediaType.APPLICATION_JSON).build();
-        } catch (Exception e) {
-            return propagateOrUnexpected("Die Spotify-POST-Anfrage", e);
-        }
-    }
-
-    private String resolvePlayableDeviceId() {
-        String stored = getStoredDeviceId();
+    private String resolvePlayableDeviceId(Party party) {
+        SpotifyCredentials creds = party.getSpotifyCredentials();
+        String stored = creds.getDeviceId();
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.spotify.com/v1/me/player/devices"))
-                    .header("Authorization", authHeader())
+                    .header("Authorization", authHeader(party))
                     .GET()
                     .build();
 
@@ -690,7 +664,7 @@ public class SpotifyPlayer {
 
             String selected = active != null ? active : (String) devices.get(0).get("id");
             if (selected != null && !selected.isBlank()) {
-                tokenStore.setDeviceId(selected);
+                creds.setDeviceId(selected);
             }
             return selected;
         } catch (Exception e) {
@@ -704,9 +678,9 @@ public class SpotifyPlayer {
         }
     }
 
-    private void removeTrackFromPlaylist(String uri) throws Exception {
+    private void removeTrackFromPlaylist(Party party, String uri) throws Exception {
         if (uri == null || uri.isBlank()) return;
-        String playlistId = tokenStore.getPlaylistId();
+        String playlistId = party.getSpotifyCredentials().getPlaylistId();
         if (playlistId == null || playlistId.isBlank()) return;
 
         Map<String, Object> trackObj = Map.of("uri", uri);
@@ -715,7 +689,7 @@ public class SpotifyPlayer {
 
         HttpRequest deleteRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
-                .header("Authorization", authHeader())
+                .header("Authorization", authHeader(party))
                 .header("Content-Type", "application/json")
                 .method("DELETE", HttpRequest.BodyPublishers.ofString(jsonDelete))
                 .build();
@@ -726,10 +700,10 @@ public class SpotifyPlayer {
         }
     }
 
-    private Map<String, Object> getCurrentPlaybackSnapshot() throws Exception {
+    private Map<String, Object> getCurrentPlaybackSnapshot(Party party) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.spotify.com/v1/me/player/currently-playing"))
-                .header("Authorization", authHeader())
+                .header("Authorization", authHeader(party))
                 .GET()
                 .build();
 
@@ -755,16 +729,17 @@ public class SpotifyPlayer {
         return snapshot;
     }
 
-    private void updateCachedPlayback(String uri, boolean isPlaying) {
+    private void updateCachedPlayback(Party party, String uri, boolean isPlaying) {
+        SpotifyCredentials creds = party.getSpotifyCredentials();
         if (uri != null && !uri.isBlank()) {
-            tokenStore.setLastPlaybackUri(uri);
+            creds.setLastPlaybackUri(uri);
         }
-        tokenStore.setLastPlaybackActive(isPlaying);
+        creds.setLastPlaybackActive(isPlaying);
     }
 
-    private String getCurrentlyPlayingUri() {
+    private String getCurrentlyPlayingUri(Party party) {
         try {
-            Map<String, Object> snapshot = getCurrentPlaybackSnapshot();
+            Map<String, Object> snapshot = getCurrentPlaybackSnapshot(party);
             if (snapshot == null) {
                 return null;
             }
@@ -785,6 +760,4 @@ public class SpotifyPlayer {
         }
         return SpotifyApiErrors.unexpectedError(actionLabel, exception);
     }
-
-
 }

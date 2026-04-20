@@ -1,6 +1,9 @@
 package at.htl.endpoints;
 
-import at.htl.service.SpotifyPlayer;
+import at.htl.domain.Party;
+import at.htl.domain.PartyRegistry;
+import at.htl.provider.MusicProvider;
+import at.htl.provider.MusicProviderFactory;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -15,20 +18,32 @@ import java.util.Map;
 public class TrackResource {
 
     @Inject
-    SpotifyPlayer spotify;
+    PartyRegistry partyRegistry;
+
+    @Inject
+    MusicProviderFactory providerFactory;
+
+    private Party party() {
+        return partyRegistry.getOrCreateDefault();
+    }
+
+    private MusicProvider provider(Party party) {
+        return providerFactory.forParty(party);
+    }
 
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, Object> search(@QueryParam("q") String q) {
-
-        return spotify.searchTracks(q);
+        Party party = party();
+        return provider(party).searchTracks(party, q);
     }
 
     @GET
     @Path("/{id}")
     public Response getTrack(@PathParam("id") String id) {
-        return spotify.getTrack(id);
+        Party party = party();
+        return provider(party).getTrack(party, id);
     }
 
     @PUT
@@ -38,9 +53,9 @@ public class TrackResource {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\":\"Missing uri\"}").build();
         }
-        return spotify.play(body.get("uri"));
+        Party party = party();
+        return provider(party).play(party, body.get("uri"));
     }
-
 
     @POST
     @Path("/saveToPlaylist")
@@ -50,14 +65,15 @@ public class TrackResource {
                     .entity("{\"error\":\"No tracks provided\"}")
                     .build();
         }
-
-        return spotify.overwritePlaylist(uris);
+        Party party = party();
+        return provider(party).overwritePlaylist(party, uris);
     }
 
     @GET
     @Path("/queue")
     public Response getQueue() {
-        List<Map<String, Object>> queue = spotify.getQueue();
+        Party party = party();
+        List<Map<String, Object>> queue = provider(party).getQueue(party);
         return Response.ok(Map.of("queue", queue)).build();
     }
 
@@ -69,7 +85,8 @@ public class TrackResource {
                     .entity("{\"error\":\"No tracks provided\"}")
                     .build();
         }
-        return spotify.addTracksToPlaylist(uris);
+        Party party = party();
+        return provider(party).addTracksToPlaylist(party, uris);
     }
 
     @DELETE
@@ -80,37 +97,42 @@ public class TrackResource {
                     .entity("{\"error\":\"Missing uri\"}")
                     .build();
         }
-        return spotify.removeTrack(body.get("uri"));
+        Party party = party();
+        return provider(party).removeTrack(party, body.get("uri"));
     }
 
     @POST
     @Path("/next")
     public Response playNext() {
-        // Ruft die neue Logik im SpotifyPlayer auf
-        return spotify.playNextAndRemove();
+        Party party = party();
+        return provider(party).playNextAndRemove(party);
     }
 
     @POST
     @Path("/pause")
     public Response pause() {
-        return spotify.pausePlayback();
+        Party party = party();
+        return provider(party).pausePlayback(party);
     }
 
     @POST
     @Path("/resume")
     public Response resume() {
-        return spotify.resumePlayback();
+        Party party = party();
+        return provider(party).resumePlayback(party);
     }
 
     @POST
     @Path("/start")
     public Response startFromQueue() {
-        return spotify.startFirstSongWithoutRemoving();
+        Party party = party();
+        return provider(party).startFirstSongWithoutRemoving(party);
     }
 
     @GET
     @Path("/current")
     public Response current() {
-        return spotify.getCurrentPlayback();
+        Party party = party();
+        return provider(party).getCurrentPlayback(party);
     }
 }
