@@ -166,7 +166,7 @@ export class HostDashboard implements OnInit {
       await this.loadPlaylist();
     } catch (err) {
       console.error('Fehler beim Neustart des Songs:', err);
-  }
+    }
   }
 
   async onSkip() {
