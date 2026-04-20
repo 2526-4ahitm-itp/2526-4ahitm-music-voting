@@ -71,18 +71,39 @@ body{
 }
 
 .side-menu li {
-  padding: 0.7rem 0.7rem 0.7rem 1rem;
+  position: relative;
+  padding: 0.7rem 0.7rem 0.7rem 1.5rem;
   margin: 0.5rem 0.5rem 0.5rem 0;
+  border-radius: 0 20px 20px 0;
+  background-color: rgba(131, 3, 166, 0.1);
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
 
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
+.side-menu li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px; 
+  background: #8b00a5;
+  border-radius: 0 4px 4px 0;
+  opacity: 0;
+  transform: scaleY(0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  transition: font-weight 0.3s, background-color 0.3s;
-  background-color: #f1f1f1;
-    transition: all 0.3s ease-in-out;
+.side-menu li:hover::before,
+.side-menu li.active::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
 
+.side-menu li:hover {
+  padding-left: 1.8rem;
+  background-color: rgba(131, 3, 166, 0.3);
+  font-weight: bold;
 }
 
 .side-menu a {
@@ -91,10 +112,9 @@ body{
   color: black;
 }
 
-.side-menu li:hover {
-  padding: 1rem;
-  background-color: #f1f1f1;
-  background-color: #c826b83f;
+.side-menu li.active {
+  background-color: rgba(131, 3, 166, 0.3);
+  padding-left: 1.8rem;
 }
 
 .overlay {
