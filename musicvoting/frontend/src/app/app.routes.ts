@@ -5,34 +5,41 @@ import { Home } from './pages/home/home';
 import { HostDashboard } from './pages/host-dashboard/host-dashboard';
 import { Startpage } from './pages/startpage/startpage';
 import { VotingComp } from './pages/voting-comp/voting-comp';
+import {VotingHost} from './pages/voting-host/voting-host';
 
 export const routes: Routes = [
-  { 
-    path: '', 
+  {
+    path: '',
     component: Home,
     title: 'MusicVoting'
   },
 
-  { 
-    path: 'guest', 
+  {
+    path: 'guest',
     component: Guest,
     title: 'Partygast - MusicVoting'
   },
 
-  { 
-    path: 'startpage', 
+  {
+    path: 'startpage',
     component: Startpage ,
     title: 'Player - MusicVoting'
   },
 
-  { 
-    path: 'dashboard', 
+  {
+    path: 'dashboard',
     component: HostDashboard ,
     title: 'Übersicht - MusicVoting'
   },
 
-  { 
-    path: 'voting', 
+  {
+    path: 'voting-host',
+    component: VotingHost ,
+    title: 'Voten - MusicVoting'
+  },
+
+  {
+    path: 'voting',
     component: VotingComp,
     title: 'Partygast - MusicVoting'
   },
