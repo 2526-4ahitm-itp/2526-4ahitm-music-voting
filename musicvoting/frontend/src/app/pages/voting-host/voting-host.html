@@ -1,8 +1,6 @@
 <div class="music-voting-container">
 
-  <nav class="navbar">
-    <button class="burger" type="button" (click)="toggleMenu()"><p>☰</p></button>
-  </nav>
+
 
   <div class="side-menu" [class.open]="menuOpen">
     <h2>MusicVoting</h2>
@@ -21,9 +19,13 @@
   <div class="main-wrapper">
 
     <div class="sticky-top">
-      <header class="header">
-        <h1>Vote für deine Lieblingssongs!</h1>
-      </header>
+      <nav class="navbar">
+        <button class="burger" type="button" (click)="toggleMenu()"><p>☰</p></button>
+        <header class="header">
+          <h1>Vote für deine Lieblingssongs!</h1>
+        </header>
+      </nav>
+
 
       <div class="search-section">
         <div class="search-bar">
