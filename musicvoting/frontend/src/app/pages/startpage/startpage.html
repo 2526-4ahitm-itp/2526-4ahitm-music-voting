@@ -43,6 +43,10 @@
       <section class="queue">
         <h2>Warteschlange</h2>
 
+        <div class="queue-info">
+          <span>Lieder in der Warteschlange: {{ tracks.length }}</span>
+        </div>
+
         @if (tracks.length === 0) {
           <div class="queue-text-default">Keine Songs in der Warteschlange!</div>
         } @else {
