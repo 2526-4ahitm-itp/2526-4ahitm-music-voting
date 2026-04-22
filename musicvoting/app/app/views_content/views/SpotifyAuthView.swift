@@ -30,7 +30,7 @@ final class SpotifyAuthViewModel: ObservableObject {
     }()
 
     var loginURL: URL {
-        var components = URLComponents(string: "http://localhost:8080/api/spotify/login")!
+        var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/login"), resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "source", value: "ios"),
             URLQueryItem(name: "installationId", value: installationId)
@@ -39,7 +39,7 @@ final class SpotifyAuthViewModel: ObservableObject {
     }
 
     private var statusURL: URL {
-        var components = URLComponents(string: "http://localhost:8080/api/spotify/status")!
+        var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/status"), resolvingAgainstBaseURL: false)!
         components.queryItems = [URLQueryItem(name: "source", value: "ios")]
         return components.url!
     }
@@ -51,7 +51,11 @@ final class SpotifyAuthViewModel: ObservableObject {
         do {
             var request = URLRequest(url: statusURL)
             request.setValue(installationId, forHTTPHeaderField: "X-Install-Id")
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                throw URLError(.badServerResponse)
+            }
             let status = try JSONDecoder().decode(SpotifyStatusResponse.self, from: data)
             isLoggedIn = status.loggedIn
         } catch {
@@ -64,7 +68,53 @@ final class SpotifyAuthViewModel: ObservableObject {
 
     func handleCallback(_ url: URL) {
         guard url.scheme == "musicvotingapp", url.host == "callback" else { return }
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            Task { await checkLoginStatus() }
+            return
+        }
+
+        let queryItems = components.queryItems ?? []
+        let code = queryItems.first(where: { $0.name == "code" })?.value
+        let state = queryItems.first(where: { $0.name == "state" })?.value
+
+        if let code, !code.isEmpty {
+            Task { await completeIosLogin(code: code, state: state) }
+            return
+        }
+
         Task { await checkLoginStatus() }
+    }
+
+    private func completeIosLogin(code: String, state: String?) async {
+        isChecking = true
+        errorMessage = nil
+
+        var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/ios/callback"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "code", value: code),
+            URLQueryItem(name: "state", value: state)
+        ]
+
+        guard let url = components?.url else {
+            isChecking = false
+            errorMessage = "Spotify-Anmeldung ist fehlgeschlagen. Bitte versuche es erneut."
+            return
+        }
+
+        do {
+            var request = URLRequest(url: url)
+            request.setValue(installationId, forHTTPHeaderField: "X-Install-Id")
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                throw URLError(.badServerResponse)
+            }
+            await checkLoginStatus()
+        } catch {
+            isChecking = false
+            isLoggedIn = false
+            errorMessage = "Spotify-Anmeldung ist fehlgeschlagen. Bitte versuche es erneut."
+        }
     }
 }
 

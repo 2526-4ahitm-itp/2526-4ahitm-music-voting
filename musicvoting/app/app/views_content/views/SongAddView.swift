@@ -54,8 +54,8 @@ final class SongAddViewModel: ObservableObject {
 
     private var searchTask: Task<Void, Never>?
 
-    private let searchURL = URL(string: "http://localhost:8080/api/track/search")!
-    private let addToPlaylistURL = URL(string: "http://localhost:8080/api/track/addToPlaylist")!
+    private var searchURL: URL { BackendConfiguration.endpoint("/api/track/search") }
+    private var addToPlaylistURL: URL { BackendConfiguration.endpoint("/api/track/addToPlaylist") }
 
     func queueSearch(for text: String) {
         searchTask?.cancel()

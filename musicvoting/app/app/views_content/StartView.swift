@@ -97,9 +97,18 @@ struct StartView: View {
                 .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationLink(destination: InfoView()) {
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(.white)
+                        HStack(spacing: 14) {
+                            NavigationLink(destination: BackendSettingsView()) {
+                                Image(systemName: "gearshape")
+                                    .foregroundStyle(.white)
+                            }
+                            .accessibilityIdentifier("start.settings")
+
+                            NavigationLink(destination: InfoView()) {
+                                Image(systemName: "info.circle")
+                                    .foregroundStyle(.white)
+                            }
+                            .accessibilityIdentifier("start.info")
                         }
                     }
                 }
