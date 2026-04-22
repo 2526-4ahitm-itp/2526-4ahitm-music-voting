@@ -470,6 +470,13 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
 
             if (uri == null || uri.isBlank()) {
+                // No track to restore — still transfer playback to this device so Spotify
+                // marks it as active. Without this, resolvePlayableDeviceId may not find
+                // the device immediately after registration (Spotify propagation delay).
+                Map<String, Object> transferBody = Map.of("device_ids", List.of(deviceId), "play", false);
+                try {
+                    sendPut(party, "https://api.spotify.com/v1/me/player", mapper.writeValueAsString(transferBody));
+                } catch (Exception ignored) {}
                 return;
             }
 

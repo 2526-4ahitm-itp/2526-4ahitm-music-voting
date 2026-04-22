@@ -195,6 +195,12 @@ public class SpotifyTokenResource {
                     )
             ));
 
+            loginEventBus.emit(new LoginEvent(
+                    "login-success",
+                    java.time.Instant.now(),
+                    Map.of("source", "web")
+            ));
+
             return Response.ok(Map.of("status", "ok")).build();
         } catch (Exception e) {
             if (e instanceof WebApplicationException webApplicationException) {

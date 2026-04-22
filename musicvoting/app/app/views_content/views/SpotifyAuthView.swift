@@ -11,6 +11,16 @@ private struct SpotifyStatusResponse: Decodable {
     let loggedIn: Bool
 }
 
+private struct LoginEvent: Decodable {
+    let type: String
+    let payload: Payload?
+
+    struct Payload: Decodable {
+        let source: String?
+        let installationId: String?
+    }
+}
+
 @MainActor
 final class SpotifyAuthViewModel: ObservableObject {
     
@@ -41,6 +51,15 @@ final class SpotifyAuthViewModel: ObservableObject {
     private var statusURL: URL {
         var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/status"), resolvingAgainstBaseURL: false)!
         components.queryItems = [URLQueryItem(name: "source", value: "ios")]
+        return components.url!
+    }
+
+    private var eventsURL: URL {
+        var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/events"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "source", value: "ios"),
+            URLQueryItem(name: "installationId", value: installationId)
+        ]
         return components.url!
     }
 
@@ -83,6 +102,26 @@ final class SpotifyAuthViewModel: ObservableObject {
         }
 
         Task { await checkLoginStatus() }
+    }
+
+    func listenForLoginSuccess() async {
+        do {
+            let (bytes, _) = try await URLSession.shared.bytes(from: eventsURL)
+            for try await line in bytes.lines {
+                guard line.hasPrefix("data:") else { continue }
+                let json = String(line.dropFirst(5)).trimmingCharacters(in: .whitespaces)
+                guard let data = json.data(using: .utf8),
+                      let event = try? JSONDecoder().decode(LoginEvent.self, from: data),
+                      event.type == "login-success",
+                      event.payload?.source == "ios",
+                      event.payload?.installationId == installationId
+                else { continue }
+                isLoggedIn = true
+                return
+            }
+        } catch {
+            // stream ended or task cancelled — no action needed
+        }
     }
 
     private func completeIosLogin(code: String, state: String?) async {
@@ -236,6 +275,9 @@ struct SpotifyAuthView: View {
             if auth.isLoggedIn {
                 appState.currentSite = .admin
             }
+        }
+        .task {
+            await auth.listenForLoginSuccess()
         }
         .onChange(of: auth.isLoggedIn) { isLoggedIn in
             if isLoggedIn {
