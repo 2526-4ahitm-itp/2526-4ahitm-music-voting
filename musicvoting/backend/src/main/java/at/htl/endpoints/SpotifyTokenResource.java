@@ -175,13 +175,15 @@ public class SpotifyTokenResource {
             }
 
             Map<String, String> tokenMap = exchangeAuthorizationCode(code, iosRedirectUri);
-            tokenStore.setToken(tokenMap.get("access_token"));
+            Party party = partyRegistry.getOrCreateDefault();
+            SpotifyCredentials creds = party.getSpotifyCredentials();
+            creds.setToken(tokenMap.get("access_token"));
 
-            spotifyPlayer.fetchAndStoreUserId();
-            spotifyPlayer.ensurePartyPlaylistExists();
+            spotifyMusicProvider.fetchAndStoreUserId(party);
+            spotifyMusicProvider.ensurePartyPlaylistExists(party);
 
             if (installationId != null && !installationId.isBlank()) {
-                tokenStore.setIosInstallationId(installationId);
+                creds.setIosInstallationId(installationId);
             }
 
             loginEventBus.emit(new LoginEvent(
@@ -209,11 +211,13 @@ public class SpotifyTokenResource {
 
             Map<String, String> tokenMap = exchangeAuthorizationCode(code, redirectUri);
 
-            tokenStore.setToken(tokenMap.get("access_token"));
+            Party party = partyRegistry.getOrCreateDefault();
+            SpotifyCredentials creds = party.getSpotifyCredentials();
+            creds.setToken(tokenMap.get("access_token"));
 
-            spotifyPlayer.fetchAndStoreUserId();
+            spotifyMusicProvider.fetchAndStoreUserId(party);
 
-            spotifyPlayer.ensurePartyPlaylistExists();
+            spotifyMusicProvider.ensurePartyPlaylistExists(party);
 
             boolean iosSource = state != null && state.toLowerCase(Locale.ROOT).startsWith("ios");
             String installationId = null;
