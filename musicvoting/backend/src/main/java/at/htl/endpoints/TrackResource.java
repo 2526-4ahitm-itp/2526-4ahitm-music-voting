@@ -135,4 +135,16 @@ public class TrackResource {
         Party party = party();
         return provider(party).getCurrentPlayback(party);
     }
+
+    @POST
+    @Path("/vote")
+    public Response toggleVote(Map<String, String> body) {
+        if (body == null || body.get("uri") == null || body.get("uri").isBlank()
+                || body.get("deviceId") == null || body.get("deviceId").isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"Missing uri or deviceId\"}").build();
+        }
+        Party party = party();
+        return provider(party).toggleVote(party, body.get("uri"), body.get("deviceId"));
+    }
 }

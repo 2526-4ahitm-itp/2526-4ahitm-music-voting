@@ -1,10 +1,16 @@
 package at.htl.provider.spotify;
 
 import at.htl.domain.Party;
+import at.htl.domain.PartyEntity;
+import at.htl.domain.QueueEntry;
+import at.htl.domain.Vote;
 import at.htl.provider.MusicProvider;
 import at.htl.service.SpotifyApiErrors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -15,15 +21,21 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SpotifyMusicProvider implements MusicProvider {
 
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
+
+    @Inject
+    EntityManager em;
 
     private String authHeader(Party party) {
         return "Bearer " + party.getSpotifyCredentials().getToken();
@@ -96,68 +108,52 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     public Response addTracksToPlaylist(Party party, List<String> uris) {
         try {
-            String playlistId = party.getSpotifyCredentials().getPlaylistId();
-            if (playlistId == null || playlistId.isBlank()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(Map.of("error", "No playlist available"))
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
+            PartyEntity.findOrCreate(party.id().value(), party.providerKind().name());
+
+            for (String uri : uris) {
+                long count = QueueEntry.count("partyId = ?1 AND trackUri = ?2", party.id().value(), uri);
+                if (count > 0) {
+                    return Response.status(Response.Status.CONFLICT)
+                            .entity(Map.of("error", "Song ist schon in der Warteschlange."))
+                            .type(MediaType.APPLICATION_JSON)
+                            .build();
+                }
+
+                String trackId = uri.contains(":") ? uri.substring(uri.lastIndexOf(":") + 1) : uri;
+                Map<String, Object> meta = fetchTrackMetadata(party, trackId);
+
+                QueueEntry entry = new QueueEntry();
+                entry.partyId = party.id().value();
+                entry.trackUri = uri;
+                entry.trackName = (String) meta.get("name");
+                entry.artistName = parseArtistName(meta);
+                entry.albumName = parseAlbumName(meta);
+                entry.imageUrl = parseImageUrl(meta);
+                entry.durationMs = meta.get("duration_ms") instanceof Number n ? n.intValue() : null;
+                entry.addedAt = OffsetDateTime.now();
+                entry.persist();
             }
 
-            HttpRequest getRequest = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
-                    .header("Authorization", authHeader(party))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> getRes = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-            if (getRes.statusCode() < 200 || getRes.statusCode() >= 300) {
-                throw SpotifyApiErrors.asException(getRes, "Das Laden der Playlist");
-            }
-            Map<String, Object> json = mapper.readValue(getRes.body(), Map.class);
-            List<Map<String, Object>> items = (List<Map<String, Object>>) json.get("items");
-
-            List<String> existingUris = items.stream()
-                    .map(item -> (Map<String, Object>) item.get("track"))
-                    .map(track -> (String) track.get("uri"))
-                    .toList();
-
-            List<String> newUris = uris.stream()
-                    .filter(uri -> !existingUris.contains(uri))
-                    .toList();
-
-            if (newUris.isEmpty()) {
-                return Response.ok("{\"status\":\"No new tracks to add\"}").build();
-            }
-
-            Map<String, Object> bodyMap = Map.of("uris", newUris);
-            HttpRequest postRequest = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
-                    .header("Authorization", authHeader(party))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(bodyMap)))
-                    .build();
-
-            HttpResponse<String> postRes = client.send(postRequest, HttpResponse.BodyHandlers.ofString());
-            if (postRes.statusCode() < 200 || postRes.statusCode() >= 300) {
-                return SpotifyApiErrors.buildResponse(postRes, "Das Hinzufuegen des Songs zur Playlist");
-            }
-            return Response.status(postRes.statusCode())
-                    .entity(postRes.body())
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
-
+            return Response.ok(Map.of("status", "added")).build();
         } catch (Exception e) {
             return propagateOrUnexpected("Das Hinzufuegen des Songs zur Playlist", e);
         }
     }
 
     @Override
+    @Transactional
     public Response removeTrack(Party party, String uri) {
         try {
-            removeTrackFromPlaylist(party, uri);
+            long deleted = QueueEntry.delete("partyId = ?1 AND trackUri = ?2", party.id().value(), uri);
+            if (deleted == 0) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Song nicht in der Warteschlange."))
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
             return Response.ok(Map.of("status", "removed")).build();
         } catch (Exception e) {
             return propagateOrUnexpected("Das Entfernen des Songs aus der Playlist", e);
@@ -165,51 +161,36 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getQueue(Party party) {
         try {
-            String playlistId = party.getSpotifyCredentials().getPlaylistId();
-            if (playlistId == null || playlistId.isBlank()) {
-                return List.of();
-            }
+            List<Object[]> rows = em.createNativeQuery(
+                    "SELECT qe.id, qe.track_uri, qe.track_name, qe.artist_name, qe.album_name, " +
+                    "qe.image_url, qe.duration_ms, COUNT(v.id) AS like_count " +
+                    "FROM queue_entry qe " +
+                    "LEFT JOIN vote v ON v.queue_entry_id = qe.id " +
+                    "WHERE qe.party_id = :partyId " +
+                    "GROUP BY qe.id " +
+                    "ORDER BY COUNT(v.id) DESC, qe.added_at ASC"
+            ).setParameter("partyId", party.id().value()).getResultList();
 
-            String url = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", authHeader(party))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (res.statusCode() < 200 || res.statusCode() >= 300) {
-                throw SpotifyApiErrors.asException(res, "Das Laden der Warteschlange");
-            }
-            Map<String, Object> json = mapper.readValue(res.body(), Map.class);
-            List<Map<String, Object>> items = (List<Map<String, Object>>) json.get("items");
-
-            return items.stream().map(item -> {
-                Map<String, Object> track = (Map<String, Object>) item.get("track");
-
-                List<Map<String, Object>> artists = (List<Map<String, Object>>) track.get("artists");
-
-                Map<String, Object> album = (Map<String, Object>) track.get("album");
-                List<Map<String, Object>> images = (List<Map<String, Object>>) album.get("images");
-
-                return Map.of(
-                        "id", track.get("id"),
-                        "uri", track.get("uri"),
-                        "name", track.get("name"),
-                        "artists", artists,
-                        "album", Map.of(
-                                "name", album.get("name"),
-                                "images", images
-                        )
-                );
+            return rows.stream().map(row -> {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("id", row[0].toString());
+                entry.put("uri", row[1]);
+                entry.put("name", row[2]);
+                entry.put("artists", List.of(Map.of("name", row[3] != null ? row[3] : "")));
+                entry.put("album", Map.of(
+                        "name", row[4] != null ? row[4] : "",
+                        "images", row[5] != null ? List.of(Map.of("url", row[5])) : List.of()
+                ));
+                entry.put("duration_ms", row[6]);
+                entry.put("likeCount", ((Number) row[7]).longValue());
+                return entry;
             }).toList();
 
         } catch (Exception e) {
-            if (e instanceof WebApplicationException webApplicationException) {
-                throw webApplicationException;
-            }
+            if (e instanceof WebApplicationException wae) throw wae;
             throw new WebApplicationException(SpotifyApiErrors.unexpectedError("Das Laden der Warteschlange", e));
         }
     }
@@ -302,60 +283,51 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     public Response overwritePlaylist(Party party, List<String> uris) {
         try {
-            String playlistId = party.getSpotifyCredentials().getPlaylistId();
+            PartyEntity.findOrCreate(party.id().value(), party.providerKind().name());
+            QueueEntry.delete("partyId", party.id().value());
 
-            Map<String, Object> bodyMap = Map.of("uris", uris);
+            for (String uri : uris) {
+                String trackId = uri.contains(":") ? uri.substring(uri.lastIndexOf(":") + 1) : uri;
+                Map<String, Object> meta = fetchTrackMetadata(party, trackId);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.spotify.com/v1/playlists/" + playlistId + "/tracks"))
-                    .header("Authorization", authHeader(party))
-                    .header("Content-Type", "application/json")
-                    .PUT(HttpRequest.BodyPublishers.ofString(
-                            mapper.writeValueAsString(bodyMap)))
-                    .build();
-
-            HttpResponse<String> res =
-                    client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (res.statusCode() < 200 || res.statusCode() >= 300) {
-                return SpotifyApiErrors.buildResponse(res, "Das Speichern der Playlist");
+                QueueEntry entry = new QueueEntry();
+                entry.partyId = party.id().value();
+                entry.trackUri = uri;
+                entry.trackName = (String) meta.get("name");
+                entry.artistName = parseArtistName(meta);
+                entry.albumName = parseAlbumName(meta);
+                entry.imageUrl = parseImageUrl(meta);
+                entry.durationMs = meta.get("duration_ms") instanceof Number n ? n.intValue() : null;
+                entry.addedAt = OffsetDateTime.now();
+                entry.persist();
             }
 
-            return Response.status(res.statusCode())
-                    .entity(res.body())
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
-
+            return Response.ok(Map.of("status", "overwritten")).build();
         } catch (Exception e) {
             return propagateOrUnexpected("Das Speichern der Playlist", e);
         }
     }
 
     @Override
+    @Transactional
     public Response playNextAndRemove(Party party) {
         try {
-            List<Map<String, Object>> currentQueue = getQueue(party);
+            PartyEntity partyEntity = PartyEntity.findOrCreate(party.id().value(), party.providerKind().name());
 
-            if (currentQueue == null || currentQueue.isEmpty()) {
+            if (partyEntity.currentlyPlayingEntryId != null) {
+                QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
+                partyEntity.currentlyPlayingEntryId = null;
+            }
+
+            List<Map<String, Object>> queue = getQueue(party);
+            if (queue == null || queue.isEmpty()) {
                 return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
             }
 
-            // If the currently playing track is still at the top of the queue,
-            // remove it first to avoid replaying the same song after it ended.
-            String currentUri = getCurrentlyPlayingUri(party);
-            if (currentUri != null && !currentUri.isBlank()) {
-                String firstUri = (String) currentQueue.get(0).get("uri");
-                if (currentUri.equals(firstUri)) {
-                    removeTrackFromPlaylist(party, currentUri);
-                    currentQueue = getQueue(party);
-                    if (currentQueue == null || currentQueue.isEmpty()) {
-                        return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
-                    }
-                }
-            }
-
-            Map<String, Object> nextTrack = currentQueue.get(0);
+            Map<String, Object> nextTrack = queue.get(0);
             String uri = (String) nextTrack.get("uri");
 
             Response playResponse = play(party, uri);
@@ -363,13 +335,9 @@ public class SpotifyMusicProvider implements MusicProvider {
                 return playResponse;
             }
 
-            removeTrackFromPlaylist(party, uri);
+            partyEntity.currentlyPlayingEntryId = UUID.fromString((String) nextTrack.get("id"));
 
-            return Response.ok(Map.of(
-                    "status", "playing",
-                    "trackName", nextTrack.get("name")
-            )).build();
-
+            return Response.ok(Map.of("status", "playing", "trackName", nextTrack.get("name"))).build();
         } catch (Exception e) {
             return propagateOrUnexpected("Das Wechseln zum naechsten Song", e);
         }
@@ -485,18 +453,17 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     public Response startFirstSongWithoutRemoving(Party party) {
         try {
-            List<Map<String, Object>> currentQueue = getQueue(party);
-            if (currentQueue == null || currentQueue.isEmpty()) {
-                return Response.ok(Map.of(
-                        "status", "empty",
-                        "message", "Warteschlange ist leer"
-                )).build();
+            List<Map<String, Object>> queue = getQueue(party);
+            if (queue == null || queue.isEmpty()) {
+                return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
             }
 
-            Map<String, Object> firstTrack = currentQueue.get(0);
+            Map<String, Object> firstTrack = queue.get(0);
             String uri = (String) firstTrack.get("uri");
+
             Response playResponse = play(party, uri);
             if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
                 return Response.status(playResponse.getStatus())
@@ -504,6 +471,9 @@ public class SpotifyMusicProvider implements MusicProvider {
                         .type(MediaType.APPLICATION_JSON)
                         .build();
             }
+
+            PartyEntity partyEntity = PartyEntity.findOrCreate(party.id().value(), party.providerKind().name());
+            partyEntity.currentlyPlayingEntryId = UUID.fromString((String) firstTrack.get("id"));
 
             Map<String, Object> payload = new HashMap<>();
             payload.put("status", "playing");
@@ -575,6 +545,40 @@ public class SpotifyMusicProvider implements MusicProvider {
             return Response.ok(payload).build();
         } catch (Exception e) {
             return propagateOrUnexpected("Das Laden der aktuellen Wiedergabe", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Response toggleVote(Party party, String trackUri, String deviceId) {
+        try {
+            QueueEntry entry = QueueEntry.find("partyId = ?1 AND trackUri = ?2",
+                    party.id().value(), trackUri).firstResult();
+            if (entry == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Song nicht in der Warteschlange."))
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            Vote existing = Vote.find("queueEntry = ?1 AND deviceId = ?2", entry, deviceId).firstResult();
+            boolean liked;
+            if (existing != null) {
+                existing.delete();
+                liked = false;
+            } else {
+                Vote vote = new Vote();
+                vote.queueEntry = entry;
+                vote.deviceId = deviceId;
+                vote.votedAt = OffsetDateTime.now();
+                vote.persist();
+                liked = true;
+            }
+
+            long likeCount = Vote.count("queueEntry", entry);
+            return Response.ok(Map.of("liked", liked, "likeCount", likeCount)).build();
+        } catch (Exception e) {
+            return propagateOrUnexpected("Das Abstimmen", e);
         }
     }
 
@@ -676,6 +680,44 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
             throw new WebApplicationException(SpotifyApiErrors.unexpectedError("Das Laden der Spotify-Geraete", e));
         }
+    }
+
+    private Map<String, Object> fetchTrackMetadata(Party party, String trackId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.spotify.com/v1/tracks/" + trackId))
+                .header("Authorization", authHeader(party))
+                .GET()
+                .build();
+        HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() < 200 || res.statusCode() >= 300) {
+            throw SpotifyApiErrors.asException(res, "Das Laden der Track-Informationen");
+        }
+        return mapper.readValue(res.body(), Map.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String parseArtistName(Map<String, Object> meta) {
+        List<Map<String, Object>> artists = (List<Map<String, Object>>) meta.get("artists");
+        if (artists == null || artists.isEmpty()) return "";
+        return artists.stream()
+                .map(a -> (String) a.get("name"))
+                .filter(n -> n != null)
+                .collect(Collectors.joining(", "));
+    }
+
+    @SuppressWarnings("unchecked")
+    private String parseAlbumName(Map<String, Object> meta) {
+        Map<String, Object> album = (Map<String, Object>) meta.get("album");
+        return album != null ? (String) album.get("name") : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private String parseImageUrl(Map<String, Object> meta) {
+        Map<String, Object> album = (Map<String, Object>) meta.get("album");
+        if (album == null) return null;
+        List<Map<String, Object>> images = (List<Map<String, Object>>) album.get("images");
+        if (images == null || images.isEmpty()) return null;
+        return (String) images.get(0).get("url");
     }
 
     private void removeTrackFromPlaylist(Party party, String uri) throws Exception {
