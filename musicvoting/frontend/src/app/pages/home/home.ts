@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -9,26 +9,9 @@ import { Router } from '@angular/router';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit {
+export class Home {
 
   constructor(private router: Router) {}
-
-  async ngOnInit() {
-    try {
-      // Only auto-redirect after a login flow if we previously set a flag.
-      const wantRedirect = sessionStorage.getItem('postLoginRedirect');
-      const res = await fetch('/api/spotify/token');
-      if (res.ok) {
-        const token = await res.text();
-        if (token && token.trim().length > 0 && wantRedirect === 'dashboard-host') {
-          sessionStorage.removeItem('postLoginRedirect');
-          this.router.navigate(['/dashboard-host']);
-        }
-      }
-    } catch (err) {
-      // ignore errors; user can still press buttons
-    }
-  }
 
   async gotohostpage() {
     try {
@@ -40,11 +23,8 @@ export class Home implements OnInit {
           return;
         }
       }
-      // mark that we want to redirect to dashboard after login then start login flow
-      try { sessionStorage.setItem('postLoginRedirect', 'dashboard'); } catch (e) { /* ignore */ }
       window.location.href = '/api/spotify/login?source=web';
     } catch (err) {
-      try { sessionStorage.setItem('postLoginRedirect', 'dashboard'); } catch (e) { /* ignore */ }
       window.location.href = '/api/spotify/login?source=web';
     }
   }
