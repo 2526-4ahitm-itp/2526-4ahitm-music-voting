@@ -12,7 +12,7 @@ body{
 
 .content-cards{
   display: flex;
-  width: 100vw  
+  width: 100vw
 }
 
 .left{
@@ -76,8 +76,8 @@ body{
 
 .progress-fill {
   height: 100%;
-  background-color: #1db954;
-  width: 0%;
+  background-color: #F2594B;
+  width: 0;
   transition: width 0.5s linear;
   border-radius: 4px 0 0 4px;
 }
