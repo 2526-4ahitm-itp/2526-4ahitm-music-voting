@@ -1,13 +1,13 @@
 <div class="music-voting-container">
 
 
-
   <div class="side-menu" [class.open]="menuOpen">
     <h2>MusicVoting</h2>
     <ul>
       <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
       <li><a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a></li>
       <li class="active"><a routerLink="/voting-host" (click)="toggleMenu()">Voting</a></li>
+      <li><a routerLink="/search-host" (click)="toggleMenu()">Suchen</a></li>
     </ul>
   </div>
 

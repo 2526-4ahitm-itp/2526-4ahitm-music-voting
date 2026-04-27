@@ -167,12 +167,8 @@ export class Startpage implements OnInit, OnDestroy {
     this.eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // Only react to login-success events that target the web client.
-        // The backend may emit both an ios and web login-success when logging in from iOS,
-        // avoid re-initializing the web player on the iOS event which can transfer/pause playback.
-        if (data?.type === 'login-success' && data?.payload?.source === 'web') {
-          this.ignoreInitialEndedState = true;
-          this.spotifyService.initPlayer(true);
+        if (data?.type === 'login-success') {
+          window.location.reload();
         }
       } catch {
         // ignore malformed events

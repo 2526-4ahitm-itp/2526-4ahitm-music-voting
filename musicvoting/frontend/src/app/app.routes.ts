@@ -6,6 +6,7 @@ import { HostDashboard } from './pages/host-dashboard/host-dashboard';
 import { Startpage } from './pages/startpage/startpage';
 import { VotingComp } from './pages/voting-comp/voting-comp';
 import {VotingHost} from './pages/voting-host/voting-host';
+import { SearchHost } from './pages/search-host/search-host';
 
 export const routes: Routes = [
   {
@@ -36,6 +37,12 @@ export const routes: Routes = [
     path: 'voting-host',
     component: VotingHost ,
     title: 'Voten - MusicVoting'
+  },
+
+  {
+    path: 'search-host',
+    component: SearchHost ,
+    title: 'Suchen - MusicVoting'
   },
 
   {

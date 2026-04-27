@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SongRow: View {
     let song: Song
+    var onDelete: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 12) {
@@ -55,12 +56,11 @@ struct SongRow: View {
 
             Spacer()
 
-            Button {
-                print("Song löschen")
-            } label: {
+            Button(action: onDelete) {
                 Image(systemName: "trash.fill")
                     .foregroundColor(.black)
             }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 6)
     }

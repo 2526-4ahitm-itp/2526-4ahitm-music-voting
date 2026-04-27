@@ -23,6 +23,7 @@ private struct StartPlaybackResponse: Decodable {
 
 private struct QueueTrack: Decodable {
     let name: String
+    let uri: String?
     let artists: [Artist]
     let album: Album
 
@@ -48,11 +49,14 @@ final class AdminDashboardViewModel: ObservableObject {
     @Published var queueSongs: [Song] = []
 
     let pollInterval: TimeInterval = 2
-    private let queueURL = URL(string: "http://localhost:8080/api/track/queue")!
-    private let startURL = URL(string: "http://localhost:8080/api/track/start")!
-    private let pauseURL = URL(string: "http://localhost:8080/api/track/pause")!
-    private let resumeURL = URL(string: "http://localhost:8080/api/track/resume")!
-    private let currentURL = URL(string: "http://localhost:8080/api/track/current")!
+    private var queueURL: URL { BackendConfiguration.endpoint("/api/track/queue") }
+    private var startURL: URL { BackendConfiguration.endpoint("/api/track/start") }
+    private var pauseURL: URL { BackendConfiguration.endpoint("/api/track/pause") }
+    private var resumeURL: URL { BackendConfiguration.endpoint("/api/track/resume") }
+    private var currentURL: URL { BackendConfiguration.endpoint("/api/track/current") }
+    private var nextURL: URL { BackendConfiguration.endpoint("/api/track/next") }
+    private var playURL: URL { BackendConfiguration.endpoint("/api/track/play") }
+    private var removeURL: URL { BackendConfiguration.endpoint("/api/track/remove") }
 
     func loadQueue() async {
         do {
@@ -182,6 +186,54 @@ final class AdminDashboardViewModel: ObservableObject {
         }
     }
 
+    func deleteSong(uri: String) async {
+        guard !uri.isEmpty else { return }
+        var request = URLRequest(url: removeURL)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["uri": uri])
+
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            if let httpResponse = response as? HTTPURLResponse,
+               (200...299).contains(httpResponse.statusCode) {
+                await loadQueue()
+            }
+        } catch {}
+    }
+
+    func skip() async {
+        isLoading = true
+        defer { isLoading = false }
+        if await performPostRequest(url: nextURL) {
+            schedulePlaybackStateRefresh()
+        }
+    }
+
+    func restartCurrent() async {
+        guard let uri = currentSong?.uri else { return }
+        isLoading = true
+        defer { isLoading = false }
+        if await performPutRequest(url: playURL, body: ["uri": uri]) {
+            schedulePlaybackStateRefresh()
+        }
+    }
+
+    private func performPutRequest(url: URL, body: [String: String]) async -> Bool {
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else { return false }
+            return (200...299).contains(httpResponse.statusCode)
+        } catch {
+            return false
+        }
+    }
+
     private func schedulePlaybackStateRefresh() {
         Task {
             for delay in [0.25, 0.75, 1.5] {
@@ -197,7 +249,8 @@ final class AdminDashboardViewModel: ObservableObject {
             title: track.name,
             artist: artistText.isEmpty ? "Unbekannt" : artistText,
             imageUrl: track.album.images.first?.url
-                ?? "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"
+                ?? "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb",
+            uri: track.uri
         )
     }
 }
@@ -213,13 +266,15 @@ struct AdminDashboard: View {
                         song: viewModel.currentSong,
                         isPlaying: viewModel.isPlaying,
                         isLoading: viewModel.isLoading,
-                        onPlayPause: {
-                            Task { await viewModel.togglePlayPause() }
-                        }
+                        onPlayPause: { Task { await viewModel.togglePlayPause() } },
+                        onNext: { Task { await viewModel.skip() } },
+                        onPrevious: { Task { await viewModel.restartCurrent() } }
                     )
 
                     // Warteschlange
-                    QueueCard(songs: viewModel.queueSongs)
+                    QueueCard(songs: viewModel.queueSongs, onDelete: { song in
+                        Task { await viewModel.deleteSong(uri: song.uri ?? "") }
+                    })
 
                 }
                 .padding()

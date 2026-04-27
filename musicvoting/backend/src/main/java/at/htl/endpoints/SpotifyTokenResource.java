@@ -130,14 +130,84 @@ public class SpotifyTokenResource {
         }
 
         String scope = "streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state playlist-modify-private playlist-read-private";
+        String authorizationRedirectUri = "ios".equals(normalizedSource) ? iosRedirectUri : redirectUri;
         String spotifyUri = "https://accounts.spotify.com/authorize" +
                 "?response_type=code" +
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
                 "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8) +
-                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+                "&redirect_uri=" + URLEncoder.encode(authorizationRedirectUri, StandardCharsets.UTF_8) +
                 "&state=" + URLEncoder.encode(normalizedState, StandardCharsets.UTF_8);
 
         return Response.seeOther(java.net.URI.create(spotifyUri)).build();
+    }
+
+    @GET
+    @Path("/ios/callback")
+    public Response iosCallback(
+            @QueryParam("code") String code,
+            @QueryParam("state") String state,
+            @HeaderParam("X-Install-Id") String installId
+    ) {
+        try {
+            if (code == null || code.isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(Map.of("error", "Missing code"))
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            String installationId = null;
+            if (state != null && state.toLowerCase(Locale.ROOT).startsWith("ios")) {
+                String[] parts = state.split(":", 2);
+                if (parts.length == 2 && !parts[1].isBlank()) {
+                    installationId = parts[1].trim();
+                }
+            }
+
+            if (installationId != null
+                    && installId != null
+                    && !installId.isBlank()
+                    && !installationId.equals(installId.trim())) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(Map.of("error", "Installation ID mismatch"))
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+
+            Map<String, String> tokenMap = exchangeAuthorizationCode(code, iosRedirectUri);
+            Party party = partyRegistry.getOrCreateDefault();
+            SpotifyCredentials creds = party.getSpotifyCredentials();
+            creds.setToken(tokenMap.get("access_token"));
+
+            spotifyMusicProvider.fetchAndStoreUserId(party);
+            spotifyMusicProvider.ensurePartyPlaylistExists(party);
+
+            if (installationId != null && !installationId.isBlank()) {
+                creds.setIosInstallationId(installationId);
+            }
+
+            loginEventBus.emit(new LoginEvent(
+                    "login-success",
+                    java.time.Instant.now(),
+                    Map.of(
+                            "source", "ios",
+                            "installationId", installationId == null ? "" : installationId
+                    )
+            ));
+
+            loginEventBus.emit(new LoginEvent(
+                    "login-success",
+                    java.time.Instant.now(),
+                    Map.of("source", "web")
+            ));
+
+            return Response.ok(Map.of("status", "ok")).build();
+        } catch (Exception e) {
+            if (e instanceof WebApplicationException webApplicationException) {
+                return webApplicationException.getResponse();
+            }
+            return SpotifyApiErrors.unexpectedError("Die Spotify-Anmeldung", e);
+        }
     }
 
     @GET
@@ -145,33 +215,14 @@ public class SpotifyTokenResource {
     public Response callback(@QueryParam("code") String code, @QueryParam("state") String state) {
         try {
 
-            String body = "grant_type=authorization_code" +
-                    "&code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
-                    "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-                    "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
-                    "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://accounts.spotify.com/api/token"))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(HttpRequest.BodyPublishers.ofString(body))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return SpotifyApiErrors.buildResponse(response, "Die Spotify-Anmeldung");
-            }
-
-            Map<String, String> tokenMap =
-                    new ObjectMapper().readValue(response.body(), Map.class);
+            Map<String, String> tokenMap = exchangeAuthorizationCode(code, redirectUri);
 
             Party party = partyRegistry.getOrCreateDefault();
             SpotifyCredentials creds = party.getSpotifyCredentials();
             creds.setToken(tokenMap.get("access_token"));
-            creds.setRefreshToken(tokenMap.get("refresh_token"));
 
             spotifyMusicProvider.fetchAndStoreUserId(party);
+
             spotifyMusicProvider.ensurePartyPlaylistExists(party);
 
             boolean iosSource = state != null && state.toLowerCase(Locale.ROOT).startsWith("ios");
@@ -214,6 +265,28 @@ public class SpotifyTokenResource {
             }
             return SpotifyApiErrors.unexpectedError("Die Spotify-Anmeldung", e);
         }
+    }
+
+    private Map<String, String> exchangeAuthorizationCode(String code, String redirectUriToUse) throws Exception {
+        String body = "grant_type=authorization_code" +
+                "&code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
+                "&redirect_uri=" + URLEncoder.encode(redirectUriToUse, StandardCharsets.UTF_8) +
+                "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
+                "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://accounts.spotify.com/api/token"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+                .send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw SpotifyApiErrors.asException(response, "Die Spotify-Anmeldung");
+        }
+
+        return new ObjectMapper().readValue(response.body(), Map.class);
     }
 
     @GET

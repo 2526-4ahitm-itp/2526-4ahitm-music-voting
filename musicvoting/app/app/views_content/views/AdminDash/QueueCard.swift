@@ -10,6 +10,7 @@ import SwiftUI
 struct QueueCard: View {
 
     let songs: [Song]
+    var onDelete: (Song) -> Void = { _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -27,7 +28,7 @@ struct QueueCard: View {
                     .padding(.vertical, 12)
             } else {
                 ForEach(songs) { song in
-                    SongRow(song: song)
+                    SongRow(song: song, onDelete: { onDelete(song) })
                 }
             }
         }

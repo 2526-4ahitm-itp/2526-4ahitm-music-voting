@@ -14,6 +14,8 @@ struct CurrentSongPlaying: View {
     let isPlaying: Bool
     let isLoading: Bool
     var onPlayPause: () -> Void = {}
+    var onNext: () -> Void = {}
+    var onPrevious: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 24) {
@@ -75,7 +77,7 @@ struct CurrentSongPlaying: View {
 
             // Controls
             HStack(spacing: 50) {
-                Button(action: {}) {
+                Button(action: onPrevious) {
                     Image(systemName: "backward.fill")
                         .font(.system(size: 30))
                 }
@@ -94,11 +96,9 @@ struct CurrentSongPlaying: View {
                     }
                 }
 
-                Button(action: {}) {
+                Button(action: onNext) {
                     Image(systemName: "forward.fill")
-                        .font(
-                            .system(size: 30)
-                        )
+                        .font(.system(size: 30))
                 }
             }
             .foregroundColor(.black)
