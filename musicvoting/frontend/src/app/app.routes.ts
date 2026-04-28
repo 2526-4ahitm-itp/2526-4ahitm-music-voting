@@ -30,6 +30,12 @@ export const routes: Routes = [
   },
 
   {
+    path: 'create-party',
+    component: CreateParty,
+    title: 'Party erstellen - MusicVoting'
+  },
+
+  {
     path: 'startpage',
     component: Startpage ,
     title: 'Player - MusicVoting'
