@@ -30,7 +30,7 @@ export class Home {
   }
 
   gotoguestpage() {
-    this.router.navigate(['voting']);
+    this.router.navigate(['code']);
   }
 
 }
