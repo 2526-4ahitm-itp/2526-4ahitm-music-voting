@@ -35,14 +35,19 @@ Wenn noch kein Spotify Developer Konto vorhanden ist, folgen Sie diesen Schritte
 1. Navigieren Sie zu Ihrem Spotify Developer Dashboard.
 2. Wählen Sie die Anwendung aus, die Sie mit MusicVoting verbinden möchten.
 3. Notieren Sie sich die **Client ID** und **Client Secret**.
-4. Fügen Sie die Redirect URI `http://127.0.0.1:8080/api/spotify/callback` in die Liste der Redirect URIs ein.
+4. Fügen Sie die Redirect URIs in die Liste der Redirect URIs ein:
+   * `http://127.0.0.1:8080/api/spotify/callback`
+   * `http://127.0.0.1:4200/dashboard`
+   * `musicvotingapp://callback` (für die iOS App)
+   * `http://172.20.10.2:8080/api/spotify/callback` (Wenn die Swift App per XCode seperat am Handy läuft, Hotspot am Handy aktivieren und die IP Adresse des Handys hier eintragen)
+   * `http://172.20.10.2:4200/dashboard` (Wenn die Swift App per XCode seperat am Handy läuft, Hotspot am Handy aktivieren und die IP Adresse des Handys hier eintragen)
+   
 5. Speichern Sie die Änderungen.
-6. Tragen Sie die **Client ID**, **Client Secret** und **Redirect URI** in der Datei `musicvoting/backend/src/main/resources/application.properties` ein.
+6. Tragen Sie die **Client ID** und das **Client Secret** in der Datei `musicvoting/backend/src/main/resources/application.properties` ein.
 
 ```properties
 spotify.client.id=your_client_id
 spotify.client.secret=your_client_secret
-spotify.redirect.uri=http://127.0.0.1:8080/api/spotify/callback
 ```         
 (Ersetzen Sie `your_client_id` und `your_client_secret` durch die tatsächlichen Werte aus Ihrem Spotify Developer Konto.)
 

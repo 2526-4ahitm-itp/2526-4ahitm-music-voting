@@ -193,4 +193,5 @@ iOSInjectionProject/
 project.xcworkspace/
 xcuserdata/
 
-scratches
+/scratch
+

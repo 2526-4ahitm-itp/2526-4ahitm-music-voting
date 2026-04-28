@@ -7,20 +7,27 @@ Defines the like mechanism: one vote per guest per song, toggleable, with live u
 ## Requirements
 
 ### Requirement: One Like per Guest per Song
-A guest MUST NOT contribute more than one like to the same song at the same time. Repeated like actions on the same song MUST NOT increase the count beyond one per guest.
+The one-like-per-guest constraint MUST be enforced server-side using a `deviceId` supplied by the client. The database MUST reject a second vote from the same `deviceId` for the same song via a unique constraint on `(queue_entry_id, device_id)`. The frontend MUST include the `deviceId` in every vote request.
 
 #### Scenario: Double-tap produces only one like
-- GIVEN a guest has not yet liked song X
+- GIVEN a guest with deviceId "abc" has not yet liked song X
 - WHEN the guest triggers "like" twice in quick succession on song X
-- THEN song X's like count increases by exactly one for this guest
+- THEN only one `vote` row exists for (song X, "abc")
+- AND song X's like count is exactly one for this guest
+
+#### Scenario: Second vote from same device is rejected
+- GIVEN a guest with deviceId "abc" has already liked song X
+- WHEN the client sends a second like request for song X with deviceId "abc"
+- THEN the server rejects the request
+- AND the like count for song X does not increase
 
 ### Requirement: Likes Are Togglable
-A guest MUST be able to remove their own like on a song. Toggling MUST be the documented way to undo a like.
+A guest MUST be able to remove their own like by sending a toggle request with their `deviceId`. The server MUST delete the `vote` row for `(queue_entry_id, device_id)` when toggling off.
 
 #### Scenario: Guest unlikes a previously liked song
-- GIVEN a guest who has liked song X
-- WHEN the guest taps "like" on song X again
-- THEN the guest's like on song X is removed
+- GIVEN a guest with deviceId "abc" has liked song X
+- WHEN the guest sends a toggle-like request for song X with deviceId "abc"
+- THEN the `vote` row for (song X, "abc") is deleted
 - AND song X's like count decreases by one
 
 ### Requirement: Live Like Updates
