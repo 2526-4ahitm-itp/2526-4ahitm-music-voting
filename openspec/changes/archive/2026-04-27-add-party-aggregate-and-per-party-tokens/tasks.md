@@ -29,7 +29,7 @@
 - [x] 5.2 Add a unit test that writing credentials onto one `Party` does not affect another. (`PartyRegistryTest.credentialsAreIsolatedBetweenParties`)
 - [x] 5.3 Add a unit test that `MusicProviderFactory.forParty` returns a `SpotifyMusicProvider` for `SPOTIFY` and throws `UnsupportedOperationException` for `YOUTUBE`. (`MusicProviderFactoryTest`)
 - [x] 5.4 Run existing integration tests (`ExampleResourceIT`). Pre-existing missing-config failure for `spotify.client.id`/`secret`/`redirect.uri` reproduces on unchanged `main` — not caused by this change. No new regressions from the refactor.
-- [ ] 5.5 Manually exercise Spotify OAuth login → add track → play → skip against the dev backend; confirm no regression vs. pre-change behavior. **Deferred — requires running Spotify credentials; handed to user.**
+- [x] 5.5 Manually exercise Spotify OAuth login → add track → play → skip against the dev backend; confirm no regression vs. pre-change behavior. Verified 2026-04-27.
 
 ## 6. Verify against spec
 - [x] 6.1 `provider/spec.md` "Provider Tokens Are Party-Scoped" — credentials are reachable only via `Party.getSpotifyCredentials()`. No global singleton holds them any longer. Requirement **satisfied structurally**; deletion-on-end depends on the lifecycle-endpoints change.

@@ -1,27 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env sh
+set -eu
 
-# Zum Root-Verzeichnis navigieren
-cd "$(dirname "$0")/.." || exit
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT_DIR="$ROOT_DIR/script"
 
-echo "--- Starte Music-Voting App ---"
+"$SCRIPT_DIR/start-db.sh"
 
-# 1. Backend starten (Quarkus Dev Mode)
-echo "Starte Quarkus Backend..."
-cd musicvoting/backend || exit
-./mvnw quarkus:dev &
+"$SCRIPT_DIR/start-backend.sh" &
 BACKEND_PID=$!
 
-# 2. Frontend starten (Angular)
-echo "Starte Angular Frontend..."
-cd ../frontend || exit
-# npm install muss nicht jedes Mal laufen,
-# aber 'npm start' triggert 'ng serve'
-npm start &
+"$SCRIPT_DIR/start-frontend.sh" &
 FRONTEND_PID=$!
 
-echo "--- App läuft! ---"
+echo "All services started."
 echo "Backend PID: $BACKEND_PID"
 echo "Frontend PID: $FRONTEND_PID"
 
-# Warten auf Logs
 wait

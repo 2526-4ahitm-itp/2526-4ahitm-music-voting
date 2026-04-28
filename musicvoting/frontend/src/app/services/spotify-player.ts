@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import {Observable, lastValueFrom, Subject} from 'rxjs';
+import { Observable, lastValueFrom, Subject, EMPTY } from 'rxjs';
 import { Injectable } from '@angular/core';
+import { PartyService } from './party.service';
 
 declare var Spotify: any;
 
@@ -10,51 +11,48 @@ export class SpotifyWebPlayerService {
   private token: string | null = null;
   private isConnecting = false;
 
-  // Neues Subject, um Statusänderungen an Komponenten zu senden
   private playerStateSubject = new Subject<any>();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private partyService: PartyService) {}
 
-  /**
-   * Gibt den Stream der Statusänderungen zurück
-   */
   getPlayerStatus(): Observable<any> {
     return this.playerStateSubject.asObservable();
   }
 
   async initPlayer(registerPlaybackDevice: boolean = false) {
-    // Only initialize/connect the Web Playback SDK when the user is on the Startpage.
-    // This ensures playback only happens on the Startpage and opening other routes
-    // or components does not register/steal the active Spotify device.
+    // Only initialize the Web Playback SDK on /startpage to prevent stealing active device.
     try {
       const path = typeof window !== 'undefined' ? window.location.pathname : '';
-      if (!path.includes('/startpage') && path !== '/startpage') {
-        // If not on the Startpage, do nothing.
-        return;
-      }
-    } catch (e) {
-      // ignore and proceed in case of unexpected environment
+      if (!path.includes('/startpage') && path !== '/startpage') return;
+    } catch {
+      // ignore and proceed
+    }
+
+    const partyId = this.partyService.currentPartyId;
+    if (!partyId) {
+      console.warn('SpotifyWebPlayerService: keine aktive Party, initPlayer abgebrochen');
+      return;
     }
 
     if (this.isConnecting) return;
     this.isConnecting = true;
     try {
       this.token = await lastValueFrom(
-        this.http.get('/api/spotify/token', { responseType: 'text' })
+        this.http.get(`/api/party/${partyId}/spotify/token`, { responseType: 'text' })
       );
 
       if (!this.token) return;
 
       await this.loadSpotifySDK();
-      await this.createAndConnectPlayer(registerPlaybackDevice);
+      await this.createAndConnectPlayer(partyId, registerPlaybackDevice);
     } catch (error) {
-      console.error("Player Init fehlgeschlagen", error);
+      console.error('Player Init fehlgeschlagen', error);
     } finally {
       this.isConnecting = false;
     }
   }
 
-  private async createAndConnectPlayer(registerPlaybackDevice: boolean) {
+  private async createAndConnectPlayer(partyId: string, registerPlaybackDevice: boolean) {
     if (!(window as any).Spotify) {
       console.error('Spotify SDK ist nicht verfügbar.');
       return;
@@ -93,12 +91,11 @@ export class SpotifyWebPlayerService {
       console.error('Spotify playback error:', message);
     });
 
-
     this.player.addListener('ready', ({ device_id }: any) => {
       console.log('Spotify ready, device:', device_id);
       if (!registerPlaybackDevice) return;
 
-      this.http.put('/api/spotify/deviceId', device_id, {
+      this.http.put(`/api/party/${partyId}/spotify/deviceId`, device_id, {
         headers: new HttpHeaders({ 'Content-Type': 'text/plain' })
       }).subscribe({
         next: () => console.log('Device ID an Backend gesendet:', device_id),
@@ -115,7 +112,6 @@ export class SpotifyWebPlayerService {
     });
   }
 
-  // Restliche Methoden (login, addToPlaylist, etc.) bleiben gleich...
   private loadSpotifySDK(): Promise<void> {
     return new Promise((resolve) => {
       if ((window as any).Spotify) {
@@ -136,32 +132,30 @@ export class SpotifyWebPlayerService {
     });
   }
 
-  /**
-   * Leitet den User zum Spotify Login (Backend) weiter.
-   */
   login() {
-    window.location.href = '/api/spotify/login?source=web';
+    const id = this.partyService.currentPartyId;
+    if (!id) {
+      console.warn('SpotifyWebPlayerService: keine aktive Party für Login');
+      return;
+    }
+    window.location.href = `/api/party/${id}/spotify/login?source=web`;
   }
 
-
-  /**
-   * Fügt einen Song zur Party-Playlist hinzu
-   */
   addToPlaylist(uri: string): Observable<any> {
-    return this.http.post('/api/track/addToPlaylist', [uri]);
+    const id = this.partyService.currentPartyId;
+    if (!id) { console.warn('addToPlaylist: keine aktive Party'); return EMPTY; }
+    return this.http.post(`/api/party/${id}/track/addToPlaylist`, [uri]);
   }
 
-  /**
-   * Holt die aktuelle Warteschlange vom Backend.
-   */
   getQueue(): Observable<any> {
-    return this.http.get<any>('/api/track/queue');
+    const id = this.partyService.currentPartyId;
+    if (!id) { console.warn('getQueue: keine aktive Party'); return EMPTY; }
+    return this.http.get<any>(`/api/party/${id}/track/queue`);
   }
 
-  /**
-   * Startet die Wiedergabe eines Tracks.
-   */
   playTrack(uri: string) {
-    return this.http.put('/api/track/play', { uri }).subscribe();
+    const id = this.partyService.currentPartyId;
+    if (!id) { console.warn('playTrack: keine aktive Party'); return; }
+    return this.http.put(`/api/party/${id}/track/play`, { uri }).subscribe();
   }
 }

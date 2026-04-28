@@ -8,29 +8,30 @@
     <h2>Geben Sie den Code ein, um einer Party beizutreten!</h2>
 
     <div class="code-container">
-      <input #i1 #input1 type="text" maxlength="1"
+      <input #i1 type="text" maxlength="1"
              (input)="moveFocus($event, i2)"
              (keydown)="handleDelete($event, null)">
 
-      <input #i2 #input2 type="text" maxlength="1"
+      <input #i2 type="text" maxlength="1"
              (input)="moveFocus($event, i3)"
              (keydown)="handleDelete($event, i1)">
 
-      <input #i3 #input3 type="text" maxlength="1"
+      <input #i3 type="text" maxlength="1"
              (input)="moveFocus($event, i4)"
              (keydown)="handleDelete($event, i2)">
 
-      <input #i4 #input4 type="text" maxlength="1"
+      <input #i4 type="text" maxlength="1"
              (input)="moveFocus($event, i5)"
              (keydown)="handleDelete($event, i3)">
 
-      <input #i5 #input5 type="text" maxlength="1"
-             (input)="onLastInput($event)"
+      <input #i5 type="text" maxlength="1"
+             (input)="checkCode($event)"
              (keydown)="handleDelete($event, i4)">
     </div>
 
     @if (showError) {
-      <p class="error-message">Falscher Code</p>
-    }
-  </div>
+      <p class="error-message">{{ errorMessage }}</p>
+    }  </div>
+
 </div>
+

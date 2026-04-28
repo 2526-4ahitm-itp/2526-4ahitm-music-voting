@@ -1,8 +1,9 @@
-import { Component, NgZone, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, NgZone, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { RouterLink } from '@angular/router';
+import { PartyService } from '../../services/party.service';
 
 @Component({
   selector: 'app-host-dashboard',
@@ -11,7 +12,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './host-dashboard.html',
   styleUrl: './host-dashboard.css',
 })
-export class HostDashboard implements OnInit {
+export class HostDashboard implements OnInit, OnDestroy {
   tracks: any[] = [];
   menuOpen = false;
   currentTrack: any = null;
@@ -25,13 +26,42 @@ export class HostDashboard implements OnInit {
   private suppressPlaybackStateUntil: number | null = null;
   private readonly SUPPRESSION_MS = 1500;
 
+  partyId: string | null = null;
+  pin: string | null = null;
+  qrUrl: string | null = null;
+  confirmEnd = false;
+  private sseSource?: EventSource;
+
   constructor(
     private ngZone: NgZone,
     private http: HttpClient,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private partyService: PartyService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   async ngOnInit() {
+    const partyIdFromUrl = this.route.snapshot.queryParamMap.get('partyId');
+    if (partyIdFromUrl) {
+      this.partyService.setCurrentPartyId(partyIdFromUrl);
+    }
+
+    this.partyId = this.partyService.currentPartyId;
+    this.pin = this.partyService.currentPin;
+    if (this.partyId) {
+      this.qrUrl = `/api/party/${this.partyId}/qr`;
+      try {
+        const party = await lastValueFrom(this.partyService.getParty(this.partyId));
+        this.pin = party.pin;
+      } catch {
+        if (!this.pin) {
+          this.pin = 'nicht verfügbar';
+        }
+      }
+      this.startPartyEndedStream();
+    }
+
     await this.loadCurrentPlayback();
     await this.loadPlaylist();
 
@@ -39,20 +69,43 @@ export class HostDashboard implements OnInit {
     setInterval(() => this.loadPlaylist(), 10000);
   }
 
+  ngOnDestroy() {
+    this.sseSource?.close();
+  }
+
+  private get partyBase(): string {
+    return `/api/party/${this.partyId}`;
+  }
+
+  private startPartyEndedStream() {
+    this.sseSource?.close();
+    this.sseSource = new EventSource('/api/spotify/events?source=web');
+    this.sseSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data?.type === 'party-ended') {
+          this.ngZone.run(() => {
+            this.partyService.clearParty();
+            this.router.navigate(['/']);
+          });
+        }
+      } catch { /* ignore malformed events */ }
+    };
+  }
+
   openPlayer() {
-    const url = '/startpage';
-    window.open(url, '_blank');
+    window.open('/startpage', '_blank');
   }
 
   async loadPlaylist() {
+    if (!this.partyId) return;
     try {
-      const res: any = await lastValueFrom(this.http.get('/api/track/queue'));
+      const res: any = await lastValueFrom(this.http.get(`${this.partyBase}/track/queue`));
       this.ngZone.run(() => {
         if (res && Array.isArray(res.queue)) {
           if (!this.partyStarted) {
             this.currentTrack = res.queue.length > 0 ? res.queue[0] : null;
           }
-
           const currentUri = this.currentTrack?.uri;
           const currentId = this.currentTrack?.id;
           const filtered = res.queue.filter((track: any) => {
@@ -70,8 +123,9 @@ export class HostDashboard implements OnInit {
   }
 
   async loadCurrentPlayback() {
+    if (!this.partyId) return;
     try {
-      const res: any = await lastValueFrom(this.http.get('/api/track/current'));
+      const res: any = await lastValueFrom(this.http.get(`${this.partyBase}/track/current`));
       this.ngZone.run(() => {
         const now = Date.now();
         const suppressed = this.suppressPlaybackStateUntil && now < this.suppressPlaybackStateUntil;
@@ -119,6 +173,7 @@ export class HostDashboard implements OnInit {
   }
 
   async onPlayPause() {
+    if (!this.partyId) return;
     try {
       if (!this.partyStarted) {
         this.partyStarted = true;
@@ -126,24 +181,24 @@ export class HostDashboard implements OnInit {
         this.userPaused = false;
         this.suppressPlaybackStateUntil = Date.now() + this.SUPPRESSION_MS;
         setTimeout(() => (this.suppressPlaybackStateUntil = null), this.SUPPRESSION_MS + 100);
-        await lastValueFrom(this.http.post('/api/track/start', {}));
+        await lastValueFrom(this.http.post(`${this.partyBase}/track/start`, {}));
         await this.loadCurrentPlayback();
         await this.loadPlaylist();
         return;
       }
 
       if (this.isPaused) {
-        this.isPaused = false; // optimistic UI
+        this.isPaused = false;
         this.userPaused = false;
         this.suppressPlaybackStateUntil = Date.now() + this.SUPPRESSION_MS;
         setTimeout(() => (this.suppressPlaybackStateUntil = null), this.SUPPRESSION_MS + 100);
-        await lastValueFrom(this.http.post('/api/track/resume', {}));
+        await lastValueFrom(this.http.post(`${this.partyBase}/track/resume`, {}));
       } else {
-        this.isPaused = true; // optimistic UI
+        this.isPaused = true;
         this.userPaused = true;
         this.suppressPlaybackStateUntil = Date.now() + this.SUPPRESSION_MS;
         setTimeout(() => (this.suppressPlaybackStateUntil = null), this.SUPPRESSION_MS + 100);
-        await lastValueFrom(this.http.post('/api/track/pause', {}));
+        await lastValueFrom(this.http.post(`${this.partyBase}/track/pause`, {}));
       }
 
       await this.loadCurrentPlayback();
@@ -153,15 +208,14 @@ export class HostDashboard implements OnInit {
   }
 
   async onRestartCurrent() {
-    if (!this.currentTrack?.uri) return;
-
+    if (!this.currentTrack?.uri || !this.partyId) return;
     try {
       this.partyStarted = true;
       this.isPaused = false;
       this.userPaused = false;
       this.suppressPlaybackStateUntil = Date.now() + this.SUPPRESSION_MS;
       setTimeout(() => (this.suppressPlaybackStateUntil = null), this.SUPPRESSION_MS + 100);
-      await lastValueFrom(this.http.put('/api/track/play', { uri: this.currentTrack.uri }));
+      await lastValueFrom(this.http.put(`${this.partyBase}/track/play`, { uri: this.currentTrack.uri }));
       await this.loadCurrentPlayback();
       await this.loadPlaylist();
     } catch (err) {
@@ -174,10 +228,9 @@ export class HostDashboard implements OnInit {
   }
 
   async onDeleteTrack(track: any) {
-    if (!track?.uri) return;
-
+    if (!track?.uri || !this.partyId) return;
     try {
-      await lastValueFrom(this.http.delete('/api/track/remove', { body: { uri: track.uri } }));
+      await lastValueFrom(this.http.delete(`${this.partyBase}/track/remove`, { body: { uri: track.uri } }));
       await this.loadPlaylist();
     } catch (err) {
       console.error('Fehler beim Loeschen des Songs:', err);
@@ -189,6 +242,7 @@ export class HostDashboard implements OnInit {
   }
 
   private async playNextTrack() {
+    if (!this.partyId) return;
     const now = Date.now();
     const cooldown = this.autoAdvanceCooldownUntil && now < this.autoAdvanceCooldownUntil;
     if (this.autoAdvanceInFlight || cooldown) return;
@@ -199,7 +253,7 @@ export class HostDashboard implements OnInit {
       this.partyStarted = true;
       this.isPaused = false;
       this.userPaused = false;
-      const res: any = await lastValueFrom(this.http.post('/api/track/next', {}));
+      const res: any = await lastValueFrom(this.http.post(`${this.partyBase}/track/next`, {}));
       if (res?.status === 'empty') {
         this.ngZone.run(() => {
           this.currentTrack = null;
@@ -212,13 +266,22 @@ export class HostDashboard implements OnInit {
         });
         return;
       }
-
       await this.loadCurrentPlayback();
       await this.loadPlaylist();
     } catch (err) {
       console.error('Fehler beim Auto-Next:', err);
     } finally {
       this.autoAdvanceInFlight = false;
+    }
+  }
+
+  async endParty() {
+    if (!this.partyId) return;
+    try {
+      await lastValueFrom(this.partyService.endParty(this.partyId));
+      this.router.navigate(['/']);
+    } catch (err) {
+      console.error('Fehler beim Beenden der Party:', err);
     }
   }
 }

@@ -31,4 +31,6 @@ public interface MusicProvider {
     Response startFirstSongWithoutRemoving(Party party);
 
     Response getCurrentPlayback(Party party);
+
+    Response toggleVote(Party party, String trackUri, String deviceId);
 }

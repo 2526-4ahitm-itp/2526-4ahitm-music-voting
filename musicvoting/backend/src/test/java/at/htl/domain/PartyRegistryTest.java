@@ -7,34 +7,33 @@ import static org.junit.jupiter.api.Assertions.*;
 class PartyRegistryTest {
 
     @Test
-    void getOrCreateDefault_returnsSameInstanceAcrossCalls() {
+    void register_and_find_returnsSameInstance() {
         PartyRegistry registry = new PartyRegistry();
+        PartyId id = PartyId.of("test-party");
+        Party party = new Party(id, ProviderKind.SPOTIFY, "12345");
+        registry.register(party);
 
-        Party first = registry.getOrCreateDefault();
-        Party second = registry.getOrCreateDefault();
-
-        assertSame(first, second, "default party must be a stable singleton");
-        assertEquals(ProviderKind.SPOTIFY, first.providerKind());
-        assertNotNull(first.getSpotifyCredentials());
+        Party found = registry.find(id).orElseThrow();
+        assertSame(party, found);
+        assertEquals(ProviderKind.SPOTIFY, found.providerKind());
+        assertNotNull(found.getSpotifyCredentials());
     }
 
     @Test
     void credentialsAreIsolatedBetweenParties() {
-        PartyRegistry registry = new PartyRegistry();
-        Party defaultParty = registry.getOrCreateDefault();
+        Party partyA = new Party(PartyId.of("a"), ProviderKind.SPOTIFY, "11111");
+        Party partyB = new Party(PartyId.of("b"), ProviderKind.SPOTIFY, "22222");
 
-        Party other = new Party(PartyId.of("other"), ProviderKind.SPOTIFY);
+        partyA.getSpotifyCredentials().setToken("token-A");
+        partyB.getSpotifyCredentials().setToken("token-B");
 
-        defaultParty.getSpotifyCredentials().setToken("token-A");
-        other.getSpotifyCredentials().setToken("token-B");
-
-        assertEquals("token-A", defaultParty.getSpotifyCredentials().getToken());
-        assertEquals("token-B", other.getSpotifyCredentials().getToken());
+        assertEquals("token-A", partyA.getSpotifyCredentials().getToken());
+        assertEquals("token-B", partyB.getSpotifyCredentials().getToken());
     }
 
     @Test
     void youtubePartyRejectsSpotifyCredentialsAccess() {
-        Party ytParty = new Party(PartyId.of("yt"), ProviderKind.YOUTUBE);
+        Party ytParty = new Party(PartyId.of("yt"), ProviderKind.YOUTUBE, "33333");
 
         assertThrows(IllegalStateException.class, ytParty::getSpotifyCredentials);
     }

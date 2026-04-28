@@ -1,0 +1,28 @@
+<div class="create-party-page">
+  <header>
+    <div class="back-to-home" (click)="goBack()">←</div>
+    <h1>MusicVoting</h1>
+  </header>
+
+  <div class="create-party-wrapper">
+    <h2>Party erstellen</h2>
+    <p class="subtitle">Wähle deinen Musikanbieter und starte deine Party.</p>
+
+    <div class="provider-box">
+      <span class="provider-label">Anbieter</span>
+      <span class="provider-name">Spotify</span>
+    </div>
+
+    @if (error) {
+      <p class="error-message">{{ error }}</p>
+    }
+
+    <button class="create-btn" type="button" (click)="create()" [disabled]="isLoading">
+      @if (isLoading) {
+        Wird erstellt…
+      } @else {
+        Party erstellen
+      }
+    </button>
+  </div>
+</div>

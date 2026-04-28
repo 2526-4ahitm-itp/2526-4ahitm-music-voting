@@ -13,20 +13,8 @@ export class Home {
 
   constructor(private router: Router) {}
 
-  async gotohostpage() {
-    try {
-      const res = await fetch('/api/spotify/token');
-      if (res.ok) {
-        const token = await res.text();
-        if (token && token.trim().length > 0) {
-          this.router.navigate(['/dashboard']);
-          return;
-        }
-      }
-      window.location.href = '/api/spotify/login?source=web';
-    } catch (err) {
-      window.location.href = '/api/spotify/login?source=web';
-    }
+  gotohostpage() {
+    this.router.navigate(['/create-party']);
   }
 
   gotoguestpage() {

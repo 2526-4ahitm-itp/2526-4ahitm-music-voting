@@ -24,19 +24,19 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
 # Rollen
 
 ## Gast (Smartphone)
-- Kann über einen QR-Code der Party beitreten.
+- Kann über einen QR-Code oder einem Pin der Party beitreten.
 - Kann Songs suchen (abhängig vom Anbieter der Party).
 - Kann Songs zur Warteschlange hinzufügen (mit Limit).
 - Kann Songs liken und das Like auch wieder entfernen (Toggle).
 
-## Gastgeber (Host, Smartphone)
+## Gastgeber (Dashboard, Smartphone oder Laptop)
 - Erstellt eine Party und wählt den Anbieter (Spotify/YouTube).
 - Meldet sich beim Anbieter an (Login gilt **nur für diese Party**).
 - Steuert die Wiedergabe: Pause/Resume, Skip, Songs entfernen, Blacklist pflegen, Party beenden.
 
-## Monitor/TV (Dashboard)
+## Monitor/TV (Startpage)
 - Zeigt die Party und spielt die Musik **im Browser auf dem Monitor/TV** ab.
-- Zeigt dauerhaft QR-Code, aktuellen Song, Fortschritt (Zeitbalken) und die Warteschlange.
+- Zeigt dauerhaft QR-Code und Pin, aktuellen Song, Fortschritt (Zeitbalken) und die Warteschlange.
 - Hat **keine Host-Bedienelemente**.
 - Verbindet sich nach einem Reload automatisch wieder mit der Party (**ohne erneute PIN-Eingabe**).
 
@@ -63,7 +63,7 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
 5. Nach einem Reload verbindet sich das Dashboard automatisch wieder (PIN wird nicht erneut abgefragt).
 
 ## 3) Gäste beitreten
-1. Gäste scannen den QR-Code am Monitor.
+1. Gäste scannen den QR-Code am Monitor oder geben den Pin auf der Website ein.
 2. Sie landen in der Guest-Web-App.
 3. Sie können Songs suchen, Songs hinzufügen und liken.
 
