@@ -1,0 +1,90 @@
+.code-page {
+  width: 100vw;
+  min-height: 100vh;
+  font-family: var(--font), sans-serif;
+  background: linear-gradient(135deg, #8403A6, #F2594B);
+}
+
+/* Header */
+
+header {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+}
+
+.back-to-home {
+  padding: 1rem;
+  margin: 1rem;
+}
+
+header > h1 {
+  font-size: 2rem;
+}
+
+/* Code Container */
+
+.code-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 30vw;
+  margin-left: 35vw;
+  margin-right: 35vw;
+  text-align: center;
+}
+.code-input-wrapper > h2 {
+  font-weight: normal;
+  font-size: 1.2rem;
+}
+
+.code-container {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  justify-content: center;
+}
+
+.code-container input {
+  width: 50px;
+  height: 70px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-align: center;
+  font-size: 24px;
+  outline: none;
+  caret-color: transparent;
+}
+
+.code-container input:focus {
+  border: 2px solid white;
+}
+
+/* Error Message */
+
+.error-message {
+  color: #FF3B30; /* Ein kräftiges Rot, passend zum Screenshot */
+  font-weight: bold;
+  margin-top: 15px;
+  font-size: 1.1rem;
+  /* Optional: Eine kleine Animation, damit die Nachricht "aufpoppt" */
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 48rem) {
+  .code-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 96vw;
+    margin: 5vh 2vw 0 2vw;
+    text-align: center;
+  }
+}
