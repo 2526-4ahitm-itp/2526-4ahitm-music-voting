@@ -100,18 +100,29 @@
     </div>
     <div class="right">
       <div class="qr-code">
-        <img class="cover" src="../../../assets/img/default-qr.png" alt="QR-Code">
-        <button class="qr-code-btn" type="button">
-          Generiere einen neuen QR-Code
-        </button>
+        <p class="party-pin">PIN: <strong>{{ pin || 'nicht verfügbar' }}</strong></p>
+        @if (qrUrl) {
+          <img class="cover" [src]="qrUrl" alt="QR-Code">
+        } @else {
+          <img class="cover" src="../../../assets/img/default-qr.png" alt="QR-Code">
+        }
 
         <div class="open-player">
           Bitte öffne zuerst die Player Seite um Musik abzuspielen! <br>
           <button class="open-player-btn" type="button" (click)="openPlayer()">
             Öffnen
-        </button>
+          </button>
         </div>
 
+        @if (confirmEnd) {
+          <p class="end-confirm-text">Party wirklich beenden?</p>
+          <div class="end-confirm-buttons">
+            <button class="end-party-confirm-btn" type="button" (click)="endParty()">Ja, beenden</button>
+            <button class="end-party-cancel-btn" type="button" (click)="confirmEnd = false">Abbrechen</button>
+          </div>
+        } @else {
+          <button class="end-party-btn" type="button" (click)="confirmEnd = true">Party beenden</button>
+        }
       </div>
 
       <div class="logo-box">

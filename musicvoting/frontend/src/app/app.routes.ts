@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
-import { Control } from './pages/control/control';
 import { Guest } from './pages/guest/guest';
 import { Home } from './pages/home/home';
 import { HostDashboard } from './pages/host-dashboard/host-dashboard';
 import { Startpage } from './pages/startpage/startpage';
 import { VotingComp } from './pages/voting-comp/voting-comp';
-import {VotingHost} from './pages/voting-host/voting-host';
+import { VotingHost } from './pages/voting-host/voting-host';
 import { SearchHost } from './pages/search-host/search-host';
-import {CodeInput} from './code-input/code-input';
+import { CodeInput } from './pages/code-input/code-input';
+import { CreateParty } from './pages/create-party/create-party';
 
 export const routes: Routes = [
   {
@@ -15,48 +15,50 @@ export const routes: Routes = [
     component: Home,
     title: 'MusicVoting'
   },
-
   {
     path: 'guest',
     component: Guest,
     title: 'Partygast - MusicVoting'
   },
-
   {
     path: 'code',
     component: CodeInput,
-    title: 'Login - MusicVoting'
+    title: 'Party beitreten - MusicVoting'
   },
-
+  {
+    path: 'join/:pin',
+    component: CodeInput,
+    title: 'Party beitreten - MusicVoting'
+  },
+  {
+    path: 'create-party',
+    component: CreateParty,
+    title: 'Party erstellen - MusicVoting'
+  },
   {
     path: 'startpage',
-    component: Startpage ,
+    component: Startpage,
     title: 'Player - MusicVoting'
   },
-
   {
     path: 'dashboard',
-    component: HostDashboard ,
+    component: HostDashboard,
     title: 'Übersicht - MusicVoting'
   },
-
   {
     path: 'voting-host',
-    component: VotingHost ,
+    component: VotingHost,
     title: 'Voten - MusicVoting'
   },
-
   {
     path: 'search-host',
-    component: SearchHost ,
+    component: SearchHost,
     title: 'Suchen - MusicVoting'
   },
-
   {
     path: 'voting',
     component: VotingComp,
     title: 'Partygast - MusicVoting'
   },
-
   { path: '**', redirectTo: '' }
 ];

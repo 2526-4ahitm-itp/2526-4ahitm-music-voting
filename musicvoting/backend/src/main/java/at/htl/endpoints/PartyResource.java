@@ -111,6 +111,16 @@ public class PartyResource {
     }
 
     @GET
+    @Path("/{id}")
+    public Response get(@PathParam("id") String id) {
+        PartyEntity entity = PartyEntity.find("id = ?1 and endedAt is null", id).firstResult();
+        if (entity == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(Map.of("id", entity.id, "pin", entity.pin)).build();
+    }
+
+    @GET
     @Path("/{id}/qr")
     @Produces("image/png")
     public Response qr(@PathParam("id") String id) {

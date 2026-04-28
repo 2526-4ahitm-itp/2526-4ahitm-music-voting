@@ -104,7 +104,9 @@ public class SpotifyCallbackResource {
                     Instant.now(),
                     Map.of("source", "web")
             ));
-            return Response.seeOther(URI.create(webRedirectUri)).build();
+            String target = webRedirectUri + (webRedirectUri.contains("?") ? "&" : "?")
+                    + "partyId=" + URLEncoder.encode(partyIdStr, StandardCharsets.UTF_8);
+            return Response.seeOther(URI.create(target)).build();
 
         } catch (Exception e) {
             if (e instanceof WebApplicationException webApplicationException) {

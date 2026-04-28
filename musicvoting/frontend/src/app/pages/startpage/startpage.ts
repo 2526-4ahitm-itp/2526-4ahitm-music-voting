@@ -1,14 +1,15 @@
 import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-import { RouterLink } from '@angular/router';
+import { PartyService } from '../../services/party.service';
 
 @Component({
   selector: 'app-startpage',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './startpage.html',
   styleUrls: ['./startpage.css'],
 })
@@ -19,32 +20,59 @@ export class Startpage implements OnInit, OnDestroy {
   private eventSource?: EventSource;
   private ignoreInitialEndedState = true;
 
-  // Progress bar & Zeit Logik
   currentPosition = 0;
   progressPercent = 0;
   progressInterval: any;
+
+  private partyId: string | null = null;
+  pin: string | null = null;
+  qrUrl: string | null = null;
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
     private ngZone: NgZone,
     private http: HttpClient,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private partyService: PartyService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   async ngOnInit() {
+    const partyIdFromUrl = this.route.snapshot.queryParamMap.get('partyId');
+    if (partyIdFromUrl) {
+      this.partyService.setCurrentPartyId(partyIdFromUrl);
+    }
+
+    this.partyId = this.partyService.currentPartyId;
+    this.pin = this.partyService.currentPin;
+    if (this.partyId) {
+      this.qrUrl = `/api/party/${this.partyId}/qr`;
+      try {
+        const party = await lastValueFrom(this.partyService.getParty(this.partyId));
+        this.pin = party.pin;
+      } catch {
+        if (!this.pin) {
+          this.pin = 'nicht verfügbar';
+        }
+      }
+    }
     this.startLoginEventStream();
     this.ignoreInitialEndedState = true;
 
-    // Check current playback on the backend. If playback is already active on another device,
-    // avoid registering the web player as the active device to prevent interrupting playback.
-    try {
-      const res: any = await lastValueFrom(this.http.get('/api/track/current'));
-      const isPlaying = !!res?.isPlaying;
-      const hasTrack = !!res?.track;
-      const register = !(isPlaying || hasTrack);
-      await this.spotifyService.initPlayer(register);
-    } catch (err) {
-      // If the check fails, fall back to registering the web player.
+    if (this.partyId) {
+      try {
+        const res: any = await lastValueFrom(
+          this.http.get(`/api/party/${this.partyId}/track/current`)
+        );
+        const isPlaying = !!res?.isPlaying;
+        const hasTrack = !!res?.track;
+        const register = !(isPlaying || hasTrack);
+        await this.spotifyService.initPlayer(register);
+      } catch {
+        await this.spotifyService.initPlayer(true);
+      }
+    } else {
       await this.spotifyService.initPlayer(true);
     }
 
@@ -121,15 +149,17 @@ export class Startpage implements OnInit, OnDestroy {
   }
 
   async playNext() {
+    if (!this.partyId) return;
     try {
-      await lastValueFrom(this.http.post('/api/track/next', {}));
+      await lastValueFrom(this.http.post(`/api/party/${this.partyId}/track/next`, {}));
       this.loadPlaylist();
     } catch (err) {
-      console.error("Fehler beim Weiterschalten", err);
+      console.error('Fehler beim Weiterschalten', err);
     }
   }
 
   async loadPlaylist() {
+    if (!this.partyId) return;
     try {
       const res: any = await lastValueFrom(this.spotifyService.getQueue());
       this.ngZone.run(() => {
@@ -169,6 +199,8 @@ export class Startpage implements OnInit, OnDestroy {
         const data = JSON.parse(event.data);
         if (data?.type === 'login-success') {
           window.location.reload();
+        } else if (data?.type === 'party-ended') {
+          this.ngZone.run(() => this.router.navigate(['/']));
         }
       } catch {
         // ignore malformed events
