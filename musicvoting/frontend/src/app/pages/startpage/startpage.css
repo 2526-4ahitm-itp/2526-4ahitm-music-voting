@@ -12,7 +12,7 @@ body{
 
 .content-cards{
   display: flex;
-  width: 100vw
+  width: 100vw;
 }
 
 .left{
