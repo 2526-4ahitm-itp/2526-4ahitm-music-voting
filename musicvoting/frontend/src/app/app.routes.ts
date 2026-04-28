@@ -7,7 +7,7 @@ import { Startpage } from './pages/startpage/startpage';
 import { VotingComp } from './pages/voting-comp/voting-comp';
 import {VotingHost} from './pages/voting-host/voting-host';
 import { SearchHost } from './pages/search-host/search-host';
-import {CodeInput} from './code-input/code-input';
+import {CodeInput} from './pages/code-input/code-input';
 
 export const routes: Routes = [
   {
