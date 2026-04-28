@@ -4,7 +4,9 @@
 CREATE TABLE party (
     id              VARCHAR     PRIMARY KEY,
     provider_kind   VARCHAR     NOT NULL,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    pin             VARCHAR(5)  NOT NULL DEFAULT '',
+    ended_at        TIMESTAMPTZ
 );
 
 CREATE TABLE queue_entry (
@@ -31,3 +33,6 @@ CREATE TABLE vote (
 -- Resolve circular reference: party → queue_entry (added after queue_entry exists)
 ALTER TABLE party
     ADD COLUMN currently_playing_entry_id UUID REFERENCES queue_entry(id) ON DELETE SET NULL;
+
+-- Active parties must have unique PINs; ended parties free their PIN slot
+CREATE UNIQUE INDEX party_pin_active_idx ON party (pin) WHERE ended_at IS NULL;

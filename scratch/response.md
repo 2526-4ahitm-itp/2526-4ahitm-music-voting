@@ -1,1 +1,0 @@
-/tmp/claude/response.md

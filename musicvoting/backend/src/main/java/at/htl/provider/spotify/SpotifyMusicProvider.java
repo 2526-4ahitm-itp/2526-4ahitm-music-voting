@@ -111,8 +111,6 @@ public class SpotifyMusicProvider implements MusicProvider {
     @Transactional
     public Response addTracksToPlaylist(Party party, List<String> uris) {
         try {
-            PartyEntity.findOrCreate(party.id().value(), party.providerKind().name());
-
             for (String uri : uris) {
                 long count = QueueEntry.count("partyId = ?1 AND trackUri = ?2", party.id().value(), uri);
                 if (count > 0) {
@@ -286,7 +284,6 @@ public class SpotifyMusicProvider implements MusicProvider {
     @Transactional
     public Response overwritePlaylist(Party party, List<String> uris) {
         try {
-            PartyEntity.findOrCreate(party.id().value(), party.providerKind().name());
             QueueEntry.delete("partyId", party.id().value());
 
             for (String uri : uris) {
@@ -315,7 +312,8 @@ public class SpotifyMusicProvider implements MusicProvider {
     @Transactional
     public Response playNextAndRemove(Party party) {
         try {
-            PartyEntity partyEntity = PartyEntity.findOrCreate(party.id().value(), party.providerKind().name());
+            PartyEntity partyEntity = PartyEntity.findById(party.id().value());
+            if (partyEntity == null) throw new WebApplicationException(Response.Status.NOT_FOUND);
 
             if (partyEntity.currentlyPlayingEntryId != null) {
                 QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
@@ -479,7 +477,8 @@ public class SpotifyMusicProvider implements MusicProvider {
                         .build();
             }
 
-            PartyEntity partyEntity = PartyEntity.findOrCreate(party.id().value(), party.providerKind().name());
+            PartyEntity partyEntity = PartyEntity.findById(party.id().value());
+            if (partyEntity == null) throw new WebApplicationException(Response.Status.NOT_FOUND);
             partyEntity.currentlyPlayingEntryId = UUID.fromString((String) firstTrack.get("id"));
 
             Map<String, Object> payload = new HashMap<>();
