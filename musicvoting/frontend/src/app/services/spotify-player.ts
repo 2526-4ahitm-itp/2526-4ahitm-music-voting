@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, lastValueFrom, Subject, EMPTY } from 'rxjs';
+import { Observable, lastValueFrom, Subject, EMPTY, tap } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { PartyService } from './party.service';
 
@@ -12,11 +12,16 @@ export class SpotifyWebPlayerService {
   private isConnecting = false;
 
   private playerStateSubject = new Subject<any>();
+  private queueUpdatedSubject = new Subject<void>();
 
   constructor(private http: HttpClient, private partyService: PartyService) {}
 
   getPlayerStatus(): Observable<any> {
     return this.playerStateSubject.asObservable();
+  }
+
+  getQueueUpdates(): Observable<void> {
+    return this.queueUpdatedSubject.asObservable();
   }
 
   async initPlayer(registerPlaybackDevice: boolean = false) {
@@ -144,7 +149,9 @@ export class SpotifyWebPlayerService {
   addToPlaylist(uri: string): Observable<any> {
     const id = this.partyService.currentPartyId;
     if (!id) { console.warn('addToPlaylist: keine aktive Party'); return EMPTY; }
-    return this.http.post(`/api/party/${id}/track/addToPlaylist`, [uri]);
+    return this.http.post(`/api/party/${id}/track/addToPlaylist`, [uri]).pipe(
+      tap(() => this.queueUpdatedSubject.next())
+    );
   }
 
   getQueue(): Observable<any> {

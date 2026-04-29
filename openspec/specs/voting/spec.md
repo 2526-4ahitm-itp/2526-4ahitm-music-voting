@@ -31,10 +31,12 @@ A guest MUST be able to remove their own like by sending a toggle request with t
 - AND song X's like count decreases by one
 
 ### Requirement: Live Like Updates
-When a like is added or removed, the updated count MUST propagate to all connected clients promptly, so that queue ordering stays consistent across devices.
+When a like is added or removed, the backend MUST emit a `vote-updated` SSE event scoped to the party. Every client that shows vote counts (the TV dashboard, the host dashboard, and the guest voting view) MUST subscribe to this event and reload the queue on receipt so that like counts and sort order stay consistent across devices without polling.
 
 #### Scenario: Live update on all clients
-- GIVEN guest A, guest B, the host, and the dashboard are all viewing the queue
+- GIVEN guest A, guest B, the host dashboard, and the TV dashboard are all viewing the queue
 - WHEN guest A likes song X
-- THEN guest B, the host, and the dashboard all see song X's like count increase
-- AND the queue re-sorts on every client if the new count changes the order
+- THEN the backend emits `vote-updated` on the party SSE stream
+- AND guest B's voting view, the host dashboard, and the TV dashboard each reload the queue
+- AND song X's like count increases by one on every client
+- AND the queue re-sorts if the new count changes the order

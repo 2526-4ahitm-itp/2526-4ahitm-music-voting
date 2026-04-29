@@ -34,5 +34,8 @@ CREATE TABLE vote (
 ALTER TABLE party
     ADD COLUMN currently_playing_entry_id UUID REFERENCES queue_entry(id) ON DELETE SET NULL;
 
+ALTER TABLE party ADD COLUMN playback_started_at TIMESTAMPTZ;
+ALTER TABLE party ADD COLUMN paused_position_ms  BIGINT;
+
 -- Active parties must have unique PINs; ended parties free their PIN slot
 CREATE UNIQUE INDEX party_pin_active_idx ON party (pin) WHERE ended_at IS NULL;

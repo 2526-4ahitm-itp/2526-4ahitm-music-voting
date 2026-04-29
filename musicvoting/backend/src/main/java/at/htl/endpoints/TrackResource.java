@@ -10,6 +10,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,9 @@ public class TrackResource {
 
     @Inject
     MusicProviderFactory providerFactory;
+
+    @Inject
+    LoginEventBus loginEventBus;
 
     private Party resolveParty() {
         return partyRegistry.find(PartyId.of(partyId))
@@ -90,7 +94,18 @@ public class TrackResource {
                     .build();
         }
         Party party = resolveParty();
-        return provider(party).addTracksToPlaylist(party, uris);
+        Response response = provider(party).addTracksToPlaylist(party, uris);
+        if (response.getStatus() >= 200 && response.getStatus() < 300) {
+            loginEventBus.emit(new LoginEvent(
+                    "queue-updated",
+                    Instant.now(),
+                    Map.of(
+                            "source", "web",
+                            "partyId", party.id().value()
+                    )
+            ));
+        }
+        return response;
     }
 
     @DELETE
@@ -102,14 +117,30 @@ public class TrackResource {
                     .build();
         }
         Party party = resolveParty();
-        return provider(party).removeTrack(party, body.get("uri"));
+        Response response = provider(party).removeTrack(party, body.get("uri"));
+        if (response.getStatus() >= 200 && response.getStatus() < 300) {
+            loginEventBus.emit(new LoginEvent(
+                    "queue-updated",
+                    Instant.now(),
+                    Map.of("source", "web", "partyId", party.id().value())
+            ));
+        }
+        return response;
     }
 
     @POST
     @Path("/next")
     public Response playNext() {
         Party party = resolveParty();
-        return provider(party).playNextAndRemove(party);
+        Response response = provider(party).playNextAndRemove(party);
+        if (response.getStatus() >= 200 && response.getStatus() < 300) {
+            loginEventBus.emit(new LoginEvent(
+                    "track-changed",
+                    Instant.now(),
+                    Map.of("source", "web", "partyId", party.id().value())
+            ));
+        }
+        return response;
     }
 
     @POST
@@ -130,7 +161,15 @@ public class TrackResource {
     @Path("/start")
     public Response startFromQueue() {
         Party party = resolveParty();
-        return provider(party).startFirstSongWithoutRemoving(party);
+        Response response = provider(party).startFirstSongWithoutRemoving(party);
+        if (response.getStatus() >= 200 && response.getStatus() < 300) {
+            loginEventBus.emit(new LoginEvent(
+                    "track-changed",
+                    Instant.now(),
+                    Map.of("source", "web", "partyId", party.id().value())
+            ));
+        }
+        return response;
     }
 
     @GET
@@ -149,6 +188,14 @@ public class TrackResource {
                     .entity("{\"error\":\"Missing uri or deviceId\"}").build();
         }
         Party party = resolveParty();
-        return provider(party).toggleVote(party, body.get("uri"), body.get("deviceId"));
+        Response response = provider(party).toggleVote(party, body.get("uri"), body.get("deviceId"));
+        if (response.getStatus() >= 200 && response.getStatus() < 300) {
+            loginEventBus.emit(new LoginEvent(
+                    "vote-updated",
+                    Instant.now(),
+                    Map.of("source", "web", "partyId", party.id().value())
+            ));
+        }
+        return response;
     }
 }

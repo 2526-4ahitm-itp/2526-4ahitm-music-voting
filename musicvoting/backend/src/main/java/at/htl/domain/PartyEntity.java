@@ -29,6 +29,12 @@ public class PartyEntity extends PanacheEntityBase {
     @Column(name = "currently_playing_entry_id")
     public UUID currentlyPlayingEntryId;
 
+    @Column(name = "playback_started_at")
+    public OffsetDateTime playbackStartedAt;
+
+    @Column(name = "paused_position_ms")
+    public Long pausedPositionMs;
+
     public static Optional<PartyEntity> findByPin(String pin) {
         return find("pin = ?1 and endedAt is null", pin).firstResultOptional();
     }
