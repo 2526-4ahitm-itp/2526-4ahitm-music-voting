@@ -37,6 +37,7 @@ export class HostDashboard implements OnInit, OnDestroy {
   currentPosition = 0;
   progressPercent = 0;
   progressInterval: any;
+  private playbackStartedAt: number | null = null;
 
   constructor(
     private ngZone: NgZone,
@@ -157,7 +158,13 @@ export class HostDashboard implements OnInit, OnDestroy {
           if (changed) {
             this.loadPlaylist();
           }
-          this.currentPosition = typeof res?.progressMs === 'number' ? res.progressMs : 0;
+          if (res?.isPlaying && res?.playbackStartedAt) {
+            this.playbackStartedAt = new Date(res.playbackStartedAt).getTime();
+            this.currentPosition = Date.now() - this.playbackStartedAt;
+          } else {
+            this.playbackStartedAt = null;
+            this.currentPosition = typeof res?.progressMs === 'number' ? res.progressMs : 0;
+          }
           this.updateProgressPercent();
           if (res?.isPlaying) {
             this.startProgressTimer();
@@ -176,6 +183,7 @@ export class HostDashboard implements OnInit, OnDestroy {
             this.currentTrack = null;
             this.currentPosition = 0;
             this.progressPercent = 0;
+            this.playbackStartedAt = null;
             this.stopProgressTimer();
           }
         }
@@ -196,7 +204,11 @@ export class HostDashboard implements OnInit, OnDestroy {
   startProgressTimer() {
     if (this.progressInterval) return;
     this.progressInterval = setInterval(() => {
-      this.currentPosition += 1000;
+      if (this.playbackStartedAt !== null) {
+        this.currentPosition = Date.now() - this.playbackStartedAt;
+      } else {
+        this.currentPosition += 1000;
+      }
       this.updateProgressPercent();
       this.cd.detectChanges();
     }, 1000);
@@ -251,9 +263,11 @@ export class HostDashboard implements OnInit, OnDestroy {
         this.suppressPlaybackStateUntil = Date.now() + this.SUPPRESSION_MS;
         setTimeout(() => (this.suppressPlaybackStateUntil = null), this.SUPPRESSION_MS + 100);
         await lastValueFrom(this.http.post(`${this.partyBase}/track/resume`, {}));
+        this.startProgressTimer();
       } else {
         this.isPaused = true;
         this.userPaused = true;
+        this.stopProgressTimer();
         this.suppressPlaybackStateUntil = Date.now() + this.SUPPRESSION_MS;
         setTimeout(() => (this.suppressPlaybackStateUntil = null), this.SUPPRESSION_MS + 100);
         await lastValueFrom(this.http.post(`${this.partyBase}/track/pause`, {}));

@@ -52,6 +52,21 @@ The dashboard MUST NOT display which guest requested a given song.
 - WHEN the dashboard renders the queue entry for song X
 - THEN no indication of guest A (or any guest) is shown
 
+### Requirement: Timestamp-Based Progress Bar
+The dashboard MUST compute the current playback position from the `playbackStartedAt` timestamp returned by `GET /track/current`, not by accumulating a counter. On every 1-second timer tick:
+
+```
+currentPosition = Date.now() − playbackStartedAt
+```
+
+This keeps the progress bar accurate across pauses, resumes, and device re-registrations without any additional polling. The fallback (incrementing a counter) is only acceptable when `playbackStartedAt` is absent.
+
+#### Scenario: Progress bar resets after startpage reload
+- GIVEN the dashboard shows song X at 1:30
+- WHEN the TV browser reloads the startpage (device re-registers, `track-changed` SSE fires)
+- THEN the dashboard calls `GET /track/current`, receives a fresh `playbackStartedAt ≈ now()`
+- AND the progress bar resets to 0:00 immediately
+
 ### Requirement: Dashboard Reconnects Without PIN
 After a reload or transient disconnect, the dashboard MUST automatically reconnect to the same party without prompting for the PIN again.
 

@@ -67,13 +67,11 @@ export class Startpage implements OnInit, OnDestroy {
         const res: any = await lastValueFrom(
           this.http.get(`/api/party/${this.partyId}/track/current`)
         );
-        const isPlaying = !!res?.isPlaying;
         const hasTrack = !!res?.track;
         if (hasTrack) {
           this.currentTrack = res.track;
         }
-        const register = !(isPlaying || hasTrack);
-        await this.spotifyService.initPlayer(register);
+        await this.spotifyService.initPlayer(true);
       } catch {
         await this.spotifyService.initPlayer(true);
       }
