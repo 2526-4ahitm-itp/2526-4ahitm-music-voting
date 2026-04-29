@@ -65,5 +65,11 @@ export const routes: Routes = [
     title: 'Partygast - MusicVoting'
   },
 
+  {
+    path: 'join/:pin',
+    component: CodeInput,
+    title: 'Party beitreten - MusicVoting'
+  },
+
   { path: '**', redirectTo: '' }
 ];

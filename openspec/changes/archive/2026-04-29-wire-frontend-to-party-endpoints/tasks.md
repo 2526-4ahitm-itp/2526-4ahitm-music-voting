@@ -84,10 +84,13 @@
 ## 9. Verify
 
 - [x] 9.1 Start stack: `cd musicvoting && docker compose up -d`, `cd frontend && npm start`
-- [ ] 9.2 Guest join: navigate to `/code` → enter an active party PIN → confirm redirect to `/guest`
-- [ ] 9.3 Guest join via QR URL: navigate to `/join/{pin}` → confirm auto-resolve and redirect to `/guest`
-- [ ] 9.4 Guest join invalid PIN: navigate to `/join/00000` → confirm "Party nicht gefunden." error shown
-- [ ] 9.5 Host create party: navigate to `/` → click host button → `/create-party` → "Party erstellen" → Spotify OAuth → `/dashboard` with PIN and QR visible
-- [ ] 9.6 Queue operations: search, add track, view queue — confirm requests go to `/api/party/{id}/track/…` in browser devtools Network tab
-- [ ] 9.7 Party beenden: click button on dashboard, confirm → `DELETE /api/party/{id}` called, redirected to `/`
-- [ ] 9.8 Party-ended SSE: in one tab end the party via dashboard; confirm open guest tab / startpage redirects to home
+- [x] 9.2 Guest join: navigate to `/code` → enter an active party PIN → confirm redirect to `/guest`
+- [x] 9.3 Guest join via QR URL: navigate to `/join/{pin}` → confirm auto-resolve and redirect to `/guest`
+- [x] 9.4 Guest join invalid PIN: navigate to `/join/00000` → confirm "Party nicht gefunden." error shown
+- [x] 9.5 Host create party: navigate to `/` → click host button → `/create-party` → "Party erstellen" → Spotify OAuth → `/dashboard` with PIN and QR visible
+- [x] 9.6 Queue operations: search, add track, view queue — confirm requests go to `/api/party/{id}/track/…` in browser devtools Network tab
+- [x] 9.7 Party beenden: click button on dashboard, confirm → `DELETE /api/party/{id}` called, redirected to `/`
+- [x] 9.8 Party-ended SSE: in one tab end the party via dashboard; confirm open guest tab / startpage redirects to home
+  - NOTE: two bugs found and fixed during verification:
+    - `join/:pin` route was missing from `app.routes.ts` (task 4.3 was incorrectly marked done)
+    - `guest.ts` and `voting-comp.ts` had no SSE subscription — `party-ended` was never received on guest side

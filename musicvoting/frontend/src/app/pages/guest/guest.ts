@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
@@ -13,20 +13,36 @@ import { Router } from '@angular/router';
   templateUrl: './guest.html',
   styleUrls: ['./guest.css'],
 })
-export class Guest implements OnInit {
+export class Guest implements OnInit, OnDestroy {
   tracks: any[] = [];
   searchQuery: string = '';
   isSearching = false;
   addingTrackId: string | null = null;
+  private eventSource?: EventSource;
 
   constructor(
     private trackApi: TrackService,
     private spotifyService: SpotifyWebPlayerService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private ngZone: NgZone
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.eventSource = new EventSource('/api/spotify/events?source=web');
+    this.eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data?.type === 'party-ended') {
+          this.ngZone.run(() => this.router.navigate(['/']));
+        }
+      } catch { /* ignore malformed events */ }
+    };
+  }
+
+  ngOnDestroy(): void {
+    this.eventSource?.close();
+  }
 
   /** Suche nach Tracks */
   async search(query?: string) {
