@@ -3,6 +3,7 @@ import { FormsModule } from "@angular/forms";
 import { lastValueFrom } from 'rxjs';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { Router, RouterLink } from '@angular/router';
+import { PartyService } from '../../services/party.service';
 
 @Component({
   selector: 'app-voting-comp',
@@ -34,17 +35,22 @@ export class VotingComp implements OnInit, OnDestroy {
     private spotifyService: SpotifyWebPlayerService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private partyService: PartyService
   ) {}
 
   ngOnInit() {
     this.loadPlaylist();
-    this.eventSource = new EventSource('/api/spotify/events?source=web');
+    const partyId = this.partyService.currentPartyId;
+    const partyQuery = partyId ? `&partyId=${encodeURIComponent(partyId)}` : '';
+    this.eventSource = new EventSource(`/api/spotify/events?source=web${partyQuery}`);
     this.eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data?.type === 'party-ended') {
           this.ngZone.run(() => this.router.navigate(['/']));
+        } else if (data?.type === 'queue-updated' || data?.type === 'vote-updated') {
+          this.loadPlaylist();
         }
       } catch { /* ignore malformed events */ }
     };

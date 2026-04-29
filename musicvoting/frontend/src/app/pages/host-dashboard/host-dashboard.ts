@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { PartyService } from '../../services/party.service';
+import { SpotifyWebPlayerService } from '../../services/spotify-player';
 
 @Component({
   selector: 'app-host-dashboard',
@@ -31,12 +33,17 @@ export class HostDashboard implements OnInit, OnDestroy {
   qrUrl: string | null = null;
   confirmEnd = false;
   private sseSource?: EventSource;
+  private queueUpdatesSub?: Subscription;
+  currentPosition = 0;
+  progressPercent = 0;
+  progressInterval: any;
 
   constructor(
     private ngZone: NgZone,
     private http: HttpClient,
     private cd: ChangeDetectorRef,
     private partyService: PartyService,
+    private spotifyService: SpotifyWebPlayerService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -64,12 +71,14 @@ export class HostDashboard implements OnInit, OnDestroy {
 
     await this.loadCurrentPlayback();
     await this.loadPlaylist();
-
-    setInterval(() => this.loadCurrentPlayback(), 5000);
-    setInterval(() => this.loadPlaylist(), 10000);
+    this.queueUpdatesSub = this.spotifyService.getQueueUpdates().subscribe(() => {
+      this.loadPlaylist();
+    });
   }
 
   ngOnDestroy() {
+    this.stopProgressTimer();
+    this.queueUpdatesSub?.unsubscribe();
     this.sseSource?.close();
   }
 
@@ -79,11 +88,17 @@ export class HostDashboard implements OnInit, OnDestroy {
 
   private startPartyEndedStream() {
     this.sseSource?.close();
-    this.sseSource = new EventSource('/api/spotify/events?source=web');
+    const partyQuery = this.partyId ? `&partyId=${encodeURIComponent(this.partyId)}` : '';
+    this.sseSource = new EventSource(`/api/spotify/events?source=web${partyQuery}`);
     this.sseSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data?.type === 'party-ended') {
+        if (data?.type === 'queue-updated' || data?.type === 'vote-updated') {
+          this.loadPlaylist();
+        } else if (data?.type === 'track-changed') {
+          this.loadCurrentPlayback();
+          this.loadPlaylist();
+        } else if (data?.type === 'party-ended') {
           this.ngZone.run(() => {
             this.partyService.clearParty();
             this.router.navigate(['/']);
@@ -142,6 +157,13 @@ export class HostDashboard implements OnInit, OnDestroy {
           if (changed) {
             this.loadPlaylist();
           }
+          this.currentPosition = typeof res?.progressMs === 'number' ? res.progressMs : 0;
+          this.updateProgressPercent();
+          if (res?.isPlaying) {
+            this.startProgressTimer();
+          } else {
+            this.stopProgressTimer();
+          }
           const progressMs = typeof res?.progressMs === 'number' ? res.progressMs : null;
           const shouldAutoAdvance =
             !!newUri && !changed && !res.isPlaying && progressMs === 0 && previousUri === newUri;
@@ -152,6 +174,9 @@ export class HostDashboard implements OnInit, OnDestroy {
           const cooldown = this.autoAdvanceCooldownUntil && now < this.autoAdvanceCooldownUntil;
           if (this.partyStarted && !suppressed && !this.autoAdvanceInFlight && !cooldown) {
             this.currentTrack = null;
+            this.currentPosition = 0;
+            this.progressPercent = 0;
+            this.stopProgressTimer();
           }
         }
         if (!suppressed && typeof res?.isPlaying === 'boolean') {
@@ -166,6 +191,39 @@ export class HostDashboard implements OnInit, OnDestroy {
 
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
+  }
+
+  startProgressTimer() {
+    if (this.progressInterval) return;
+    this.progressInterval = setInterval(() => {
+      this.currentPosition += 1000;
+      this.updateProgressPercent();
+      this.cd.detectChanges();
+    }, 1000);
+  }
+
+  stopProgressTimer() {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
+    }
+  }
+
+  updateProgressPercent() {
+    const duration = this.currentTrack?.duration_ms || 0;
+    if (duration > 0) {
+      this.progressPercent = Math.min((this.currentPosition / duration) * 100, 100);
+    } else {
+      this.progressPercent = 0;
+    }
+  }
+
+  formatTime(ms: number): string {
+    if (!ms || isNaN(ms)) return '0:00';
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
   startParty() {

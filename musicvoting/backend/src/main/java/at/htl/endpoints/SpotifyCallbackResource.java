@@ -203,7 +203,8 @@ public class SpotifyCallbackResource {
     @RestStreamElementType(MediaType.APPLICATION_JSON)
     public Multi<LoginEvent> events(
             @QueryParam("source") @DefaultValue("web") String source,
-            @QueryParam("installationId") String installationId
+            @QueryParam("installationId") String installationId,
+            @QueryParam("partyId") String partyId
     ) {
         var stream = loginEventBus.stream();
         if ("ios".equalsIgnoreCase(source) && installationId != null && !installationId.isBlank()) {
@@ -214,9 +215,16 @@ public class SpotifyCallbackResource {
                             && id.equals(event.payload().get("installationId"))));
         }
         if ("web".equalsIgnoreCase(source)) {
+            final String webPartyId = partyId == null ? "" : partyId.trim();
             return stream.select().where(event ->
                     "party-ended".equals(event.type())
-                    || "web".equalsIgnoreCase(event.payload().get("source")));
+                    || ("login-success".equals(event.type())
+                        && "web".equalsIgnoreCase(event.payload().get("source")))
+                    || (("queue-updated".equals(event.type())
+                        || "track-changed".equals(event.type())
+                        || "vote-updated".equals(event.type()))
+                        && !webPartyId.isBlank()
+                        && webPartyId.equals(event.payload().get("partyId"))));
         }
         return stream;
     }
