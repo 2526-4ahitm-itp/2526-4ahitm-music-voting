@@ -13,6 +13,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Map;
 
 @Path("/party/{partyId}/spotify")
@@ -27,6 +28,9 @@ public class SpotifyTokenResource {
 
     @Inject
     SpotifyMusicProvider spotifyMusicProvider;
+
+    @Inject
+    LoginEventBus loginEventBus;
 
     @ConfigProperty(name = "spotify.client.id")
     String clientId;
@@ -102,6 +106,11 @@ public class SpotifyTokenResource {
         Party party = resolveParty();
         party.getSpotifyCredentials().setDeviceId(normalizedDeviceId);
         spotifyMusicProvider.restoreCurrentTrackFromBeginningOnDevice(party, normalizedDeviceId);
+        loginEventBus.emit(new LoginEvent(
+                "track-changed",
+                Instant.now(),
+                Map.of("source", "web", "partyId", party.id().value())
+        ));
         return Response.ok(Map.of("status", "Device ID gesetzt")).build();
     }
 

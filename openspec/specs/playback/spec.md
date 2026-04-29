@@ -49,12 +49,30 @@ When the current song ends or is skipped by the host, the system MUST remove tha
 
 `GET /track/current` MUST compute `progressMs = now() − playbackStartedAt` (when playing) or return `pausedPositionMs` (when paused). No Spotify API call is made inside this endpoint.
 
+When `isPlaying` is `true`, the response MUST also include `playbackStartedAt` as an ISO-8601 string so that clients can compute `currentPosition = clientNow − playbackStartedAt` on every timer tick without drift.
+
 #### Scenario: Progress survives pause/resume without Spotify
 - GIVEN song X has been playing for 45 s and is then paused at 45 s
 - WHEN the host resumes playback
 - THEN `playbackStartedAt` is adjusted so that `now() − playbackStartedAt = 45 s`
 - AND subsequent calls to `GET /track/current` return `progressMs ≈ 45 s + elapsed-since-resume`
 - AND no call to Spotify's player API is made
+
+### Requirement: Device Re-registration Resets Progress
+When the TV/startpage browser registers a new Spotify Web Playback SDK device via `PUT /party/{id}/spotify/deviceId`, the backend MUST:
+1. Call `restoreCurrentTrackFromBeginningOnDevice` — which plays the current track from position 0 on the new device.
+2. On success, write `playbackStartedAt = now()` and `pausedPositionMs = null` to `PartyEntity` so that `GET /track/current` reflects the restart.
+3. Emit a `track-changed` SSE event so all clients (including the host dashboard) reload their current-track state immediately.
+
+This ensures the dashboard progress bar resets to 0 whenever the startpage reloads and re-registers its device, rather than continuing from the old position.
+
+#### Scenario: Startpage reload resets dashboard progress bar
+- GIVEN song X has been playing for 1 min 30 s
+- WHEN the TV browser reloads the startpage and registers a new device
+- THEN the backend resets `playbackStartedAt = now()` in the DB
+- AND emits `track-changed` SSE
+- AND the dashboard receives the event, calls `GET /track/current`, gets `playbackStartedAt ≈ now()`
+- AND the dashboard progress bar resets to 0:00
 
 ### Requirement: track-changed SSE Event on Advance or Start
 After a successful `/track/next` or `/track/start` call, the backend MUST emit a `track-changed` SSE event scoped to the party. All subscribed clients MUST reload their currently-playing track and queue on receipt.
