@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { PartyService } from '../../services/party.service';
 
 @Component({
@@ -23,6 +24,7 @@ export class Startpage implements OnInit, OnDestroy {
   currentPosition = 0;
   progressPercent = 0;
   progressInterval: any;
+  private queueUpdatesSub?: Subscription;
 
   private partyId: string | null = null;
   pin: string | null = null;
@@ -67,6 +69,9 @@ export class Startpage implements OnInit, OnDestroy {
         );
         const isPlaying = !!res?.isPlaying;
         const hasTrack = !!res?.track;
+        if (hasTrack) {
+          this.currentTrack = res.track;
+        }
         const register = !(isPlaying || hasTrack);
         await this.spotifyService.initPlayer(register);
       } catch {
@@ -82,12 +87,6 @@ export class Startpage implements OnInit, OnDestroy {
       if (!state) return;
 
       this.ngZone.run(() => {
-        const sdkTrack = state.track_window.current_track;
-        this.currentTrack = {
-          ...sdkTrack,
-          duration_ms: sdkTrack.duration_ms || sdkTrack.duration
-        };
-
         this.currentPosition = state.position || 0;
         this.updateProgressPercent();
 
@@ -114,7 +113,9 @@ export class Startpage implements OnInit, OnDestroy {
       });
     });
 
-    setInterval(() => this.loadPlaylist(), 10000);
+    this.queueUpdatesSub = this.spotifyService.getQueueUpdates().subscribe(() => {
+      this.loadPlaylist();
+    });
   }
 
   startProgressTimer() {
@@ -148,10 +149,26 @@ export class Startpage implements OnInit, OnDestroy {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
+  async loadCurrentTrack() {
+    if (!this.partyId) return;
+    try {
+      const res: any = await lastValueFrom(
+        this.http.get(`/api/party/${this.partyId}/track/current`)
+      );
+      this.ngZone.run(() => {
+        this.currentTrack = res?.track ?? null;
+        this.cd.detectChanges();
+      });
+    } catch (err) {
+      console.error('Fehler beim Laden des aktuellen Songs:', err);
+    }
+  }
+
   async playNext() {
     if (!this.partyId) return;
     try {
       await lastValueFrom(this.http.post(`/api/party/${this.partyId}/track/next`, {}));
+      await this.loadCurrentTrack();
       this.loadPlaylist();
     } catch (err) {
       console.error('Fehler beim Weiterschalten', err);
@@ -188,17 +205,24 @@ export class Startpage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopProgressTimer();
+    this.queueUpdatesSub?.unsubscribe();
     this.eventSource?.close();
   }
 
   private startLoginEventStream() {
     this.eventSource?.close();
-    this.eventSource = new EventSource('/api/spotify/events?source=web');
+    const partyQuery = this.partyId ? `&partyId=${encodeURIComponent(this.partyId)}` : '';
+    this.eventSource = new EventSource(`/api/spotify/events?source=web${partyQuery}`);
     this.eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data?.type === 'login-success') {
           window.location.reload();
+        } else if (data?.type === 'queue-updated' || data?.type === 'vote-updated') {
+          this.loadPlaylist();
+        } else if (data?.type === 'track-changed') {
+          this.loadCurrentTrack();
+          this.loadPlaylist();
         } else if (data?.type === 'party-ended') {
           this.ngZone.run(() => this.router.navigate(['/']));
         }

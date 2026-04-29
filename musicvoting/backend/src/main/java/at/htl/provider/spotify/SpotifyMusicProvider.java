@@ -21,6 +21,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -81,6 +82,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     public Response play(Party party, String uri) {
         try {
             String deviceId = resolvePlayableDeviceId(party);
@@ -100,6 +102,11 @@ public class SpotifyMusicProvider implements MusicProvider {
             Response response = sendPut(party, url, body);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 updateCachedPlayback(party, uri, true);
+                PartyEntity pe = PartyEntity.findById(party.id().value());
+                if (pe != null) {
+                    pe.playbackStartedAt = OffsetDateTime.now();
+                    pe.pausedPositionMs = null;
+                }
             }
             return response;
         } catch (Exception e) {
@@ -342,6 +349,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     public Response pausePlayback(Party party) {
         try {
             String deviceId = resolvePlayableDeviceId(party);
@@ -356,6 +364,10 @@ public class SpotifyMusicProvider implements MusicProvider {
             Response response = sendPut(party, url, null);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 party.getSpotifyCredentials().setLastPlaybackActive(false);
+                PartyEntity pe = PartyEntity.findById(party.id().value());
+                if (pe != null && pe.playbackStartedAt != null && pe.pausedPositionMs == null) {
+                    pe.pausedPositionMs = Duration.between(pe.playbackStartedAt, OffsetDateTime.now()).toMillis();
+                }
             }
             return response;
         } catch (Exception e) {
@@ -364,6 +376,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     public Response resumePlayback(Party party) {
         try {
             String deviceId = resolvePlayableDeviceId(party);
@@ -378,6 +391,11 @@ public class SpotifyMusicProvider implements MusicProvider {
             Response response = sendPut(party, url, null);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 party.getSpotifyCredentials().setLastPlaybackActive(true);
+                PartyEntity pe = PartyEntity.findById(party.id().value());
+                if (pe != null && pe.pausedPositionMs != null) {
+                    pe.playbackStartedAt = OffsetDateTime.now().minus(Duration.ofMillis(pe.pausedPositionMs));
+                    pe.pausedPositionMs = null;
+                }
             }
             return response;
         } catch (Exception e) {
@@ -491,64 +509,58 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     public Response getCurrentPlayback(Party party) {
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.spotify.com/v1/me/player/currently-playing"))
-                    .header("Authorization", authHeader(party))
-                    .GET()
-                    .build();
+            PartyEntity partyEntity = PartyEntity.findById(party.id().value());
+            if (partyEntity != null && partyEntity.currentlyPlayingEntryId != null) {
+                List<Object[]> rows = em.createNativeQuery(
+                        "SELECT qe.id, qe.track_uri, qe.track_name, qe.artist_name, qe.album_name, " +
+                        "qe.image_url, qe.duration_ms, COUNT(v.id) AS like_count " +
+                        "FROM queue_entry qe " +
+                        "LEFT JOIN vote v ON v.queue_entry_id = qe.id " +
+                        "WHERE qe.id = :id " +
+                        "GROUP BY qe.id"
+                ).setParameter("id", partyEntity.currentlyPlayingEntryId).getResultList();
 
-            HttpResponse<String> res = client.send(request, HttpResponse.BodyHandlers.ofString());
+                if (!rows.isEmpty()) {
+                    Object[] row = rows.get(0);
+                    Map<String, Object> trackPayload = new HashMap<>();
+                    trackPayload.put("id", row[0].toString());
+                    trackPayload.put("uri", row[1]);
+                    trackPayload.put("name", row[2]);
+                    trackPayload.put("artists", List.of(Map.of("name", row[3] != null ? row[3] : "")));
+                    trackPayload.put("album", Map.of(
+                            "name", row[4] != null ? row[4] : "",
+                            "images", row[5] != null ? List.of(Map.of("url", row[5])) : List.of()
+                    ));
+                    trackPayload.put("duration_ms", row[6]);
+                    trackPayload.put("likeCount", ((Number) row[7]).longValue());
 
-            if (res.statusCode() == 204) {
-                return Response.ok(Map.of(
-                        "isPlaying", false,
-                        "progressMs", 0
-                )).build();
+                    Boolean cached = party.getSpotifyCredentials().getLastPlaybackActive();
+                    boolean isPlaying = cached != null ? cached
+                            : (partyEntity.playbackStartedAt != null && partyEntity.pausedPositionMs == null);
+
+                    int progressMs = 0;
+                    if (partyEntity.pausedPositionMs != null) {
+                        progressMs = partyEntity.pausedPositionMs.intValue();
+                    } else if (partyEntity.playbackStartedAt != null) {
+                        long elapsed = Duration.between(partyEntity.playbackStartedAt, OffsetDateTime.now()).toMillis();
+                        if (row[6] instanceof Number dur) {
+                            elapsed = Math.min(elapsed, dur.longValue());
+                        }
+                        progressMs = (int) elapsed;
+                    }
+
+                    Map<String, Object> payload = new HashMap<>();
+                    payload.put("isPlaying", isPlaying);
+                    payload.put("progressMs", progressMs);
+                    payload.put("track", trackPayload);
+                    return Response.ok(payload).build();
+                }
             }
 
-            if (res.statusCode() < 200 || res.statusCode() >= 300) {
-                return SpotifyApiErrors.buildResponse(res, "Das Laden der aktuellen Wiedergabe");
-            }
-
-            Map<String, Object> json = mapper.readValue(res.body(), Map.class);
-            boolean isPlaying = Boolean.TRUE.equals(json.get("is_playing"));
-            Number progressMs = (Number) json.get("progress_ms");
-
-            Object itemObj = json.get("item");
-            if (!(itemObj instanceof Map<?, ?> item)) {
-                party.getSpotifyCredentials().setLastPlaybackActive(isPlaying);
-                return Response.ok(Map.of(
-                        "isPlaying", isPlaying,
-                        "progressMs", progressMs == null ? 0 : progressMs.intValue()
-                )).build();
-            }
-
-            List<Map<String, Object>> artists = (List<Map<String, Object>>) item.get("artists");
-            Map<String, Object> album = (Map<String, Object>) item.get("album");
-            List<Map<String, Object>> images = album == null
-                    ? List.of()
-                    : (List<Map<String, Object>>) album.getOrDefault("images", List.of());
-
-            Map<String, Object> albumPayload = new HashMap<>();
-            albumPayload.put("name", album == null ? null : album.get("name"));
-            albumPayload.put("images", images);
-
-            Map<String, Object> trackPayload = new HashMap<>();
-            trackPayload.put("id", item.get("id"));
-            trackPayload.put("uri", item.get("uri"));
-            trackPayload.put("name", item.get("name"));
-            trackPayload.put("artists", artists == null ? List.of() : artists);
-            trackPayload.put("album", albumPayload);
-
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("isPlaying", isPlaying);
-            payload.put("progressMs", progressMs == null ? 0 : progressMs.intValue());
-            payload.put("track", trackPayload);
-            updateCachedPlayback(party, (String) item.get("uri"), isPlaying);
-
-            return Response.ok(payload).build();
+            return Response.ok(Map.of("isPlaying", false, "progressMs", 0)).build();
         } catch (Exception e) {
             return propagateOrUnexpected("Das Laden der aktuellen Wiedergabe", e);
         }

@@ -154,12 +154,36 @@ body{
   font-size: 1.5rem;
 }
 
+.progress {
+  margin-top: 3rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.progress-bar {
+  flex: 1;
+  min-width: 0;
+  height: 6px;
+  background-color: #eee;
+  border-radius: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #F2594B;
+  width: 0;
+  transition: width 0.5s linear;
+  border-radius: 4px 0 0 4px;
+}
+
 .player-controls {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   gap: 1.56rem;
-  margin-top: 5rem;
+  margin-top: 2rem;
   width: 100%;
   min-width: 0;
 }
