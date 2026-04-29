@@ -403,6 +403,7 @@ public class SpotifyMusicProvider implements MusicProvider {
         }
     }
 
+    @Transactional
     public void restoreCurrentTrackFromBeginningOnDevice(Party party, String deviceId) {
         try {
             if (deviceId == null || deviceId.isBlank()) {
@@ -469,6 +470,11 @@ public class SpotifyMusicProvider implements MusicProvider {
             Response response = sendPut(party, url, mapper.writeValueAsString(bodyMap));
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 updateCachedPlayback(party, uri, true);
+                PartyEntity pe = PartyEntity.findById(party.id().value());
+                if (pe != null) {
+                    pe.playbackStartedAt = OffsetDateTime.now();
+                    pe.pausedPositionMs = null;
+                }
             }
         } catch (Exception ignored) {
             // Device registration should still succeed even if restore fails.
@@ -556,6 +562,9 @@ public class SpotifyMusicProvider implements MusicProvider {
                     payload.put("isPlaying", isPlaying);
                     payload.put("progressMs", progressMs);
                     payload.put("track", trackPayload);
+                    if (isPlaying && partyEntity.playbackStartedAt != null) {
+                        payload.put("playbackStartedAt", partyEntity.playbackStartedAt.toInstant().toString());
+                    }
                     return Response.ok(payload).build();
                 }
             }
