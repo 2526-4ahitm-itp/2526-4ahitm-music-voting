@@ -49,14 +49,24 @@ final class AdminDashboardViewModel: ObservableObject {
     @Published var queueSongs: [Song] = []
 
     let pollInterval: TimeInterval = 2
-    private var queueURL: URL { BackendConfiguration.endpoint("/api/track/queue") }
-    private var startURL: URL { BackendConfiguration.endpoint("/api/track/start") }
-    private var pauseURL: URL { BackendConfiguration.endpoint("/api/track/pause") }
-    private var resumeURL: URL { BackendConfiguration.endpoint("/api/track/resume") }
-    private var currentURL: URL { BackendConfiguration.endpoint("/api/track/current") }
-    private var nextURL: URL { BackendConfiguration.endpoint("/api/track/next") }
-    private var playURL: URL { BackendConfiguration.endpoint("/api/track/play") }
-    private var removeURL: URL { BackendConfiguration.endpoint("/api/track/remove") }
+    private weak var partySession: PartySessionStore?
+
+    func configure(partySession: PartySessionStore) {
+        self.partySession = partySession
+    }
+
+    private func partyURL(for path: String) -> URL {
+        partySession?.partyURL(path: path) ?? BackendConfiguration.endpoint("/api/party/unknown/" + path)
+    }
+
+    private var queueURL: URL { partyURL(for: "track/queue") }
+    private var startURL: URL { partyURL(for: "track/start") }
+    private var pauseURL: URL { partyURL(for: "track/pause") }
+    private var resumeURL: URL { partyURL(for: "track/resume") }
+    private var currentURL: URL { partyURL(for: "track/current") }
+    private var nextURL: URL { partyURL(for: "track/next") }
+    private var playURL: URL { partyURL(for: "track/play") }
+    private var removeURL: URL { partyURL(for: "track/remove") }
 
     func loadQueue() async {
         do {
@@ -257,10 +267,30 @@ final class AdminDashboardViewModel: ObservableObject {
 
 struct AdminDashboard: View {
     @StateObject private var viewModel = AdminDashboardViewModel()
+    @EnvironmentObject private var partySession: PartySessionStore
 
     var body: some View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    if let hostPin = partySession.hostPin {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Host-PIN")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text(hostPin)
+                                    .font(.system(size: 28, weight: .bold, design: .monospaced))
+                                    .tracking(4)
+                            }
+                            Spacer()
+                            Image(systemName: "crown.fill")
+                                .font(.title2)
+                                .foregroundStyle(Color("accent"))
+                        }
+                        .padding()
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    }
+
                     // Gerade Spielender Song
                     CurrentSongPlaying(
                         song: viewModel.currentSong,
@@ -278,9 +308,10 @@ struct AdminDashboard: View {
 
                 }
                 .padding()
-            
+
         }
         .task {
+            viewModel.configure(partySession: partySession)
             await viewModel.refreshDashboardState()
         }
         .onReceive(
@@ -294,4 +325,5 @@ struct AdminDashboard: View {
 
 #Preview {
     AdminDashboard()
+        .environmentObject(PartySessionStore())
 }

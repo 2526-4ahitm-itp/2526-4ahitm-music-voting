@@ -1,9 +1,3 @@
-//
-//  CodeInputView.swift
-//  app
-//
-//  Created by Simone Sperrer on 24.03.26.
-//
 import SwiftUI
 
 struct ShakeEffect: GeometryEffect {
@@ -16,32 +10,34 @@ struct ShakeEffect: GeometryEffect {
             amount * sin(animatableData * .pi * CGFloat(shakesPerUnit)), y: 0))
     }
 }
+
 struct CodeInputView: View {
     @State private var code: String = ""
-    @State private var showError: Bool = false
-    @State private var attempts: Int = 0 // Für den Shake-Trigger
+    @State private var attempts: Int = 0
+    @State private var isLoading = false
+    @State private var errorMessage: String?
     @FocusState private var isFocused: Bool
     @EnvironmentObject var appState: AppState
-    
+    @EnvironmentObject var partySession: PartySessionStore
+
     private let codeLength = 5
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
-                // Dein Original Gradient
                 LinearGradient(
                     colors: [Color("primary"), Color("secondary"), Color("accent")],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
-                
+
                 VStack(spacing: 30) {
                     Text("Geben Sie Ihren Zugangscode ein:")
                         .font(.title2)
                         .foregroundColor(.white)
                         .bold()
-                    
+
                     ZStack {
                         TextField("", text: $code)
                             .keyboardType(.numberPad)
@@ -52,31 +48,14 @@ struct CodeInputView: View {
                             .onChange(of: code) { newValue in
                                 let filtered = newValue.filter { "0123456789".contains($0) }
                                 let trimmed = String(filtered.prefix(codeLength))
-                                
-                                showError = false
+                                errorMessage = nil
                                 code = trimmed
-                                
-                                if code.count == codeLength {
-                                    if checkCode() {
-                                        isFocused = false
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                            withAnimation(.easeInOut) {
-                                                appState.currentSite = .guest
-                                            }
-                                        }
-                                    } else {
-                                        let generator = UINotificationFeedbackGenerator()
-                                        generator.notificationOccurred(.error)
-                                            
-                                        withAnimation(.default) {
-                                            showError = true
-                                            attempts += 1
-                                        }
-                                    }
+
+                                if code.count == codeLength && !isLoading {
+                                    Task { await submit() }
                                 }
                             }
-                        
-                        // Deine Original Eingabefelder
+
                         HStack(spacing: 15) {
                             ForEach(0..<codeLength, id: \.self) { index in
                                 ZStack {
@@ -93,27 +72,34 @@ struct CodeInputView: View {
                                                 )
                                         )
                                         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-                                    
-                                    Text(getDigit(at: index))
-                                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                                        .foregroundColor(.white)
+
+                                    if isLoading && index < code.count {
+                                        ProgressView()
+                                            .tint(.white)
+                                            .scaleEffect(0.7)
+                                    } else {
+                                        Text(getDigit(at: index))
+                                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                                            .foregroundColor(.white)
+                                    }
                                 }
                                 .onTapGesture {
                                     isFocused = true
                                 }
                             }
                         }
-                        // Nur dieser Modifier wurde zur HStack hinzugefügt:
                         .modifier(ShakeEffect(animatableData: CGFloat(attempts)))
                     }
-                    
-                    if showError {
-                        Text("Falscher Code")
-                            .foregroundColor(.red)
+
+                    if let error = errorMessage {
+                        Text(error)
+                            .foregroundColor(.white)
                             .font(.title3)
-                            .transition(.opacity).bold()
+                            .bold()
+                            .multilineTextAlignment(.center)
+                            .transition(.opacity)
                     }
-                    
+
                     Spacer()
                 }
                 .padding(.top, 50)
@@ -155,18 +141,47 @@ struct CodeInputView: View {
             }
         }
     }
-    
+
     private func getDigit(at index: Int) -> String {
         guard index < code.count else { return "" }
-        let index = code.index(code.startIndex, offsetBy: index)
-        return String(code[index])
+        let i = code.index(code.startIndex, offsetBy: index)
+        return String(code[i])
     }
-    
-    private func checkCode() -> Bool {
-        return code == "12345"
+
+    private func submit() async {
+        guard code.count == codeLength else { return }
+        isLoading = true
+        errorMessage = nil
+        do {
+            _ = try await partySession.resolve(pin: code)
+            isFocused = false
+            withAnimation(.easeInOut) {
+                appState.currentSite = .guest
+            }
+        } catch let error as PartySessionError {
+            triggerError(error.errorDescription ?? "Falscher Code")
+        } catch {
+            triggerError("Falscher Code")
+        }
+        isLoading = false
+    }
+
+    private func triggerError(_ message: String) {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+        withAnimation(.default) {
+            errorMessage = message
+            attempts += 1
+        }
+        code = ""
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            isFocused = true
+        }
     }
 }
 
 #Preview {
     CodeInputView()
+        .environmentObject(AppState())
+        .environmentObject(PartySessionStore())
 }

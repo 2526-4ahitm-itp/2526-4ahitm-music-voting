@@ -23,6 +23,9 @@ public class PartyEntity extends PanacheEntityBase {
     @Column(name = "pin", nullable = false)
     public String pin;
 
+    @Column(name = "host_pin")
+    public String hostPin;
+
     @Column(name = "ended_at")
     public OffsetDateTime endedAt;
 
@@ -37,5 +40,9 @@ public class PartyEntity extends PanacheEntityBase {
 
     public static Optional<PartyEntity> findByPin(String pin) {
         return find("pin = ?1 and endedAt is null", pin).firstResultOptional();
+    }
+
+    public static Optional<PartyEntity> findByHostPin(String hostPin) {
+        return find("hostPin = ?1 and endedAt is null", hostPin).firstResultOptional();
     }
 }
