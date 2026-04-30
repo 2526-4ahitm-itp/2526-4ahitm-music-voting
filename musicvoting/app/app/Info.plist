@@ -10,7 +10,7 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Die App braucht Zugriff auf das lokale Netzwerk, um mit dem MusicVoting-Backend zu kommunizieren.</string>
 	<key>BackendBaseURL</key>
-	<string>http://172.20.10.2:8080</string>
+	<string>http://127.0.0.1:8080</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>spotify</string>

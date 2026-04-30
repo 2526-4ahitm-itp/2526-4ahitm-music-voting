@@ -1,0 +1,74 @@
+<div class="host-options-page">
+  <header>
+    <div class="back-to-home" (click)="goBack()">←</div>
+    <h1>MusicVoting</h1>
+  </header>
+
+  <div class="host-options-wrapper">
+    @if (mode() === 'menu') {
+      <h2>Gastgeber-Optionen</h2>
+      <p class="subtitle">Was möchtest du tun?</p>
+
+      <div class="options-list">
+        <button class="option-btn primary" type="button" (click)="goCreateParty()">
+          <span class="option-icon">🎉</span>
+          <span class="option-text">
+            <strong>Party erstellen</strong>
+            <small>Neue Party starten und Spotify verbinden</small>
+          </span>
+        </button>
+
+        <button class="option-btn" type="button" (click)="showPinEntry('pin-dashboard')">
+          <span class="option-icon">🎛️</span>
+          <span class="option-text">
+            <strong>Dashboard öffnen</strong>
+            <small>Bestehende Party per PIN steuern</small>
+          </span>
+        </button>
+
+        <button class="option-btn" type="button" (click)="showPinEntry('pin-startpage')">
+          <span class="option-icon">📺</span>
+          <span class="option-text">
+            <strong>Startseite öffnen</strong>
+            <small>Partyansicht per PIN aufrufen</small>
+          </span>
+        </button>
+      </div>
+    } @else {
+      <div class="pin-entry">
+        <button class="back-btn" type="button" (click)="backToMenu()">← Zurück</button>
+        <h2>{{ mode() === 'pin-dashboard' ? 'Dashboard öffnen' : 'Startseite öffnen' }}</h2>
+        <p class="subtitle">Gib den Host-PIN deiner Party ein.</p>
+
+        <input
+          class="pin-input"
+          type="text"
+          inputmode="numeric"
+          maxlength="5"
+          placeholder="12345"
+          [value]="pin()"
+          (input)="pin.set($any($event.target).value)"
+          (keydown.enter)="submitPin()"
+          autofocus
+        />
+
+        @if (error()) {
+          <p class="error-message">{{ error() }}</p>
+        }
+
+        <button
+          class="confirm-btn"
+          type="button"
+          (click)="submitPin()"
+          [disabled]="isLoading() || pin().trim().length === 0"
+        >
+          @if (isLoading()) {
+            Wird geladen…
+          } @else {
+            Weiter
+          }
+        </button>
+      </div>
+    }
+  </div>
+</div>

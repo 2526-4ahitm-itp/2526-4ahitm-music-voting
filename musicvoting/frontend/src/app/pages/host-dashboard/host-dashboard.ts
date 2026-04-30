@@ -30,6 +30,7 @@ export class HostDashboard implements OnInit, OnDestroy {
 
   partyId: string | null = null;
   pin: string | null = null;
+  hostPin: string | null = null;
   qrUrl: string | null = null;
   confirmEnd = false;
   private sseSource?: EventSource;
@@ -57,14 +58,20 @@ export class HostDashboard implements OnInit, OnDestroy {
 
     this.partyId = this.partyService.currentPartyId;
     this.pin = this.partyService.currentPin;
+    this.hostPin = this.partyService.currentHostPin;
+    this.cd.detectChanges();
+
     if (this.partyId) {
       this.qrUrl = `/api/party/${this.partyId}/qr`;
       try {
         const party = await lastValueFrom(this.partyService.getParty(this.partyId));
         this.pin = party.pin;
+        if (party.hostPin) { this.hostPin = party.hostPin; }
+        this.cd.detectChanges();
       } catch {
         if (!this.pin) {
           this.pin = 'nicht verfügbar';
+          this.cd.detectChanges();
         }
       }
       this.startPartyEndedStream();

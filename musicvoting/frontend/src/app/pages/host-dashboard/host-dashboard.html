@@ -110,7 +110,7 @@
     </div>
     <div class="right">
       <div class="qr-code">
-        <p class="party-pin">PIN: <strong>{{ pin || 'nicht verfügbar' }}</strong></p>
+        <p class="party-pin">Host-PIN: <strong>{{ hostPin || 'nicht verfügbar' }}</strong></p>
         @if (qrUrl) {
           <img class="cover" [src]="qrUrl" alt="QR-Code">
         } @else {

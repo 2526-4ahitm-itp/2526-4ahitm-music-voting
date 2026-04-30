@@ -17,17 +17,17 @@ struct Admin_ContentView: View {
                     .tabItem {
                         Label("Admin", systemImage: "person.crop.circle")
                     }
-                
+
                 QRCodeView()
                     .tabItem {
                         Label("QR-Code", systemImage: "qrcode")
                     }
-                
+
                 VotingView()
                     .tabItem {
                         Label("Voting", systemImage: "heart")
                     }
-                
+
                 SongAddView()
                     .tabItem {
                         Label("Add Song", systemImage: "plus")
@@ -54,4 +54,5 @@ struct Admin_ContentView: View {
 #Preview {
     Admin_ContentView()
         .environmentObject(AppState())
+        .environmentObject(PartySessionStore())
 }
