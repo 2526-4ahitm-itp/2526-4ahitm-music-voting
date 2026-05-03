@@ -16,6 +16,7 @@ export class VotingComp implements OnInit, OnDestroy {
   tracks = signal<any[]>([]);
   searchQuery = signal<string>('');
   isSearching = signal<boolean>(false);
+  menuOpen = false;
 
   // Gefilterte Liste (Signal), falls du lokal in der Queue suchen willst
   private eventSource?: EventSource;
@@ -71,6 +72,10 @@ export class VotingComp implements OnInit, OnDestroy {
   async onSearch(event: Event) {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
+  }
+
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
   }
 
 }
