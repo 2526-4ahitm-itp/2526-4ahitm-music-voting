@@ -1,18 +1,27 @@
 <div class="music-voting-container">
-  <nav class="footer-nav">
-    <a href="/voting" class="nav-item">
-      <span class="nav-text">Voten</span>
-    </a>
-    <a href="/guest" class="nav-item active">
-      <span class="nav-text">Songs hinzufügen</span>
-    </a>
-  </nav>
+  <div class="side-menu" [class.open]="menuOpen">
+    <h2>MusicVoting</h2>
+    <ul>
+      <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
+      <li><a routerLink="/voting" (click)="toggleMenu()">Voting</a></li>
+      <li class="active"><a routerLink="/guest" (click)="toggleMenu()">Suchen</a></li>
+    </ul>
+  </div>
+
+  @if (menuOpen) {
+    <div class="overlay" (click)="toggleMenu()"></div>
+  }
 
   <div class="main-wrapper">
     <div class="sticky-top">
-      <header class="header">
-        <h1>MusicVoting</h1>
-      </header>
+      <nav class="navbar">
+        <button class="burger" type="button" (click)="toggleMenu()">
+          <p>☰</p>
+        </button>
+        <header class="header">
+          <h1>Suche nach deinen Lieblingssongs!</h1>
+        </header>
+      </nav>
 
       <div class="search-section">
         <div class="search-bar">
@@ -52,7 +61,7 @@
               @if (addingTrackId === track.id) {
                 <span>...</span>
               } @else {
-                <span>⊕</span>
+                <span>+</span>
               }
             </button>
           </div>
@@ -64,7 +73,7 @@
                   <span class="main-icon">🎵</span>
                 </div>
                 <h2>Bereit für Musik?</h2>
-                <p>Gib einen Song oder Künstler oben ein, um deine Playlist zu füllen.</p>
+                <p>Gib einen Song oder Künstler oben ein, um die Playlist zu füllen.</p>
               </div>
             }
           </div>

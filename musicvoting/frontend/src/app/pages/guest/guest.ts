@@ -4,12 +4,12 @@ import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { lastValueFrom } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-guest',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './guest.html',
   styleUrls: ['./guest.css'],
 })
@@ -17,6 +17,7 @@ export class Guest implements OnInit, OnDestroy {
   tracks: any[] = [];
   searchQuery: string = '';
   isSearching = false;
+  menuOpen = false;
   addingTrackId: string | null = null;
   private eventSource?: EventSource;
 
@@ -94,6 +95,10 @@ export class Guest implements OnInit, OnDestroy {
       this.addingTrackId = null;
       this.cdr.detectChanges();
     }
+  }
+
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
   }
 
   trackById(index: number, track: any): string {
