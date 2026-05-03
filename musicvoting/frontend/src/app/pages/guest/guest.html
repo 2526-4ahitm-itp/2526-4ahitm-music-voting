@@ -70,7 +70,7 @@
           </div>
         } @empty {
           <div class="empty-state">
-            @if (!isSearching) {
+            @if (!isSearching() && searchQuery().length === 0) {
               <div class="welcome-screen">
                 <div class="icon-circle">
                   <span class="main-icon">🎵</span>
