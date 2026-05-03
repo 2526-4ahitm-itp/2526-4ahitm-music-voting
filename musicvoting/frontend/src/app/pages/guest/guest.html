@@ -32,11 +32,14 @@
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
             <input
+              #searchField
               type="search"
               placeholder="Suchen..."
-              [(ngModel)]="searchQuery"
+              [ngModel]="searchQuery()"
+              (input)="searchQuery.set(searchField.value)"
               name="search"
               enterkeyhint="search"
+              autocomplete="off"
             >
             <button type="submit" style="display: none;"></button>
           </form>
@@ -46,7 +49,7 @@
 
     <main class="main-content">
       <div class="track-list">
-        @for (track of tracks; track track.id) {
+        @for (track of tracks(); track track.id) {
           <div class="track-card">
             <img class="album-cover"
                  [src]="track.album?.images?.[0]?.url || 'assets/placeholder.png'"

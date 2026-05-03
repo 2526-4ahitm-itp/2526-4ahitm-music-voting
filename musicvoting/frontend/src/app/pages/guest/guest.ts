@@ -1,8 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, effect} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { lastValueFrom } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 
@@ -14,12 +16,17 @@ import {Router, RouterLink} from '@angular/router';
   styleUrls: ['./guest.css'],
 })
 export class Guest implements OnInit, OnDestroy {
-  tracks: any[] = [];
-  searchQuery: string = '';
-  isSearching = false;
+  searchQuery = signal<string>('');
+  tracks = signal<any[]>([]);
+  isSearching = signal<boolean>(false);
   menuOpen = false;
   addingTrackId: string | null = null;
   private eventSource?: EventSource;
+
+  private searchAutoTrigger = toObservable(this.searchQuery).pipe(
+    debounceTime(400),
+    distinctUntilChanged()
+  ).subscribe(query => this.search(query));
 
   constructor(
     private trackApi: TrackService,
@@ -43,41 +50,38 @@ export class Guest implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.eventSource?.close();
+    this.searchAutoTrigger.unsubscribe();
   }
 
   /** Suche nach Tracks */
   async search(query?: string) {
-    const searchTerm = query || this.searchQuery?.trim();
-    if (!searchTerm) return;
-
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
+    const searchTerm = (query ?? this.searchQuery()).trim();
+    if (searchTerm.length < 1) {
+      this.tracks.set([]);
+      return;
     }
 
-    this.isSearching = true;
-    this.tracks = [];
-    this.cdr.detectChanges();
+    this.isSearching.set(true);
 
     try {
       const res: any = await lastValueFrom(this.trackApi.searchTracks(searchTerm));
-      console.log('Search Response:', res); // Debug
 
-      if (res?.tracks?.items?.length) {
+      if (res?.tracks?.items) {
         const seen = new Set<string>();
-          this.tracks = res.tracks.items
+        this.tracks.set(
+          res.tracks.items
             .filter((track: any) => track?.id && !seen.has(track.id))
             .map((track: any) => {
               seen.add(track.id);
               return track;
             })
-            .slice(0, 25);
-
+            .slice(0, 25)
+        );
       }
     } catch (err) {
       console.error('Fehler bei der Suche:', err);
     } finally {
-      this.isSearching = false;
-      this.cdr.detectChanges();
+      this.isSearching.set(false);
     }
   }
 
