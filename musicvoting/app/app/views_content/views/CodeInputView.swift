@@ -139,6 +139,12 @@ struct CodeInputView: View {
                     isFocused = true
                 }
             }
+            .task {
+                if let pin = appState.pendingGuestPin {
+                    appState.pendingGuestPin = nil
+                    code = pin
+                }
+            }
         }
     }
 

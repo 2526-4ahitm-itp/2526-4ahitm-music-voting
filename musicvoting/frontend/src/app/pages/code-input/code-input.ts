@@ -20,20 +20,18 @@ export class CodeInput implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // 1. Prüfen auf Query-Parameter (?code=12345)
     const queryCode = this.route.snapshot.queryParams['code'];
-
-    // 2. Prüfen auf Pfad-Parameter (falls du /code/12345 nutzt)
     const pathPin = this.route.snapshot.params['pin'];
-
     const finalPin = queryCode || pathPin;
 
     if (finalPin) {
-      // Wir nutzen die distribute-Logik, damit die Zahlen auch optisch in den Feldern erscheinen
-      // Kurze Verzögerung, um sicherzustellen, dass die View (Inputs) bereit ist
+      const backend = `${window.location.hostname}:8080`;
+      window.location.href = `musicvotingapp://join/${finalPin}?backend=${backend}`;
       setTimeout(() => {
-        this.validateAndDistribute(finalPin);
-      }, 100);
+        if (!document.hidden) {
+          this.resolveAndJoin(finalPin);
+        }
+      }, 1500);
     }
   }
 
