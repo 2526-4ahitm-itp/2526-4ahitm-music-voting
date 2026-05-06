@@ -20,21 +20,29 @@ export class CodeInput implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const pin = this.route.snapshot.params['pin'];
-    if (pin) {
-      this.resolveAndJoin(pin);
+    // 1. Prüfen auf Query-Parameter (?code=12345)
+    const queryCode = this.route.snapshot.queryParams['code'];
+
+    // 2. Prüfen auf Pfad-Parameter (falls du /code/12345 nutzt)
+    const pathPin = this.route.snapshot.params['pin'];
+
+    const finalPin = queryCode || pathPin;
+
+    if (finalPin) {
+      // Wir nutzen die distribute-Logik, damit die Zahlen auch optisch in den Feldern erscheinen
+      // Kurze Verzögerung, um sicherzustellen, dass die View (Inputs) bereit ist
+      setTimeout(() => {
+        this.validateAndDistribute(finalPin);
+      }, 100);
     }
   }
 
-  /**
-   * Filtert direkte Tastatureingaben: Nur Zahlen erlauben.
-   */
   moveFocus(event: any, nextInput: HTMLInputElement) {
     this.showError = false;
     const value = event.target.value;
 
     if (value && !/^\d+$/.test(value)) {
-      event.target.value = ''; // Zeichen löschen, wenn es keine Zahl ist
+      event.target.value = '';
       this.showError = true;
       this.errorMessage = 'Nur Zahlen erlaubt!';
       return;
@@ -47,7 +55,6 @@ export class CodeInput implements OnInit {
 
   checkCode(event: any) {
     const value = event.target.value;
-
     if (value && !/^\d+$/.test(value)) {
       event.target.value = '';
       this.showError = true;
@@ -55,7 +62,7 @@ export class CodeInput implements OnInit {
       return;
     }
 
-    const inputs = document.querySelectorAll('.code-container input') as NodeListOf<HTMLInputElement>;
+    const inputs = this.getInputs();
     const enteredCode = Array.from(inputs).map(input => input.value).join('');
 
     if (enteredCode.length === 5) {
@@ -91,13 +98,12 @@ export class CodeInput implements OnInit {
   }
 
   /**
-   * Zentrale Validierung für den gesamten Code (beim Einfügen).
+   * Zentrale Methode zum Validieren, Befüllen der Felder und Absenden
    */
   private validateAndDistribute(code: string) {
     this.showError = false;
     const cleanCode = code.trim();
 
-    // Regex-Check: Besteht der String nur aus Zahlen?
     if (!/^\d+$/.test(cleanCode)) {
       this.showError = true;
       this.errorMessage = 'Nur Zahlen können eingegeben bzw. eingefügt werden!';
@@ -105,7 +111,7 @@ export class CodeInput implements OnInit {
     }
 
     const pinArray = cleanCode.substring(0, 5).split('');
-    const inputs = document.querySelectorAll('.code-container input') as NodeListOf<HTMLInputElement>;
+    const inputs = this.getInputs();
 
     pinArray.forEach((char, index) => {
       if (inputs[index]) {
@@ -118,6 +124,10 @@ export class CodeInput implements OnInit {
     } else if (inputs[pinArray.length]) {
       inputs[pinArray.length].focus();
     }
+  }
+
+  private getInputs(): NodeListOf<HTMLInputElement> {
+    return document.querySelectorAll('.code-container input') as NodeListOf<HTMLInputElement>;
   }
 
   private resolveAndJoin(pin: string): void {
