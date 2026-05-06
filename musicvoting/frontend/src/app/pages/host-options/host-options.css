@@ -6,6 +6,8 @@
   color: white;
 }
 
+/* Header */
+
 header {
   display: flex;
   flex-direction: row;
