@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { Control } from './pages/control/control';
 import { Guest } from './pages/guest/guest';
 import { Home } from './pages/home/home';
 import { HostDashboard } from './pages/host-dashboard/host-dashboard';

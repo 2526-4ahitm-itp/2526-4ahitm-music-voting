@@ -1,37 +1,56 @@
 <div class="code-page">
   <header>
-    <div class="back-to-home">←</div>
+    <div class="back-to-home" (click)="goBack()" role="button" aria-label="Zurück">←</div>
     <h1>MusicVoting</h1>
   </header>
 
   <div class="code-input-wrapper">
-    <h2>Geben Sie den Code ein, um einer Party beizutreten!</h2>
+    <h2>Party beitreten!</h2>
+    <p class="subtitle">Geben Sie den Code ein, um einer Party beizutreten!</p>
 
-    <div class="code-container">
-      <input #i1 type="text" maxlength="1"
+    <div class="code-container" (paste)="handlePaste($event)">
+      <input #i1 type="text"
+             maxlength="1"
+             inputmode="numeric"
+             pattern="[0-9]*"
              (input)="moveFocus($event, i2)"
              (keydown)="handleDelete($event, null)">
 
-      <input #i2 type="text" maxlength="1"
+      <input #i2 type="text"
+             maxlength="1"
+             inputmode="numeric"
+             pattern="[0-9]*"
              (input)="moveFocus($event, i3)"
              (keydown)="handleDelete($event, i1)">
 
-      <input #i3 type="text" maxlength="1"
+      <input #i3 type="text"
+             maxlength="1"
+             inputmode="numeric"
+             pattern="[0-9]*"
              (input)="moveFocus($event, i4)"
              (keydown)="handleDelete($event, i2)">
 
-      <input #i4 type="text" maxlength="1"
+      <input #i4 type="text"
+             maxlength="1"
+             inputmode="numeric"
+             pattern="[0-9]*"
              (input)="moveFocus($event, i5)"
              (keydown)="handleDelete($event, i3)">
 
-      <input #i5 type="text" maxlength="1"
+      <input #i5 type="text"
+             maxlength="1"
+             inputmode="numeric"
+             pattern="[0-9]*"
              (input)="checkCode($event)"
              (keydown)="handleDelete($event, i4)">
     </div>
 
+    <button class="paste-button" (click)="pasteFromClipboard()">
+      Code aus Zwischenablage einfügen
+    </button>
+
     @if (showError) {
       <p class="error-message">{{ errorMessage }}</p>
-    }  </div>
-
+    }
+  </div>
 </div>
-
