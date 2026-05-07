@@ -10,7 +10,7 @@ class PartyRegistryTest {
     void register_and_find_returnsSameInstance() {
         PartyRegistry registry = new PartyRegistry();
         PartyId id = PartyId.of("test-party");
-        Party party = new Party(id, ProviderKind.SPOTIFY, "12345");
+        Party party = new Party(id, ProviderKind.SPOTIFY, "12345", "99999");
         registry.register(party);
 
         Party found = registry.find(id).orElseThrow();
@@ -21,8 +21,8 @@ class PartyRegistryTest {
 
     @Test
     void credentialsAreIsolatedBetweenParties() {
-        Party partyA = new Party(PartyId.of("a"), ProviderKind.SPOTIFY, "11111");
-        Party partyB = new Party(PartyId.of("b"), ProviderKind.SPOTIFY, "22222");
+        Party partyA = new Party(PartyId.of("a"), ProviderKind.SPOTIFY, "11111", "99991");
+        Party partyB = new Party(PartyId.of("b"), ProviderKind.SPOTIFY, "22222", "99992");
 
         partyA.getSpotifyCredentials().setToken("token-A");
         partyB.getSpotifyCredentials().setToken("token-B");
@@ -33,7 +33,7 @@ class PartyRegistryTest {
 
     @Test
     void youtubePartyRejectsSpotifyCredentialsAccess() {
-        Party ytParty = new Party(PartyId.of("yt"), ProviderKind.YOUTUBE, "33333");
+        Party ytParty = new Party(PartyId.of("yt"), ProviderKind.YOUTUBE, "33333", "99993");
 
         assertThrows(IllegalStateException.class, ytParty::getSpotifyCredentials);
     }

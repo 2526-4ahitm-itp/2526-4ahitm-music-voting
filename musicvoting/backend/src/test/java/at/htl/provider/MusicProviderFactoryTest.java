@@ -15,7 +15,7 @@ class MusicProviderFactoryTest {
         MusicProviderFactory factory = new MusicProviderFactory();
         factory.spotifyMusicProvider = new SpotifyMusicProvider();
 
-        Party party = new Party(PartyId.of("p1"), ProviderKind.SPOTIFY, "11111");
+        Party party = new Party(PartyId.of("p1"), ProviderKind.SPOTIFY, "11111", "99991");
 
         MusicProvider provider = factory.forParty(party);
 
@@ -27,7 +27,7 @@ class MusicProviderFactoryTest {
         MusicProviderFactory factory = new MusicProviderFactory();
         factory.spotifyMusicProvider = new SpotifyMusicProvider();
 
-        Party party = new Party(PartyId.of("p2"), ProviderKind.YOUTUBE, "22222");
+        Party party = new Party(PartyId.of("p2"), ProviderKind.YOUTUBE, "22222", "99992");
 
         UnsupportedOperationException thrown = assertThrows(
                 UnsupportedOperationException.class,
