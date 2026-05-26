@@ -1,11 +1,13 @@
 package at.htl.provider.spotify;
 
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class SpotifyCredentials {
 
     private final AtomicReference<String> token = new AtomicReference<>("");
     private final AtomicReference<String> refreshToken = new AtomicReference<>("");
+    private final AtomicReference<Instant> expiresAt = new AtomicReference<>(null);
     private final AtomicReference<String> deviceId = new AtomicReference<>("");
     private final AtomicReference<String> playlistId = new AtomicReference<>("");
     private final AtomicReference<String> spotifyUserId = new AtomicReference<>("");
@@ -27,6 +29,14 @@ public class SpotifyCredentials {
 
     public void setRefreshToken(String newRefreshToken) {
         refreshToken.set(newRefreshToken == null ? "" : newRefreshToken);
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt.get();
+    }
+
+    public void setExpiresAt(Instant instant) {
+        expiresAt.set(instant);
     }
 
     public String getDeviceId() {

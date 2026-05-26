@@ -7,13 +7,13 @@ Defines the host role: the party creator who has exclusive permission to control
 ## Requirements
 
 ### Requirement: Host Creates Party Before Provider Login
-Before authenticating with a provider, the host MUST explicitly create a party by selecting the music provider on a dedicated "Party erstellen" screen. The system MUST call `POST /api/party` with the chosen provider and MUST store the returned party ID for the duration of the session. Only after successful party creation does the host proceed to the provider OAuth login.
+Before authenticating with a provider, the host MUST explicitly create a party by selecting the music provider on a dedicated "Party erstellen" screen. The system MUST call `POST /api/party` with the chosen provider and MUST store the returned party ID and host PIN for the duration of the session. Only after successful party creation does the host proceed to the provider OAuth login.
 
-#### Scenario: Host creates a party and is forwarded to Spotify login
-- GIVEN the host opens the host landing page
-- WHEN the host selects "Spotify" and taps "Party erstellen"
+#### Scenario: Host creates a party and host PIN is stored
+- GIVEN the host opens the "Party erstellen" screen
+- WHEN the host selects "Spotify" and confirms
 - THEN `POST /api/party {"provider": "spotify"}` is called
-- AND the returned party ID is stored in the session
+- AND the returned `hostPin` is stored in `localStorage`
 - AND the host is navigated to `/api/party/{id}/spotify/login`
 
 ### Requirement: Host Sees PIN and QR Code After Creation
@@ -83,6 +83,67 @@ The host MUST be able to add and remove words from a blacklist scoped to the cur
 - WHEN the host adds the word "explicit" to the blacklist
 - THEN future guest adds matching "explicit" as a substring are rejected
 - AND songs already in the queue are not retroactively removed
+
+### Requirement: Host PIN Sent on All Outgoing Requests
+The Angular frontend MUST include an `Authorization: Bearer <hostPin>` header on every HTTP request when a host PIN is stored in `localStorage`. If no host PIN is stored, the header MUST NOT be added.
+
+#### Scenario: Host makes a playback control request
+- GIVEN a host PIN is stored in `localStorage`
+- WHEN the frontend calls `POST /api/party/{id}/track/pause`
+- THEN the request includes `Authorization: Bearer <hostPin>`
+
+#### Scenario: Guest makes a vote request
+- GIVEN no host PIN is stored in `localStorage` (guest session)
+- WHEN the frontend calls `POST /api/party/{id}/track/vote`
+- THEN the request does NOT include an `Authorization` header
+
+### Requirement: Host Routes Require Stored PIN
+Angular routes `startpage`, `dashboard`, `voting-host`, and `search-host` MUST be protected by a route guard that verifies a host PIN exists in `localStorage`. If no PIN is found, the guard MUST redirect the user to the home page (`/`).
+
+#### Scenario: Unauthenticated user navigates to dashboard
+- GIVEN no host PIN is stored in `localStorage`
+- WHEN the user navigates to `/dashboard`
+- THEN the user is redirected to `/`
+
+#### Scenario: Host navigates to dashboard with stored PIN
+- GIVEN a host PIN is stored in `localStorage`
+- WHEN the host navigates to `/dashboard`
+- THEN the route is activated normally
+
+### Requirement: Spotify Access Token Is Refreshed Automatically
+
+The backend MUST automatically refresh the Spotify access token when it is about to expire or when Spotify returns HTTP 401, so that a party running longer than one hour continues to work without host intervention.
+
+**Proactive refresh:** If the backend knows the token's expiry time and the token will expire within 60 seconds, the backend MUST refresh the token before sending the next Spotify API request.
+
+**Reactive refresh:** If a Spotify API call returns HTTP 401, the backend MUST attempt to refresh the token once using the stored refresh token and retry the original request. The host MUST NOT be prompted to re-authenticate unless the refresh itself fails.
+
+**Refresh failure:** If the refresh call fails (e.g. the refresh token is revoked), the backend MUST return a 401 response to the caller with the message `"Spotify-Sitzung abgelaufen. Bitte neu anmelden."`. The host must then restart the party and re-authenticate with Spotify.
+
+#### Scenario: Token refreshed proactively before expiry
+
+- GIVEN a party has been running for nearly 1 hour
+- AND the backend knows the token expires in less than 60 seconds
+- WHEN the host triggers any Spotify API call (search, play, pause, etc.)
+- THEN the backend refreshes the token first
+- AND the Spotify API call proceeds with the new token
+- AND no error is visible to any client
+
+#### Scenario: Token refreshed reactively on HTTP 401 from Spotify
+
+- GIVEN a party's Spotify access token has expired
+- WHEN the backend sends a Spotify API request and receives HTTP 401
+- THEN the backend calls the Spotify token endpoint with the stored refresh token
+- AND retries the original request with the new token
+- AND the caller receives the successful response
+- AND no error is visible to any client
+
+#### Scenario: Refresh token is revoked — host must re-authenticate
+
+- GIVEN the Spotify refresh token is invalid or revoked
+- WHEN the backend attempts to refresh and the token endpoint returns an error
+- THEN the backend returns HTTP 401 to the caller
+- AND the response body contains `"Spotify-Sitzung abgelaufen. Bitte neu anmelden."`
 
 ### Requirement: Host-Only Actions Are Restricted
 Guests MUST NOT be able to invoke pause, resume, skip, remove-from-queue, blacklist-edit, or end-party actions. Attempts by non-hosts MUST be rejected.

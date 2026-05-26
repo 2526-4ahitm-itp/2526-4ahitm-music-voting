@@ -22,19 +22,20 @@ The system MUST allow a host to create a new party and MUST require the host to 
 - AND the host is prompted to authenticate with YouTube via OAuth
 
 ### Requirement: Party Created via Explicit API Call
-The system MUST expose `POST /api/party` to create a party. The request MUST include the chosen provider (`spotify` or `youtube`). The response MUST include the party ID, 5-digit numeric PIN, and join URL. The party MUST be persisted to the database before the response is returned.
+The system MUST expose `POST /api/party` to create a party. The request MUST include the chosen provider (`spotify` or `youtube`). The response MUST include the party ID, 5-digit numeric guest PIN, 5-digit numeric host PIN, and join URL. Both PINs MUST be persisted to the database before the response is returned.
 
 #### Scenario: Host creates a party via API
 - GIVEN a host sends `POST /api/party` with `{"provider": "spotify"}`
 - WHEN the request is processed
-- THEN the response contains `id`, `pin` (5-digit numeric string), and `joinUrl`
-- AND the party row exists in the database with the given ID and provider
+- THEN the response contains `id`, `pin`, `hostPin` (both 5-digit numeric strings), and `joinUrl`
+- AND the party row exists in the database with the given ID, provider, and both PINs
+- AND `pin` and `hostPin` are different values
 
-#### Scenario: PIN is unique among active parties
-- GIVEN one active party already holds PIN `"12345"`
-- WHEN another party is created and the system would generate the same PIN
-- THEN the system retries until a unique PIN is produced
-- AND the new party receives a different PIN
+#### Scenario: Both PINs are unique among active parties
+- GIVEN active parties already hold certain guest and host PINs
+- WHEN a new party is created
+- THEN the system retries until both a unique guest PIN and a unique host PIN are produced
+- AND neither PIN collides with any active party's guest or host PIN
 
 ### Requirement: Single Provider per Party
 A party MUST use exactly one provider for its entire lifetime. The provider MUST NOT be changed after the party has been created.
@@ -124,6 +125,24 @@ The host MUST be able to end the party. Ending a party MUST close the party, emp
 - AND the queue is emptied
 - AND provider tokens for this party are deleted
 - AND every connected client receives a "party ended" notification
+
+### Requirement: Host PIN Required for Party-Mutating Requests
+Requests to host-only endpoints MUST include the party's host PIN as an `Authorization: Bearer <hostPin>` header. The server MUST reject requests that omit the header with HTTP 401. The server MUST reject requests that supply an incorrect host PIN with HTTP 403.
+
+#### Scenario: Host endpoint called without Authorization header
+- GIVEN an active party
+- WHEN `DELETE /api/party/{id}` is called without an `Authorization` header
+- THEN HTTP 401 is returned
+
+#### Scenario: Host endpoint called with wrong host PIN
+- GIVEN an active party with host PIN `"12345"`
+- WHEN `DELETE /api/party/{id}` is called with `Authorization: Bearer 99999`
+- THEN HTTP 403 is returned
+
+#### Scenario: Host endpoint called with correct host PIN
+- GIVEN an active party with host PIN `"12345"`
+- WHEN `DELETE /api/party/{id}` is called with `Authorization: Bearer 12345`
+- THEN the request is processed normally
 
 ### Requirement: Clients Reconnect Automatically
 All clients (host, guest, dashboard) MUST automatically attempt to reconnect when the network connection drops, and MUST reload the current party state (queue, current playback, likes) after reconnect.

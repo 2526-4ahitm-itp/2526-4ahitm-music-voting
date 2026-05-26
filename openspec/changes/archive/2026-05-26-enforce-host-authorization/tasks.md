@@ -66,5 +66,5 @@
 - [x] 10.5 `DELETE /api/party/{id}` with correct `Authorization: Bearer <hostToken>` → expect HTTP 204
 - [x] 10.6 `POST /api/party/{id}/track/pause` without Authorization → expect HTTP 401
 - [x] 10.7 `GET /api/party/{id}/track/queue` without Authorization → expect HTTP 200 (public, not guarded)
-- [ ] 10.8 Frontend: navigate to `/dashboard` without a stored token → confirm redirect to `/`
-- [ ] 10.9 Frontend: create a party in the app, then call a host action → confirm Authorization header is present in the request (check browser DevTools Network tab)
+- [x] 10.8 Frontend: navigate to `/dashboard` without a stored token → confirm redirect to `/`
+- [x] 10.9 Frontend: create a party in the app, then call a host action → confirm Authorization header is present in the request (check browser DevTools Network tab)
