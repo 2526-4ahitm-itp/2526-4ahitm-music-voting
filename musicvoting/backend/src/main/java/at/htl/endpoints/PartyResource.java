@@ -82,6 +82,7 @@ public class PartyResource {
     @DELETE
     @Path("/{id}")
     @Transactional
+    @HostOnly
     public Response end(@PathParam("id") String id) {
         PartyId partyId = PartyId.of(id);
         Party party = partyRegistry.find(partyId)
