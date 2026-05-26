@@ -8,9 +8,34 @@
     <h2>Party erstellen</h2>
     <p class="subtitle">Wähle deinen Musikanbieter und starte deine Party.</p>
 
+
     <div class="provider-box">
       <span class="provider-label">Anbieter</span>
-      <span class="provider-name">Spotify</span>
+
+
+      <select id="selection-field" name="optionen"
+              style="
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        width: 10vw !important;
+        padding: 0.2rem 0.2rem 0.2rem 1rem!important;
+        font-size: 1rem !important;
+        background: rgba(255, 255, 255, 0.80) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 2rem !important;
+        cursor: pointer !important;
+        color: black !important;
+        display: block !important;
+        background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;12&quot; height=&quot;12&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;black&quot; stroke-width=&quot;3&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;%3E%3Cpolyline points=&quot;6 9 12 15 18 9&quot;%3E%3C/polyline%3E%3C/svg%3E') !important;
+        background-repeat: no-repeat !important;
+        background-position: right 1rem center !important;
+        background-size: 1em !important;
+    ">
+        <option value="option1" selected style="background: #333; color: white;">Spotify</option>
+        <option value="option2" style="background: #333; color: white;">Amazon Music</option>
+      </select>
+
     </div>
 
     @if (error) {

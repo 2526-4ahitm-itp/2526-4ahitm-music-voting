@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { Control } from './pages/control/control';
 import { Guest } from './pages/guest/guest';
 import { Home } from './pages/home/home';
 import { HostDashboard } from './pages/host-dashboard/host-dashboard';
+import { HostOptions } from './pages/host-options/host-options';
 import { Startpage } from './pages/startpage/startpage';
 import { VotingComp } from './pages/voting-comp/voting-comp';
 import {VotingHost} from './pages/voting-host/voting-host';
@@ -27,6 +27,12 @@ export const routes: Routes = [
     path: 'code',
     component: CodeInput,
     title: 'Login - MusicVoting'
+  },
+
+  {
+    path: 'host-options',
+    component: HostOptions,
+    title: 'Gastgeber - MusicVoting'
   },
 
   {

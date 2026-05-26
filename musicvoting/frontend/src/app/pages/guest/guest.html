@@ -1,18 +1,27 @@
 <div class="music-voting-container">
-  <nav class="footer-nav">
-    <a href="/voting" class="nav-item">
-      <span class="nav-text">Voten</span>
-    </a>
-    <a href="/guest" class="nav-item active">
-      <span class="nav-text">Songs hinzufügen</span>
-    </a>
-  </nav>
+  <div class="side-menu" [class.open]="menuOpen">
+    <h2>MusicVoting</h2>
+    <ul>
+      <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
+      <li><a routerLink="/voting" (click)="toggleMenu()">Voting</a></li>
+      <li class="active"><a routerLink="/guest" (click)="toggleMenu()">Suchen</a></li>
+    </ul>
+  </div>
+
+  @if (menuOpen) {
+    <div class="overlay" (click)="toggleMenu()"></div>
+  }
 
   <div class="main-wrapper">
     <div class="sticky-top">
-      <header class="header">
-        <h1>MusicVoting</h1>
-      </header>
+      <nav class="navbar">
+        <button class="burger" type="button" (click)="toggleMenu()">
+          <p>☰</p>
+        </button>
+        <header class="header">
+          <h1>Suche nach deinen Lieblingssongs!</h1>
+        </header>
+      </nav>
 
       <div class="search-section">
         <div class="search-bar">
@@ -23,11 +32,14 @@
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
             <input
+              #searchField
               type="search"
               placeholder="Suchen..."
-              [(ngModel)]="searchQuery"
+              [ngModel]="searchQuery()"
+              (input)="searchQuery.set(searchField.value)"
               name="search"
               enterkeyhint="search"
+              autocomplete="off"
             >
             <button type="submit" style="display: none;"></button>
           </form>
@@ -37,7 +49,7 @@
 
     <main class="main-content">
       <div class="track-list">
-        @for (track of tracks; track track.id) {
+        @for (track of tracks(); track track.id) {
           <div class="track-card">
             <img class="album-cover"
                  [src]="track.album?.images?.[0]?.url || 'assets/placeholder.png'"
@@ -52,19 +64,19 @@
               @if (addingTrackId === track.id) {
                 <span>...</span>
               } @else {
-                <span>⊕</span>
+                <span>+</span>
               }
             </button>
           </div>
         } @empty {
           <div class="empty-state">
-            @if (!isSearching) {
+            @if (!isSearching() && searchQuery().length === 0) {
               <div class="welcome-screen">
                 <div class="icon-circle">
                   <span class="main-icon">🎵</span>
                 </div>
                 <h2>Bereit für Musik?</h2>
-                <p>Gib einen Song oder Künstler oben ein, um deine Playlist zu füllen.</p>
+                <p>Gib einen Song oder Künstler oben ein, um die Playlist zu füllen.</p>
               </div>
             }
           </div>

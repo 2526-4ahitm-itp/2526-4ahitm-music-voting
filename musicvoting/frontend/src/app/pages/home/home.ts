@@ -14,7 +14,7 @@ export class Home {
   constructor(private router: Router) {}
 
   gotohostpage() {
-    this.router.navigate(['/create-party']);
+    this.router.navigate(['/host-options']);
   }
 
   gotoguestpage() {

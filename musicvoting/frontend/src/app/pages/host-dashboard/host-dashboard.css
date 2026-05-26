@@ -42,6 +42,7 @@ body{
   background: none;
   border: none;
   cursor: pointer;
+  color: white;
 }
 
 /* Side Menu */
@@ -407,4 +408,25 @@ span.logo {
   box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
   font-weight: 1000;
   background-color: #C826B8;
+}
+
+.end-party-btn {
+  border: none;
+  height: 2.5rem;
+  transition: all 0.3s ease-in-out;
+
+  margin: 1rem 0 0 0;
+
+  color: white;
+  background-color: #F2594B;
+  border-radius: 30px;
+  width: calc(20vw - 15rem);
+  font-weight: bold;
+}
+
+.end-party-btn:hover {
+  transform: translateY(-0.2rem) scale(1.04);
+  box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
+  font-weight: 1000;
+  background-color: #d8455f;
 }

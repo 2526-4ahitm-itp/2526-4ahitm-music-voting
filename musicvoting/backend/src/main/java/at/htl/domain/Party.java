@@ -7,12 +7,14 @@ public class Party {
     private final PartyId id;
     private final ProviderKind providerKind;
     private final String pin;
+    private final String hostPin;
     private final SpotifyCredentials spotifyCredentials;
 
-    public Party(PartyId id, ProviderKind providerKind, String pin) {
+    public Party(PartyId id, ProviderKind providerKind, String pin, String hostPin) {
         this.id = id;
         this.providerKind = providerKind;
         this.pin = pin;
+        this.hostPin = hostPin;
         this.spotifyCredentials = providerKind == ProviderKind.SPOTIFY ? new SpotifyCredentials() : null;
     }
 
@@ -26,6 +28,10 @@ public class Party {
 
     public String pin() {
         return pin;
+    }
+
+    public String hostPin() {
+        return hostPin;
     }
 
     public SpotifyCredentials getSpotifyCredentials() {

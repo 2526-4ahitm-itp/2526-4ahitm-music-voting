@@ -292,6 +292,57 @@ html, body {
   color: #ef4444;
 }
 
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  text-align: center;
+  padding: 2.5rem 1.25rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.welcome-screen {
+  max-width: 30rem;
+}
+
+.icon-circle {
+  width: 6.25rem;
+  height: 6.25rem;
+  background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0.625rem 1.25rem rgba(139, 0, 165, 0.05);
+}
+
+.main-icon {
+  font-size: 3rem;
+}
+
+.welcome-screen h2 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.75rem;
+}
+
+.welcome-screen p {
+  font-size: 1.1rem;
+  color: white;
+}
+
+.spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid #f3e8ff;
+  border-top: 3px solid #8b00a5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
 
 @media (max-width: 48rem) {
   .music-voting-container {
@@ -337,8 +388,16 @@ html, body {
   }
 
   .header {
-    padding: 1.125rem 1.25rem;
-    text-align: center;
+    padding: 0;
+    text-align: left;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .navbar {
+    gap: 10px;
   }
 
   .search-section {

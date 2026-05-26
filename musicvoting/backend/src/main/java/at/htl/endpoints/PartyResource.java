@@ -12,6 +12,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import java.util.LinkedHashMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,11 +52,13 @@ public class PartyResource {
                     .entity(Map.of("error", "Invalid provider: must be 'spotify' or 'youtube'")).build();
         }
 
-        String pin = generateUniquePin();
-        if (pin == null) {
+        String[] pins = generatePinPair();
+        if (pins == null) {
             return Response.status(503)
-                    .entity(Map.of("error", "Could not generate a unique PIN — please retry")).build();
+                    .entity(Map.of("error", "Could not generate unique PINs — please retry")).build();
         }
+        String pin = pins[0];
+        String hostPin = pins[1];
 
         PartyId partyId = PartyId.newRandom();
 
@@ -64,14 +67,15 @@ public class PartyResource {
         entity.providerKind = providerKind.name();
         entity.createdAt = OffsetDateTime.now();
         entity.pin = pin;
+        entity.hostPin = hostPin;
         entity.persist();
 
-        Party party = new Party(partyId, providerKind, pin);
+        Party party = new Party(partyId, providerKind, pin, hostPin);
         partyRegistry.register(party);
 
         String joinUrl = joinBaseUrl + "/" + pin;
         return Response.status(Response.Status.CREATED)
-                .entity(Map.of("id", partyId.value(), "pin", pin, "joinUrl", joinUrl))
+                .entity(Map.of("id", partyId.value(), "pin", pin, "hostPin", hostPin, "joinUrl", joinUrl))
                 .build();
     }
 
@@ -111,13 +115,27 @@ public class PartyResource {
     }
 
     @GET
+    @Path("/host-join/{hostPin}")
+    public Response hostJoin(@PathParam("hostPin") String hostPin) {
+        return partyRegistry.findByHostPin(hostPin)
+                .map(party -> Response.ok(Map.of("id", party.id().value(), "guestPin", party.pin())).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
+    }
+
+    @GET
     @Path("/{id}")
     public Response get(@PathParam("id") String id) {
         PartyEntity entity = PartyEntity.find("id = ?1 and endedAt is null", id).firstResult();
         if (entity == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.ok(Map.of("id", entity.id, "pin", entity.pin)).build();
+        var result = new LinkedHashMap<String, String>();
+        result.put("id", entity.id);
+        result.put("pin", entity.pin);
+        if (entity.hostPin != null) {
+            result.put("hostPin", entity.hostPin);
+        }
+        return Response.ok(result).build();
     }
 
     @GET
@@ -140,12 +158,14 @@ public class PartyResource {
         }
     }
 
-    private String generateUniquePin() {
-        for (int i = 0; i < 10; i++) {
-            String candidate = String.format("%05d", SECURE_RANDOM.nextInt(100_000));
-            if (PartyEntity.findByPin(candidate).isEmpty()) {
-                return candidate;
-            }
+    private String[] generatePinPair() {
+        for (int attempt = 0; attempt < 20; attempt++) {
+            String guestPin = String.format("%05d", SECURE_RANDOM.nextInt(100_000));
+            String hostPin  = String.format("%05d", SECURE_RANDOM.nextInt(100_000));
+            if (guestPin.equals(hostPin)) continue;
+            if (PartyEntity.findByPin(guestPin).isPresent()) continue;
+            if (PartyEntity.findByHostPin(hostPin).isPresent()) continue;
+            return new String[]{guestPin, hostPin};
         }
         return null;
     }

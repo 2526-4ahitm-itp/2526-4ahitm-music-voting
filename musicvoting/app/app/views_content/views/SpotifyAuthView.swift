@@ -23,10 +23,12 @@ private struct LoginEvent: Decodable {
 
 @MainActor
 final class SpotifyAuthViewModel: ObservableObject {
-    
+
     @Published var isChecking = true
     @Published var isLoggedIn = false
     @Published var errorMessage: String?
+
+    private(set) var partyId: String?
 
     private let installIdKey = "spotify.installation.id"
     private lazy var installationId: String = {
@@ -39,8 +41,13 @@ final class SpotifyAuthViewModel: ObservableObject {
         return created
     }()
 
+    func configure(partyId: String) {
+        self.partyId = partyId
+    }
+
     var loginURL: URL {
-        var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/login"), resolvingAgainstBaseURL: false)!
+        let base = partyId.map { "/api/party/\($0)/spotify/login" } ?? "/api/party/unknown/spotify/login"
+        var components = URLComponents(url: BackendConfiguration.endpoint(base), resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "source", value: "ios"),
             URLQueryItem(name: "installationId", value: installationId)
@@ -49,7 +56,8 @@ final class SpotifyAuthViewModel: ObservableObject {
     }
 
     private var statusURL: URL {
-        var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/status"), resolvingAgainstBaseURL: false)!
+        let base = partyId.map { "/api/party/\($0)/spotify/status" } ?? "/api/party/unknown/spotify/status"
+        var components = URLComponents(url: BackendConfiguration.endpoint(base), resolvingAgainstBaseURL: false)!
         components.queryItems = [URLQueryItem(name: "source", value: "ios")]
         return components.url!
     }
@@ -160,6 +168,7 @@ final class SpotifyAuthViewModel: ObservableObject {
 struct SpotifyAuthView: View {
     @EnvironmentObject private var auth: SpotifyAuthViewModel
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var partySession: PartySessionStore
     @Environment(\.openURL) private var openURL
 
     var body: some View {
@@ -269,6 +278,9 @@ struct SpotifyAuthView: View {
             }
         }
         .task {
+            if let id = partySession.partyId {
+                auth.configure(partyId: id)
+            }
             if auth.isChecking {
                 await auth.checkLoginStatus()
             }
@@ -291,4 +303,5 @@ struct SpotifyAuthView: View {
     SpotifyAuthView()
         .environmentObject(SpotifyAuthViewModel())
         .environmentObject(AppState())
+        .environmentObject(PartySessionStore())
 }

@@ -6,27 +6,37 @@ import { isPlatformBrowser } from '@angular/common';
 export interface CreatePartyResponse {
   id: string;
   pin: string;
+  hostPin: string;
   joinUrl: string;
 }
 
 export interface PartyDetailsResponse {
   id: string;
   pin: string;
+  hostPin?: string;
+}
+
+export interface HostJoinResponse {
+  id: string;
+  guestPin: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class PartyService {
-  private readonly ID_KEY = 'mv_party_id';
-  private readonly PIN_KEY = 'mv_party_pin';
+  private readonly ID_KEY       = 'mv_party_id';
+  private readonly PIN_KEY      = 'mv_party_pin';
+  private readonly HOST_PIN_KEY = 'mv_party_host_pin';
 
-  private http = inject(HttpClient);
+  private http       = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
 
   readonly partyId$ = new BehaviorSubject<string | null>(this.readStorage(this.ID_KEY));
   readonly pin$     = new BehaviorSubject<string | null>(this.readStorage(this.PIN_KEY));
+  readonly hostPin$ = new BehaviorSubject<string | null>(this.readStorage(this.HOST_PIN_KEY));
 
   get currentPartyId(): string | null { return this.partyId$.getValue(); }
   get currentPin(): string | null     { return this.pin$.getValue(); }
+  get currentHostPin(): string | null { return this.hostPin$.getValue(); }
 
   setCurrentPartyId(id: string): void {
     this.partyId$.next(id);
@@ -38,8 +48,10 @@ export class PartyService {
       tap(res => {
         this.partyId$.next(res.id);
         this.pin$.next(res.pin);
+        this.hostPin$.next(res.hostPin);
         this.writeStorage(this.ID_KEY, res.id);
         this.writeStorage(this.PIN_KEY, res.pin);
+        this.writeStorage(this.HOST_PIN_KEY, res.hostPin);
       })
     );
   }
@@ -55,11 +67,28 @@ export class PartyService {
     );
   }
 
+  resolveHostPin(hostPin: string): Observable<HostJoinResponse> {
+    return this.http.get<HostJoinResponse>(`/api/party/host-join/${hostPin}`).pipe(
+      tap(res => {
+        this.partyId$.next(res.id);
+        this.pin$.next(res.guestPin);
+        this.hostPin$.next(hostPin);
+        this.writeStorage(this.ID_KEY, res.id);
+        this.writeStorage(this.PIN_KEY, res.guestPin);
+        this.writeStorage(this.HOST_PIN_KEY, hostPin);
+      })
+    );
+  }
+
   getParty(id: string): Observable<PartyDetailsResponse> {
     return this.http.get<PartyDetailsResponse>(`/api/party/${id}`).pipe(
       tap(res => {
         this.pin$.next(res.pin);
         this.writeStorage(this.PIN_KEY, res.pin);
+        if (res.hostPin) {
+          this.hostPin$.next(res.hostPin);
+          this.writeStorage(this.HOST_PIN_KEY, res.hostPin);
+        }
       })
     );
   }
@@ -73,8 +102,10 @@ export class PartyService {
   clearParty(): void {
     this.partyId$.next(null);
     this.pin$.next(null);
+    this.hostPin$.next(null);
     this.removeStorage(this.ID_KEY);
     this.removeStorage(this.PIN_KEY);
+    this.removeStorage(this.HOST_PIN_KEY);
   }
 
   private readStorage(key: string): string | null {

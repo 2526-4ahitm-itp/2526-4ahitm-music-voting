@@ -6,16 +6,16 @@ enum BackendConfiguration {
     private static let defaultPort = 8080
 
     static var baseURLString: String {
-        // Preferred: set once in `Info.plist` so you don't have to type it on the device.
+        if let stored = UserDefaults.standard.string(forKey: userDefaultsKey),
+           let normalized = normalizedBaseURLString(stored) {
+            return normalized
+        }
+
         if let configured = Bundle.main.object(forInfoDictionaryKey: infoPlistKey) as? String,
            let normalized = normalizedBaseURLString(configured) {
             return normalized
         }
 
-        if let stored = UserDefaults.standard.string(forKey: userDefaultsKey),
-           let normalized = normalizedBaseURLString(stored) {
-            return normalized
-        }
         return "http://localhost:\(defaultPort)"
     }
 

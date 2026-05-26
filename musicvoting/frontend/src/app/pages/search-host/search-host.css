@@ -737,8 +737,16 @@ html, body {
   }
 
   .header {
-    padding: 1.125rem 1.25rem;
-    text-align: center;
+    padding: 0;
+    text-align: left;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .navbar {
+    gap: 10px;
   }
 
   .search-section {

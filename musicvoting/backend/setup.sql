@@ -6,6 +6,7 @@ CREATE TABLE party (
     provider_kind   VARCHAR     NOT NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     pin             VARCHAR(5)  NOT NULL DEFAULT '',
+    host_pin        VARCHAR(5),
     ended_at        TIMESTAMPTZ
 );
 
@@ -39,3 +40,4 @@ ALTER TABLE party ADD COLUMN paused_position_ms  BIGINT;
 
 -- Active parties must have unique PINs; ended parties free their PIN slot
 CREATE UNIQUE INDEX party_pin_active_idx ON party (pin) WHERE ended_at IS NULL;
+CREATE UNIQUE INDEX party_host_pin_active_idx ON party (host_pin) WHERE ended_at IS NULL;

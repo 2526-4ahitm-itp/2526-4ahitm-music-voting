@@ -53,9 +53,18 @@ final class SongAddViewModel: ObservableObject {
     @Published var addedTrackIds: Set<String> = []
 
     private var searchTask: Task<Void, Never>?
+    private weak var partySession: PartySessionStore?
 
-    private var searchURL: URL { BackendConfiguration.endpoint("/api/track/search") }
-    private var addToPlaylistURL: URL { BackendConfiguration.endpoint("/api/track/addToPlaylist") }
+    func configure(partySession: PartySessionStore) {
+        self.partySession = partySession
+    }
+
+    private var searchURL: URL {
+        partySession?.partyURL(path: "track/search") ?? BackendConfiguration.endpoint("/api/party/unknown/track/search")
+    }
+    private var addToPlaylistURL: URL {
+        partySession?.partyURL(path: "track/addToPlaylist") ?? BackendConfiguration.endpoint("/api/party/unknown/track/addToPlaylist")
+    }
 
     func queueSearch(for text: String) {
         searchTask?.cancel()
@@ -144,6 +153,7 @@ final class SongAddViewModel: ObservableObject {
 
 struct SongAddView: View {
     @StateObject private var viewModel = SongAddViewModel()
+    @EnvironmentObject private var partySession: PartySessionStore
 
     var body: some View {
             ScrollView {
@@ -160,7 +170,10 @@ struct SongAddView: View {
                     resultsCard
                 }
                 .padding()
-            
+
+        }
+        .onAppear {
+            viewModel.configure(partySession: partySession)
         }
     }
 
@@ -301,4 +314,5 @@ private struct SearchResultRow: View {
 
 #Preview {
     SongAddView()
+        .environmentObject(PartySessionStore())
 }

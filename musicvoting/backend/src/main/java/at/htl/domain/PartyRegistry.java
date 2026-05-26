@@ -19,6 +19,11 @@ public class PartyRegistry {
                 .flatMap(entity -> find(PartyId.of(entity.id)));
     }
 
+    public Optional<Party> findByHostPin(String hostPin) {
+        return PartyEntity.findByHostPin(hostPin)
+                .flatMap(entity -> find(PartyId.of(entity.id)));
+    }
+
     public Party register(Party party) {
         Party existing = parties.putIfAbsent(party.id(), party);
         if (existing != null) {

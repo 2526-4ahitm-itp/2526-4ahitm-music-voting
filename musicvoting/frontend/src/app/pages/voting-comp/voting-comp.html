@@ -1,20 +1,31 @@
 <div class="music-voting-container">
 
-  <nav class="footer-nav">
-    <a routerLink="/vote" class="nav-item active">
-      <span class="nav-text">Voten</span>
-    </a>
-    <a routerLink="/guest" class="nav-item">
-      <span class="nav-text">Songs hinzufügen</span>
-    </a>
-  </nav>
+  <div class="side-menu" [class.open]="menuOpen">
+    <h2>MusicVoting</h2>
+    <ul>
+      <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
+      <li class="active"><a routerLink="/vote" (click)="toggleMenu()">Voting</a></li>
+      <li><a routerLink="/guest" (click)="toggleMenu()">Suchen</a></li>
+    </ul>
+  </div>
+
+  @if (menuOpen) {
+    <div class="overlay" (click)="toggleMenu()"></div>
+  }
 
   <div class="main-wrapper">
 
     <div class="sticky-top">
-      <header class="header">
-        <h1>Vote für deine Lieblingssongs!</h1>
-      </header>
+
+      <nav class="navbar">
+        <button class="burger" type="button" (click)="toggleMenu()">
+          <p>☰</p>
+        </button>
+        <header class="header">
+          <h1>Vote für deine Lieblingssongs!</h1>
+        </header>
+      </nav>
+
 
       <div class="search-section">
         <div class="search-bar">
@@ -46,7 +57,16 @@
             <button class="vote-button">♡</button>
           </div>
         } @empty {
-          <p>Keine Songs gefunden.</p>
+          <div class="empty-state">
+            <div class="welcome-screen">
+              <div class="icon-circle">
+                <span class="main-icon">🎵</span>
+              </div>
+              <h2>Die Playlist ist leer</h2>
+              <p>Es sind noch keine Songs zum Voten da.</p>
+
+            </div>
+          </div>
         }
       </div>
     </div>

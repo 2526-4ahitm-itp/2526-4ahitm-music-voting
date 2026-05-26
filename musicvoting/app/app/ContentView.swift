@@ -9,6 +9,8 @@ import SwiftUI
 
 enum SiteState {
     case start
+    case hostMenu
+    case hostPinEntry
     case spotifyAuth
     case admin
     case guest
@@ -17,6 +19,7 @@ enum SiteState {
 
 class AppState: ObservableObject {
     @Published var currentSite: SiteState = .start
+    @Published var pendingGuestPin: String? = nil
 }
 
 
@@ -27,6 +30,10 @@ struct ContentView: View {
         switch appState.currentSite {
         case .start:
             StartView()
+        case .hostMenu:
+            HostMenuView()
+        case .hostPinEntry:
+            HostPinEntryView()
         case .spotifyAuth:
             SpotifyAuthView()
         case .admin:

@@ -4,7 +4,7 @@ _hideContent: true
 showReadingTime: false
 showToc: false
 draft: false
-_build:
+build:
   list: never
 ---
 

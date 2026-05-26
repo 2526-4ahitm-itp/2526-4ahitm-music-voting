@@ -8,78 +8,92 @@
 import SwiftUI
 
 struct QRCodeView: View {
+    @EnvironmentObject private var partySession: PartySessionStore
     @State private var qrCodeImage: UIImage?
-    @State private var textInput = "https://2526-4ahitm-itp.github.io/2526-4ahitm-music-voting/"
+    @State private var isLoadingQR = false
+    @State private var loadError = false
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("QR-Code Generator")
+        VStack(spacing: 24) {
+            Text("QR-Code & PIN")
                 .font(.headline)
 
-            // QR-Code Bild oder Platzhalter
-            if let image = qrCodeImage {
-                Image(uiImage: image)
-                    .interpolation(.none)
-                    .resizable()
-                    .frame(width: 300, height: 300)
-            } else {
-                Rectangle()
-                    .fill(
-                    
-                        RadialGradient(
-                                            gradient: Gradient(colors: [Color("accent"), Color("secondary"), Color("primary")]),
-                                            center: .center,
-                                            startRadius: 30,
-                                            endRadius: 300
-                        ).opacity(0.7)
-                    
-                    
-                    
-                    
-                    
-                    
-                    )
-                    .frame(width: 300, height: 300)
-                    .overlay(Text("Es wurde noch kein QR-Code generiert.").multilineTextAlignment(.center))
+            if let pin = partySession.pin {
+                VStack(spacing: 4) {
+                    Text("Gäste-PIN")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Text(pin)
+                        .font(.system(size: 48, weight: .bold, design: .monospaced))
+                        .tracking(6)
+                }
+                .padding(.vertical, 8)
             }
 
-            
-            // Button zum Generieren
-            Button(action: {
-                qrCodeImage = generateQRCode(from: textInput)
-                print("Button gedrückt!")
-            }) {
-                Text("Generiere einen neuen QR-Code")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color("primary"), Color("accent"),
-                            ]),
-                            startPoint: .leading,
-                            endPoint: .trailing
+            Group {
+                if isLoadingQR {
+                    ProgressView("QR-Code wird geladen…")
+                        .frame(width: 260, height: 260)
+                } else if let image = qrCodeImage {
+                    Image(uiImage: image)
+                        .interpolation(.none)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 260, height: 260)
+                } else if loadError {
+                    VStack(spacing: 12) {
+                        Image(systemName: "xmark.circle")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                        Text("QR-Code konnte nicht geladen werden.")
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                        Button("Erneut versuchen") {
+                            Task { await loadQR() }
+                        }
+                    }
+                    .frame(width: 260, height: 260)
+                } else {
+                    Rectangle()
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [Color("accent"), Color("secondary"), Color("primary")]),
+                                center: .center,
+                                startRadius: 30,
+                                endRadius: 300
+                            ).opacity(0.7)
                         )
-                    )
-                    .cornerRadius(30)
-                    .shadow(
-                        color: Color.black.opacity(0.2),
-                        radius: 10,
-                        x: 0,
-                        y: 5
-                    )
+                        .frame(width: 260, height: 260)
+                        .overlay(Text("Kein QR-Code verfügbar.").multilineTextAlignment(.center))
+                }
             }
-            .padding(.horizontal)
-            
-            
-            
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .padding()
+        .task {
+            await loadQR()
+        }
+    }
+
+    private func loadQR() async {
+        guard let url = partySession.partyURL(path: "qr") else {
+            loadError = true
+            return
+        }
+        isLoadingQR = true
+        loadError = false
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            qrCodeImage = UIImage(data: data)
+            if qrCodeImage == nil { loadError = true }
+        } catch {
+            loadError = true
+        }
+        isLoadingQR = false
     }
 }
 
 #Preview {
     QRCodeView()
+        .environmentObject(PartySessionStore())
 }
