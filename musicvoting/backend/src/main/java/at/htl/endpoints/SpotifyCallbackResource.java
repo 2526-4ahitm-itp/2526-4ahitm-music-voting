@@ -69,6 +69,13 @@ public class SpotifyCallbackResource {
             Map<String, String> tokenMap = exchangeAuthorizationCode(code, redirectUri);
             SpotifyCredentials creds = party.getSpotifyCredentials();
             creds.setToken(tokenMap.get("access_token"));
+            if (tokenMap.get("refresh_token") != null) {
+                creds.setRefreshToken(tokenMap.get("refresh_token"));
+            }
+            if (tokenMap.get("expires_in") != null) {
+                int expiresIn = Integer.parseInt(tokenMap.get("expires_in"));
+                creds.setExpiresAt(Instant.now().plusSeconds(expiresIn - 60));
+            }
 
             spotifyMusicProvider.fetchAndStoreUserId(party);
             spotifyMusicProvider.ensurePartyPlaylistExists(party);
@@ -166,6 +173,13 @@ public class SpotifyCallbackResource {
             Map<String, String> tokenMap = exchangeAuthorizationCode(code, iosRedirectUri);
             SpotifyCredentials creds = party.getSpotifyCredentials();
             creds.setToken(tokenMap.get("access_token"));
+            if (tokenMap.get("refresh_token") != null) {
+                creds.setRefreshToken(tokenMap.get("refresh_token"));
+            }
+            if (tokenMap.get("expires_in") != null) {
+                int expiresIn = Integer.parseInt(tokenMap.get("expires_in"));
+                creds.setExpiresAt(Instant.now().plusSeconds(expiresIn - 60));
+            }
 
             spotifyMusicProvider.fetchAndStoreUserId(party);
             spotifyMusicProvider.ensurePartyPlaylistExists(party);

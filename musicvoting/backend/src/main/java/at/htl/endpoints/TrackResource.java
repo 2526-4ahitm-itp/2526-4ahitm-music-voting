@@ -56,6 +56,7 @@ public class TrackResource {
 
     @PUT
     @Path("/play")
+    @HostOnly
     public Response play(Map<String, String> body) {
         if (body == null || !body.containsKey("uri")) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -67,6 +68,7 @@ public class TrackResource {
 
     @POST
     @Path("/saveToPlaylist")
+    @HostOnly
     public Response saveToPlaylist(List<String> uris) {
         if (uris == null || uris.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -110,6 +112,7 @@ public class TrackResource {
 
     @DELETE
     @Path("/remove")
+    @HostOnly
     public Response removeFromPlaylist(Map<String, String> body) {
         if (body == null || !body.containsKey("uri") || body.get("uri") == null || body.get("uri").isBlank()) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -130,6 +133,7 @@ public class TrackResource {
 
     @POST
     @Path("/next")
+    @HostOnly
     public Response playNext() {
         Party party = resolveParty();
         Response response = provider(party).playNextAndRemove(party);
@@ -145,6 +149,7 @@ public class TrackResource {
 
     @POST
     @Path("/pause")
+    @HostOnly
     public Response pause() {
         Party party = resolveParty();
         return provider(party).pausePlayback(party);
@@ -152,6 +157,7 @@ public class TrackResource {
 
     @POST
     @Path("/resume")
+    @HostOnly
     public Response resume() {
         Party party = resolveParty();
         return provider(party).resumePlayback(party);
@@ -159,6 +165,7 @@ public class TrackResource {
 
     @POST
     @Path("/start")
+    @HostOnly
     public Response startFromQueue() {
         Party party = resolveParty();
         Response response = provider(party).startFirstSongWithoutRemoving(party);
