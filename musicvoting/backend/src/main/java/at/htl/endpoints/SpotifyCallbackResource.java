@@ -73,7 +73,7 @@ public class SpotifyCallbackResource {
                 creds.setRefreshToken(tokenMap.get("refresh_token"));
             }
             if (tokenMap.get("expires_in") != null) {
-                int expiresIn = Integer.parseInt(tokenMap.get("expires_in"));
+                int expiresIn = Integer.parseInt(String.valueOf(tokenMap.get("expires_in")));
                 creds.setExpiresAt(Instant.now().plusSeconds(expiresIn - 60));
             }
 
@@ -177,7 +177,7 @@ public class SpotifyCallbackResource {
                 creds.setRefreshToken(tokenMap.get("refresh_token"));
             }
             if (tokenMap.get("expires_in") != null) {
-                int expiresIn = Integer.parseInt(tokenMap.get("expires_in"));
+                int expiresIn = Integer.parseInt(String.valueOf(tokenMap.get("expires_in")));
                 creds.setExpiresAt(Instant.now().plusSeconds(expiresIn - 60));
             }
 
