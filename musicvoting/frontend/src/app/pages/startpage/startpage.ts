@@ -27,6 +27,7 @@ export class Startpage implements OnInit, OnDestroy {
   private queueUpdatesSub?: Subscription;
 
   private partyId: string | null = null;
+  private isAdvancing = false;
   pin: string | null = null;
   qrUrl: string | null = null;
 
@@ -163,13 +164,16 @@ export class Startpage implements OnInit, OnDestroy {
   }
 
   async playNext() {
-    if (!this.partyId) return;
+    if (!this.partyId || this.isAdvancing) return;
+    this.isAdvancing = true;
     try {
       await lastValueFrom(this.http.post(`/api/party/${this.partyId}/track/next`, {}));
       await this.loadCurrentTrack();
       this.loadPlaylist();
     } catch (err) {
       console.error('Fehler beim Weiterschalten', err);
+    } finally {
+      setTimeout(() => { this.isAdvancing = false; }, 3000);
     }
   }
 
@@ -205,6 +209,7 @@ export class Startpage implements OnInit, OnDestroy {
     this.stopProgressTimer();
     this.queueUpdatesSub?.unsubscribe();
     this.eventSource?.close();
+    this.spotifyService.disconnectPlayer();
   }
 
   private startLoginEventStream() {
@@ -222,7 +227,9 @@ export class Startpage implements OnInit, OnDestroy {
           this.loadCurrentTrack();
           this.loadPlaylist();
         } else if (data?.type === 'party-ended') {
-          this.ngZone.run(() => this.router.navigate(['/']));
+          this.spotifyService.disconnectPlayer().then(() => {
+            this.ngZone.run(() => this.router.navigate(['/']));
+          });
         }
       } catch {
         // ignore malformed events

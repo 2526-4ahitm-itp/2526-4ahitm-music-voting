@@ -146,10 +146,32 @@ final class PartySessionStore: ObservableObject {
 
         var request = URLRequest(url: BackendConfiguration.endpoint("/api/party/\(partyId)"))
         request.httpMethod = "DELETE"
+        if let hostPin {
+            request.setValue("Bearer \(hostPin)", forHTTPHeaderField: "Authorization")
+        }
 
         let (data, response) = try await URLSession.shared.data(for: request)
         try Self.validate(response: response, data: data)
         clear()
+    }
+
+    var sseEventsURL: URL? {
+        guard partyId != nil else { return nil }
+        let key = "spotify.installation.id"
+        let installId: String
+        if let saved = UserDefaults.standard.string(forKey: key), !saved.isEmpty {
+            installId = saved
+        } else {
+            let created = UUID().uuidString
+            UserDefaults.standard.set(created, forKey: key)
+            installId = created
+        }
+        var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/events"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "source", value: "ios"),
+            URLQueryItem(name: "installationId", value: installId)
+        ]
+        return components?.url
     }
 
     func partyURL(path: String) -> URL? {

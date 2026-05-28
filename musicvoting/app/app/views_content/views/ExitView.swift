@@ -10,6 +10,7 @@ import SwiftUI
 
 struct ExitView: View {
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var partySession: PartySessionStore
 
     var body: some View {
         VStack {
@@ -73,28 +74,24 @@ struct ExitView: View {
         }
         
         private func handleGuestExit() {
-            // HIER KOMMT DEINE LOGIK HIN
-            // - Verbindung trennen
-            // - User aus Session entfernen
-            
-            print("Gast verlässt Party")
-            
+            partySession.clear()
             appState.currentSite = .start
         }
-        
+
         private func handleAdminExit() {
-            // HIER KOMMT DEINE LOGIK HIN
-            // - Party schließen
-            // - Alle User kicken
-            // - Daten speichern
-            
-            print("Admin beendet Party")
-            
-            appState.currentSite = .start
+            Task {
+                do {
+                    try await partySession.endParty()
+                } catch {
+                    partySession.clear()
+                }
+                appState.currentSite = .start
+            }
         }
 }
 
 #Preview {
     ExitView()
         .environmentObject(AppState())
+        .environmentObject(PartySessionStore())
 }

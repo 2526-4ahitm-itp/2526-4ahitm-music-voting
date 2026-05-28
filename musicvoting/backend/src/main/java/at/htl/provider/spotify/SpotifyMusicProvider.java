@@ -324,22 +324,40 @@ public class SpotifyMusicProvider implements MusicProvider {
             PartyEntity partyEntity = PartyEntity.findById(party.id().value());
             if (partyEntity == null) throw new WebApplicationException(Response.Status.NOT_FOUND);
 
-            if (partyEntity.currentlyPlayingEntryId != null) {
-                QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
-                partyEntity.currentlyPlayingEntryId = null;
-            }
-
             List<Map<String, Object>> queue = getQueue(party);
             if (queue == null || queue.isEmpty()) {
                 return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
             }
 
-            Map<String, Object> nextTrack = queue.get(0);
+            // Exclude the currently playing entry so we always advance to the next one
+            String currentId = partyEntity.currentlyPlayingEntryId != null
+                    ? partyEntity.currentlyPlayingEntryId.toString()
+                    : null;
+
+            Map<String, Object> nextTrack = queue.stream()
+                    .filter(t -> !t.get("id").toString().equals(currentId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (nextTrack == null) {
+                // Only the current track is left — remove it and report empty
+                if (partyEntity.currentlyPlayingEntryId != null) {
+                    QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
+                    partyEntity.currentlyPlayingEntryId = null;
+                }
+                return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
+            }
+
             String uri = (String) nextTrack.get("uri");
 
+            // Try to start playback first. Only if playback succeeds remove the previous entry
             Response playResponse = play(party, uri);
             if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
                 return playResponse;
+            }
+
+            if (partyEntity.currentlyPlayingEntryId != null) {
+                QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
             }
 
             partyEntity.currentlyPlayingEntryId = UUID.fromString((String) nextTrack.get("id"));

@@ -35,11 +35,6 @@ export class HostDashboard implements OnInit, OnDestroy {
   confirmEnd = false;
   private sseSource?: EventSource;
   private queueUpdatesSub?: Subscription;
-  currentPosition = 0;
-  progressPercent = 0;
-  progressInterval: any;
-  private playbackStartedAt: number | null = null;
-
   constructor(
     private ngZone: NgZone,
     private http: HttpClient,
@@ -85,7 +80,6 @@ export class HostDashboard implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.stopProgressTimer();
     this.queueUpdatesSub?.unsubscribe();
     this.sseSource?.close();
   }
@@ -165,19 +159,6 @@ export class HostDashboard implements OnInit, OnDestroy {
           if (changed) {
             this.loadPlaylist();
           }
-          if (res?.isPlaying && res?.playbackStartedAt) {
-            this.playbackStartedAt = new Date(res.playbackStartedAt).getTime();
-            this.currentPosition = Date.now() - this.playbackStartedAt;
-          } else {
-            this.playbackStartedAt = null;
-            this.currentPosition = typeof res?.progressMs === 'number' ? res.progressMs : 0;
-          }
-          this.updateProgressPercent();
-          if (res?.isPlaying) {
-            this.startProgressTimer();
-          } else {
-            this.stopProgressTimer();
-          }
           const progressMs = typeof res?.progressMs === 'number' ? res.progressMs : null;
           const shouldAutoAdvance =
             !!newUri && !changed && !res.isPlaying && progressMs === 0 && previousUri === newUri;
@@ -188,10 +169,6 @@ export class HostDashboard implements OnInit, OnDestroy {
           const cooldown = this.autoAdvanceCooldownUntil && now < this.autoAdvanceCooldownUntil;
           if (this.partyStarted && !suppressed && !this.autoAdvanceInFlight && !cooldown) {
             this.currentTrack = null;
-            this.currentPosition = 0;
-            this.progressPercent = 0;
-            this.playbackStartedAt = null;
-            this.stopProgressTimer();
           }
         }
         if (!suppressed && typeof res?.isPlaying === 'boolean') {
@@ -206,43 +183,6 @@ export class HostDashboard implements OnInit, OnDestroy {
 
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
-  }
-
-  startProgressTimer() {
-    if (this.progressInterval) return;
-    this.progressInterval = setInterval(() => {
-      if (this.playbackStartedAt !== null) {
-        this.currentPosition = Date.now() - this.playbackStartedAt;
-      } else {
-        this.currentPosition += 1000;
-      }
-      this.updateProgressPercent();
-      this.cd.detectChanges();
-    }, 1000);
-  }
-
-  stopProgressTimer() {
-    if (this.progressInterval) {
-      clearInterval(this.progressInterval);
-      this.progressInterval = null;
-    }
-  }
-
-  updateProgressPercent() {
-    const duration = this.currentTrack?.duration_ms || 0;
-    if (duration > 0) {
-      this.progressPercent = Math.min((this.currentPosition / duration) * 100, 100);
-    } else {
-      this.progressPercent = 0;
-    }
-  }
-
-  formatTime(ms: number): string {
-    if (!ms || isNaN(ms)) return '0:00';
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
   startParty() {
@@ -270,11 +210,9 @@ export class HostDashboard implements OnInit, OnDestroy {
         this.suppressPlaybackStateUntil = Date.now() + this.SUPPRESSION_MS;
         setTimeout(() => (this.suppressPlaybackStateUntil = null), this.SUPPRESSION_MS + 100);
         await lastValueFrom(this.http.post(`${this.partyBase}/track/resume`, {}));
-        this.startProgressTimer();
       } else {
         this.isPaused = true;
         this.userPaused = true;
-        this.stopProgressTimer();
         this.suppressPlaybackStateUntil = Date.now() + this.SUPPRESSION_MS;
         setTimeout(() => (this.suppressPlaybackStateUntil = null), this.SUPPRESSION_MS + 100);
         await lastValueFrom(this.http.post(`${this.partyBase}/track/pause`, {}));

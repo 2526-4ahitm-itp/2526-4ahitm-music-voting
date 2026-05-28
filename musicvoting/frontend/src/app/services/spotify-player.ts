@@ -137,6 +137,18 @@ export class SpotifyWebPlayerService {
     });
   }
 
+  async disconnectPlayer(): Promise<void> {
+    if (this.player) {
+      try {
+        await this.player.pause();
+        await this.player.disconnect();
+      } catch (error) {
+        console.warn('Player konnte nicht getrennt werden:', error);
+      }
+      this.player = null;
+    }
+  }
+
   login() {
     const id = this.partyService.currentPartyId;
     if (!id) {

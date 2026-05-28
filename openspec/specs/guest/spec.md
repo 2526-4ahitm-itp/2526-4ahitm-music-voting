@@ -41,13 +41,21 @@ A guest MUST NOT be able to add more than 10 songs per rolling minute. Exceeding
 - AND the guest sees a message such as "Zu viele Anfragen — bitte kurz warten."
 
 ### Requirement: Party-Ended Redirect for Guests
-When a connected guest receives a `party-ended` SSE event, the guest view MUST immediately navigate to a static "Die Party ist beendet." screen and MUST stop attempting any further API calls for that party.
+When a connected guest receives a `party-ended` SSE event, the guest view MUST immediately show "Die Party ist beendet." and MUST stop attempting any further API calls for that party. On all platforms (web and iOS), the stored session MUST be cleared and the user MUST be returned to the start screen.
 
-#### Scenario: Host ends the party while guests are connected
-- GIVEN one or more guests are in the guest view
+#### Scenario: Host ends the party while web guests are connected
+- GIVEN one or more guests are in the web guest view
 - WHEN the host ends the party and the `party-ended` event is broadcast
-- THEN every guest view displays "Die Party ist beendet."
+- THEN every web guest view displays "Die Party ist beendet."
 - AND no further queue or vote requests are sent to the backend
+
+#### Scenario: Host ends the party while iOS guests are connected
+- GIVEN one or more guests have the iOS app open in the guest view
+- WHEN the host ends the party (from web or iOS) and the `party-ended` SSE event is received
+- THEN the iOS guest view shows "Die Party ist beendet."
+- AND the stored session is cleared from UserDefaults
+- AND the app returns to the start screen
+- AND no further API calls for that party are made
 
 ### Requirement: Guest Session Persists Across Reloads
 A guest's anonymous identity SHOULD persist across reloads of the same device so that the guest's existing likes and adds remain attributed to them.
@@ -57,3 +65,33 @@ A guest's anonymous identity SHOULD persist across reloads of the same device so
 - WHEN the guest reloads the page
 - THEN the same guest identity is restored
 - AND the two likes are still shown as "liked by me"
+
+### Requirement: iOS Guest SSE Connection Is Persistent and Reconnects
+The iOS guest view MUST open its SSE connection with no request timeout and MUST reconnect automatically after a brief delay if the stream drops, so that the `party-ended` event is reliably received regardless of how long the party has been running.
+
+#### Scenario: SSE connection drops and reconnects
+- GIVEN the iOS guest view is open and the SSE connection drops (timeout or network blip)
+- WHEN the connection is lost
+- THEN the app waits briefly and reopens the SSE connection
+- AND the guest continues to receive future `party-ended` events
+
+#### Scenario: Party ended after SSE reconnect
+- GIVEN the iOS guest's SSE connection has reconnected at least once
+- WHEN the host ends the party
+- THEN the `party-ended` event is received
+- AND the app shows "Die Party ist beendet." and returns to the start screen
+
+### Requirement: iOS Guest Session Survives App Close
+When the iOS app is fully closed and reopened, and a guest session is stored locally, the app MUST navigate directly to the guest view without prompting the guest to re-enter the party PIN.
+
+#### Scenario: Guest reopens the iOS app after a full close
+- GIVEN a guest has previously joined a party and the session (party ID, guest PIN, role) is stored in UserDefaults
+- WHEN the guest fully closes the iOS app and reopens it
+- THEN the app navigates directly to the guest view for the stored party
+- AND the guest is NOT shown the start screen or the PIN entry screen
+
+#### Scenario: Explicit guest exit clears the saved session
+- GIVEN a guest is in the guest view and taps the exit button and confirms
+- WHEN the exit is confirmed
+- THEN the stored session credentials are cleared from UserDefaults
+- AND the next app launch shows the start screen instead of auto-restoring the guest view
