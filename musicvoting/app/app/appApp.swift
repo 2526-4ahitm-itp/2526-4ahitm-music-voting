@@ -9,9 +9,26 @@ import SwiftUI
 
 @main
 struct appApp: App {
-    @StateObject private var auth = SpotifyAuthViewModel()
-    @StateObject var appState = AppState()
-    @StateObject private var partySession = PartySessionStore()
+    @StateObject private var auth: SpotifyAuthViewModel
+    @StateObject var appState: AppState
+    @StateObject private var partySession: PartySessionStore
+
+    init() {
+        let session = PartySessionStore()
+        let state = AppState()
+
+        if session.hasActiveParty {
+            switch session.role {
+            case .host: state.currentSite = .admin
+            case .guest: state.currentSite = .guest
+            case nil: break
+            }
+        }
+
+        _auth = StateObject(wrappedValue: SpotifyAuthViewModel())
+        _appState = StateObject(wrappedValue: state)
+        _partySession = StateObject(wrappedValue: session)
+    }
 
     var body: some Scene {
         WindowGroup {

@@ -27,14 +27,21 @@ After a party is created, the host view MUST display the 5-digit PIN and a QR co
 - AND scanning the QR code navigates to `/join/{pin}` in a guest browser
 
 ### Requirement: Host Can End the Party from the Dashboard
-The host dashboard MUST include a "Party beenden" button that calls `DELETE /api/party/{id}`. After confirmation and successful deletion, the host MUST be redirected to the home page and the session party ID MUST be cleared.
+The host MUST be able to end the party from any client (web dashboard or iOS admin view). Ending MUST call `DELETE /api/party/{id}` so that the backend emits the `party-ended` event to all connected clients. After confirmation and successful deletion, the host MUST be redirected to the home page and the session party ID MUST be cleared.
 
-#### Scenario: Host ends the party
-- GIVEN the host is on the dashboard with an active party
+#### Scenario: Host ends the party from the web dashboard
+- GIVEN the host is on the web dashboard with an active party
 - WHEN the host taps "Party beenden" and confirms
 - THEN `DELETE /api/party/{id}` is called
 - AND the host is redirected to the home page
 - AND the stored party ID is cleared from the session
+
+#### Scenario: Host ends the party from the iOS admin view
+- GIVEN the host is in the iOS admin view with an active party
+- WHEN the host taps the exit button and confirms
+- THEN `DELETE /api/party/{id}` is called with the host PIN in the Authorization header
+- AND the backend emits the `party-ended` SSE event to all connected clients
+- AND the iOS app clears the stored session and returns to the start screen
 
 ### Requirement: Party-Ended Redirect for Host and Dashboard
 When the host or dashboard receives a `party-ended` SSE event (e.g. triggered from another device), the view MUST navigate to the home page and clear the stored party ID.
@@ -153,3 +160,28 @@ Guests MUST NOT be able to invoke pause, resume, skip, remove-from-queue, blackl
 - WHEN the guest sends a skip request
 - THEN the request is rejected as unauthorized
 - AND the current playback is unaffected
+
+### Requirement: iOS Admin View Reacts to Party-Ended SSE Event
+The iOS admin view MUST maintain an SSE connection while open. When a `party-ended` event is received (e.g. party ended from the web dashboard while the iOS admin is open), the admin view MUST clear the stored session and return the host to the start screen.
+
+#### Scenario: Party ended from web while iOS admin is open
+- GIVEN the host has the iOS admin view open
+- AND the party is ended from the web dashboard
+- WHEN the `party-ended` SSE event is received by the iOS app
+- THEN the stored session is cleared from UserDefaults
+- AND the app returns to the start screen
+
+### Requirement: iOS Host Session Survives App Close
+When the iOS app is fully closed and reopened, and a host session is stored locally, the app MUST navigate directly to the admin (host dashboard) view without prompting the host to re-create the party or re-authenticate with Spotify.
+
+#### Scenario: Host reopens the iOS app after a full close
+- GIVEN a host has previously created a party and the session (party ID, guest PIN, host PIN, role) is stored in UserDefaults
+- WHEN the host fully closes the iOS app and reopens it
+- THEN the app navigates directly to the admin view for the stored party
+- AND the host is NOT shown the start screen, host menu, or Spotify auth screen
+
+#### Scenario: Explicit host exit clears the saved session
+- GIVEN a host is in the admin view and taps the exit button and confirms
+- WHEN the exit is confirmed
+- THEN the stored session credentials are cleared from UserDefaults
+- AND the next app launch shows the start screen instead of auto-restoring the admin view
