@@ -19,7 +19,7 @@ private struct TrackItem: Decodable {
     let id: String
     let uri: String
     let name: String
-    let artists: [ArtistItem]
+    let artists: [ArtistItem]	
     let album: AlbumItem
 
     struct ArtistItem: Decodable {
@@ -156,31 +156,42 @@ struct SongAddView: View {
     @EnvironmentObject private var partySession: PartySessionStore
 
     var body: some View {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+            VStack(spacing: 0) { // Haupt-Container, um Suche und ScrollView zu trennen
+                
+                // 1. Fixierter Bereich (Suchleiste)
+                VStack(alignment: .leading, spacing: 0) {
                     searchField
-
-                    if let error = viewModel.errorMessage {
-                        Text(error)
-                            .font(.footnote)
-                            .foregroundColor(.red)
-                            .multilineTextAlignment(.leading)
-                    }
-
-                    resultsCard
+                        .padding()
                 }
-                .padding()
+                .background(Color(UIColor.systemBackground)) // Verhindert Durchscheinen beim Scrollen
+                
+                // 2. Scrollbarer Bereich
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        
+                        if let error = viewModel.errorMessage {
+                            Text(error)
+                                .font(.footnote)
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.leading)
+                                .padding(.horizontal)
+                        }
 
+                        resultsCard
+                            .padding(.horizontal)
+                    }
+                    .padding(.vertical)
+                }
+            }
+            .onAppear {
+                viewModel.configure(partySession: partySession)
+            }
         }
-        .onAppear {
-            viewModel.configure(partySession: partySession)
-        }
-    }
 
     private var searchField: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
 
             TextField("Suchen...", text: $viewModel.query)
                 .textInputAutocapitalization(.never)
@@ -192,8 +203,12 @@ struct SongAddView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 30)
-                .stroke(Color.black, lineWidth: 2)
+            Capsule() // Apple nutzt meistens die Capsule-Form für Suchleisten
+                .fill(.ultraThinMaterial) // Der Glas-Effekt
+                .overlay(
+                    Capsule()
+                        .stroke(Color.primary.opacity(0.15), lineWidth: 0.5) // Subtile, dünne Linie
+                )
         )
     }
 
@@ -211,10 +226,30 @@ struct SongAddView: View {
                 Group {
                     if viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                         // Dies wird angezeigt, wenn noch nichts (oder zu wenig) eingegeben wurde
-                        Text("Suche nach Songs, Künstlern oder Alben!")
-                            .italic()
-                            .foregroundColor(.gray)
-                            .frame(maxWidth: .infinity, alignment: .center).bold()
+                        
+                        VStack(spacing: 8) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 70))
+                                .foregroundColor(.gray)
+                                .padding(.bottom, 20)
+
+                            Text("Fange an zu suchen!")
+                                .font(.title2)
+                                .bold()
+                                .foregroundColor(.primary)
+                                .multilineTextAlignment(.center)
+
+                            Text("Suche nach Songs, Sängern und nach Musik Alben!")
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color(UIColor.systemBackground)) // Nutzt das System-Weiß
+                        
+                        
+                       
                     } else {
                         // Dies wird angezeigt, wenn gesucht wurde, aber nichts gefunden wurde
                         Text(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2
@@ -240,10 +275,6 @@ struct SongAddView: View {
             }
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .stroke(Color.black, lineWidth: 2)
-        )
     }
 }
 
@@ -269,7 +300,7 @@ private struct SearchResultRow: View {
                             .fill(Color.gray.opacity(0.3))
 
                         Image(systemName: "music.note")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                     }
                 @unknown default:
                     EmptyView()
@@ -293,7 +324,7 @@ private struct SearchResultRow: View {
             Button(action: onAdd) {
                 ZStack {
                     Circle()
-                        .stroke(Color.black, lineWidth: 2)
+                        .stroke(Color.primary, lineWidth: 2)
                         .frame(width: 28, height: 28)
 
                     if isAdding {
@@ -301,7 +332,7 @@ private struct SearchResultRow: View {
                             .scaleEffect(0.6)
                     } else {
                         Image(systemName: isAdded ? "checkmark" : "plus")
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .font(.system(size: 12, weight: .bold))
                     }
                 }
