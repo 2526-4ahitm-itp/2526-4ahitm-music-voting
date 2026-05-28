@@ -14,16 +14,15 @@ struct QueueCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-
             Text("Warteschlange")
-                .font(.title)
+                .font(.title2) // title2 wirkt oft harmonischer in Cards
                 .fontWeight(.bold)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 4)
 
             if songs.isEmpty {
                 Text("Keine Songs in der Warteschlange")
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary) // Wirkt besser im Glass-Look
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 12)
             } else {
@@ -35,7 +34,11 @@ struct QueueCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 35)
-                .stroke(Color.black, lineWidth: 3)
+                .fill(.ultraThinMaterial) // Der Glas-Effekt
+                .overlay(
+                    RoundedRectangle(cornerRadius: 35)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.5) // Hauchdünne Kontur
+                )
         )
         .padding()
     }

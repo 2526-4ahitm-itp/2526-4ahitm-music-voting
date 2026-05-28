@@ -38,7 +38,7 @@ struct Gast_ContentView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: ExitView()) {
                         Image(systemName: "rectangle.portrait.and.arrow.forward")
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.primary)
                     }
                 }
             }

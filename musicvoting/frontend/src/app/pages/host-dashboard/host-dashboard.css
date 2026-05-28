@@ -297,6 +297,48 @@ body{
 
 /* RIGHT SIDE */
 
+/* HOST PIN */
+.host-pin-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.8rem;
+  width: 80%;
+  /* Optik des Containers */
+  background-color: #efefef;
+  border-radius: 20px;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+.pin-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.party-pin-label {
+  margin: 0;
+  color: #8e8e8e;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.party-pin-value {
+  margin: 0;
+  color: #000000;
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: 20%;
+}
+
+.crown-icon {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  height: 2vh;
+}
+
+/* QR CODE */
 .qr-code{
   display: flex;
   flex-direction: column;
@@ -339,6 +381,91 @@ body{
   font-weight: 1000;
   background-color: #C826B8;
 }
+
+
+/* BUTTONS */
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgb(139 0 165 / 0.2);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.end-confirm {
+  display: flex;
+  flex-wrap: wrap; /* Erlaubt das Umbrechen in die nächste Zeile */
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgb(242 89 75 / 0.2);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+
+.end-confirm-buttons {
+  width: 100%; /* Erzwingt den Umbruch, da 100% Breite beansprucht werden */
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem; /* Optional: Etwas Abstand nach oben zum Text */
+}
+
+.end-confirm-buttons button {
+  flex: 1; /* Buttons teilen sich den Platz gleichmäßig auf */
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+.option-btn:hover {
+  background: rgb(139 0 165 / 0.5);
+}
+
+.option-btn.primary {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.option-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.option-text strong {
+  font-size: 1.05rem;
+}
+
+.option-text small {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/**/
 
 .logo-box {
   width: calc(20vw - 2rem);

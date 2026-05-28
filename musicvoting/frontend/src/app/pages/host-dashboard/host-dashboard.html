@@ -100,20 +100,58 @@
     </div>
     <div class="right">
       <div class="qr-code">
-        <p class="party-pin">Host-PIN: <strong>{{ hostPin || 'nicht verfügbar' }}</strong></p>
+
+        <div class="host-pin-box">
+          <div class="pin-content">
+            <p class="party-pin-label">Host-PIN</p>
+            <p class="party-pin-value">91309</p>
+          </div>
+          <div class="crown-icon" style="font-size: 40px; line-height: 1;">
+            👑
+          </div>
+        </div>
+
         @if (qrUrl) {
           <img class="cover" [src]="qrUrl" alt="QR-Code">
         } @else {
           <img class="cover" src="../../../assets/img/default-qr.png" alt="QR-Code">
         }
 
-        <div class="open-player">
-          Bitte öffne zuerst die Player Seite um Musik abzuspielen! <br>
-          <button class="open-player-btn" type="button" (click)="openPlayer()">
-            Öffnen
+        <div class="options-list">
+
+          <button class="option-btn" type="button" (click)="openPlayer()" >
+            <span class="option-icon">🔊</span>
+            <span class="option-text">
+            <strong>Player öffnen</strong>
+            <small>Player muss geöffnet werden befor Musik gespielt werden kann.</small>
+          </span>
           </button>
+
+          @if (confirmEnd) {
+            <button class="end-confirm">
+              <span class="option-icon">❌</span>
+              <span class="option-text">
+                <strong>Party wirklich beenden?</strong>
+              </span>
+
+              <div class="end-confirm-buttons">
+                <button class="end-party-confirm-btn" type="button" (click)="endParty()">Ja, beenden</button>
+                <button class="end-party-cancel-btn" type="button" (click)="confirmEnd = false">Abbrechen</button>
+              </div>
+
+            </button>
+          } @else {
+            <button class="option-btn " type="button" (click)="confirmEnd = true">
+              <span class="option-icon">❌</span>
+              <span class="option-text">
+                <strong>Party beenden</strong>
+              </span>
+            </button>
+          }
+
         </div>
 
+<!--
         @if (confirmEnd) {
           <p class="end-confirm-text">Party wirklich beenden?</p>
           <div class="end-confirm-buttons">
@@ -123,6 +161,7 @@
         } @else {
           <button class="end-party-btn" type="button" (click)="confirmEnd = true">Party beenden</button>
         }
+        -->
       </div>
 
       <div class="logo-box">
