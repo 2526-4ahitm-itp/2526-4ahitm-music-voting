@@ -71,7 +71,7 @@ struct CodeInputView: View {
                                                     lineWidth: 1.5
                                                 )
                                         )
-                                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                                        .shadow(color: .primary.opacity(0.1), radius: 10, x: 0, y: 5)
 
                                     if isLoading && index < code.count {
                                         ProgressView()

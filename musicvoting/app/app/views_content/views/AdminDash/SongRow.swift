@@ -58,7 +58,7 @@ struct SongRow: View {
 
             Button(action: onDelete) {
                 Image(systemName: "trash.fill")
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
             }
             .buttonStyle(.plain)
         }

@@ -38,7 +38,7 @@ struct CurrentSongPlaying: View {
                                 .fill(Color.gray.opacity(0.3))
 
                             Image(systemName: "music.note")
-                                .foregroundColor(.gray)
+                                .foregroundColor(.secondary)
                         }
 
                     @unknown default:
@@ -54,16 +54,16 @@ struct CurrentSongPlaying: View {
             Text(song?.title ?? "Noch nichts abgespielt")
                 .font(.title)
                 .fontWeight(.bold)
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
 
             Text(song?.artist ?? "Druecke auf Play")
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
 
             // Progress Bar
             VStack {
                 Slider(value: $progress)
-                    .accentColor(.black)
+                    .accentColor(.primary)
 
                 HStack {
                     Text("0:13")
@@ -71,7 +71,7 @@ struct CurrentSongPlaying: View {
                     Text("2:46")
                 }
                 .font(.caption)
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
             }
             .padding(.horizontal)
 
@@ -101,7 +101,7 @@ struct CurrentSongPlaying: View {
                         .font(.system(size: 30))
                 }
             }
-            .foregroundColor(.black)
+            .foregroundColor(.primary)
             .padding(.top, 10)
 
             Spacer()
