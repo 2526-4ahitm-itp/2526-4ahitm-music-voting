@@ -1,0 +1,21 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../musicvoting/backend/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    environment:
+      - POSTGRES_DB=musicvoting
+      - POSTGRES_USER=musicvoting
+      - POSTGRES_PASSWORD=musicvoting
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U musicvoting -d musicvoting"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/mgnadlinger/music-voting-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: "jdbc:postgresql://postgres:5432/musicvoting"
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: "musicvoting"
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: "musicvoting"
+            # TODO: set to your LeoCloud hostname (same as ingress host)
+            - name: APP_PUBLIC_HOST
+              value: "TODO_REPLACE_LEOCLOUD_HOST"
+            - name: APP_PUBLIC_PORT
+              value: "80"
+            - name: APP_WEB_PORT
+              value: "80"
+            - name: MUSICVOTING_JOIN_BASE__URL
+              value: "http://TODO_REPLACE_LEOCLOUD_HOST/join"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8080
+      targetPort: 8080
