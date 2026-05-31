@@ -33,6 +33,22 @@ spec:
               value: "80"
             - name: MUSICVOTING_JOIN_BASE__URL
               value: "https://it220241.cloud.htl-leonding.ac.at/join"
+            - name: SPOTIFY_REDIRECT_URI
+              value: "https://it220241.cloud.htl-leonding.ac.at/api/spotify/callback"
+            - name: SPOTIFY_WEB_REDIRECT_URI
+              value: "https://it220241.cloud.htl-leonding.ac.at/dashboard"
+            - name: SPOTIFY_IOS_REDIRECT_URI
+              value: "musicvotingapp://callback"
+            - name: SPOTIFY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: spotify-credentials
+                  key: client-id
+            - name: SPOTIFY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: spotify-credentials
+                  key: client-secret
 ---
 apiVersion: v1
 kind: Service
