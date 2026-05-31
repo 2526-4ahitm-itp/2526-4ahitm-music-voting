@@ -16,12 +16,23 @@ public class PartyRegistry {
 
     public Optional<Party> findByPin(String pin) {
         return PartyEntity.findByPin(pin)
-                .flatMap(entity -> find(PartyId.of(entity.id)));
+                .map(this::findOrReconstruct);
     }
 
     public Optional<Party> findByHostPin(String hostPin) {
         return PartyEntity.findByHostPin(hostPin)
-                .flatMap(entity -> find(PartyId.of(entity.id)));
+                .map(this::findOrReconstruct);
+    }
+
+    // If the backend restarted, the entity exists in the DB but not in the in-memory map.
+    // Reconstruct a Party from the DB row so the host can reconnect without re-creating the party.
+    private Party findOrReconstruct(PartyEntity entity) {
+        PartyId id = PartyId.of(entity.id);
+        Party existing = parties.get(id);
+        if (existing != null) return existing;
+        Party rebuilt = new Party(id, ProviderKind.valueOf(entity.providerKind), entity.pin, entity.hostPin);
+        parties.putIfAbsent(id, rebuilt);
+        return parties.get(id);
     }
 
     public Party register(Party party) {
