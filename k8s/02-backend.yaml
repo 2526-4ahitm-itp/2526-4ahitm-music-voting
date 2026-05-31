@@ -25,15 +25,14 @@ spec:
               value: "musicvoting"
             - name: QUARKUS_DATASOURCE_PASSWORD
               value: "musicvoting"
-            # TODO: set to your LeoCloud hostname (same as ingress host)
             - name: APP_PUBLIC_HOST
-              value: "TODO_REPLACE_LEOCLOUD_HOST"
+              value: "it220241.cloud.htl-leonding.ac.at"
             - name: APP_PUBLIC_PORT
-              value: "80"
+              value: "443"
             - name: APP_WEB_PORT
               value: "80"
             - name: MUSICVOTING_JOIN_BASE__URL
-              value: "http://TODO_REPLACE_LEOCLOUD_HOST/join"
+              value: "https://it220241.cloud.htl-leonding.ac.at/join"
 ---
 apiVersion: v1
 kind: Service
