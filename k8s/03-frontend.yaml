@@ -12,6 +12,8 @@ spec:
       labels:
         app: frontend
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - name: frontend
           image: ghcr.io/2526-4ahitm-itp/music-voting-frontend:latest
