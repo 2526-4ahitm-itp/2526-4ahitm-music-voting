@@ -1,7 +1,7 @@
 services:
   backend:
     container_name: backend
-    image: ghcr.io/mgnadlinger/music-voting-backend:latest
+    image: ghcr.io/2526-4ahitm-itp/music-voting-backend:latest
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/q/health/live || exit 1"]
       interval: 10s

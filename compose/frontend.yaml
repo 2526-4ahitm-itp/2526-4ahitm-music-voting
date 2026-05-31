@@ -1,7 +1,7 @@
 services:
   frontend:
     container_name: www
-    image: ghcr.io/mgnadlinger/music-voting-frontend:latest
+    image: ghcr.io/2526-4ahitm-itp/music-voting-frontend:latest
     ports:
       - "4200:80"
     healthcheck:

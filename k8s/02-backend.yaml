@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/mgnadlinger/music-voting-backend:latest
+          image: ghcr.io/2526-4ahitm-itp/music-voting-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
