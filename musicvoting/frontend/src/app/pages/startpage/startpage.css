@@ -179,13 +179,61 @@ body{
 
 /* RIGHT SIDE */
 
+
+/* HOST PIN */
+.host-pin-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.8rem;
+  width: 80%;
+  /* Optik des Containers */
+  background-color: #efefef;
+  border-radius: 20px;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+.pin-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.party-pin-label {
+  margin: 0;
+  color: #8e8e8e;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.party-pin-value {
+  margin: 0;
+  color: #000000;
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: 20%;
+}
+
+.crown-icon {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  height: 2vh;
+}
+
+/* QR-CODE */
+
 .qr-code{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+
   gap: 2rem;
   width: auto;
   box-sizing: border-box;
   padding: 2rem;
   align-content: start;
-  justify-content: center;
 
   flex-grow: 1;
   overflow: auto;

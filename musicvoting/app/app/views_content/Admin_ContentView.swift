@@ -40,9 +40,9 @@ struct Admin_ContentView: View {
             }
             .navigationTitle("Music Voting")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            //.toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarColorScheme(.light, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: ExitView()) {
@@ -86,4 +86,5 @@ struct Admin_ContentView: View {
     Admin_ContentView()
         .environmentObject(AppState())
         .environmentObject(PartySessionStore())
+        .preferredColorScheme(.dark)
 }
