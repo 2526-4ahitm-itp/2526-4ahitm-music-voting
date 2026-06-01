@@ -406,9 +406,23 @@ body{
   transition: background 0.2s;
 }
 
+.option-btn-end {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgb(242 89 75 / 0.2);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+
 .end-confirm {
   display: flex;
-  flex-wrap: wrap; /* Erlaubt das Umbrechen in die nächste Zeile */
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
   width: 100%;
@@ -429,12 +443,13 @@ body{
   margin-top: 0.5rem; /* Optional: Etwas Abstand nach oben zum Text */
 }
 
-.end-confirm-buttons button {
+.end-confirm-btn{
   flex: 1; /* Buttons teilen sich den Platz gleichmäßig auf */
   padding: 0.5rem;
   cursor: pointer;
   border-radius: 10px;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgb(242 89 75 );
+  background-color: rgb(242 89 75 / 0.8);
 }
 .option-btn:hover {
   background: rgb(139 0 165 / 0.5);

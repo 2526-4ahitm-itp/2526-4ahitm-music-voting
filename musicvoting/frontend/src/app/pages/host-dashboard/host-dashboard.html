@@ -104,7 +104,7 @@
         <div class="host-pin-box">
           <div class="pin-content">
             <p class="party-pin-label">Host-PIN</p>
-            <p class="party-pin-value">{{ hostPin || 'nicht verfügbar' }}</p>
+            <p class="party-pin-value"><strong>{{ hostPin || 'nicht verfügbar' }}</strong></p>
           </div>
           <div class="crown-icon" style="font-size: 40px; line-height: 1;">
             👑
@@ -135,13 +135,13 @@
               </span>
 
               <div class="end-confirm-buttons">
-                <button class="end-party-confirm-btn" type="button" (click)="endParty()">Ja, beenden</button>
-                <button class="end-party-cancel-btn" type="button" (click)="confirmEnd = false">Abbrechen</button>
+                <button class="end-confirm-btn" type="button" (click)="endParty()">Ja, beenden</button>
+                <button class="end-confirm-btn" type="button" (click)="confirmEnd = false">Abbrechen</button>
               </div>
 
             </button>
           } @else {
-            <button class="option-btn " type="button" (click)="confirmEnd = true">
+            <button class="option-btn-end" type="button" (click)="confirmEnd = true">
               <span class="option-icon">❌</span>
               <span class="option-text">
                 <strong>Party beenden</strong>

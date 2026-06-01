@@ -38,7 +38,7 @@
         }
       </section>
 
-      
+
 
       <section class="queue">
         <h2>Warteschlange</h2>
@@ -78,6 +78,17 @@
     <div class="right">
 
       <div class="qr-code">
+
+        <div class="host-pin-box">
+          <div class="pin-content">
+            <p class="party-pin-label">Gast-PIN</p>
+            <p class="party-pin-value"><strong>{{ pin || 'nicht verfügbar' }}</strong></p>
+          </div>
+          <div class="crown-icon" style="font-size: 40px; line-height: 1;">
+            👑
+          </div>
+        </div>
+
         @if (qrUrl) {
           <img class="cover" [src]="qrUrl" alt="QR-Code">
         } @else {
@@ -86,7 +97,8 @@
         <p class="qr-code-text">
           Scanne den QR-Code, um Songs hinzuzufügen oder für deine Favoriten zu voten.
         </p>
-        <p class="party-pin">Gäste-PIN: <strong>{{ pin || 'nicht verfügbar' }}</strong></p>
+
+
       </div>
 
       <div class="logo-box">
