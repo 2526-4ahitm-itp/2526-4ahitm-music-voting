@@ -115,13 +115,62 @@ header > h1 {
   }
 }
 
+
+/* iPad - Querformat */
+@media (min-width: 48rem) and (max-width: 87.5rem) {
+
+  .code-page{
+    overflow-x: hidden;
+    position: fixed;
+  }
+
+  .code-input-wrapper{
+    margin-top: 8rem;
+  }
+
+  .code-input-wrapper p {
+    font-size: 1.1rem;
+  }
+
+  .paste-button{
+    width: 25vw;
+  }
+
+}
+
+
+/* Handy - Hochformat */
 @media (max-width: 48rem) {
+
+  .code-page{
+    overflow-x: hidden;
+    position: fixed;
+  }
+
   .code-input-wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 96vw;
-    margin: 5vh 2vw 0 2vw;
-    text-align: center;
+    width: 90vw;
+    margin: 5vh auto 0 auto;
+  }
+
+  .code-container {
+    gap: 8px;
+    padding: 10px 0;
+  }
+
+  .code-container input {
+    width: 10vw;
+    height: 15vw;
+    font-size: 1.2rem;
+    border-radius: 8px;
+  }
+
+  .paste-button {
+    width: 80vw;
+    padding: 0.8rem;
+    margin-top: 2vh;
+  }
+
+  .code-input-wrapper > h2 {
+    font-size: 1.5rem;
   }
 }
