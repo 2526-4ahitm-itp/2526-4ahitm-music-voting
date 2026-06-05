@@ -119,6 +119,14 @@ header > h1 {
 /* iPad - Querformat */
 @media (min-width: 48rem) and (max-width: 87.5rem) {
 
+  .back-to-home {
+    padding: 0.8rem;
+  }
+
+  header h1{
+    font-size: 1.6rem;
+  }
+
   .code-page{
     overflow-x: hidden;
     position: fixed;
@@ -141,6 +149,14 @@ header > h1 {
 
 /* Handy - Hochformat */
 @media (max-width: 48rem) {
+
+  .back-to-home {
+    padding: 0.8rem;
+  }
+
+  header h1{
+    font-size: 1.4rem;
+  }
 
   .code-page{
     overflow-x: hidden;

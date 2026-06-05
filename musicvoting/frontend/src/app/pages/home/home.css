@@ -66,6 +66,7 @@ body p {
     position: fixed;
     height: 100vh;
     width: 100vw;
+    padding-top: 8rem;
   }
 
   body h1 {
@@ -74,11 +75,11 @@ body p {
 
   body p {
     width: 60vw;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
 
   .page-switch-btn {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     padding: 1rem 2rem;
   }
 }
@@ -99,7 +100,7 @@ body p {
   body p {
     margin-top: 2rem;
     width: 85vw;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     text-align: center;
   }
 
@@ -107,12 +108,12 @@ body p {
     margin-top: 2.5rem;
     gap: 1rem;
     flex-direction: column;
-    width: 100%;
+    width: 80%;
   }
 
   .page-switch-btn {
     min-width: 100%;
-    font-size: 1rem;
+    font-size: 0.9rem;
     padding: 1rem 1.5rem;
   }
 }
