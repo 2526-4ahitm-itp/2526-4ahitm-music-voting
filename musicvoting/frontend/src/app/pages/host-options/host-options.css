@@ -187,9 +187,79 @@ header > h1 {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+
+/* iPad - Querformat */
+@media (min-width: 48rem) and (max-width: 87.5rem) {
+
+  .back-to-home {
+    padding: 0.8rem;
+  }
+
+  header h1{
+    font-size: 1.6rem;
+  }
+
+  .host-options-page{
+    position:fixed;
+    overflow: hidden;
+  }
+
+  .host-options-wrapper{
+    margin-top: 6rem;
+  }
+
+  .host-options-wrapper h2{
+    font-size: 1.8rem;
+  }
+
+  .host-options-wrapper p{
+    font-size: 1.1rem;
+  }
+
+  .options-list strong{
+    font-size: 1.1rem;
+  }
+
+  .options-list small{
+    font-size: 1rem;
+  }
+}
+
+
+/* Handy - Hochformat */
 @media (max-width: 48rem) {
+
+  .host-options-page{
+    position:fixed;
+    overflow: hidden;
+  }
+
+  .back-to-home {
+    padding: 0.8rem;
+  }
+
+  header h1{
+    font-size: 1.4rem;
+  }
+
   .host-options-wrapper {
     width: 92vw;
     margin: 3vh auto 0;
+  }
+
+  .host-options-wrapper h2{
+    font-size: 1.5rem;
+  }
+
+  .host-options-wrapper p{
+    font-size: 1.1rem;
+  }
+
+  .options-list strong{
+    font-size: 1rem;
+  }
+
+  .options-list small{
+    font-size: 0.9rem;
   }
 }
