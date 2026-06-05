@@ -165,7 +165,7 @@ header > h1 {
 
   .code-input-wrapper {
     width: 90vw;
-    margin: 5vh auto 0 auto;
+    margin: 15vh auto 0 auto;
   }
 
   .code-container {
@@ -187,6 +187,10 @@ header > h1 {
   }
 
   .code-input-wrapper > h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+  }
+
+  .code-input-wrapper > p {
+    font-size: 1.1rem;
   }
 }

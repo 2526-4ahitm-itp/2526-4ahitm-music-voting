@@ -31,17 +31,31 @@
             <p>{{ currentTrack.artists[0]?.name }} </p>
 
             <div class="player-controls">
-              <button class="skip-icon" type="button" (click)="onRestartCurrent()">⏮</button>
-              @if (!partyStarted) {
-                <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
+              <button class="skip-icon" type="button" (click)="onRestartCurrent()">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor">
+                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                </svg>
+              </button>
+
+              @if (!partyStarted || isPaused) {
+                <button class="play-icon" type="button" (click)="onPlayPause()">
+                  <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </button>
               } @else {
-                @if (isPaused) {
-                  <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>
-                } @else {
-                  <button class="play-icon" type="button" (click)="onPlayPause()">⏸</button>
-                }
+                <button class="play-icon" type="button" (click)="onPlayPause()">
+                  <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                  </svg>
+                </button>
               }
-              <button class="skip-icon" type="button" (click)="onSkip()">⏭</button>
+
+              <button class="skip-icon" type="button" (click)="onSkip()">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor">
+                  <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                </svg>
+              </button>
             </div>
 
 
@@ -49,9 +63,10 @@
         } @else {
           <img class="cover" src="../../../assets/img/placeholder.png" height="300px" width="300px" alt="Kein Song">
           <div class="song-info">
+            <div class="status-box">
             <h1>Kein Song aktiv</h1>
             <p>Starte die Playlist über die Steuerung</p>
-
+            </div>
             <div class="player-controls">
               <button class="skip-icon" type="button" (click)="onRestartCurrent()">⏮</button>
               <button class="play-icon" type="button" (click)="onPlayPause()">▶</button>

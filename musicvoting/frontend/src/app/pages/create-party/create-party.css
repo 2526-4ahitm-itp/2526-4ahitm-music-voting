@@ -69,7 +69,6 @@ header > h1 {
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 2rem;
   cursor: pointer;
-
 }
 
 /* Fokus-Zustand für Barrierefreiheit */
@@ -123,9 +122,82 @@ header > h1 {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* iPad - Querformat */
+@media (min-width: 48rem) and (max-width: 87.5rem) {
+
+  .create-party-page{
+    overflow: hidden;
+    position: fixed;
+  }
+
+  .back-to-home {
+    padding: 0.8rem;
+  }
+
+  header h1{
+    font-size: 1.6rem;
+  }
+
+  .create-party-wrapper{
+    margin-top: 10rem;
+  }
+
+  .create-party-wrapper h2{
+    font-size:  1.8rem;
+  }
+
+  .create-party-wrapper p{
+    width: 40vw;
+    font-size: 1.1rem;
+  }
+
+  .create-party-wrapper span{
+    font-size: 1.1rem;
+  }
+}
+
+
+/* Handy - Format */
 @media (max-width: 48rem) {
+
+  .create-party-page{
+    overflow: hidden;
+    position: fixed;
+  }
+
+  .back-to-home {
+    padding: 0.8rem;
+  }
+
+  header h1{
+    font-size: 1.4rem;
+  }
+
   .create-party-wrapper {
+    margin-top: 5rem;
     width: 92vw;
-    margin: 3vh auto 0;
+  }
+
+  .create-party-wrapper h2{
+    font-size:  1.4rem;
+  }
+
+  .create-party-wrapper p{
+    width: 80vw;
+    font-size: 1rem;
+  }
+
+  .provider-box{
+    width: 60vw;
+  }
+
+  .create-party-wrapper #selection-field{
+    width: 30vw !important;
+    font-size: 1.2rem !important;
+    padding: 1rem !important;
+  }
+
+  .create-btn{
+    font-size: 0.9rem;
   }
 }
