@@ -223,6 +223,36 @@ header > h1 {
   .options-list small{
     font-size: 1rem;
   }
+
+  .back-btn{
+    margin-top: -5rem;
+    padding-left: 1.8rem;
+    padding-right: 1.8rem;
+  }
+
+  .pin-entry{
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .pin-entry h2{
+    margin-top: 5rem;
+    font-size: 1.8rem;
+  }
+
+  .pin-entry p{
+    font-size: 1.1rem;
+  }
+
+  .pin-entry input{
+    width: 30vw;
+    font-size: 1.4rem;
+  }
+
+  .pin-entry .confirm-btn{
+    width: 30vw;
+    font-size: 1.1rem;
+  }
 }
 
 
@@ -262,4 +292,37 @@ header > h1 {
   .options-list small{
     font-size: 0.9rem;
   }
+
+  .back-btn{
+    margin-top: -2rem;
+    padding-left: 1.8rem;
+    padding-right: 1.8rem;
+  }
+
+  .pin-entry{
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .pin-entry h2{
+    margin-top: 6rem;
+    font-size: 1.4rem;
+  }
+
+
+  .pin-entry p{
+    font-size: 1rem;
+  }
+
+  .pin-entry input{
+    width: 60vw;
+    font-size: 1.2rem;
+  }
+
+  .pin-entry .confirm-btn{
+    width: 60vw;
+    font-size: 1rem;
+  }
+
+
 }

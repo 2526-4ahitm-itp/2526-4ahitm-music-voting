@@ -34,6 +34,7 @@ html, body {
   background: none;
   border: none;
   cursor: pointer;
+  color: white;
 }
 
 /* Side Menu */
@@ -144,6 +145,7 @@ html, body {
   background-clip: text;
   letter-spacing: -0.03rem;
   display: inline-block;
+  color: white;
 }
 
 /* SEARCH */
@@ -344,24 +346,29 @@ html, body {
 }
 
 
-@media (max-width: 48rem) {
+/* iPad - Querformat */
+@media (min-width: 48rem) and (max-width: 87.5rem) {
+
   .music-voting-container {
-    flex-direction: column;
+    position: fixed;
   }
 
-  .footer-nav {
+  header{
+    margin-top: .5rem;
+    padding: 0;
+  }
+  .header h1{
+    font-size: 1.8rem;
+  }
+}
+
+
+/* Handy - Format */
+@media (max-width: 48rem) {
+
+  .music-voting-container {
+    flex-direction: column;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 4.6875rem;
-    flex-direction: row;
-    padding: 0 0.5rem;
-    border-right: none;
-    border-top: 0.0625rem solid #eee;
-    background-color: #fff;
-    z-index: 1000;
-    box-shadow: 0 -0.25rem 0.625rem rgba(0, 0, 0, 0.02);
   }
 
   .nav-item {
@@ -374,26 +381,14 @@ html, body {
     gap: 0.25rem;
   }
 
-  .nav-item.active {
-    background-color: transparent;
-  }
-
-  .nav-item.active::before {
-    top: 0;
-    left: 50%;
-    width: 40%;
-    height: 0.1875rem;
-    transform: translateX(-50%);
-    border-radius: 0 0 0.25rem 0.25rem;
-  }
-
   .header {
     padding: 0;
     text-align: left;
   }
 
   .header h1 {
-    font-size: 1.5rem;
+    margin-top: .5rem;
+    font-size: 1.4rem;
   }
 
   .navbar {
@@ -407,5 +402,24 @@ html, body {
   .main-content {
     padding: 0.625rem 0.75rem 5.625rem 0.75rem;
   }
-}
 
+  .welcome-screen{
+    margin-top: 7rem;
+  }
+
+  .welcome-screen h2{
+    font-size: 1.4rem;
+  }
+
+  .welcome-screen p{
+    font-size: 1rem;
+  }
+
+  .track-name{
+    font-size: 1rem;
+  }
+
+  .artist-name{
+    font-size: 0.8rem;
+  }
+}

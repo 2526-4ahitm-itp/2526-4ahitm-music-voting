@@ -27,6 +27,7 @@
         } @else {
           <img class="cover" src="../../../assets/img/placeholder.png" height="300px" width="300px" alt="Kein Song">
           <div class="song-info">
+            <div class="status-box">
             @if (tracks.length > 0) {
               <h1>Playlist nicht gestartet</h1>
               <p>Der Host kann den ersten Song im Dashboard starten.</p>
@@ -34,6 +35,7 @@
               <h1>Kein Song aktiv</h1>
               <p>Füge Songs hinzu oder starte die Playlist über die Steuerung.</p>
             }
+            </div>
           </div>
         }
       </section>
