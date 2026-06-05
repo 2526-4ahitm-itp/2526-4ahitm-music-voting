@@ -13,7 +13,7 @@ body {
   font-family: var(--font), serif;
 
   padding: 2rem;
-  
+
 }
 
 body h1 {
@@ -57,4 +57,38 @@ body p {
 .page-switch-btn:active {
   transform: translateY(0) scale(0.98);
   box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+}
+
+
+/** Handy - Format **/
+@media (max-width: 48rem) {
+  body {
+    padding: 2rem;
+    position: fixed;
+  }
+
+  body h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  body p {
+    margin-top: 2rem;
+    width: 85vw;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  .button-row {
+    margin-top: 2.5rem;
+    gap: 1rem;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .page-switch-btn {
+    min-width: 100%;
+    font-size: 1rem;
+    padding: 1rem 1.5rem;
+  }
 }
