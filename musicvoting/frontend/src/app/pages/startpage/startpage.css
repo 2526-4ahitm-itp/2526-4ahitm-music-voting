@@ -251,6 +251,14 @@ body{
 
 .qr-code-text{
   text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 0;
+  /* farbverlauf*/
+  background: linear-gradient(135deg, #F2594B, #8403A6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .logo-box {
