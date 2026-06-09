@@ -42,15 +42,15 @@
                 <button class="play-icon" type="button" (click)="onPlayPause()">
                   <svg xmlns="http://www.w3.org/2000/svg" width="1.7em" height="1.7em" viewBox="0 0 24 24">
                     <path d="M0 0h24v24H0z" fill="none" />
-                    <path fill="#000" d="M15 18q-.402 0-.701-.299T14 17V7q0-.402.299-.701T15 6h1.5q.402 0 .701.299T17.5 7v10q0 .402-.299.701T16.5 18zm-7.5 0q-.402 0-.701-.299T6.5 17V7q0-.402.299-.701T7.5 6H9q.402 0 .701.299T10 7v10q0 .402-.299.701T9 18z" />
+                    <path fill="#000" stroke="#000" stroke-dasharray="38" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6l10 6l-10 6Z">
+                    </path>
                   </svg>
                 </button>
               } @else {
                 <button class="play-icon" type="button" (click)="onPlayPause()">
                   <svg xmlns="http://www.w3.org/2000/svg" width="1.7em" height="1.7em" viewBox="0 0 24 24">
                     <path d="M0 0h24v24H0z" fill="none" />
-                    <path fill="#000" stroke="#000" stroke-dasharray="38" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6l10 6l-10 6Z">
-                    </path>
+                    <path fill="#000" d="M15 18q-.402 0-.701-.299T14 17V7q0-.402.299-.701T15 6h1.5q.402 0 .701.299T17.5 7v10q0 .402-.299.701T16.5 18zm-7.5 0q-.402 0-.701-.299T6.5 17V7q0-.402.299-.701T7.5 6H9q.402 0 .701.299T10 7v10q0 .402-.299.701T9 18z" />
                   </svg>
                 </button>
               }
@@ -63,6 +63,15 @@
               </button>
             </div>
 
+            <div class="progress">
+              <span>{{ formatTime(currentPosition) }}</span>
+
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="progressPercent"></div>
+              </div>
+
+              <span>{{ formatTime(currentDuration || currentTrack.duration_ms) }}</span>
+            </div>
 
           </div>
         } @else {

@@ -20,6 +20,21 @@ export class SpotifyWebPlayerService {
     return this.playerStateSubject.asObservable();
   }
 
+  /**
+   * Liefert den aktuellen Wiedergabe-Zustand direkt aus dem Web Playback SDK.
+   * Enthält die echte `position` und `duration` (ms) des aktuellen Tracks.
+   * Gibt null zurück, wenn kein Player verbunden oder dieses Gerät nicht aktiv ist.
+   */
+  async getCurrentState(): Promise<any> {
+    if (!this.player) return null;
+    try {
+      return await this.player.getCurrentState();
+    } catch (error) {
+      console.warn('getCurrentState fehlgeschlagen:', error);
+      return null;
+    }
+  }
+
   getQueueUpdates(): Observable<void> {
     return this.queueUpdatedSubject.asObservable();
   }

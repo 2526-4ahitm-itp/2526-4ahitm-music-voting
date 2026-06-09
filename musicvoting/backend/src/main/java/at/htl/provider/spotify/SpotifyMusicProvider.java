@@ -427,7 +427,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Transactional
-    public void restoreCurrentTrackFromBeginningOnDevice(Party party, String deviceId) {
+    public void restoreCurrentTrackOnDevice(Party party, String deviceId) {
         try {
             if (deviceId == null || deviceId.isBlank()) {
                 return;
@@ -488,20 +488,45 @@ public class SpotifyMusicProvider implements MusicProvider {
                 return;
             }
 
-            Map<String, Object> bodyMap = Map.of("uris", List.of(uri));
+            // Resume at the position the party has already reached instead of
+            // restarting at 0:00, so opening the web player doesn't rewind the song.
+            long positionMs = currentPlaybackPositionMs(party);
+
+            Map<String, Object> bodyMap = positionMs > 0
+                    ? Map.of("uris", List.of(uri), "position_ms", positionMs)
+                    : Map.of("uris", List.of(uri));
             String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
             Response response = sendPut(party, url, mapper.writeValueAsString(bodyMap));
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 updateCachedPlayback(party, uri, true);
                 PartyEntity pe = PartyEntity.findById(party.id().value());
                 if (pe != null) {
-                    pe.playbackStartedAt = OffsetDateTime.now();
+                    // Keep the elapsed-progress model consistent with the resumed position.
+                    pe.playbackStartedAt = OffsetDateTime.now().minus(Duration.ofMillis(positionMs));
                     pe.pausedPositionMs = null;
                 }
             }
         } catch (Exception ignored) {
             // Device registration should still succeed even if restore fails.
         }
+    }
+
+    /**
+     * Current playback position (ms) as tracked by the party's elapsed-progress
+     * model — the same source {@code /track/current} reports.
+     */
+    private long currentPlaybackPositionMs(Party party) {
+        PartyEntity pe = PartyEntity.findById(party.id().value());
+        if (pe == null) {
+            return 0;
+        }
+        if (pe.pausedPositionMs != null) {
+            return Math.max(0, pe.pausedPositionMs);
+        }
+        if (pe.playbackStartedAt != null) {
+            return Math.max(0, Duration.between(pe.playbackStartedAt, OffsetDateTime.now()).toMillis());
+        }
+        return 0;
     }
 
     @Override

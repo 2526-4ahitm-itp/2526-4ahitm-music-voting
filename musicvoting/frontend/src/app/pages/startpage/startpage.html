@@ -20,7 +20,7 @@
                 <div class="progress-fill" [style.width.%]="progressPercent"></div>
               </div>
 
-              <span>{{ formatTime(currentTrack.duration_ms) }}</span>
+              <span>{{ formatTime(currentDuration || currentTrack.duration_ms) }}</span>
             </div>
 
           </div>

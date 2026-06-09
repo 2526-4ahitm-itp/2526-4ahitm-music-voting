@@ -18,6 +18,9 @@ export class HostDashboard implements OnInit, OnDestroy {
   tracks: any[] = [];
   menuOpen = false;
   currentTrack: any = null;
+  currentPosition = 0;
+  currentDuration = 0;
+  progressPercent = 0;
   private lastTrackUri: string | null = null;
   private autoAdvanceInFlight = false;
   private autoAdvanceCooldownUntil: number | null = null;
@@ -95,7 +98,9 @@ export class HostDashboard implements OnInit, OnDestroy {
     this.sseSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data?.type === 'queue-updated' || data?.type === 'vote-updated') {
+        if (data?.type === 'progress') {
+          this.applyProgress(data.payload);
+        } else if (data?.type === 'queue-updated' || data?.type === 'vote-updated') {
           this.loadPlaylist();
         } else if (data?.type === 'track-changed') {
           this.loadCurrentPlayback();
@@ -179,6 +184,35 @@ export class HostDashboard implements OnInit, OnDestroy {
     } catch (err) {
       console.error('Fehler beim Laden des aktuellen Songs:', err);
     }
+  }
+
+  /**
+   * Mirrors the /startpage player's progress bar from a "progress" SSE event.
+   * The payload values arrive as strings (LoginEvent payload is Map<String,String>).
+   */
+  private applyProgress(payload: any) {
+    if (!payload) return;
+    this.ngZone.run(() => {
+      this.currentPosition = Number(payload.position) || 0;
+      this.currentDuration = Number(payload.duration) || 0;
+      this.updateProgressPercent();
+      this.cd.detectChanges();
+    });
+  }
+
+  updateProgressPercent() {
+    const duration = this.currentDuration || this.currentTrack?.duration_ms || 0;
+    this.progressPercent = duration > 0
+      ? Math.min((this.currentPosition / duration) * 100, 100)
+      : 0;
+  }
+
+  formatTime(ms: number): string {
+    if (!ms || isNaN(ms)) return '0:00';
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
   toggleMenu() {
