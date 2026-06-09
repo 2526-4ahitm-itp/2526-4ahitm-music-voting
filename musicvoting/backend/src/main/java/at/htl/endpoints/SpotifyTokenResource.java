@@ -105,7 +105,7 @@ public class SpotifyTokenResource {
         String normalizedDeviceId = deviceId.trim();
         Party party = resolveParty();
         party.getSpotifyCredentials().setDeviceId(normalizedDeviceId);
-        spotifyMusicProvider.restoreCurrentTrackFromBeginningOnDevice(party, normalizedDeviceId);
+        spotifyMusicProvider.restoreCurrentTrackOnDevice(party, normalizedDeviceId);
         loginEventBus.emit(new LoginEvent(
                 "track-changed",
                 Instant.now(),

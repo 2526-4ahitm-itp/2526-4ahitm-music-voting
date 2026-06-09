@@ -236,7 +236,8 @@ public class SpotifyCallbackResource {
                         && "web".equalsIgnoreCase(event.payload().get("source")))
                     || (("queue-updated".equals(event.type())
                         || "track-changed".equals(event.type())
-                        || "vote-updated".equals(event.type()))
+                        || "vote-updated".equals(event.type())
+                        || "progress".equals(event.type()))
                         && !webPartyId.isBlank()
                         && webPartyId.equals(event.payload().get("partyId"))));
         }

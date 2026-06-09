@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines how a guest joins a party, how the system identifies them anonymously, and what per-guest limits apply. Guests are the primary contributors of songs and likes. They never register, log in, or provide a name.
-
 ## Requirements
-
 ### Requirement: Anonymous Guest Identity
 The system MUST assign each guest an anonymous identifier on first contact. Guests MUST NOT be required to supply a name, email, or any provider login.
 
@@ -58,7 +56,7 @@ When a connected guest receives a `party-ended` SSE event, the guest view MUST i
 - AND no further API calls for that party are made
 
 ### Requirement: Guest Session Persists Across Reloads
-A guest's anonymous identity SHOULD persist across reloads of the same device so that the guest's existing likes and adds remain attributed to them.
+A guest's anonymous identity MUST be restored across reloads of the same device when a previously stored identity exists, so that the guest's existing likes and adds remain attributed to them. The persistence mechanism (localStorage, cookie, or device ID) is not yet fixed — see the project's open questions.
 
 #### Scenario: Guest reloads the page
 - GIVEN a guest has added one song and liked two songs
@@ -95,3 +93,4 @@ When the iOS app is fully closed and reopened, and a guest session is stored loc
 - WHEN the exit is confirmed
 - THEN the stored session credentials are cleared from UserDefaults
 - AND the next app launch shows the start screen instead of auto-restoring the guest view
+

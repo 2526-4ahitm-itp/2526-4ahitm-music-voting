@@ -22,6 +22,7 @@ export class Startpage implements OnInit, OnDestroy {
   private ignoreInitialEndedState = true;
 
   currentPosition = 0;
+  currentDuration = 0;
   progressPercent = 0;
   progressInterval: any;
   private queueUpdatesSub?: Subscription;
@@ -87,7 +88,9 @@ export class Startpage implements OnInit, OnDestroy {
 
       this.ngZone.run(() => {
         this.currentPosition = state.position || 0;
+        this.currentDuration = state.duration || 0;
         this.updateProgressPercent();
+        this.publishProgress(!!state.paused);
 
         if (!state.paused) {
           this.startProgressTimer();
@@ -118,10 +121,26 @@ export class Startpage implements OnInit, OnDestroy {
 
   startProgressTimer() {
     if (this.progressInterval) return;
-    this.progressInterval = setInterval(() => {
-      this.currentPosition += 1000;
-      this.updateProgressPercent();
-      this.cd.detectChanges();
+    this.progressInterval = setInterval(async () => {
+      // Echte Position aus dem SDK lesen, statt lokal hochzuzählen (verhindert Drift).
+      const state = await this.spotifyService.getCurrentState();
+      this.ngZone.run(() => {
+        let paused = false;
+        if (state) {
+          this.currentPosition = state.position || 0;
+          this.currentDuration = state.duration || this.currentDuration;
+          paused = !!state.paused;
+          if (paused) {
+            this.stopProgressTimer();
+          }
+        } else {
+          // Fallback: SDK liefert keinen Zustand -> lokal interpolieren.
+          this.currentPosition += 1000;
+        }
+        this.updateProgressPercent();
+        this.publishProgress(paused);
+        this.cd.detectChanges();
+      });
     }, 1000);
   }
 
@@ -133,10 +152,24 @@ export class Startpage implements OnInit, OnDestroy {
   }
 
   updateProgressPercent() {
-    const duration = this.currentTrack?.duration_ms || 0;
+    // SDK-Dauer bevorzugen; auf Queue-Metadaten zurückfallen, falls noch kein SDK-Zustand vorliegt.
+    const duration = this.currentDuration || this.currentTrack?.duration_ms || 0;
     if (duration > 0) {
       this.progressPercent = Math.min((this.currentPosition / duration) * 100, 100);
     }
+  }
+
+  /**
+   * Broadcasts the current playback position over the existing SSE bus (via a
+   * lightweight POST) so the host dashboard can mirror this progress bar.
+   */
+  private publishProgress(paused: boolean) {
+    if (!this.partyId) return;
+    this.http.post(`/api/party/${this.partyId}/track/progress`, {
+      position: this.currentPosition,
+      duration: this.currentDuration,
+      paused,
+    }).subscribe({ error: () => { /* progress is best-effort */ } });
   }
 
   formatTime(ms: number): string {

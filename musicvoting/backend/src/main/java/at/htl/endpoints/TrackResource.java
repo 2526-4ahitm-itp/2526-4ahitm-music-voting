@@ -131,6 +131,47 @@ public class TrackResource {
         return response;
     }
 
+    /**
+     * Published ~once per second by the /startpage player (the only client with
+     * the Spotify Web Playback SDK). The position/duration are re-broadcast as a
+     * "progress" event on the SSE bus so other clients of the party — notably the
+     * host dashboard — can mirror the player's progress bar.
+     */
+    @POST
+    @Path("/progress")
+    public Response publishProgress(Map<String, Object> body) {
+        Party party = resolveParty();
+        long position = toLong(body == null ? null : body.get("position"));
+        long duration = toLong(body == null ? null : body.get("duration"));
+        boolean paused = body != null && Boolean.TRUE.equals(body.get("paused"));
+        loginEventBus.emit(new LoginEvent(
+                "progress",
+                Instant.now(),
+                Map.of(
+                        "source", "web",
+                        "partyId", party.id().value(),
+                        "position", String.valueOf(position),
+                        "duration", String.valueOf(duration),
+                        "paused", String.valueOf(paused)
+                )
+        ));
+        return Response.noContent().build();
+    }
+
+    private static long toLong(Object value) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text) {
+            try {
+                return (long) Double.parseDouble(text);
+            } catch (NumberFormatException ignored) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
     @POST
     @Path("/next")
     @HostOnly
