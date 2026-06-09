@@ -102,8 +102,7 @@ export class Startpage implements OnInit, OnDestroy {
         if (
           !this.ignoreInitialEndedState &&
           state.paused &&
-          state.position === 0 &&
-          state.track_window.previous_tracks.length > 0
+          state.position === 0
         ) {
           this.playNext();
         }
@@ -166,6 +165,7 @@ export class Startpage implements OnInit, OnDestroy {
   async playNext() {
     if (!this.partyId || this.isAdvancing) return;
     this.isAdvancing = true;
+    this.ignoreInitialEndedState = true;
     try {
       await lastValueFrom(this.http.post(`/api/party/${this.partyId}/track/next`, {}));
       await this.loadCurrentTrack();

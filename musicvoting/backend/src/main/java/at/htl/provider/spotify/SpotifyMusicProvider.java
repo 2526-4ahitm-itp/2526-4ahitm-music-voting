@@ -109,6 +109,9 @@ public class SpotifyMusicProvider implements MusicProvider {
 
             Response response = sendPut(party, url, body);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
+                try {
+                    sendPut(party, "https://api.spotify.com/v1/me/player/repeat?state=off&device_id=" + deviceId, null);
+                } catch (Exception ignored) {}
                 updateCachedPlayback(party, uri, true);
                 PartyEntity pe = PartyEntity.findById(party.id().value());
                 if (pe != null) {
