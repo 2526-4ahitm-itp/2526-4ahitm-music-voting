@@ -12,7 +12,8 @@ private struct SearchResponse: Decodable {
 }
 
 private struct TrackContainer: Decodable {
-    let items: [TrackItem]
+    // Spotify can return null entries for unavailable tracks — decode as optional and filter.
+    let items: [TrackItem?]
 }
 
 private struct TrackItem: Decodable {
@@ -97,9 +98,15 @@ final class SongAddViewModel: ObservableObject {
         }
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(SearchResponse.self, from: data)
-            results = response.tracks.items.map(Self.mapTrackToSearch)
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+                results = []
+                errorMessage = "Suche fehlgeschlagen. Bitte erneut versuchen."
+                isLoading = false
+                return
+            }
+            let decoded = try JSONDecoder().decode(SearchResponse.self, from: data)
+            results = decoded.tracks.items.compactMap { $0 }.map(Self.mapTrackToSearch)
         } catch {
             results = []
             errorMessage = "Backend nicht erreichbar. Bitte Backend starten und erneut versuchen."
