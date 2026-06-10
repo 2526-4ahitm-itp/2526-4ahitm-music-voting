@@ -9,13 +9,25 @@ import SwiftUI
 
 struct CurrentSongPlaying: View {
 
-    @State private var progress: Double = 0.13
     let song: Song?
     let isPlaying: Bool
     let isLoading: Bool
+    var positionMs: Double = 0
+    var durationMs: Double = 0
     var onPlayPause: () -> Void = {}
     var onNext: () -> Void = {}
     var onPrevious: () -> Void = {}
+
+    private var progressFraction: Double {
+        guard durationMs > 0 else { return 0 }
+        return min(positionMs / durationMs, 1)
+    }
+
+    private func formatTime(_ ms: Double) -> String {
+        guard ms.isFinite, ms > 0 else { return "0:00" }
+        let totalSeconds = Int(ms / 1000)
+        return String(format: "%d:%02d", totalSeconds / 60, totalSeconds % 60)
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -60,19 +72,27 @@ struct CurrentSongPlaying: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
-            // Progress Bar
-            VStack {
-                Slider(value: $progress)
-                    .accentColor(.primary)
+            // Progress Bar — mirrors the player position over SSE,
+            // matching the host dashboard.
+            HStack(spacing: 12) {
+                Text(formatTime(positionMs))
 
-                HStack {
-                    Text("0:13")
-                    Spacer()
-                    Text("2:46")
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.gray.opacity(0.25))
+                        Capsule()
+                            .fill(Color("accent"))
+                            .frame(width: geo.size.width * progressFraction)
+                    }
                 }
-                .font(.caption)
-                .foregroundColor(.primary)
+                .frame(height: 6)
+                .animation(.linear(duration: 0.5), value: progressFraction)
+
+                Text(formatTime(durationMs))
             }
+            .font(.caption)
+            .foregroundColor(.primary)
             .padding(.horizontal)
 
             // Controls

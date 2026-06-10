@@ -223,10 +223,17 @@ public class SpotifyCallbackResource {
         var stream = loginEventBus.stream();
         if ("ios".equalsIgnoreCase(source) && installationId != null && !installationId.isBlank()) {
             final String id = installationId;
+            final String iosPartyId = partyId == null ? "" : partyId.trim();
             return stream.select().where(event ->
                     "party-ended".equals(event.type())
                     || ("ios".equalsIgnoreCase(event.payload().get("source"))
-                            && id.equals(event.payload().get("installationId"))));
+                            && id.equals(event.payload().get("installationId")))
+                    || (("queue-updated".equals(event.type())
+                        || "track-changed".equals(event.type())
+                        || "vote-updated".equals(event.type())
+                        || "progress".equals(event.type()))
+                        && !iosPartyId.isBlank()
+                        && iosPartyId.equals(event.payload().get("partyId"))));
         }
         if ("web".equalsIgnoreCase(source)) {
             final String webPartyId = partyId == null ? "" : partyId.trim();

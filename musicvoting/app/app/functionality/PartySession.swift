@@ -156,7 +156,7 @@ final class PartySessionStore: ObservableObject {
     }
 
     var sseEventsURL: URL? {
-        guard partyId != nil else { return nil }
+        guard let partyId else { return nil }
         let key = "spotify.installation.id"
         let installId: String
         if let saved = UserDefaults.standard.string(forKey: key), !saved.isEmpty {
@@ -169,7 +169,8 @@ final class PartySessionStore: ObservableObject {
         var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/events"), resolvingAgainstBaseURL: false)
         components?.queryItems = [
             URLQueryItem(name: "source", value: "ios"),
-            URLQueryItem(name: "installationId", value: installId)
+            URLQueryItem(name: "installationId", value: installId),
+            URLQueryItem(name: "partyId", value: partyId)
         ]
         return components?.url
     }

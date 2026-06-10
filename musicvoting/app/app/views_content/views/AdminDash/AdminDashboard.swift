@@ -21,6 +21,19 @@ private struct StartPlaybackResponse: Decodable {
     let track: QueueTrack?
 }
 
+private struct ProgressEvent: Decodable {
+    let type: String
+    let payload: ProgressPayload?
+
+    struct ProgressPayload: Decodable {
+        // The backend serializes the LoginEvent payload as Map<String,String>,
+        // so position/duration arrive as strings (in milliseconds).
+        let position: String?
+        let duration: String?
+        let paused: String?
+    }
+}
+
 private struct QueueTrack: Decodable {
     let name: String
     let uri: String?
@@ -47,12 +60,48 @@ final class AdminDashboardViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var partyStarted = false
     @Published var queueSongs: [Song] = []
+    // Playback position mirrored from the /startpage web player via the
+    // "progress" SSE event — same source the host dashboard uses.
+    @Published var currentPosition: Double = 0
+    @Published var currentDuration: Double = 0
 
     let pollInterval: TimeInterval = 2
     private weak var partySession: PartySessionStore?
 
+    var progressFraction: Double {
+        guard currentDuration > 0 else { return 0 }
+        return min(currentPosition / currentDuration, 1)
+    }
+
     func configure(partySession: PartySessionStore) {
         self.partySession = partySession
+    }
+
+    /// Mirrors the player's progress bar by listening for "progress" SSE events
+    /// on the party bus. Reconnects on error, like the other SSE consumers.
+    func listenForProgress() async {
+        guard let url = partySession?.sseEventsURL else { return }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = .infinity
+        while !Task.isCancelled {
+            do {
+                let (bytes, _) = try await URLSession.shared.bytes(for: request)
+                for try await line in bytes.lines {
+                    guard line.hasPrefix("data:") else { continue }
+                    let json = String(line.dropFirst(5)).trimmingCharacters(in: .whitespaces)
+                    guard let data = json.data(using: .utf8),
+                          let event = try? JSONDecoder().decode(ProgressEvent.self, from: data),
+                          event.type == "progress",
+                          let payload = event.payload
+                    else { continue }
+                    currentPosition = payload.position.flatMap(Double.init) ?? 0
+                    currentDuration = payload.duration.flatMap(Double.init) ?? 0
+                }
+            } catch {
+                if Task.isCancelled { return }
+                try? await Task.sleep(for: .seconds(3))
+            }
+        }
     }
 
     private func partyURL(for path: String) -> URL {
@@ -296,6 +345,8 @@ struct AdminDashboard: View {
                         song: viewModel.currentSong,
                         isPlaying: viewModel.isPlaying,
                         isLoading: viewModel.isLoading,
+                        positionMs: viewModel.currentPosition,
+                        durationMs: viewModel.currentDuration,
                         onPlayPause: { Task { await viewModel.togglePlayPause() } },
                         onNext: { Task { await viewModel.skip() } },
                         onPrevious: { Task { await viewModel.restartCurrent() } }
@@ -313,6 +364,10 @@ struct AdminDashboard: View {
         .task {
             viewModel.configure(partySession: partySession)
             await viewModel.refreshDashboardState()
+        }
+        .task {
+            viewModel.configure(partySession: partySession)
+            await viewModel.listenForProgress()
         }
         .onReceive(
             Timer.publish(every: viewModel.pollInterval, on: .main, in: .common).autoconnect()
