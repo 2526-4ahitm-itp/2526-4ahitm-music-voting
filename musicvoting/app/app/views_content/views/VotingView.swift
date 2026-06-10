@@ -10,7 +10,7 @@ import SwiftUI
 struct VotingView: View {
     var body: some View {
             ScrollView {
-                Text("Voten Sie für Ihre Libelingssongs").font(.largeTitle).padding(.leading, 20)
+                Text("voting.title").font(.largeTitle).padding(.leading, 20)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
         }

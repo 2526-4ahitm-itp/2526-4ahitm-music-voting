@@ -30,11 +30,11 @@ struct HostPinEntryView: View {
                         .padding(.top, 40)
 
                     VStack(spacing: 8) {
-                        Text("Dashboard öffnen")
+                        Text("hostpin.title")
                             .font(.largeTitle)
                             .bold()
                             .foregroundStyle(.white)
-                        Text("Gib den Host-PIN deiner Party ein.")
+                        Text("hostpin.subtitle")
                             .font(.title3)
                             .foregroundStyle(.white.opacity(0.85))
                             .multilineTextAlignment(.center)
@@ -106,7 +106,7 @@ struct HostPinEntryView: View {
                 }
                 .padding(.top, 50)
             }
-            .navigationTitle("Music Voting")
+            .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
@@ -116,7 +116,7 @@ struct HostPinEntryView: View {
                     Button {
                         appState.currentSite = .hostMenu
                     } label: {
-                        Label("Zurück", systemImage: "chevron.left")
+                        Label("nav.back", systemImage: "chevron.left")
                             .font(.headline)
                             .bold()
                             .frame(maxWidth: 120)
@@ -158,9 +158,9 @@ struct HostPinEntryView: View {
                 appState.currentSite = .admin
             }
         } catch let error as PartySessionError {
-            triggerError(error.errorDescription ?? "Falscher PIN")
+            triggerError(error.errorDescription ?? String(localized: "error.wrongPin"))
         } catch {
-            triggerError("Falscher PIN")
+            triggerError(String(localized: "error.wrongPin"))
         }
         isLoading = false
     }

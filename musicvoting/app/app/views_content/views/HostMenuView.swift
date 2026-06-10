@@ -26,11 +26,11 @@ struct HostMenuView: View {
                             .padding(.top, 100)
 
                         VStack(spacing: 8) {
-                            Text("Gastgeber")
+                            Text("hostmenu.title")
                                 .font(.largeTitle)
                                 .bold()
                                 .foregroundStyle(.white)
-                            Text("Was möchtest du tun?")
+                            Text("hostmenu.subtitle")
                                 .font(.title3)
                                 .foregroundStyle(.white.opacity(0.85))
                         }
@@ -51,9 +51,9 @@ struct HostMenuView: View {
                                             .frame(width: 28, height: 28)
                                     }
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text("Party erstellen")
+                                        Text("hostmenu.createParty")
                                             .font(.headline)
-                                        Text("Neue Party starten und Spotify verbinden")
+                                        Text("hostmenu.createPartySubtitle")
                                             .font(.caption)
                                             .opacity(0.8)
                                     }
@@ -78,9 +78,9 @@ struct HostMenuView: View {
                                         .font(.title2)
                                         .frame(width: 28, height: 28)
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text("Dashboard öffnen")
+                                        Text("hostmenu.openDashboard")
                                             .font(.headline)
-                                        Text("Bestehende Party per PIN steuern")
+                                        Text("hostmenu.openDashboardSubtitle")
                                             .font(.caption)
                                             .opacity(0.8)
                                     }
@@ -118,7 +118,7 @@ struct HostMenuView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Music Voting")
+            .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
@@ -128,7 +128,7 @@ struct HostMenuView: View {
                     Button {
                         appState.currentSite = .start
                     } label: {
-                        Label("Zurück", systemImage: "chevron.left")
+                        Label("nav.back", systemImage: "chevron.left")
                             .font(.headline)
                             .bold()
                             .frame(maxWidth: 120)
@@ -158,7 +158,7 @@ struct HostMenuView: View {
             } catch let error as PartySessionError {
                 errorMessage = error.errorDescription
             } catch {
-                errorMessage = "Party konnte nicht erstellt werden. Bitte versuche es erneut."
+                errorMessage = String(localized: "hostmenu.error.createFailed")
             }
             isCreating = false
         }

@@ -15,12 +15,12 @@ struct QRCodeView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Text("QR-Code & PIN")
+            Text("qr.title")
                 .font(.headline)
 
             if let pin = partySession.pin {
                 VStack(spacing: 4) {
-                    Text("Gäste-PIN")
+                    Text("qr.guestPin")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Text(pin)
@@ -32,7 +32,7 @@ struct QRCodeView: View {
 
             Group {
                 if isLoadingQR {
-                    ProgressView("QR-Code wird geladen…")
+                    ProgressView("qr.loading")
                         .frame(width: 260, height: 260)
                 } else if let image = qrCodeImage {
                     Image(uiImage: image)
@@ -45,10 +45,10 @@ struct QRCodeView: View {
                         Image(systemName: "xmark.circle")
                             .font(.system(size: 40))
                             .foregroundStyle(.secondary)
-                        Text("QR-Code konnte nicht geladen werden.")
+                        Text("qr.error.load")
                             .multilineTextAlignment(.center)
                             .foregroundStyle(.secondary)
-                        Button("Erneut versuchen") {
+                        Button("qr.retry") {
                             Task { await loadQR() }
                         }
                     }
@@ -64,7 +64,7 @@ struct QRCodeView: View {
                             ).opacity(0.7)
                         )
                         .frame(width: 260, height: 260)
-                        .overlay(Text("Kein QR-Code verfügbar.").multilineTextAlignment(.center))
+                        .overlay(Text("qr.error.unavailable").multilineTextAlignment(.center))
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 12))

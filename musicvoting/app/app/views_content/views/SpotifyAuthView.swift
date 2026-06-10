@@ -87,7 +87,7 @@ final class SpotifyAuthViewModel: ObservableObject {
             isLoggedIn = status.loggedIn
         } catch {
             isLoggedIn = false
-            errorMessage = "Spotify-Anmeldung ist derzeit nicht erreichbar. Bitte versuche es erneut."
+            errorMessage = String(localized: "spotify.error.unreachable")
         }
 
         isChecking = false
@@ -144,7 +144,7 @@ final class SpotifyAuthViewModel: ObservableObject {
 
         guard let url = components?.url else {
             isChecking = false
-            errorMessage = "Spotify-Anmeldung ist fehlgeschlagen. Bitte versuche es erneut."
+            errorMessage = String(localized: "spotify.error.failed")
             return
         }
 
@@ -160,7 +160,7 @@ final class SpotifyAuthViewModel: ObservableObject {
         } catch {
             isChecking = false
             isLoggedIn = false
-            errorMessage = "Spotify-Anmeldung ist fehlgeschlagen. Bitte versuche es erneut."
+            errorMessage = String(localized: "spotify.error.failed")
         }
     }
 }
@@ -190,17 +190,17 @@ struct SpotifyAuthView: View {
                             .padding(.top, 100)
 
                         VStack(spacing: 12) {
-                            Text("Spotify Login")
+                            Text("spotify.title")
                                 .font(.largeTitle)
                                 .bold()
                                 .foregroundStyle(.white)
 
                             if auth.isChecking {
-                                ProgressView("Spotify Login wird gepruft...")
+                                ProgressView("spotify.checking")
                                     .tint(.white)
                                     .foregroundStyle(.white)
                             } else {
-                                Text("Bitte melde dich zuerst mit Spotify an, für das Hosten der Party.")
+                                Text("spotify.prompt")
                                     .foregroundStyle(.white)
                                     .multilineTextAlignment(.center)
                                     .font(.title3)
@@ -213,7 +213,7 @@ struct SpotifyAuthView: View {
                                 Button {
                                     openURL(auth.loginURL)
                                 } label: {
-                                    Label("Bei Spotify anmelden", systemImage: "music.note")
+                                    Label("spotify.loginButton", systemImage: "music.note")
                                         .font(.headline)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(20)
@@ -246,7 +246,7 @@ struct SpotifyAuthView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Music Voting")
+            .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
@@ -256,7 +256,7 @@ struct SpotifyAuthView: View {
                     Button {
                         appState.currentSite = .start
                     } label: {
-                        Label("Zurück", systemImage: "chevron.left")
+                        Label("nav.back", systemImage: "chevron.left")
                             .font(.headline)
                             .bold()
                             .frame(maxWidth: 120)

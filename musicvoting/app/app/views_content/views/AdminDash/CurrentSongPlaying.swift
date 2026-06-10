@@ -63,12 +63,12 @@ struct CurrentSongPlaying: View {
             }
 
             // Song Title
-            Text(song?.title ?? "Noch nichts abgespielt")
+            Text(song?.title ?? String(localized: "dashboard.nowPlaying.empty"))
                 .font(.title)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
 
-            Text(song?.artist ?? "Druecke auf Play")
+            Text(song?.artist ?? String(localized: "dashboard.nowPlaying.pressPlay"))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 

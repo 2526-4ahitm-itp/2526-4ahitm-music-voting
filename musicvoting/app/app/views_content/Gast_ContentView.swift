@@ -22,15 +22,15 @@ struct Gast_ContentView: View {
             TabView {
                 SongAddView()
                     .tabItem {
-                        Label("Add Song", systemImage: "plus")
+                        Label("tab.addSong", systemImage: "plus")
                     }
 
                 VotingView()
                     .tabItem {
-                        Label("Voting", systemImage: "heart")
+                        Label("tab.voting", systemImage: "heart")
                     }
             }
-            .navigationTitle("Music Voting")
+            .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
@@ -46,8 +46,8 @@ struct Gast_ContentView: View {
         }
         .tint(Color("secondary"))
         .task { await listenForPartyEnded() }
-        .alert("Die Party ist beendet.", isPresented: $partyEndedAlert) {
-            Button("OK") {
+        .alert("alert.partyEnded", isPresented: $partyEndedAlert) {
+            Button("alert.ok") {
                 partySession.clear()
                 appState.currentSite = .start
             }

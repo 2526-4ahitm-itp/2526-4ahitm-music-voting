@@ -29,7 +29,7 @@ struct StartView: View {
                                 .padding(.top, 120)
                             
                             VStack {
-                                Text("Schlechte Musik auf der Party? Nicht mehr! Denn MusicVoting ermöglicht es jedem Partygast ganz einfach mittels Smartphone mitzubestimmen, welche Musik gespielt werden soll.")
+                                Text("start.tagline")
                                     .foregroundStyle(.white)
                                     .multilineTextAlignment(.center)
                                     .font(.title2)
@@ -55,7 +55,7 @@ struct StartView: View {
                                         appState.currentSite = .codeInput
                                     }
                                 } label: {
-                                    Label("Gast auf einer Party", systemImage: "party.popper")
+                                    Label("start.guestButton", systemImage: "party.popper")
                                         .font(.headline)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(20)
@@ -74,7 +74,7 @@ struct StartView: View {
                                         appState.currentSite = .hostMenu
                                     }
                                 } label: {
-                                    Label("Gastgeber auf einer Party", systemImage: "crown")
+                                    Label("start.hostButton", systemImage: "crown")
                                         .font(.headline)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(20)
@@ -91,19 +91,13 @@ struct StartView: View {
                         }
                     }
                 }
-                .navigationTitle("Music Voting")
+                .navigationTitle("app.title")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(.visible, for: .navigationBar)
                 .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         HStack(spacing: 14) {
-                            NavigationLink(destination: BackendSettingsView()) {
-                                Image(systemName: "gearshape")
-                                    .foregroundStyle(.white)
-                            }
-                            .accessibilityIdentifier("start.settings")
-
                             NavigationLink(destination: InfoView()) {
                                 Image(systemName: "info.circle")
                                     .foregroundStyle(.white)

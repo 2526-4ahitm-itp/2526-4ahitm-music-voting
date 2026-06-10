@@ -23,9 +23,9 @@ struct InfoView: View {
                     
                     // Header
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("MusicVoting")
+                        Text("info.appName")
                             .font(.system(size: 40).bold())
-                        Text("Schlechte Musik auf der Party? Nicht mehr!")
+                        Text("info.tagline")
                             .font(.headline)
                             .opacity(0.9)
                     }
@@ -36,28 +36,28 @@ struct InfoView: View {
                     // Sektion: Das Problem
                     InfoCard(
                         icon: "hand.thumbsdown.fill",
-                        title: "Das Problem",
-                        text: "Oft hat der Gastgeber keine Zeit für die Musik oder der Geschmack der Gäste geht auseinander. Die Folge? Langweilige Stimmung."
+                        title: String(localized: "info.problem.title"),
+                        text: String(localized: "info.problem.text")
                     )
-                    
+
                     // Sektion: Die Lösung
                     InfoCard(
                         icon: "bolt.fill",
-                        title: "Unsere Lösung",
-                        text: "Jeder Gast kann via Smartphone Songs zur Playlist hinzufügen und über die Reihenfolge abstimmen. Demokratie auf dem Dancefloor!"
+                        title: String(localized: "info.solution.title"),
+                        text: String(localized: "info.solution.text")
                     )
-                    
+
                     // Sektion: Technik & Ziel
                     InfoCard(
                         icon: "target",
-                        title: "Das Ziel",
-                        text: "Eine benutzerfreundliche App, die über Spotify Premium läuft und für maximale Partystimmung sorgt."
+                        title: String(localized: "info.goal.title"),
+                        text: String(localized: "info.goal.text")
                     )
                     
                     // Externer Link Button
                     Link(destination: URL(string: "https://2526-4ahitm-itp.github.io/2526-4ahitm-music-voting/")!) {
                         HStack {
-                            Text("Mehr über das Projekt erfahren")
+                            Text("info.learnMore")
                             Image(systemName: "arrow.up.right.square")
                         }
                         .font(.headline)
@@ -76,7 +76,7 @@ struct InfoView: View {
                 }
             }
         }
-        .navigationTitle("Music Voting")
+        .navigationTitle("app.title")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)

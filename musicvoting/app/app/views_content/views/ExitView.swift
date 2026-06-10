@@ -21,8 +21,8 @@ struct ExitView: View {
                 let isGuest = appState.currentSite == .guest
                 
                 Text(isGuest
-                     ? "Möchtest du die Party wirklich verlassen?"
-                     : "Möchtest du die Party wirklich beenden?")
+                     ? LocalizedStringKey("exit.guest.confirm")
+                     : LocalizedStringKey("exit.host.confirm"))
                     .font(.title2)
                     .bold()
                     .multilineTextAlignment(.center)
@@ -31,7 +31,7 @@ struct ExitView: View {
                     handleExit()
                 } label: {
                     Label(
-                        isGuest ? "Ja, Party verlassen" : "Ja, Party beenden",
+                        isGuest ? LocalizedStringKey("exit.guest.button") : LocalizedStringKey("exit.host.button"),
                         systemImage: "party.popper"
                     )
                     .font(.headline)

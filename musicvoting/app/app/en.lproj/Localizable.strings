@@ -1,0 +1,99 @@
+/* Global */
+"app.title" = "Music Voting";
+"nav.back" = "Back";
+"error.wrongCode" = "Wrong code";
+"error.wrongPin" = "Wrong PIN";
+"error.backendUnreachable" = "Backend unreachable. Please start the backend and try again.";
+"unknown" = "Unknown";
+"alert.ok" = "OK";
+"alert.partyEnded" = "The party has ended.";
+
+/* StartView */
+"start.tagline" = "Bad music at the party? Not anymore! MusicVoting lets every guest easily vote on which songs get played — straight from their smartphone.";
+"start.guestButton" = "Guest at a party";
+"start.hostButton" = "Host a party";
+
+/* CodeInputView */
+"code.prompt" = "Enter your access code:";
+
+/* HostMenuView */
+"hostmenu.title" = "Host";
+"hostmenu.subtitle" = "What would you like to do?";
+"hostmenu.createParty" = "Create party";
+"hostmenu.createPartySubtitle" = "Start a new party and connect Spotify";
+"hostmenu.openDashboard" = "Open dashboard";
+"hostmenu.openDashboardSubtitle" = "Control existing party via PIN";
+"hostmenu.error.createFailed" = "Could not create party. Please try again.";
+
+/* HostPinEntryView */
+"hostpin.title" = "Open Dashboard";
+"hostpin.subtitle" = "Enter your party's host PIN.";
+
+/* SpotifyAuthView */
+"spotify.title" = "Spotify Login";
+"spotify.checking" = "Checking Spotify login…";
+"spotify.prompt" = "Please sign in with Spotify first to host a party.";
+"spotify.loginButton" = "Sign in with Spotify";
+"spotify.error.failed" = "Spotify sign-in failed. Please try again.";
+"spotify.error.unreachable" = "Spotify sign-in is currently unreachable. Please try again.";
+
+/* SongAddView */
+"search.placeholder" = "Search…";
+"search.hint" = "Start searching!";
+"search.hintDetail" = "Search for songs, artists, and albums!";
+"search.noResults" = "No results found.";
+"search.error.invalid" = "Invalid search query.";
+"search.error.failed" = "Search failed. Please try again.";
+"search.add.error" = "Error adding song.";
+
+/* VotingView */
+"voting.title" = "Vote for Your Favourite Songs";
+"voting.queue.empty" = "Queue is empty";
+
+/* ExitView */
+"exit.guest.confirm" = "Do you really want to leave the party?";
+"exit.host.confirm" = "Do you really want to end the party?";
+"exit.guest.button" = "Yes, leave party";
+"exit.host.button" = "Yes, end party";
+
+/* QRCodeView */
+"qr.title" = "QR Code & PIN";
+"qr.guestPin" = "Guest PIN";
+"qr.loading" = "Loading QR code…";
+"qr.error.load" = "Could not load QR code.";
+"qr.error.unavailable" = "No QR code available.";
+"qr.retry" = "Try again";
+
+/* BackendSettingsView */
+"settings.backend.title" = "Backend";
+"settings.backend.hint" = "Enter your Mac's IP address here (e.g. `172.20.10.2:8080` via iPhone hotspot).";
+"settings.backend.placeholder" = "e.g. 172.20.10.2:8080";
+"settings.backend.saved" = "Saved: %@";
+"settings.backend.reset" = "Reset to %@";
+"settings.backend.invalid" = "Invalid address. Example: 172.20.10.2:8080";
+"settings.backend.save" = "Save";
+"settings.backend.resetButton" = "Reset";
+
+/* AdminDashboard */
+"dashboard.hostPin" = "Host PIN";
+"dashboard.nowPlaying.empty" = "Nothing played yet";
+"dashboard.nowPlaying.pressPlay" = "Press Play";
+"dashboard.queue.title" = "Queue";
+"dashboard.queue.empty" = "No songs in the queue";
+
+/* Tab labels */
+"tab.addSong" = "Add Song";
+"tab.voting" = "Voting";
+"tab.admin" = "Admin";
+"tab.qrCode" = "QR Code";
+
+/* InfoView */
+"info.appName" = "MusicVoting";
+"info.tagline" = "Bad music at the party? Not anymore!";
+"info.problem.title" = "The Problem";
+"info.problem.text" = "Often the host has no time to manage the music, or guests have different tastes. The result? A boring atmosphere.";
+"info.solution.title" = "Our Solution";
+"info.solution.text" = "Every guest can add songs to the playlist and vote on the order via smartphone. Democracy on the dance floor!";
+"info.goal.title" = "Our Goal";
+"info.goal.text" = "A user-friendly app powered by Spotify Premium that maximises the party atmosphere.";
+"info.learnMore" = "Learn more about the project";

@@ -331,7 +331,7 @@ final class AdminDashboardViewModel: ObservableObject {
         let artistText = track.artists.map(\.name).joined(separator: ", ")
         return Song(
             title: track.name,
-            artist: artistText.isEmpty ? "Unbekannt" : artistText,
+            artist: artistText.isEmpty ? String(localized: "unknown") : artistText,
             imageUrl: track.album.images.first?.url
                 ?? "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb",
             uri: track.uri
@@ -349,7 +349,7 @@ struct AdminDashboard: View {
                     if let hostPin = partySession.hostPin {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Host-PIN")
+                                Text("dashboard.hostPin")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Text(hostPin)

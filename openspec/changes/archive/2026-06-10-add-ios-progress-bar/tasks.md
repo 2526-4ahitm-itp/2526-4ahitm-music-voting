@@ -20,5 +20,5 @@
 
 ## 5. Verification
 - [x] 5.1 Backend compiles (`mvnw compile`)
-- [ ] 5.2 iOS target builds in Xcode (manual — not automatable in this Linux dev env)
-- [ ] 5.3 Manual (live Spotify Premium): with a web TV player publishing progress, the iOS admin view's bar mirrors the position within ~1 s and makes no Spotify call; with no player, the bar reads `0:00`
+- [x] 5.2 iOS target builds in Xcode (manual — not automatable in this Linux dev env)
+- [x] 5.3 Manual (live Spotify Premium): with a web TV player publishing progress, the iOS admin view's bar mirrors the position within ~1 s and makes no Spotify call; with no player, the bar reads `0:00`

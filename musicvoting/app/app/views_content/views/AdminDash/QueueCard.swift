@@ -14,14 +14,14 @@ struct QueueCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Warteschlange")
+            Text("dashboard.queue.title")
                 .font(.title2) // title2 wirkt oft harmonischer in Cards
                 .fontWeight(.bold)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 4)
 
             if songs.isEmpty {
-                Text("Keine Songs in der Warteschlange")
+                Text("dashboard.queue.empty")
                     .foregroundColor(.secondary) // Wirkt besser im Glass-Look
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 12)

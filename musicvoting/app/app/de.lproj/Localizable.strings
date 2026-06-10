@@ -1,0 +1,99 @@
+/* Global */
+"app.title" = "Music Voting";
+"nav.back" = "Zurück";
+"error.wrongCode" = "Falscher Code";
+"error.wrongPin" = "Falscher PIN";
+"error.backendUnreachable" = "Backend nicht erreichbar. Bitte Backend starten und erneut versuchen.";
+"unknown" = "Unbekannt";
+"alert.ok" = "OK";
+"alert.partyEnded" = "Die Party ist beendet.";
+
+/* StartView */
+"start.tagline" = "Schlechte Musik auf der Party? Nicht mehr! Denn MusicVoting ermöglicht es jedem Partygast ganz einfach mittels Smartphone mitzubestimmen, welche Musik gespielt werden soll.";
+"start.guestButton" = "Gast auf einer Party";
+"start.hostButton" = "Gastgeber auf einer Party";
+
+/* CodeInputView */
+"code.prompt" = "Geben Sie Ihren Zugangscode ein:";
+
+/* HostMenuView */
+"hostmenu.title" = "Gastgeber";
+"hostmenu.subtitle" = "Was möchtest du tun?";
+"hostmenu.createParty" = "Party erstellen";
+"hostmenu.createPartySubtitle" = "Neue Party starten und Spotify verbinden";
+"hostmenu.openDashboard" = "Dashboard öffnen";
+"hostmenu.openDashboardSubtitle" = "Bestehende Party per PIN steuern";
+"hostmenu.error.createFailed" = "Party konnte nicht erstellt werden. Bitte versuche es erneut.";
+
+/* HostPinEntryView */
+"hostpin.title" = "Dashboard öffnen";
+"hostpin.subtitle" = "Gib den Host-PIN deiner Party ein.";
+
+/* SpotifyAuthView */
+"spotify.title" = "Spotify Login";
+"spotify.checking" = "Spotify Login wird gepruft...";
+"spotify.prompt" = "Bitte melde dich zuerst mit Spotify an, für das Hosten der Party.";
+"spotify.loginButton" = "Bei Spotify anmelden";
+"spotify.error.failed" = "Spotify-Anmeldung ist fehlgeschlagen. Bitte versuche es erneut.";
+"spotify.error.unreachable" = "Spotify-Anmeldung ist derzeit nicht erreichbar. Bitte versuche es erneut.";
+
+/* SongAddView */
+"search.placeholder" = "Suchen...";
+"search.hint" = "Fange an zu suchen!";
+"search.hintDetail" = "Suche nach Songs, Sängern und nach Musik Alben!";
+"search.noResults" = "Keine Ergebnisse gefunden.";
+"search.error.invalid" = "Ungueltige Suchanfrage.";
+"search.error.failed" = "Suche fehlgeschlagen. Bitte erneut versuchen.";
+"search.add.error" = "Fehler beim Hinzufuegen.";
+
+/* VotingView */
+"voting.title" = "Voten Sie für Ihre Lieblingsongs";
+"voting.queue.empty" = "Warteschlange ist leer";
+
+/* ExitView */
+"exit.guest.confirm" = "Möchtest du die Party wirklich verlassen?";
+"exit.host.confirm" = "Möchtest du die Party wirklich beenden?";
+"exit.guest.button" = "Ja, Party verlassen";
+"exit.host.button" = "Ja, Party beenden";
+
+/* QRCodeView */
+"qr.title" = "QR-Code & PIN";
+"qr.guestPin" = "Gäste-PIN";
+"qr.loading" = "QR-Code wird geladen…";
+"qr.error.load" = "QR-Code konnte nicht geladen werden.";
+"qr.error.unavailable" = "Kein QR-Code verfügbar.";
+"qr.retry" = "Erneut versuchen";
+
+/* BackendSettingsView */
+"settings.backend.title" = "Backend";
+"settings.backend.hint" = "Trage hier die IP/Adresse deines Macs ein (im iPhone-Hotspot z.B. `172.20.10.2:8080`).";
+"settings.backend.placeholder" = "z.B. 172.20.10.2:8080";
+"settings.backend.saved" = "Gespeichert: %@";
+"settings.backend.reset" = "Zurückgesetzt auf %@";
+"settings.backend.invalid" = "Ungültige Adresse. Beispiel: 172.20.10.2:8080";
+"settings.backend.save" = "Speichern";
+"settings.backend.resetButton" = "Zurücksetzen";
+
+/* AdminDashboard */
+"dashboard.hostPin" = "Host-PIN";
+"dashboard.nowPlaying.empty" = "Noch nichts abgespielt";
+"dashboard.nowPlaying.pressPlay" = "Druecke auf Play";
+"dashboard.queue.title" = "Warteschlange";
+"dashboard.queue.empty" = "Keine Songs in der Warteschlange";
+
+/* Tab labels */
+"tab.addSong" = "Add Song";
+"tab.voting" = "Voting";
+"tab.admin" = "Admin";
+"tab.qrCode" = "QR-Code";
+
+/* InfoView */
+"info.appName" = "MusicVoting";
+"info.tagline" = "Schlechte Musik auf der Party? Nicht mehr!";
+"info.problem.title" = "Das Problem";
+"info.problem.text" = "Oft hat der Gastgeber keine Zeit für die Musik oder der Geschmack der Gäste geht auseinander. Die Folge? Langweilige Stimmung.";
+"info.solution.title" = "Unsere Lösung";
+"info.solution.text" = "Jeder Gast kann via Smartphone Songs zur Playlist hinzufügen und über die Reihenfolge abstimmen. Demokratie auf dem Dancefloor!";
+"info.goal.title" = "Das Ziel";
+"info.goal.text" = "Eine benutzerfreundliche App, die über Spotify Premium läuft und für maximale Partystimmung sorgt.";
+"info.learnMore" = "Mehr über das Projekt erfahren";

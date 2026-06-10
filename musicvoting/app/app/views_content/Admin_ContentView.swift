@@ -21,25 +21,25 @@ struct Admin_ContentView: View {
             TabView {
                 AdminDashboard()
                     .tabItem {
-                        Label("Admin", systemImage: "person.crop.circle")
+                        Label("tab.admin", systemImage: "person.crop.circle")
                     }
 
                 QRCodeView()
                     .tabItem {
-                        Label("QR-Code", systemImage: "qrcode")
+                        Label("tab.qrCode", systemImage: "qrcode")
                     }
 
                 VotingView()
                     .tabItem {
-                        Label("Voting", systemImage: "heart")
+                        Label("tab.voting", systemImage: "heart")
                     }
 
                 SongAddView()
                     .tabItem {
-                        Label("Add Song", systemImage: "plus")
+                        Label("tab.addSong", systemImage: "plus")
                     }
             }
-            .navigationTitle("Music Voting")
+            .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
             //.toolbarBackground(.visible, for: .navigationBar)

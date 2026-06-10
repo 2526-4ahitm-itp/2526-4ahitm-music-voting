@@ -93,7 +93,7 @@ final class SongAddViewModel: ObservableObject {
 
         guard let url = components?.url else {
             isLoading = false
-            errorMessage = "Ungueltige Suchanfrage."
+            errorMessage = String(localized: "search.error.invalid")
             return
         }
 
@@ -101,7 +101,7 @@ final class SongAddViewModel: ObservableObject {
             let (data, response) = try await URLSession.shared.data(from: url)
             guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
                 results = []
-                errorMessage = "Suche fehlgeschlagen. Bitte erneut versuchen."
+                errorMessage = String(localized: "search.error.failed")
                 isLoading = false
                 return
             }
@@ -109,7 +109,7 @@ final class SongAddViewModel: ObservableObject {
             results = decoded.tracks.items.compactMap { $0 }.map(Self.mapTrackToSearch)
         } catch {
             results = []
-            errorMessage = "Backend nicht erreichbar. Bitte Backend starten und erneut versuchen."
+            errorMessage = String(localized: "error.backendUnreachable")
         }
 
         isLoading = false
@@ -121,7 +121,7 @@ final class SongAddViewModel: ObservableObject {
             id: item.id,
             uri: item.uri,
             title: item.name,
-            artist: artists.isEmpty ? "Unbekannt" : artists,
+            artist: artists.isEmpty ? String(localized: "unknown") : artists,
             imageUrl: item.album.images.first?.url
                 ?? "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"
         )
@@ -143,17 +143,17 @@ final class SongAddViewModel: ObservableObject {
         do {
             let (_, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                errorMessage = "Fehler beim Hinzufuegen."
+                errorMessage = String(localized: "search.add.error")
                 return
             }
 
             if (200...299).contains(httpResponse.statusCode) {
                 addedTrackIds.insert(track.id)
             } else {
-                errorMessage = "Fehler beim Hinzufuegen."
+                errorMessage = String(localized: "search.add.error")
             }
         } catch {
-            errorMessage = "Backend nicht erreichbar. Bitte Backend starten und erneut versuchen."
+            errorMessage = String(localized: "error.backendUnreachable")
         }
     }
 }
@@ -200,7 +200,7 @@ struct SongAddView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
 
-            TextField("Suchen...", text: $viewModel.query)
+            TextField("search.placeholder", text: $viewModel.query)
                 .textInputAutocapitalization(.never)
                 .disableAutocorrection(true)
                 .onChange(of: viewModel.query) { newValue in
@@ -240,13 +240,13 @@ struct SongAddView: View {
                                 .foregroundColor(.gray)
                                 .padding(.bottom, 20)
 
-                            Text("Fange an zu suchen!")
+                            Text("search.hint")
                                 .font(.title2)
                                 .bold()
                                 .foregroundColor(.primary)
                                 .multilineTextAlignment(.center)
 
-                            Text("Suche nach Songs, Sängern und nach Musik Alben!")
+                            Text("search.hintDetail")
                                 .font(.body)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
@@ -261,7 +261,7 @@ struct SongAddView: View {
                         // Dies wird angezeigt, wenn gesucht wurde, aber nichts gefunden wurde
                         Text(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2
                              ? ""
-                             : "Keine Ergebnisse gefunden.")
+                             : String(localized: "search.noResults"))
                             .foregroundColor(Color("accent"))
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 12)

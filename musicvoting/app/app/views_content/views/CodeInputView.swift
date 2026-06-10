@@ -33,7 +33,7 @@ struct CodeInputView: View {
                 .ignoresSafeArea()
 
                 VStack(spacing: 30) {
-                    Text("Geben Sie Ihren Zugangscode ein:")
+                    Text("code.prompt")
                         .font(.title2)
                         .foregroundColor(.white)
                         .bold()
@@ -104,7 +104,7 @@ struct CodeInputView: View {
                 }
                 .padding(.top, 50)
             }
-            .navigationTitle("Music Voting")
+            .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
@@ -114,7 +114,7 @@ struct CodeInputView: View {
                     Button {
                         appState.currentSite = .start
                     } label: {
-                        Label("Zurück", systemImage: "chevron.left")
+                        Label("nav.back", systemImage: "chevron.left")
                             .font(.headline)
                             .bold()
                             .frame(maxWidth: 120)
@@ -165,9 +165,9 @@ struct CodeInputView: View {
                 appState.currentSite = .guest
             }
         } catch let error as PartySessionError {
-            triggerError(error.errorDescription ?? "Falscher Code")
+            triggerError(error.errorDescription ?? String(localized: "error.wrongCode"))
         } catch {
-            triggerError("Falscher Code")
+            triggerError(String(localized: "error.wrongCode"))
         }
         isLoading = false
     }
