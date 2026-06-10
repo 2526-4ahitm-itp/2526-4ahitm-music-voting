@@ -225,7 +225,8 @@ public class SpotifyCallbackResource {
             final String id = installationId;
             final String iosPartyId = partyId == null ? "" : partyId.trim();
             return stream.select().where(event ->
-                    "party-ended".equals(event.type())
+                    ("party-ended".equals(event.type())
+                        && (iosPartyId.isBlank() || iosPartyId.equals(event.payload().get("partyId"))))
                     || ("ios".equalsIgnoreCase(event.payload().get("source"))
                             && id.equals(event.payload().get("installationId")))
                     || (("queue-updated".equals(event.type())
@@ -238,7 +239,8 @@ public class SpotifyCallbackResource {
         if ("web".equalsIgnoreCase(source)) {
             final String webPartyId = partyId == null ? "" : partyId.trim();
             return stream.select().where(event ->
-                    "party-ended".equals(event.type())
+                    ("party-ended".equals(event.type())
+                        && (webPartyId.isBlank() || webPartyId.equals(event.payload().get("partyId"))))
                     || ("login-success".equals(event.type())
                         && "web".equalsIgnoreCase(event.payload().get("source")))
                     || (("queue-updated".equals(event.type())

@@ -9,6 +9,7 @@ import SwiftUI
 
 private struct SSEEvent: Decodable {
     let type: String
+    let payload: [String: String]?
 }
 
 struct Admin_ContentView: View {
@@ -68,7 +69,8 @@ struct Admin_ContentView: View {
                     let json = String(line.dropFirst(5)).trimmingCharacters(in: .whitespaces)
                     guard let data = json.data(using: .utf8),
                           let event = try? JSONDecoder().decode(SSEEvent.self, from: data),
-                          event.type == "party-ended"
+                          event.type == "party-ended",
+                          event.payload?["partyId"] == partySession.partyId
                     else { continue }
                     partySession.clear()
                     appState.currentSite = .start

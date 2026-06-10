@@ -105,7 +105,7 @@ export class HostDashboard implements OnInit, OnDestroy {
         } else if (data?.type === 'track-changed') {
           this.loadCurrentPlayback();
           this.loadPlaylist();
-        } else if (data?.type === 'party-ended') {
+        } else if (data?.type === 'party-ended' && data?.payload?.partyId === this.partyId) {
           this.ngZone.run(() => {
             this.partyService.clearParty();
             this.router.navigate(['/']);
