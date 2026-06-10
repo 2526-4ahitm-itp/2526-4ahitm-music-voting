@@ -4,10 +4,13 @@ struct HostPinEntryView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var partySession: PartySessionStore
 
-    @State private var pin = ""
+    @State private var code = ""
+    @State private var attempts: Int = 0
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @FocusState private var pinFocused: Bool
+    @FocusState private var isFocused: Bool
+
+    private let codeLength = 5
 
     var body: some View {
         NavigationStack {
@@ -19,86 +22,89 @@ struct HostPinEntryView: View {
                 )
                 .ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: 24) {
-                        Image("note")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 160)
-                            .padding(.top, 100)
+                VStack(spacing: 30) {
+                    Image("note")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 160)
+                        .padding(.top, 40)
 
-                        VStack(spacing: 8) {
-                            Text("Dashboard öffnen")
-                                .font(.largeTitle)
-                                .bold()
-                                .foregroundStyle(.white)
-                            Text("Gib den Host-PIN deiner Party ein.")
-                                .font(.title3)
-                                .foregroundStyle(.white.opacity(0.85))
-                                .multilineTextAlignment(.center)
-                        }
-                        .padding(.horizontal, 24)
+                    VStack(spacing: 8) {
+                        Text("Dashboard öffnen")
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundStyle(.white)
+                        Text("Gib den Host-PIN deiner Party ein.")
+                            .font(.title3)
+                            .foregroundStyle(.white.opacity(0.85))
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, 24)
 
-                        VStack(spacing: 15) {
-                            TextField("12345", text: $pin)
-                                .keyboardType(.numberPad)
-                                .font(.system(size: 40, weight: .bold, design: .monospaced))
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(.white)
-                                .padding(20)
-                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .stroke(.white.opacity(0.3), lineWidth: 1)
-                                )
-                                .focused($pinFocused)
-                                .onChange(of: pin) { newValue in
-                                    pin = String(newValue.filter(\.isNumber).prefix(5))
+                    ZStack {
+                        TextField("", text: $code)
+                            .keyboardType(.numberPad)
+                            .textContentType(.oneTimeCode)
+                            .focused($isFocused)
+                            .opacity(0)
+                            .frame(width: 1, height: 1)
+                            .onChange(of: code) { newValue in
+                                let filtered = newValue.filter { "0123456789".contains($0) }
+                                let trimmed = String(filtered.prefix(codeLength))
+                                errorMessage = nil
+                                code = trimmed
+                                if code.count == codeLength && !isLoading {
+                                    Task { await submit() }
                                 }
-
-                            if let error = errorMessage {
-                                Text(error)
-                                    .font(.callout)
-                                    .foregroundStyle(.white)
-                                    .multilineTextAlignment(.center)
-                                    .bold()
-                                    .padding(16)
-                                    .frame(maxWidth: .infinity)
-                                    .background(Color("primary").opacity(0.30), in: RoundedRectangle(cornerRadius: 30))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 30)
-                                            .stroke(.white.opacity(0.2), lineWidth: 2)
-                                    )
                             }
 
-                            Button {
-                                Task { await submit() }
-                            } label: {
-                                Group {
-                                    if isLoading {
+                        HStack(spacing: 15) {
+                            ForEach(0..<codeLength, id: \.self) { index in
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .fill(.ultraThinMaterial)
+                                        .frame(width: 55, height: 70)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 15)
+                                                .stroke(
+                                                    isFocused && code.count == index
+                                                    ? .white
+                                                    : .white.opacity(0.2),
+                                                    lineWidth: 1.5
+                                                )
+                                        )
+                                        .shadow(color: .primary.opacity(0.1), radius: 10, x: 0, y: 5)
+
+                                    if isLoading && index < code.count {
                                         ProgressView()
-                                            .tint(Color("primary"))
+                                            .tint(.white)
+                                            .scaleEffect(0.7)
                                     } else {
-                                        Text("Weiter")
-                                            .font(.headline)
+                                        Text(getDigit(at: index))
+                                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                                            .foregroundColor(.white)
                                     }
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(20)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 30)
-                                        .fill(.white)
-                                )
+                                .onTapGesture {
+                                    isFocused = true
+                                }
                             }
-                            .foregroundStyle(Color("primary"))
-                            .disabled(isLoading || pin.count != 5)
-                            .opacity(pin.count == 5 ? 1 : 0.6)
                         }
-                        .padding(.horizontal, 40)
-                        .padding(.top, 10)
+                        .modifier(ShakeEffect(animatableData: CGFloat(attempts)))
                     }
-                    .padding(.bottom, 40)
+
+                    if let error = errorMessage {
+                        Text(error)
+                            .foregroundColor(.white)
+                            .font(.title3)
+                            .bold()
+                            .multilineTextAlignment(.center)
+                            .transition(.opacity)
+                    }
+
+                    Spacer()
                 }
+                .padding(.top, 50)
             }
             .navigationTitle("Music Voting")
             .navigationBarTitleDisplayMode(.inline)
@@ -127,23 +133,49 @@ struct HostPinEntryView: View {
                     .foregroundStyle(.white)
                 }
             }
-            .onAppear { pinFocused = true }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    isFocused = true
+                }
+            }
         }
     }
 
+    private func getDigit(at index: Int) -> String {
+        guard index < code.count else { return "" }
+        let i = code.index(code.startIndex, offsetBy: index)
+        return String(code[i])
+    }
+
     private func submit() async {
-        guard pin.count == 5 else { return }
+        guard code.count == codeLength else { return }
         isLoading = true
         errorMessage = nil
         do {
-            _ = try await partySession.resolveAsHost(hostPin: pin)
-            appState.currentSite = .admin
+            _ = try await partySession.resolveAsHost(hostPin: code)
+            isFocused = false
+            withAnimation(.easeInOut) {
+                appState.currentSite = .admin
+            }
         } catch let error as PartySessionError {
-            errorMessage = error.errorDescription
+            triggerError(error.errorDescription ?? "Falscher PIN")
         } catch {
-            errorMessage = "Fehler beim Laden der Party. Bitte versuche es erneut."
+            triggerError("Falscher PIN")
         }
         isLoading = false
+    }
+
+    private func triggerError(_ message: String) {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+        withAnimation(.default) {
+            errorMessage = message
+            attempts += 1
+        }
+        code = ""
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            isFocused = true
+        }
     }
 }
 
