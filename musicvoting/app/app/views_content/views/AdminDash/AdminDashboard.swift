@@ -90,12 +90,20 @@ final class AdminDashboardViewModel: ObservableObject {
                     guard line.hasPrefix("data:") else { continue }
                     let json = String(line.dropFirst(5)).trimmingCharacters(in: .whitespaces)
                     guard let data = json.data(using: .utf8),
-                          let event = try? JSONDecoder().decode(ProgressEvent.self, from: data),
-                          event.type == "progress",
-                          let payload = event.payload
+                          let event = try? JSONDecoder().decode(ProgressEvent.self, from: data)
                     else { continue }
-                    currentPosition = payload.position.flatMap(Double.init) ?? 0
-                    currentDuration = payload.duration.flatMap(Double.init) ?? 0
+
+                    if event.type == "progress", let payload = event.payload {
+                        currentPosition = payload.position.flatMap(Double.init) ?? 0
+                        currentDuration = payload.duration.flatMap(Double.init) ?? 0
+                        if let pausedStr = payload.paused {
+                            isPlaying = pausedStr != "true"
+                        }
+                    } else if event.type == "track-changed" {
+                        currentPosition = 0
+                        currentDuration = 0
+                        await refreshDashboardState()
+                    }
                 }
             } catch {
                 if Task.isCancelled { return }
@@ -121,10 +129,22 @@ final class AdminDashboardViewModel: ObservableObject {
         do {
             let (data, _) = try await URLSession.shared.data(from: queueURL)
             let response = try JSONDecoder().decode(QueueResponse.self, from: data)
-            let newQueue = response.queue.map(Self.mapTrackToSong)
-            
-            if newQueue != queueSongs {
-                queueSongs = newQueue
+            let allSongs = response.queue.map(Self.mapTrackToSong)
+
+            // Before the party starts, preview the first queued song — matches webapp behaviour.
+            if currentSong == nil, let first = allSongs.first {
+                currentSong = first
+            }
+
+            // Exclude the currently shown song from the queue list.
+            let currentUri = currentSong?.uri
+            let filtered = allSongs.filter { song in
+                guard let uri = song.uri, let current = currentUri else { return true }
+                return uri != current
+            }
+
+            if filtered != queueSongs {
+                queueSongs = filtered
             }
         } catch {
             queueSongs = []
@@ -138,6 +158,9 @@ final class AdminDashboardViewModel: ObservableObject {
             isPlaying = response.isPlaying
             if let track = response.track {
                 currentSong = Self.mapTrackToSong(track)
+            } else {
+                currentPosition = 0
+                currentDuration = 0
             }
         } catch {
             // Keep the last known state if backend call fails.
@@ -155,7 +178,7 @@ final class AdminDashboardViewModel: ObservableObject {
 
         if isPlaying {
             await pauseCurrentSong()
-        } else if currentSong != nil {
+        } else if partyStarted {
             await resumeCurrentSong()
         } else {
             await startPlaylist()
@@ -205,10 +228,18 @@ final class AdminDashboardViewModel: ObservableObject {
         }
     }
 
-    private func performPostRequest(url: URL) async -> Bool {
+    private func hostAuthorizedRequest(url: URL, method: String) -> URLRequest {
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
+        request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let pin = partySession?.hostPin {
+            request.setValue("Bearer \(pin)", forHTTPHeaderField: "Authorization")
+        }
+        return request
+    }
+
+    private func performPostRequest(url: URL) async -> Bool {
+        var request = hostAuthorizedRequest(url: url, method: "POST")
         request.httpBody = Data("{}".utf8)
 
         do {
@@ -223,9 +254,7 @@ final class AdminDashboardViewModel: ObservableObject {
     }
 
     private func performPostRequest<T: Decodable>(url: URL, decode type: T.Type) async -> T? {
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var request = hostAuthorizedRequest(url: url, method: "POST")
         request.httpBody = Data("{}".utf8)
 
         do {
@@ -247,9 +276,7 @@ final class AdminDashboardViewModel: ObservableObject {
 
     func deleteSong(uri: String) async {
         guard !uri.isEmpty else { return }
-        var request = URLRequest(url: removeURL)
-        request.httpMethod = "DELETE"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var request = hostAuthorizedRequest(url: removeURL, method: "DELETE")
         request.httpBody = try? JSONSerialization.data(withJSONObject: ["uri": uri])
 
         do {
@@ -279,9 +306,7 @@ final class AdminDashboardViewModel: ObservableObject {
     }
 
     private func performPutRequest(url: URL, body: [String: String]) async -> Bool {
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var request = hostAuthorizedRequest(url: url, method: "PUT")
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
         do {
