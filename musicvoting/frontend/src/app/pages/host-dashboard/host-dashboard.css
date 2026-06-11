@@ -253,8 +253,15 @@ body{
 .track-info {
   display: flex;
   gap: 5rem;
-  height: 3.75rem;
+  min-height: 3.75rem;
   flex: 1;
+  padding-right: 4.5rem;
+  box-sizing: border-box;
+}
+
+.track-info .info {
+  flex: 1;
+  min-width: 0;
 }
 
 .track-info .delete-icon {
