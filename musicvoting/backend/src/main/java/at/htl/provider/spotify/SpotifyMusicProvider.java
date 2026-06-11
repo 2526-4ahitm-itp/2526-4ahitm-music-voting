@@ -410,8 +410,14 @@ public class SpotifyMusicProvider implements MusicProvider {
                         .build();
             }
 
+            PartyEntity peBefore = PartyEntity.findById(party.id().value());
+            Long pausedPositionMs = peBefore != null ? peBefore.pausedPositionMs : null;
+
             String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
-            Response response = sendPut(party, url, null);
+            String body = pausedPositionMs != null
+                    ? mapper.writeValueAsString(Map.of("position_ms", pausedPositionMs))
+                    : null;
+            Response response = sendPut(party, url, body);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 party.getSpotifyCredentials().setLastPlaybackActive(true);
                 PartyEntity pe = PartyEntity.findById(party.id().value());

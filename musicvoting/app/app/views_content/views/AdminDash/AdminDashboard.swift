@@ -131,9 +131,11 @@ final class AdminDashboardViewModel: ObservableObject {
             let response = try JSONDecoder().decode(QueueResponse.self, from: data)
             let allSongs = response.queue.map(Self.mapTrackToSong)
 
-            // Before the party starts, preview the first queued song — matches webapp behaviour.
-            if currentSong == nil, let first = allSongs.first {
-                currentSong = first
+            // Before the party starts, preview the top queued song and keep it in
+            // sync as votes reorder the queue — matches webapp behaviour. Once the
+            // party has started, currentSong reflects what's actually playing.
+            if !partyStarted {
+                currentSong = allSongs.first
             }
 
             // Exclude the currently shown song from the queue list.

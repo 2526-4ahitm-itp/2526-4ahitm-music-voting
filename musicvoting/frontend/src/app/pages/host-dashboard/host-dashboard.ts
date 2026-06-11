@@ -127,6 +127,9 @@ export class HostDashboard implements OnInit, OnDestroy {
         if (res && Array.isArray(res.queue)) {
           if (!this.partyStarted) {
             this.currentTrack = res.queue.length > 0 ? res.queue[0] : null;
+            this.currentPosition = 0;
+            this.currentDuration = 0;
+            this.updateProgressPercent();
           }
           const currentUri = this.currentTrack?.uri;
           const currentId = this.currentTrack?.id;
@@ -196,6 +199,14 @@ export class HostDashboard implements OnInit, OnDestroy {
       this.currentPosition = Number(payload.position) || 0;
       this.currentDuration = Number(payload.duration) || 0;
       this.updateProgressPercent();
+
+      const now = Date.now();
+      const suppressed = this.suppressPlaybackStateUntil && now < this.suppressPlaybackStateUntil;
+      if (!suppressed && typeof payload.paused === 'string') {
+        this.isPaused = payload.paused === 'true';
+        this.userPaused = this.isPaused;
+      }
+
       this.cd.detectChanges();
     });
   }

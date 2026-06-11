@@ -49,9 +49,11 @@ enum BackendConfiguration {
         guard var components = URLComponents(string: withScheme) else { return nil }
 
         guard components.scheme == "http" || components.scheme == "https" else { return nil }
-        guard components.host != nil else { return nil }
+        guard let host = components.host else { return nil }
 
-        if components.port == nil {
+        // Local dev backends are reached via a raw IP/localhost on a non-standard
+        // port; real hostnames (e.g. an ingress) use the scheme's standard port.
+        if components.port == nil && (host == "localhost" || isIPv4Address(host)) {
             components.port = defaultPort
         }
 
@@ -63,5 +65,14 @@ enum BackendConfiguration {
 
         guard let url = components.url else { return nil }
         return url.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    }
+
+    private static func isIPv4Address(_ host: String) -> Bool {
+        let parts = host.split(separator: ".")
+        guard parts.count == 4 else { return false }
+        return parts.allSatisfy { part in
+            guard let value = Int(part), value >= 0 && value <= 255 else { return false }
+            return true
+        }
     }
 }
