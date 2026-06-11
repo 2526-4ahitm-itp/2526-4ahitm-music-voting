@@ -2,7 +2,8 @@ import {Component, OnInit, ChangeDetectorRef, signal, OnDestroy} from '@angular/
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
-import { lastValueFrom } from 'rxjs';
+import { QueueStateService } from '../../services/queue-state';
+import { lastValueFrom, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {toObservable} from '@angular/core/rxjs-interop';
@@ -21,6 +22,9 @@ export class SearchHost implements OnInit, OnDestroy{
   searchQuery = signal<string>('');
   isSearching = signal<boolean>(false);
   addingTrackId: string | null = null;
+  inQueueUris = new Set<string>();
+  private eventSource?: EventSource;
+  private queueStateSubscription?: Subscription;
 
   private searchAutoTrigger = toObservable(this.searchQuery).pipe(
     debounceTime(400),
@@ -30,15 +34,33 @@ export class SearchHost implements OnInit, OnDestroy{
   constructor(
     private trackApi: TrackService,
     private spotifyService: SpotifyWebPlayerService,
+    private queueState: QueueStateService,
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
 
   ngOnDestroy(): void {
     this.searchAutoTrigger.unsubscribe();
+    this.queueStateSubscription?.unsubscribe();
+    this.eventSource?.close();
     }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.queueStateSubscription = this.queueState.inQueueUris$.subscribe(uris => {
+      this.inQueueUris = uris;
+      this.cdr.detectChanges();
+    });
+
+    this.eventSource = new EventSource('/api/spotify/events?source=web');
+    this.eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data?.type === 'queue-updated') {
+          this.queueState.refresh();
+        }
+      } catch { /* ignore malformed events */ }
+    };
+  }
 
   /** Suche nach Tracks */
   async search(query?: string) {
@@ -85,6 +107,7 @@ export class SearchHost implements OnInit, OnDestroy{
     try {
       await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
       console.log(`${track.name} wurde zur Playlist hinzugefügt`);
+      this.queueState.refresh();
     } catch (err) {
       console.error('Fehler beim Hinzufügen:', err);
     } finally {

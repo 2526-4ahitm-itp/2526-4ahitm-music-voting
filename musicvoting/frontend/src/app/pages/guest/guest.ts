@@ -2,7 +2,8 @@ import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, effect}
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
-import { lastValueFrom } from 'rxjs';
+import { QueueStateService } from '../../services/queue-state';
+import { lastValueFrom, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +22,9 @@ export class Guest implements OnInit, OnDestroy {
   isSearching = signal<boolean>(false);
   menuOpen = false;
   addingTrackId: string | null = null;
+  inQueueUris = new Set<string>();
   private eventSource?: EventSource;
+  private queueStateSubscription?: Subscription;
 
   private searchAutoTrigger = toObservable(this.searchQuery).pipe(
     debounceTime(400),
@@ -31,18 +34,26 @@ export class Guest implements OnInit, OnDestroy {
   constructor(
     private trackApi: TrackService,
     private spotifyService: SpotifyWebPlayerService,
+    private queueState: QueueStateService,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
+    this.queueStateSubscription = this.queueState.inQueueUris$.subscribe(uris => {
+      this.inQueueUris = uris;
+      this.cdr.detectChanges();
+    });
+
     this.eventSource = new EventSource('/api/spotify/events?source=web');
     this.eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data?.type === 'party-ended') {
           this.ngZone.run(() => this.router.navigate(['/']));
+        } else if (data?.type === 'queue-updated') {
+          this.queueState.refresh();
         }
       } catch { /* ignore malformed events */ }
     };
@@ -51,6 +62,7 @@ export class Guest implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.eventSource?.close();
     this.searchAutoTrigger.unsubscribe();
+    this.queueStateSubscription?.unsubscribe();
   }
 
   /** Suche nach Tracks */
@@ -93,6 +105,7 @@ export class Guest implements OnInit, OnDestroy {
     try {
       await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
       console.log(`${track.name} wurde zur Playlist hinzugefügt`);
+      this.queueState.refresh();
     } catch (err) {
       console.error('Fehler beim Hinzufügen:', err);
     } finally {

@@ -44,6 +44,18 @@ struct SearchTrack: Identifiable, Equatable {
     let imageUrl: String
 }
 
+private struct QueueResponse: Decodable {
+    let queue: [QueueEntry]
+
+    struct QueueEntry: Decodable {
+        let uri: String?
+    }
+}
+
+private struct QueueEvent: Decodable {
+    let type: String
+}
+
 @MainActor
 final class SongAddViewModel: ObservableObject {
     @Published var query = ""
@@ -52,6 +64,7 @@ final class SongAddViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var addingTrackIds: Set<String> = []
     @Published var addedTrackIds: Set<String> = []
+    @Published var queuedTrackUris: Set<String> = []
 
     private var searchTask: Task<Void, Never>?
     private weak var partySession: PartySessionStore?
@@ -65,6 +78,47 @@ final class SongAddViewModel: ObservableObject {
     }
     private var addToPlaylistURL: URL {
         partySession?.partyURL(path: "track/addToPlaylist") ?? BackendConfiguration.endpoint("/api/party/unknown/track/addToPlaylist")
+    }
+    private var queueURL: URL {
+        partySession?.partyURL(path: "track/queue") ?? BackendConfiguration.endpoint("/api/party/unknown/track/queue")
+    }
+
+    /// Loads the current queue's track URIs so search results already in the
+    /// queue can be shown as a disabled checkmark for every client.
+    func loadQueue() async {
+        do {
+            let (data, _) = try await URLSession.shared.data(from: queueURL)
+            let response = try JSONDecoder().decode(QueueResponse.self, from: data)
+            queuedTrackUris = Set(response.queue.compactMap(\.uri))
+        } catch {
+            // Keep the previous state if the queue can't be loaded; search still works.
+        }
+    }
+
+    /// Listens for `queue-updated` SSE events and reloads the queue so the
+    /// checkmark state stays in sync with what other clients add or remove.
+    func listenForQueueUpdates() async {
+        guard let url = partySession?.sseEventsURL else { return }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = .infinity
+        while !Task.isCancelled {
+            do {
+                let (bytes, _) = try await URLSession.shared.bytes(for: request)
+                for try await line in bytes.lines {
+                    guard line.hasPrefix("data:") else { continue }
+                    let json = String(line.dropFirst(5)).trimmingCharacters(in: .whitespaces)
+                    guard let data = json.data(using: .utf8),
+                          let event = try? JSONDecoder().decode(QueueEvent.self, from: data)
+                    else { continue }
+
+                    if event.type == "queue-updated" {
+                        await loadQueue()
+                    }
+                }
+            } catch {
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+            }
+        }
     }
 
     func queueSearch(for text: String) {
@@ -149,6 +203,7 @@ final class SongAddViewModel: ObservableObject {
 
             if (200...299).contains(httpResponse.statusCode) {
                 addedTrackIds.insert(track.id)
+                await loadQueue()
             } else {
                 errorMessage = String(localized: "search.add.error")
             }
@@ -192,6 +247,10 @@ struct SongAddView: View {
             }
             .onAppear {
                 viewModel.configure(partySession: partySession)
+                Task { await viewModel.loadQueue() }
+            }
+            .task {
+                await viewModel.listenForQueueUpdates()
             }
         }
 
@@ -274,7 +333,7 @@ struct SongAddView: View {
                     SearchResultRow(
                         track: track,
                         isAdding: viewModel.addingTrackIds.contains(track.id),
-                        isAdded: viewModel.addedTrackIds.contains(track.id)
+                        isAdded: viewModel.addedTrackIds.contains(track.id) || viewModel.queuedTrackUris.contains(track.uri)
                     ) {
                         Task { await viewModel.addToPlaylist(track) }
                     }
