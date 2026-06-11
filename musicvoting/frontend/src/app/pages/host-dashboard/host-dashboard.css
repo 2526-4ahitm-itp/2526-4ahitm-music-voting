@@ -291,6 +291,7 @@ body{
 .song-title {
   margin-top: 0.2rem;
   font-size: 0.9375rem;
+  overflow-wrap: break-word;
 }
 
 .song-artist {
@@ -433,6 +434,7 @@ body{
   cursor: pointer;
   text-align: left;
   transition: background 0.2s;
+  box-sizing: border-box;
 }
 
 .option-btn-end {
@@ -447,6 +449,7 @@ body{
   cursor: pointer;
   text-align: left;
   transition: background 0.2s;
+  box-sizing: border-box;
 }
 
 .end-confirm {
@@ -462,6 +465,7 @@ body{
   cursor: pointer;
   text-align: left;
   transition: background 0.2s;
+  box-sizing: border-box;
 }
 
 
