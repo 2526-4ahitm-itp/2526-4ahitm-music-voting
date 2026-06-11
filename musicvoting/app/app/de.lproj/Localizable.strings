@@ -9,7 +9,7 @@
 "alert.partyEnded" = "Die Party ist beendet.";
 
 /* StartView */
-"start.tagline" = "Schlechte Musik auf der Party? Nicht mehr! Denn MusicVoting ermöglicht es jedem Partygast ganz einfach mittels Smartphone mitzubestimmen, welche Musik gespielt werden soll.";
+"start.tagline" = "Schlechte Musik auf der Party? Nicht mehr mit MusicVoting!";
 "start.guestButton" = "Gast auf einer Party";
 "start.hostButton" = "Gastgeber auf einer Party";
 

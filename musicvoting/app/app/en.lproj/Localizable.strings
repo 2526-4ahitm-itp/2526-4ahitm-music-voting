@@ -9,7 +9,7 @@
 "alert.partyEnded" = "The party has ended.";
 
 /* StartView */
-"start.tagline" = "Bad music at the party? Not anymore! MusicVoting lets every guest easily vote on which songs get played — straight from their smartphone.";
+"start.tagline" = "Bad music at the party? Not anymore with MusicVoting!";
 "start.guestButton" = "Guest at a party";
 "start.hostButton" = "Host a party";
 
