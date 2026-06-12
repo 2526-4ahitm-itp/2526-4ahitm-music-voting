@@ -1,6 +1,7 @@
 package at.htl.endpoints;
 
 import at.htl.domain.*;
+import at.htl.service.PartyService;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -17,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
@@ -30,7 +30,7 @@ public class PartyResource {
     PartyRegistry partyRegistry;
 
     @Inject
-    LoginEventBus loginEventBus;
+    PartyService partyService;
 
     @ConfigProperty(name = "musicvoting.join.base-url", defaultValue = "http://localhost:4200/join")
     String joinBaseUrl;
@@ -85,24 +85,10 @@ public class PartyResource {
     @HostOnly
     public Response end(@PathParam("id") String id) {
         PartyId partyId = PartyId.of(id);
-        Party party = partyRegistry.find(partyId)
+        partyRegistry.find(partyId)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
-        QueueEntry.delete("partyId", id);
-
-        if (party.providerKind() == ProviderKind.SPOTIFY) {
-            party.getSpotifyCredentials().setToken(null);
-        }
-
-        PartyEntity entity = PartyEntity.findById(id);
-        if (entity != null) {
-            entity.endedAt = OffsetDateTime.now();
-            entity.persist();
-        }
-
-        partyRegistry.remove(partyId);
-
-        loginEventBus.emit(new LoginEvent("party-ended", Instant.now(), Map.of("partyId", id)));
+        partyService.endParty(partyId);
 
         return Response.noContent().build();
     }
