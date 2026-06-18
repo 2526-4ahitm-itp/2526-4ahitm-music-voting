@@ -48,13 +48,30 @@
     <div class="main-content">
       <div class="track-list">
         @for (track of filteredTracks(); track track.id) {
-          <div class="track-card">
+          <div class="track-card" [class.voted]="track.hasVoted" [class.now-playing]="track.isCurrentlyPlaying">
             <img class="album-cover" [src]="track.album?.images[0]?.url" alt="Cover">
             <div class="track-info">
               <span class="track-name">{{ track.name }}</span>
               <span class="artist-name">{{ track.artists[0]?.name }}</span>
             </div>
-            <button class="vote-button">♡</button>
+            <div class="vote-section">
+              @if (track.isCurrentlyPlaying) {
+                <div class="soundwave">
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                </div>
+              } @else {
+                @if (track.likeCount > 0) {
+                  <span class="like-count">{{ track.likeCount }}</span>
+                }
+                <button class="vote-button" (click)="toggleVote(track)">
+                  {{ track.hasVoted ? '♥' : '♡' }}
+                </button>
+              }
+            </div>
           </div>
         } @empty {
           <div class="empty-state">

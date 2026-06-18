@@ -28,7 +28,7 @@ The system MUST maintain a persistent, database-backed queue per party. The data
 - AND no row with `party_id = "default"` is created
 
 ### Requirement: Sort Order — Likes Desc, FIFO Tie-Break
-The queue MUST be sorted by the count of votes (see `voting/spec.md`) descending, with ties broken by `added_at` ascending. The sort MUST be computed from the database at read time.
+The queue MUST be sorted by the count of votes (see `voting/spec.md`) descending, with ties broken by `added_at` ascending. The sort MUST be computed from the database at read time. When the client provides a `deviceId` query parameter on `GET /party/{id}/track/queue`, each entry MUST also include a `hasVoted` boolean indicating whether that device has voted for the entry.
 
 #### Scenario: More-liked song moves ahead
 - GIVEN the queue contains song X (3 votes, added 10:00) and song Y (1 vote, added 09:55)
@@ -39,6 +39,17 @@ The queue MUST be sorted by the count of votes (see `voting/spec.md`) descending
 - GIVEN the queue contains song X (2 votes, added 10:00) and song Y (2 votes, added 09:55)
 - WHEN any client reads the queue
 - THEN song Y appears before song X
+
+#### Scenario: Queue read with deviceId returns hasVoted per track
+- GIVEN device "abc" has voted for song X but not song Y
+- WHEN a client reads the queue with `?deviceId=abc`
+- THEN song X has `hasVoted: true`
+- AND song Y has `hasVoted: false`
+
+#### Scenario: Queue read without deviceId omits hasVoted
+- GIVEN no deviceId is provided
+- WHEN a client reads the queue
+- THEN entries contain `likeCount` but no `hasVoted` field is required
 
 ### Requirement: No Duplicate Songs in Queue
 A song MUST appear in the queue at most once per party. The uniqueness constraint MUST be enforced at the database level on `(party_id, track_uri)` in addition to any application-level check.

@@ -500,6 +500,46 @@ class TrackResourceTest {
                 .body("deviceActive", equalTo(true));
     }
 
+    // ---------- queue with deviceId ----------
+
+    @Test
+    void getQueue_withDeviceId_callsGetQueueForDeviceAndReturnsHasVoted() {
+        Party party = registerSpotifyParty("10027", "20027");
+        when(spotifyMusicProvider.getQueueForDevice(eq(party), eq("device-abc")))
+                .thenReturn(List.of(Map.of(
+                        "id", "entry-1",
+                        "uri", "spotify:track:a",
+                        "name", "Track A",
+                        "likeCount", 2,
+                        "hasVoted", true
+                )));
+
+        given()
+                .when().get("/api/party/{partyId}/track/queue?deviceId=device-abc", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("queue[0].hasVoted", equalTo(true))
+                .body("queue[0].likeCount", equalTo(2));
+    }
+
+    @Test
+    void getQueue_withoutDeviceId_callsPlainGetQueue() {
+        Party party = registerSpotifyParty("10028", "20028");
+        when(spotifyMusicProvider.getQueue(eq(party)))
+                .thenReturn(List.of(Map.of(
+                        "id", "entry-1",
+                        "uri", "spotify:track:b",
+                        "name", "Track B",
+                        "likeCount", 0
+                )));
+
+        given()
+                .when().get("/api/party/{partyId}/track/queue", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("queue[0].name", equalTo("Track B"));
+    }
+
     // ---------- vote ----------
 
     @Test

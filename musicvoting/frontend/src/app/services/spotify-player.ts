@@ -181,10 +181,17 @@ export class SpotifyWebPlayerService {
     );
   }
 
-  getQueue(): Observable<any> {
+  getQueue(deviceId?: string): Observable<any> {
     const id = this.partyService.currentPartyId;
     if (!id) { console.warn('getQueue: keine aktive Party'); return EMPTY; }
-    return this.http.get<any>(`/api/party/${id}/track/queue`);
+    const params = deviceId ? `?deviceId=${encodeURIComponent(deviceId)}` : '';
+    return this.http.get<any>(`/api/party/${id}/track/queue${params}`);
+  }
+
+  toggleVote(uri: string, deviceId: string): Observable<any> {
+    const id = this.partyService.currentPartyId;
+    if (!id) { console.warn('toggleVote: keine aktive Party'); return EMPTY; }
+    return this.http.post<any>(`/api/party/${id}/track/vote`, { uri, deviceId });
   }
 
   playTrack(uri: string) {

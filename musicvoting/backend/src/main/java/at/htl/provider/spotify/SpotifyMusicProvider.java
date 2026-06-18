@@ -182,12 +182,14 @@ public class SpotifyMusicProvider implements MusicProvider {
         try {
             List<Object[]> rows = em.createNativeQuery(
                     "SELECT qe.id, qe.track_uri, qe.track_name, qe.artist_name, qe.album_name, " +
-                    "qe.image_url, qe.duration_ms, COUNT(v.id) AS like_count " +
+                    "qe.image_url, qe.duration_ms, COUNT(v.id) AS like_count, " +
+                    "COALESCE(p.currently_playing_entry_id = qe.id, FALSE) AS is_currently_playing " +
                     "FROM queue_entry qe " +
                     "LEFT JOIN vote v ON v.queue_entry_id = qe.id " +
+                    "LEFT JOIN party p ON p.id = qe.party_id " +
                     "WHERE qe.party_id = :partyId " +
-                    "GROUP BY qe.id " +
-                    "ORDER BY COUNT(v.id) DESC, qe.added_at ASC"
+                    "GROUP BY qe.id, p.currently_playing_entry_id " +
+                    "ORDER BY COALESCE(p.currently_playing_entry_id = qe.id, FALSE) DESC, COUNT(v.id) DESC, qe.added_at ASC"
             ).setParameter("partyId", party.id().value()).getResultList();
 
             return rows.stream().map(row -> {
@@ -202,6 +204,49 @@ public class SpotifyMusicProvider implements MusicProvider {
                 ));
                 entry.put("duration_ms", row[6]);
                 entry.put("likeCount", ((Number) row[7]).longValue());
+                entry.put("isCurrentlyPlaying", Boolean.TRUE.equals(row[8]));
+                return entry;
+            }).toList();
+
+        } catch (Exception e) {
+            if (e instanceof WebApplicationException wae) throw wae;
+            throw new WebApplicationException(SpotifyApiErrors.unexpectedError("Das Laden der Warteschlange", e));
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getQueueForDevice(Party party, String deviceId) {
+        try {
+            List<Object[]> rows = em.createNativeQuery(
+                    "SELECT qe.id, qe.track_uri, qe.track_name, qe.artist_name, qe.album_name, " +
+                    "qe.image_url, qe.duration_ms, COUNT(v.id) AS like_count, " +
+                    "COUNT(CASE WHEN v.device_id = :deviceId THEN 1 END) > 0 AS has_voted, " +
+                    "COALESCE(p.currently_playing_entry_id = qe.id, FALSE) AS is_currently_playing " +
+                    "FROM queue_entry qe " +
+                    "LEFT JOIN vote v ON v.queue_entry_id = qe.id " +
+                    "LEFT JOIN party p ON p.id = qe.party_id " +
+                    "WHERE qe.party_id = :partyId " +
+                    "GROUP BY qe.id, p.currently_playing_entry_id " +
+                    "ORDER BY COALESCE(p.currently_playing_entry_id = qe.id, FALSE) DESC, COUNT(v.id) DESC, qe.added_at ASC"
+            ).setParameter("partyId", party.id().value())
+             .setParameter("deviceId", deviceId)
+             .getResultList();
+
+            return rows.stream().map(row -> {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("id", row[0].toString());
+                entry.put("uri", row[1]);
+                entry.put("name", row[2]);
+                entry.put("artists", List.of(Map.of("name", row[3] != null ? row[3] : "")));
+                entry.put("album", Map.of(
+                        "name", row[4] != null ? row[4] : "",
+                        "images", row[5] != null ? List.of(Map.of("url", row[5])) : List.of()
+                ));
+                entry.put("duration_ms", row[6]);
+                entry.put("likeCount", ((Number) row[7]).longValue());
+                entry.put("hasVoted", Boolean.TRUE.equals(row[8]));
+                entry.put("isCurrentlyPlaying", Boolean.TRUE.equals(row[9]));
                 return entry;
             }).toList();
 

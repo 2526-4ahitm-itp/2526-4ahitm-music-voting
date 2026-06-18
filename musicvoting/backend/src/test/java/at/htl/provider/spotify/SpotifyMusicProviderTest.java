@@ -120,6 +120,65 @@ class SpotifyMusicProviderTest {
 
     @Test
     @TestTransaction
+    void getQueueForDevice_hasVotedFalseWhenNoVotesExist() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        persistPartyEntity(party);
+        persistQueueEntry(partyId, "spotify:track:a", "Track A", OffsetDateTime.now());
+
+        List<Map<String, Object>> queue = provider.getQueueForDevice(party, "device-1");
+
+        assertEquals(1, queue.size());
+        assertEquals(false, queue.get(0).get("hasVoted"));
+        assertEquals(0L, queue.get(0).get("likeCount"));
+    }
+
+    @Test
+    @TestTransaction
+    void getQueueForDevice_returnsHasVotedTrueForVotingDevice() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        persistPartyEntity(party);
+        OffsetDateTime now = OffsetDateTime.now();
+        QueueEntry entry = persistQueueEntry(partyId, "spotify:track:a", "Track A", now);
+
+        Vote vote = new Vote();
+        vote.queueEntry = entry;
+        vote.deviceId = "device-1";
+        vote.votedAt = now;
+        vote.persist();
+
+        List<Map<String, Object>> queue = provider.getQueueForDevice(party, "device-1");
+
+        assertEquals(1, queue.size());
+        assertEquals(true, queue.get(0).get("hasVoted"));
+        assertEquals(1L, queue.get(0).get("likeCount"));
+    }
+
+    @Test
+    @TestTransaction
+    void getQueueForDevice_returnsHasVotedFalseForOtherDevice() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        persistPartyEntity(party);
+        OffsetDateTime now = OffsetDateTime.now();
+        QueueEntry entry = persistQueueEntry(partyId, "spotify:track:a", "Track A", now);
+
+        Vote vote = new Vote();
+        vote.queueEntry = entry;
+        vote.deviceId = "device-1";
+        vote.votedAt = now;
+        vote.persist();
+
+        List<Map<String, Object>> queue = provider.getQueueForDevice(party, "device-2");
+
+        assertEquals(1, queue.size());
+        assertEquals(false, queue.get(0).get("hasVoted"));
+        assertEquals(1L, queue.get(0).get("likeCount"));
+    }
+
+    @Test
+    @TestTransaction
     void removeTrack_forUnknownTrack_returnsNotFound() {
         Party party = newParty();
 

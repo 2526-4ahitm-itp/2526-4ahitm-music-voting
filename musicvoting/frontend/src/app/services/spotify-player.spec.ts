@@ -167,4 +167,44 @@ describe('SpotifyWebPlayerService', () => {
 
     expect(updates).toBe(1);
   });
+
+  it('getQueue with a deviceId appends it as a query param', () => {
+    partyService.currentPartyId = 'party-1';
+
+    service.getQueue('my-device').subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-1/track/queue?deviceId=my-device');
+    expect(req.request.method).toBe('GET');
+    req.flush({ queue: [] });
+  });
+
+  it('getQueue without a deviceId uses the plain queue endpoint', () => {
+    partyService.currentPartyId = 'party-1';
+
+    service.getQueue().subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-1/track/queue');
+    expect(req.request.method).toBe('GET');
+    req.flush({ queue: [] });
+  });
+
+  it('toggleVote posts uri and deviceId to the vote endpoint', () => {
+    partyService.currentPartyId = 'party-1';
+
+    service.toggleVote('spotify:track:abc', 'device-1').subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-1/track/vote');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ uri: 'spotify:track:abc', deviceId: 'device-1' });
+    req.flush({ liked: true, likeCount: 1 });
+  });
+
+  it('toggleVote returns EMPTY when there is no active party', (done) => {
+    spyOn(console, 'warn');
+
+    service.toggleVote('spotify:track:abc', 'device-1').subscribe({ complete: () => done() });
+
+    httpMock.expectNone(() => true);
+    expect(console.warn).toHaveBeenCalled();
+  });
 });

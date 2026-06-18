@@ -23,9 +23,10 @@ export interface HostJoinResponse {
 
 @Injectable({ providedIn: 'root' })
 export class PartyService {
-  private readonly ID_KEY       = 'mv_party_id';
-  private readonly PIN_KEY      = 'mv_party_pin';
-  private readonly HOST_PIN_KEY = 'mv_party_host_pin';
+  private readonly ID_KEY        = 'mv_party_id';
+  private readonly PIN_KEY       = 'mv_party_pin';
+  private readonly HOST_PIN_KEY  = 'mv_party_host_pin';
+  private readonly DEVICE_ID_KEY = 'mv_device_id';
 
   private http       = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
@@ -37,6 +38,16 @@ export class PartyService {
   get currentPartyId(): string | null { return this.partyId$.getValue(); }
   get currentPin(): string | null     { return this.pin$.getValue(); }
   get currentHostPin(): string | null { return this.hostPin$.getValue(); }
+
+  get deviceId(): string {
+    let id = this.readStorage(this.DEVICE_ID_KEY) ?? this.readCookie(this.DEVICE_ID_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+    }
+    this.writeStorage(this.DEVICE_ID_KEY, id);
+    this.writeCookie(this.DEVICE_ID_KEY, id);
+    return id;
+  }
 
   setCurrentPartyId(id: string): void {
     this.partyId$.next(id);
@@ -106,6 +117,22 @@ export class PartyService {
     this.removeStorage(this.ID_KEY);
     this.removeStorage(this.PIN_KEY);
     this.removeStorage(this.HOST_PIN_KEY);
+  }
+
+  private readCookie(key: string): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    try {
+      const match = document.cookie.split('; ').find(c => c.startsWith(key + '='));
+      return match ? decodeURIComponent(match.split('=')[1]) : null;
+    } catch { return null; }
+  }
+
+  private writeCookie(key: string, value: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const maxAge = 365 * 24 * 60 * 60; // 1 year
+      document.cookie = `${key}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Strict`;
+    } catch { /* ignore */ }
   }
 
   private readStorage(key: string): string | null {

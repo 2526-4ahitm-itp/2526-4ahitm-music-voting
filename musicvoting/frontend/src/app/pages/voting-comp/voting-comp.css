@@ -228,11 +228,6 @@ html, body {
   background-color: #fdfaff;
 }
 
-.track-card.voted {
-  opacity: 0.5;
-  pointer-events: none;
-  filter: grayscale(1);
-}
 
 .album-cover {
   width: 3.5rem;
@@ -264,6 +259,55 @@ html, body {
   color: #666;
 }
 
+.vote-section {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.like-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #8b00a5;
+  min-width: 1rem;
+  text-align: right;
+}
+
+
+.track-card.now-playing {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-left: 3px solid #8b00a5;
+}
+
+.soundwave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+}
+
+.soundwave-bar {
+  width: 3px;
+  border-radius: 2px;
+  background-color: #8b00a5;
+  animation: soundwave-bounce 0.8s ease-in-out infinite alternate;
+}
+
+.soundwave-bar:nth-child(1) { height: 6px;  animation-delay: 0s; }
+.soundwave-bar:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+.soundwave-bar:nth-child(3) { height: 22px; animation-delay: 0.3s; }
+.soundwave-bar:nth-child(4) { height: 14px; animation-delay: 0.45s; }
+.soundwave-bar:nth-child(5) { height: 6px;  animation-delay: 0.6s; }
+
+@keyframes soundwave-bounce {
+  from { transform: scaleY(0.25); }
+  to   { transform: scaleY(1); }
+}
+
 .vote-button {
   background-color: #f3e8ff;
   border: none;
@@ -284,10 +328,6 @@ html, body {
   transform: scale(0.9);
 }
 
-.track-card.voted .vote-button {
-  background-color: #e2e8f0;
-  color: #ef4444;
-}
 
 .add-button {
   background-color: #f3e8ff;

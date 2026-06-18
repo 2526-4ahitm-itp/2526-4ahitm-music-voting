@@ -108,4 +108,45 @@ describe('PartyService', () => {
     expect(service.currentPartyId).toBeNull();
     expect(localStorage.getItem('mv_party_id')).toBeNull();
   });
+
+  describe('deviceId', () => {
+    const COOKIE_KEY = 'mv_device_id';
+    const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    function clearCookie() {
+      document.cookie = `${COOKIE_KEY}=; max-age=0; path=/`;
+    }
+
+    beforeEach(() => {
+      localStorage.removeItem(COOKIE_KEY);
+      clearCookie();
+    });
+
+    afterEach(() => clearCookie());
+
+    it('generates a UUID on first call and writes it to localStorage and cookie', () => {
+      const id = service.deviceId;
+
+      expect(id).toMatch(UUID_PATTERN);
+      expect(localStorage.getItem(COOKIE_KEY)).toBe(id);
+      expect(document.cookie).toContain(`${COOKIE_KEY}=${encodeURIComponent(id)}`);
+    });
+
+    it('returns the same id on repeated calls', () => {
+      const first = service.deviceId;
+      const second = service.deviceId;
+
+      expect(first).toBe(second);
+    });
+
+    it('recovers deviceId from cookie when localStorage is cleared', () => {
+      const id = service.deviceId;
+      localStorage.removeItem(COOKIE_KEY);
+
+      const recovered = service.deviceId;
+
+      expect(recovered).toBe(id);
+      expect(localStorage.getItem(COOKIE_KEY)).toBe(id);
+    });
+  });
 });

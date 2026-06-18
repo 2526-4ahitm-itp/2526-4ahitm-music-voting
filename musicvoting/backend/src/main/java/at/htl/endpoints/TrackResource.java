@@ -83,9 +83,11 @@ public class TrackResource {
 
     @GET
     @Path("/queue")
-    public Response getQueue() {
+    public Response getQueue(@QueryParam("deviceId") String deviceId) {
         Party party = resolveParty();
-        List<Map<String, Object>> queue = provider(party).getQueue(party);
+        List<Map<String, Object>> queue = (deviceId != null && !deviceId.isBlank())
+                ? provider(party).getQueueForDevice(party, deviceId)
+                : provider(party).getQueue(party);
         return Response.ok(Map.of("queue", queue)).build();
     }
 

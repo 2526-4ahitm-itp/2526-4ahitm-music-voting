@@ -155,17 +155,19 @@ final class PartySessionStore: ObservableObject {
         clear()
     }
 
+    var deviceId: String {
+        let key = "spotify.installation.id"
+        if let saved = UserDefaults.standard.string(forKey: key), !saved.isEmpty {
+            return saved
+        }
+        let created = UUID().uuidString
+        UserDefaults.standard.set(created, forKey: key)
+        return created
+    }
+
     var sseEventsURL: URL? {
         guard let partyId else { return nil }
-        let key = "spotify.installation.id"
-        let installId: String
-        if let saved = UserDefaults.standard.string(forKey: key), !saved.isEmpty {
-            installId = saved
-        } else {
-            let created = UUID().uuidString
-            UserDefaults.standard.set(created, forKey: key)
-            installId = created
-        }
+        let installId = deviceId
         var components = URLComponents(url: BackendConfiguration.endpoint("/api/spotify/events"), resolvingAgainstBaseURL: false)
         components?.queryItems = [
             URLQueryItem(name: "source", value: "ios"),
