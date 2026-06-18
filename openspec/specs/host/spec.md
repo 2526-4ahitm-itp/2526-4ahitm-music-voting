@@ -4,6 +4,34 @@
 
 Defines the host role: the party creator who has exclusive permission to control playback, curate the queue manually, and manage a party-scoped blacklist. Host controls run on the host's own device (typically a phone); the dashboard never exposes host controls.
 ## Requirements
+### Requirement: Play Controls Locked Without Active Playback Device
+The web host-dashboard and the iOS admin dashboard MUST disable Play/Pause/Skip controls while `deviceActive` (from `GET /party/{id}/track/current`) is `false`, and MUST show a short hint explaining that the dashboard/startpage needs to be opened first. Controls MUST become interactive again as soon as `deviceActive` becomes `true`, without requiring a page reload or app restart.
+
+#### Scenario: Host opens dashboard before startpage
+- GIVEN the host opens the web host-dashboard before any startpage/TV has registered a playback device
+- WHEN the dashboard loads
+- THEN Play/Pause/Skip are shown disabled
+- AND a hint is shown explaining that the player needs to be opened
+
+#### Scenario: Controls unlock once device registers
+- GIVEN the host-dashboard shows Play/Pause/Skip disabled because no device is active
+- WHEN the TV/startpage opens and registers a Spotify Web Playback SDK device
+- THEN the host-dashboard's Play/Pause/Skip controls become enabled without a reload
+
+#### Scenario: iOS admin view reflects the same lock
+- GIVEN a Spotify party with no active playback device
+- WHEN the host opens the iOS admin dashboard
+- THEN Play/Pause/Skip are shown disabled with the same hint as the web dashboard
+
+### Requirement: Create Party Back Navigation Returns to Host Options
+The back arrow on the "Create party" page MUST navigate to the "Host options" page (`/host-options`), the page from which "Create party" is reached, rather than skipping back to the home page.
+
+#### Scenario: Host navigates back from Create party
+- GIVEN the host navigated Home → Host options → Create party
+- WHEN the host taps the back arrow on the "Create party" page
+- THEN the host is taken to the "Host options" page
+- AND not directly to the home page
+
 ### Requirement: Host Creates Party Before Provider Login
 Before authenticating with a provider, the host MUST explicitly create a party by selecting the music provider on a dedicated "Party erstellen" screen. The system MUST call `POST /api/party` with the chosen provider and MUST store the returned party ID and host PIN for the duration of the session. Only after successful party creation does the host proceed to the provider OAuth login.
 

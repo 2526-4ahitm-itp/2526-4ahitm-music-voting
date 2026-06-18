@@ -8,7 +8,7 @@
 - [x] 2.1 Read `deviceActive` from `/track/current` in `host-dashboard.ts`
 - [x] 2.2 Bind `disabled` state of Play/Pause/Skip buttons to `deviceActive` in `host-dashboard.html`
 - [x] 2.3 Show a hint message (German) when controls are locked, e.g. "Player muss zuerst geöffnet werden."
-- [ ] 2.4 Verify controls unlock automatically once the startpage registers a device, without reload
+- [x] 2.4 Verify controls unlock automatically once the startpage registers a device, without reload
 
 ## 3. iOS app
 - [x] 3.1 Read `deviceActive` from `/track/current` in the admin dashboard view model
@@ -16,5 +16,5 @@
 - [x] 3.3 Show the same hint text as the web dashboard
 
 ## 4. Verification
-- [ ] 4.1 Manually verify: fresh party, no startpage opened → controls locked on both web and iOS
-- [ ] 4.2 Manually verify: opening the startpage unlocks controls on both clients without reload
+- [x] 4.1 Manually verify: fresh party, no startpage opened → controls locked on both web and iOS
+- [x] 4.2 Manually verify: opening the startpage unlocks controls on both clients without reload
