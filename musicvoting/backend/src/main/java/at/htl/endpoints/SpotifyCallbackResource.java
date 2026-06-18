@@ -196,11 +196,6 @@ public class SpotifyCallbackResource {
                             "installationId", installationId == null ? "" : installationId
                     )
             ));
-            loginEventBus.emit(new LoginEvent(
-                    "login-success",
-                    Instant.now(),
-                    Map.of("source", "web")
-            ));
 
             return Response.ok(Map.of("status", "ok")).build();
         } catch (Exception e) {

@@ -242,7 +242,7 @@ struct VotingView: View {
                             }
                         }
                     }
-                    .padding(.vertical, 8)
+                    .padding(.bottom, 8)
                     .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
                     .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
                 }
