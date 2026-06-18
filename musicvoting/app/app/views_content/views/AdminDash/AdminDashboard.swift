@@ -75,6 +75,10 @@ final class AdminDashboardViewModel: ObservableObject {
         return min(currentPosition / currentDuration, 1)
     }
 
+    var controlsDisabled: Bool {
+        !deviceActive || (currentSong == nil && queueSongs.isEmpty)
+    }
+
     func configure(partySession: PartySessionStore) {
         self.partySession = partySession
     }
@@ -378,6 +382,7 @@ struct AdminDashboard: View {
                         positionMs: viewModel.currentPosition,
                         durationMs: viewModel.currentDuration,
                         deviceActive: viewModel.deviceActive,
+                        controlsDisabled: viewModel.controlsDisabled,
                         onPlayPause: { Task { await viewModel.togglePlayPause() } },
                         onNext: { Task { await viewModel.skip() } },
                         onPrevious: { Task { await viewModel.restartCurrent() } }

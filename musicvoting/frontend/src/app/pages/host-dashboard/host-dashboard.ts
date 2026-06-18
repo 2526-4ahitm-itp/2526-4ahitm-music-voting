@@ -29,6 +29,10 @@ export class HostDashboard implements OnInit, OnDestroy {
   partyStarted = false;
   isPaused = false;
   deviceActive = true;
+
+  get controlsDisabled(): boolean {
+    return !this.deviceActive || (!this.currentTrack && this.tracks.length === 0);
+  }
   private suppressPlaybackStateUntil: number | null = null;
   private readonly SUPPRESSION_MS = 1500;
 
