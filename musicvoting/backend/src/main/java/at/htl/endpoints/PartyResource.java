@@ -129,7 +129,7 @@ public class PartyResource {
     @Path("/{id}/qr")
     @Produces("image/png")
     public Response qr(@PathParam("id") String id) {
-        Party party = partyRegistry.find(PartyId.of(id))
+        Party party = partyRegistry.findById(id)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
         String joinUrl = joinBaseUrl + "/" + party.pin();

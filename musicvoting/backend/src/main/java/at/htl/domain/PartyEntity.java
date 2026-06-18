@@ -45,4 +45,8 @@ public class PartyEntity extends PanacheEntityBase {
     public static Optional<PartyEntity> findByHostPin(String hostPin) {
         return find("hostPin = ?1 and endedAt is null", hostPin).firstResultOptional();
     }
+
+    public static Optional<PartyEntity> findActiveById(String id) {
+        return find("id = ?1 and endedAt is null", id).firstResultOptional();
+    }
 }

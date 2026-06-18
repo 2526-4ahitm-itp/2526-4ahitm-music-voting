@@ -14,6 +14,13 @@ public class PartyRegistry {
         return Optional.ofNullable(parties.get(id));
     }
 
+    // Like find(PartyId), but falls back to the DB if the backend was restarted.
+    public Optional<Party> findById(String id) {
+        Party existing = parties.get(PartyId.of(id));
+        if (existing != null) return Optional.of(existing);
+        return PartyEntity.findActiveById(id).map(this::findOrReconstruct);
+    }
+
     public Optional<Party> findByPin(String pin) {
         return PartyEntity.findByPin(pin)
                 .map(this::findOrReconstruct);
