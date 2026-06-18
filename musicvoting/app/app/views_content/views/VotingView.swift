@@ -257,6 +257,7 @@ struct VotingView: View {
             viewModel.configure(partySession: partySession)
             await viewModel.listenForVoteUpdates()
         }
+        }
     }
 }
 
