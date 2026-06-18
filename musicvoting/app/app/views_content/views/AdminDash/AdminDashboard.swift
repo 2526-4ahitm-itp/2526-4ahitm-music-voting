@@ -14,6 +14,7 @@ private struct QueueResponse: Decodable {
 private struct CurrentPlaybackResponse: Decodable {
     let isPlaying: Bool
     let track: QueueTrack?
+    let deviceActive: Bool?
 }
 
 private struct StartPlaybackResponse: Decodable {
@@ -60,6 +61,7 @@ final class AdminDashboardViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var partyStarted = false
     @Published var queueSongs: [Song] = []
+    @Published var deviceActive = true
     // Playback position mirrored from the /startpage web player via the
     // "progress" SSE event — same source the host dashboard uses.
     @Published var currentPosition: Double = 0
@@ -158,6 +160,7 @@ final class AdminDashboardViewModel: ObservableObject {
             let (data, _) = try await URLSession.shared.data(from: currentURL)
             let response = try JSONDecoder().decode(CurrentPlaybackResponse.self, from: data)
             isPlaying = response.isPlaying
+            deviceActive = response.deviceActive ?? true
             if let track = response.track {
                 currentSong = Self.mapTrackToSong(track)
             } else {
@@ -374,6 +377,7 @@ struct AdminDashboard: View {
                         isLoading: viewModel.isLoading,
                         positionMs: viewModel.currentPosition,
                         durationMs: viewModel.currentDuration,
+                        deviceActive: viewModel.deviceActive,
                         onPlayPause: { Task { await viewModel.togglePlayPause() } },
                         onNext: { Task { await viewModel.skip() } },
                         onPrevious: { Task { await viewModel.restartCurrent() } }

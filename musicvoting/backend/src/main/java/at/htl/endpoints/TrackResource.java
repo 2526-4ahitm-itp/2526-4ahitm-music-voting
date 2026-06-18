@@ -3,6 +3,7 @@ package at.htl.endpoints;
 import at.htl.domain.Party;
 import at.htl.domain.PartyId;
 import at.htl.domain.PartyRegistry;
+import at.htl.domain.ProviderKind;
 import at.htl.provider.MusicProvider;
 import at.htl.provider.MusicProviderFactory;
 import jakarta.inject.Inject;
@@ -11,6 +12,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -222,9 +224,27 @@ public class TrackResource {
 
     @GET
     @Path("/current")
+    @SuppressWarnings("unchecked")
     public Response current() {
         Party party = resolveParty();
-        return provider(party).getCurrentPlayback(party);
+        Response providerResponse = provider(party).getCurrentPlayback(party);
+
+        boolean deviceActive;
+        if (party.providerKind() == ProviderKind.SPOTIFY) {
+            String deviceId = party.getSpotifyCredentials().getDeviceId();
+            deviceActive = deviceId != null && !deviceId.isBlank();
+        } else {
+            deviceActive = true;
+        }
+
+        if (providerResponse.getStatus() >= 200 && providerResponse.getStatus() < 300
+                && providerResponse.getEntity() instanceof Map<?, ?> rawMap) {
+            Map<String, Object> payload = new HashMap<>((Map<String, Object>) rawMap);
+            payload.put("deviceActive", deviceActive);
+            return Response.status(providerResponse.getStatus()).entity(payload).build();
+        }
+
+        return providerResponse;
     }
 
     @POST

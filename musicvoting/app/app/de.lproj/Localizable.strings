@@ -80,6 +80,7 @@
 "dashboard.nowPlaying.pressPlay" = "Druecke auf Play";
 "dashboard.queue.title" = "Warteschlange";
 "dashboard.queue.empty" = "Keine Songs in der Warteschlange";
+"dashboard.controls.noDevice" = "Player muss zuerst geöffnet werden.";
 
 /* Tab labels */
 "tab.addSong" = "Add Song";

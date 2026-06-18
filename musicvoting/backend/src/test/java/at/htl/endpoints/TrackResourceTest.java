@@ -473,6 +473,33 @@ class TrackResourceTest {
                 .body("isPlaying", equalTo(true));
     }
 
+    @Test
+    void current_withoutDeviceId_deviceActiveIsFalse() {
+        Party party = registerSpotifyParty("10030", "20030");
+        when(spotifyMusicProvider.getCurrentPlayback(eq(party)))
+                .thenReturn(Response.ok(new java.util.HashMap<>(Map.of("isPlaying", false))).build());
+
+        given()
+                .when().get("/api/party/{partyId}/track/current", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("deviceActive", equalTo(false));
+    }
+
+    @Test
+    void current_withDeviceId_deviceActiveIsTrue() {
+        Party party = registerSpotifyParty("10031", "20031");
+        party.getSpotifyCredentials().setDeviceId("my-device-123");
+        when(spotifyMusicProvider.getCurrentPlayback(eq(party)))
+                .thenReturn(Response.ok(new java.util.HashMap<>(Map.of("isPlaying", true))).build());
+
+        given()
+                .when().get("/api/party/{partyId}/track/current", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("deviceActive", equalTo(true));
+    }
+
     // ---------- vote ----------
 
     @Test

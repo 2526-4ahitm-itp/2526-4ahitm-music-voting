@@ -80,6 +80,7 @@
 "dashboard.nowPlaying.pressPlay" = "Press Play";
 "dashboard.queue.title" = "Queue";
 "dashboard.queue.empty" = "No songs in the queue";
+"dashboard.controls.noDevice" = "Player must be opened first.";
 
 /* Tab labels */
 "tab.addSong" = "Add Song";

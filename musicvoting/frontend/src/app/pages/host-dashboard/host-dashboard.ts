@@ -28,6 +28,7 @@ export class HostDashboard implements OnInit, OnDestroy {
 
   partyStarted = false;
   isPaused = false;
+  deviceActive = true;
   private suppressPlaybackStateUntil: number | null = null;
   private readonly SUPPRESSION_MS = 1500;
 
@@ -154,6 +155,8 @@ export class HostDashboard implements OnInit, OnDestroy {
       this.ngZone.run(() => {
         const now = Date.now();
         const suppressed = this.suppressPlaybackStateUntil && now < this.suppressPlaybackStateUntil;
+
+        this.deviceActive = typeof res?.deviceActive === 'boolean' ? res.deviceActive : true;
 
         if (res?.track) {
           const newUri = res.track?.uri ?? null;

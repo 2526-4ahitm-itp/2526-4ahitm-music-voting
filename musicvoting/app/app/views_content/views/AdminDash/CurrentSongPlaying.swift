@@ -14,6 +14,7 @@ struct CurrentSongPlaying: View {
     let isLoading: Bool
     var positionMs: Double = 0
     var durationMs: Double = 0
+    var deviceActive: Bool = true
     var onPlayPause: () -> Void = {}
     var onNext: () -> Void = {}
     var onPrevious: () -> Void = {}
@@ -101,13 +102,14 @@ struct CurrentSongPlaying: View {
                     Image(systemName: "backward.fill")
                         .font(.system(size: 30))
                 }
+                .disabled(!deviceActive)
 
                 ZStack {
                     Button(action: onPlayPause) {
                         Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 60))
                     }
-                    .disabled(isLoading)
+                    .disabled(isLoading || !deviceActive)
 
                     if isLoading {
                         ProgressView()
@@ -120,9 +122,18 @@ struct CurrentSongPlaying: View {
                     Image(systemName: "forward.fill")
                         .font(.system(size: 30))
                 }
+                .disabled(!deviceActive)
             }
             .foregroundColor(.primary)
             .padding(.top, 10)
+
+            if !deviceActive {
+                Text(String(localized: "dashboard.controls.noDevice"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
 
             Spacer()
         }
