@@ -13,14 +13,22 @@ struct SongRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: song.imageUrl)) { image in
-                image.resizable().scaledToFill()
-                    .frame(width: 52, height: 52)
-                    .clipped()
-            } placeholder: {
-                Color.gray.opacity(0.15)
-                    .frame(width: 52, height: 52)
+            AsyncImage(url: URL(string: song.imageUrl)) { phase in
+                if let image = phase.image {
+                    image.resizable().scaledToFill()
+                        .frame(width: 52, height: 52)
+                        .clipped()
+                } else {
+                    Color("primary").opacity(0.08)
+                        .frame(width: 52, height: 52)
+                        .overlay(
+                            Image(systemName: "music.note")
+                                .font(.system(size: 18))
+                                .foregroundColor(Color("primary").opacity(0.35))
+                        )
+                }
             }
+            .frame(width: 52, height: 52)
             .clipShape(RoundedRectangle(cornerRadius: 6))
 
             VStack(alignment: .leading, spacing: 3) {

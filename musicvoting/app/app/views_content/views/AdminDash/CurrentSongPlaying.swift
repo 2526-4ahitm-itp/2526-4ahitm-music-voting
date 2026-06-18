@@ -34,14 +34,22 @@ struct CurrentSongPlaying: View {
     var body: some View {
         VStack(spacing: 20) {
             if let song {
-                AsyncImage(url: URL(string: song.imageUrl)) { image in
-                    image.resizable().scaledToFill()
-                        .frame(width: 220, height: 220)
-                        .clipped()
-                } placeholder: {
-                    Color.gray.opacity(0.15)
-                        .frame(width: 220, height: 220)
+                AsyncImage(url: URL(string: song.imageUrl)) { phase in
+                    if let image = phase.image {
+                        image.resizable().scaledToFill()
+                            .frame(width: 220, height: 220)
+                            .clipped()
+                    } else {
+                        Color("primary").opacity(0.08)
+                            .frame(width: 220, height: 220)
+                            .overlay(
+                                Image(systemName: "music.note")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(Color("primary").opacity(0.35))
+                            )
+                    }
                 }
+                .frame(width: 220, height: 220)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
             } else {
