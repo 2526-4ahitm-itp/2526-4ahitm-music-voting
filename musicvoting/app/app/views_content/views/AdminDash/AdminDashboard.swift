@@ -353,6 +353,14 @@ struct AdminDashboard: View {
     @EnvironmentObject private var partySession: PartySessionStore
 
     var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color("primary"), Color("secondary"), Color("accent")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     if let hostPin = partySession.hostPin {
@@ -412,7 +420,7 @@ struct AdminDashboard: View {
         ) { _ in
             Task { await viewModel.refreshDashboardState() }
         }
-
+        }
     }
 }
 

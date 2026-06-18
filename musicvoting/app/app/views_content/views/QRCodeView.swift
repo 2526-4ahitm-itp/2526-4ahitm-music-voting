@@ -10,7 +10,7 @@ import SwiftUI
 struct QRCodeView: View {
     @EnvironmentObject private var partySession: PartySessionStore
     @State private var qrCodeImage: UIImage?
-    @State private var isLoadingQR = false
+    @State private var isLoadingQR = true
     @State private var loadError = false
 
     var body: some View {
