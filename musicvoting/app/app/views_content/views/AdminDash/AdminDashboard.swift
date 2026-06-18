@@ -354,15 +354,16 @@ struct AdminDashboard: View {
 
     var body: some View {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 16) {
                     if let hostPin = partySession.hostPin {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("dashboard.hostPin")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundColor(Color("accent"))
                                 Text(hostPin)
                                     .font(.system(size: 28, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.primary)
                                     .tracking(4)
                             }
                             Spacer()
@@ -371,7 +372,8 @@ struct AdminDashboard: View {
                                 .foregroundStyle(Color("accent"))
                         }
                         .padding()
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
                     }
 
                     // Gerade Spielender Song

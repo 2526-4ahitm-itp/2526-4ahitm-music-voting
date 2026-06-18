@@ -32,70 +32,68 @@ struct CurrentSongPlaying: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-
+        VStack(spacing: 20) {
             if let song {
-                // Album Cover
-                AsyncImage(url: URL(string: song.imageUrl)) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-
-                    case .failure:
-                        ZStack {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.3))
-
-                            Image(systemName: "music.note")
-                                .foregroundColor(.secondary)
-                        }
-
-                    @unknown default:
-                        EmptyView()
-                    }
+                AsyncImage(url: URL(string: song.imageUrl)) { image in
+                    image.resizable().scaledToFill()
+                        .frame(width: 220, height: 220)
+                        .clipped()
+                } placeholder: {
+                    Color.gray.opacity(0.15)
+                        .frame(width: 220, height: 220)
                 }
-                .frame(width: 300, height: 300)
-                .cornerRadius(6)
-                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+            } else {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color("primary").opacity(0.08))
+                    Image(systemName: "music.note")
+                        .font(.system(size: 40))
+                        .foregroundColor(Color("primary").opacity(0.4))
+                }
+                .frame(width: 220, height: 220)
             }
 
-            // Song Title
-            Text(song?.title ?? String(localized: "dashboard.nowPlaying.empty"))
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+            VStack(spacing: 4) {
+                Text(song?.title ?? String(localized: "dashboard.nowPlaying.empty"))
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
 
-            Text(song?.artist ?? String(localized: "dashboard.nowPlaying.pressPlay"))
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                Text(song?.artist ?? String(localized: "dashboard.nowPlaying.pressPlay"))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
 
-            // Progress Bar — mirrors the player position over SSE,
-            // matching the host dashboard.
-            HStack(spacing: 12) {
+            // Progress bar
+            HStack(spacing: 10) {
                 Text(formatTime(positionMs))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(width: 36)
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(Color.gray.opacity(0.25))
+                            .fill(Color("primary").opacity(0.15))
                         Capsule()
-                            .fill(Color("accent"))
+                            .fill(Color("primary"))
                             .frame(width: geo.size.width * progressFraction)
                     }
                 }
-                .frame(height: 6)
+                .frame(height: 4)
                 .animation(.linear(duration: 0.5), value: progressFraction)
 
                 Text(formatTime(durationMs))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(width: 36)
             }
-            .font(.caption)
-            .foregroundColor(.primary)
-            .padding(.horizontal)
+            .padding(.horizontal, 8)
 
             // Controls
             HStack(spacing: 50) {
@@ -134,20 +132,11 @@ struct CurrentSongPlaying: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
             }
-
-            Spacer()
         }
-        .padding()
-        /*.background(
-            LinearGradient(
-                gradient: Gradient(colors: [Color.black, Color.blue.opacity(0.6)]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )*/
-        .edgesIgnoringSafeArea(.all)
+        .padding(20)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 

@@ -19,16 +19,26 @@ struct Gast_ContentView: View {
 
     var body: some View {
         NavigationStack {
-            TabView {
-                SongAddView()
-                    .tabItem {
-                        Label("tab.addSong", systemImage: "plus")
-                    }
+            ZStack {
+                LinearGradient(
+                    colors: [Color("primary"), Color("secondary"), Color("accent")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-                VotingView()
-                    .tabItem {
-                        Label("tab.voting", systemImage: "heart")
-                    }
+                TabView {
+                    SongAddView()
+                        .tabItem {
+                            Label("tab.addSong", systemImage: "plus")
+                        }
+
+                    VotingView()
+                        .tabItem {
+                            Label("tab.voting", systemImage: "heart")
+                        }
+                }
+                .background(.clear)
             }
             .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.inline)
@@ -44,7 +54,7 @@ struct Gast_ContentView: View {
                 }
             }
         }
-        .tint(Color("secondary"))
+        .tint(Color("accent"))
         .task { await listenForPartyEnded() }
         .alert("alert.partyEnded", isPresented: $partyEndedAlert) {
             Button("alert.ok") {

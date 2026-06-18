@@ -13,59 +13,48 @@ struct SongRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            
-            AsyncImage(url: URL(string: song.imageUrl)) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-
-                case .failure:
-                    ZStack {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-
-                        Image(systemName: "music.note")
-                            .foregroundColor(.gray)
-                    }
-
-
-                @unknown default:
-                    EmptyView()
-                }
+            AsyncImage(url: URL(string: song.imageUrl)) { image in
+                image.resizable().scaledToFill()
+                    .frame(width: 52, height: 52)
+                    .clipped()
+            } placeholder: {
+                Color.gray.opacity(0.15)
+                    .frame(width: 52, height: 52)
             }
-            .frame(width: 60, height: 60)
-            .cornerRadius(6)
-            .clipped()
+            .clipShape(RoundedRectangle(cornerRadius: 6))
 
-
-        
-
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(song.title)
                     .font(.headline)
-
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
                 Text(song.artist)
                     .font(.subheadline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
 
             Spacer()
 
             Button(action: onDelete) {
-                Image(systemName: "trash.fill")
-                    .foregroundColor(.primary)
+                ZStack {
+                    Circle()
+                        .fill(Color("primary").opacity(0.12))
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "trash")
+                        .foregroundColor(Color("primary"))
+                        .font(.system(size: 14, weight: .medium))
+                }
             }
             .buttonStyle(.plain)
         }
-        .padding(.vertical, 6)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 }
+
 #Preview {
     SongRow(song: .init(title: "Test", artist: "Test", imageUrl: "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"))
+        .padding()
+        .background(Color.white)
 }
-	

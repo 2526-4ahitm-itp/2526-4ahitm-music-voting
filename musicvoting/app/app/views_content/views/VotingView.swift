@@ -191,7 +191,15 @@ struct VotingView: View {
     @EnvironmentObject private var partySession: PartySessionStore
 
     var body: some View {
-        ScrollView {
+        ZStack {
+            LinearGradient(
+                colors: [Color("primary"), Color("secondary"), Color("accent")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 if viewModel.isLoading {
                     HStack {
@@ -204,10 +212,17 @@ struct VotingView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "music.note.list")
                             .font(.system(size: 60))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white.opacity(0.7))
+                            .padding(.bottom, 4)
                         Text("voting.queue.empty")
                             .font(.title3)
-                            .foregroundStyle(.secondary)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                        Text("voting.queue.emptyHint")
+                            .font(.body)
+                            .foregroundStyle(.white.opacity(0.8))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 60)
@@ -228,14 +243,8 @@ struct VotingView: View {
                         }
                     }
                     .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(.ultraThinMaterial)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-                            )
-                    )
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                    .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
                 }
             }
             .padding()
@@ -258,22 +267,15 @@ private struct VotingRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: entry.imageUrl)) { phase in
-                switch phase {
-                case .success(let image):
-                    image.resizable().scaledToFill()
-                case .failure:
-                    ZStack {
-                        Rectangle().fill(Color.gray.opacity(0.3))
-                        Image(systemName: "music.note").foregroundStyle(.secondary)
-                    }
-                default:
-                    ProgressView()
-                }
+            AsyncImage(url: URL(string: entry.imageUrl)) { image in
+                image.resizable().scaledToFill()
+                    .frame(width: 52, height: 52)
+                    .clipped()
+            } placeholder: {
+                Color.gray.opacity(0.15)
+                    .frame(width: 52, height: 52)
             }
-            .frame(width: 52, height: 52)
-            .cornerRadius(6)
-            .clipped()
+            .clipShape(RoundedRectangle(cornerRadius: 6))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(entry.title)
