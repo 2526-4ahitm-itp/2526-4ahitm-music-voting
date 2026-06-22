@@ -1,23 +1,7 @@
 <div class="music-voting-container">
-  <div class="side-menu" [class.open]="menuOpen">
-    <h2>MusicVoting</h2>
-    <ul>
-      <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
-      <li><a routerLink="/voting" (click)="toggleMenu()">Voting</a></li>
-      <li class="active"><a routerLink="/guest" (click)="toggleMenu()">Suchen</a></li>
-    </ul>
-  </div>
-
-  @if (menuOpen) {
-    <div class="overlay" (click)="toggleMenu()"></div>
-  }
-
   <div class="main-wrapper">
     <div class="sticky-top">
       <nav class="navbar">
-        <button class="burger" type="button" (click)="toggleMenu()">
-          <p>☰</p>
-        </button>
         <header class="header">
           <h1>Suche nach deinen Lieblingssongs!</h1>
         </header>
@@ -89,4 +73,9 @@
       </div>
     </main>
   </div>
+
+  <nav class="bottom-nav">
+    <button class="bottom-nav-btn" routerLink="/voting">Voten</button>
+    <button class="bottom-nav-btn active" routerLink="/guest">Hinzufügen</button>
+  </nav>
 </div>

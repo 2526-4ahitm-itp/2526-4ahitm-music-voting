@@ -130,7 +130,7 @@ export class CodeInput implements OnInit {
 
   private resolveAndJoin(pin: string): void {
     this.partyService.resolvePin(pin).subscribe({
-      next: () => this.router.navigate(['/guest']),
+      next: () => this.router.navigate(['/voting']),
       error: () => {
         this.showError = true;
         this.errorMessage = 'Party nicht gefunden.';
