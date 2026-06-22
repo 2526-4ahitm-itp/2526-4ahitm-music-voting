@@ -1,3 +1,4 @@
+import Combine
 import XCTest
 import Foundation
 @testable import app
@@ -8,6 +9,7 @@ final class AdminDashboardViewModelTests: XCTestCase {
     private let sessionKeys = ["mv.party.id", "mv.party.pin", "mv.party.hostPin", "mv.party.role"]
     private var session: PartySessionStore!
     private var viewModel: AdminDashboardViewModel!
+    private var cancellables: Set<AnyCancellable> = []
 
     override func setUp() {
         super.setUp()
@@ -23,8 +25,10 @@ final class AdminDashboardViewModelTests: XCTestCase {
     }
 
     override func tearDown() {
+        cancellables.removeAll()
         URLProtocol.unregisterClass(MockURLProtocol.self)
         MockURLProtocol.reset()
+        URLCache.shared.removeAllCachedResponses()
         sessionKeys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
         super.tearDown()
     }
@@ -114,10 +118,24 @@ final class AdminDashboardViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.currentSong?.title, "Song One")
     }
 
-    func testLoadQueueDoesNotOverwriteCurrentSongAfterPartyStarted() async {
-        stubGet("track/queue", json: queueJSON)
+    func testLoadQueueUpdatesPreviewToTopSongWhenPaused() async {
+        // When nothing is playing, the preview always tracks the top-voted song —
+        // even after the party has started (paused state).
         viewModel.partyStarted = true
-        viewModel.currentSong = Song(title: "Now Playing", artist: "DJ", imageUrl: "")
+        viewModel.isPlaying = false
+        viewModel.currentSong = Song(title: "Old Preview", artist: "DJ", imageUrl: "", uri: "spotify:track:old")
+        stubGet("track/queue", json: queueJSON)
+        await viewModel.loadQueue()
+
+        XCTAssertEqual(viewModel.currentSong?.title, "Song One")
+    }
+
+    func testLoadQueuePreservesCurrentSongWhilePlaying() async {
+        // While a song is actively playing, loadQueue must not overwrite it
+        // with whatever happens to be first in the queue response.
+        viewModel.isPlaying = true
+        viewModel.currentSong = Song(title: "Now Playing", artist: "DJ", imageUrl: "", uri: "spotify:track:np")
+        stubGet("track/queue", json: queueJSON)
         await viewModel.loadQueue()
 
         XCTAssertEqual(viewModel.currentSong?.title, "Now Playing")
@@ -246,5 +264,124 @@ final class AdminDashboardViewModelTests: XCTestCase {
 
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertTrue(MockURLProtocol.requestedURLs.map(\.absoluteString).contains { $0.hasSuffix("track/play") })
+    }
+
+    // MARK: - Equality guards (suppress unnecessary @Published fires)
+
+    func testIsPlayingNotReassignedWhenValueUnchanged() async {
+        viewModel.isPlaying = false
+        var changeCount = 0
+        viewModel.$isPlaying
+            .dropFirst()
+            .sink { _ in changeCount += 1 }
+            .store(in: &cancellables)
+
+        stubGet("track/current", json: #"{"isPlaying":false}"#)
+        await viewModel.loadCurrentPlayback()
+
+        XCTAssertEqual(changeCount, 0, "isPlaying should not publish when it stays false")
+    }
+
+    func testIsPlayingPublishesWhenValueChanges() async {
+        viewModel.isPlaying = false
+        var changeCount = 0
+        viewModel.$isPlaying
+            .dropFirst()
+            .sink { _ in changeCount += 1 }
+            .store(in: &cancellables)
+
+        stubGet("track/current", json: playbackJSON) // isPlaying: true
+        await viewModel.loadCurrentPlayback()
+
+        XCTAssertEqual(changeCount, 1)
+        XCTAssertTrue(viewModel.isPlaying)
+    }
+
+    func testDeviceActiveNotReassignedWhenValueUnchanged() async {
+        viewModel.deviceActive = true
+        var changeCount = 0
+        viewModel.$deviceActive
+            .dropFirst()
+            .sink { _ in changeCount += 1 }
+            .store(in: &cancellables)
+
+        stubGet("track/current", json: #"{"isPlaying":false,"deviceActive":true}"#)
+        await viewModel.loadCurrentPlayback()
+
+        XCTAssertEqual(changeCount, 0, "deviceActive should not publish when it stays true")
+    }
+
+    func testDeviceActivePublishesWhenValueChanges() async {
+        viewModel.deviceActive = true
+        var changeCount = 0
+        viewModel.$deviceActive
+            .dropFirst()
+            .sink { _ in changeCount += 1 }
+            .store(in: &cancellables)
+
+        stubGet("track/current", json: #"{"isPlaying":false,"deviceActive":false}"#)
+        await viewModel.loadCurrentPlayback()
+
+        XCTAssertEqual(changeCount, 1)
+        XCTAssertFalse(viewModel.deviceActive)
+    }
+
+    // MARK: - Image prefetch
+
+    func testLoadQueuePrefetchesUncachedImageUrls() async throws {
+        let img1 = "https://cdn.example.com/art/1.jpg"
+        let img2 = "https://cdn.example.com/art/2.jpg"
+        let q = """
+        {"queue":[
+            {"name":"A","uri":"spotify:track:a1","artists":[{"name":"X"}],"album":{"images":[{"url":"\(img1)"}]}},
+            {"name":"B","uri":"spotify:track:a2","artists":[{"name":"Y"}],"album":{"images":[{"url":"\(img2)"}]}}
+        ]}
+        """
+        URLCache.shared.removeAllCachedResponses()
+        stubGet("track/queue", json: q)
+
+        await viewModel.loadQueue()
+        // fire-and-forget dataTask requests need a moment to be dispatched
+        try await Task.sleep(for: .milliseconds(50))
+
+        let requested = Set(MockURLProtocol.requestedURLs.map(\.absoluteString))
+        XCTAssertTrue(requested.contains(img1), "Should prefetch uncached image 1")
+        XCTAssertTrue(requested.contains(img2), "Should prefetch uncached image 2")
+    }
+
+    func testLoadQueueSkipsAlreadyCachedImageUrls() async throws {
+        let imgURL = URL(string: "https://cdn.example.com/art/cached.jpg")!
+        // Pre-populate ImageCache.shared (the cache prefetchImages checks)
+        ImageCache.shared.store(UIImage(), for: imgURL)
+
+        let q = """
+        {"queue":[
+            {"name":"C","uri":"spotify:track:c1","artists":[{"name":"Z"}],"album":{"images":[{"url":"\(imgURL.absoluteString)"}]}}
+        ]}
+        """
+        stubGet("track/queue", json: q)
+
+        await viewModel.loadQueue()
+        try await Task.sleep(for: .milliseconds(50))
+
+        let requested = MockURLProtocol.requestedURLs.map(\.absoluteString)
+        XCTAssertFalse(requested.contains(imgURL.absoluteString), "Already-cached image must not be re-fetched")
+    }
+
+    func testLoadQueueIgnoresSongsWithEmptyImageUrl() async throws {
+        let q = """
+        {"queue":[
+            {"name":"NoArt","uri":"spotify:track:n1","artists":[{"name":"X"}],"album":{"images":[]}}
+        ]}
+        """
+        URLCache.shared.removeAllCachedResponses()
+        stubGet("track/queue", json: q)
+
+        await viewModel.loadQueue()
+        try await Task.sleep(for: .milliseconds(50))
+
+        // Only the queue endpoint itself should have been requested; no image URL
+        let imageRequests = MockURLProtocol.requestedURLs.filter { !$0.absoluteString.contains("/api/") }
+        XCTAssertTrue(imageRequests.isEmpty, "No image prefetch for songs without artwork")
     }
 }

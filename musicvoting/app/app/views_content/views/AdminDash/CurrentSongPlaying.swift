@@ -32,33 +32,34 @@ struct CurrentSongPlaying: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 18) {
+            Spacer().frame(height: 12)
             if let song {
-                AsyncImage(url: URL(string: song.imageUrl)) { phase in
-                    if let image = phase.image {
-                        image.resizable().scaledToFill()
-                            .frame(width: 220, height: 220)
+                CachedAsyncImage(url: song.imageUrl.isEmpty ? nil : URL(string: song.imageUrl)) { image in
+                    if let image {
+                        Image(uiImage: image).resizable().scaledToFill()
+                            .frame(width: 270, height: 270)
                             .clipped()
                     } else {
-                        Color("primary").opacity(0.08)
-                            .frame(width: 220, height: 220)
+                        Color(.systemGray5)
+                            .frame(width: 270, height: 270)
                             .overlay(
                                 Image(systemName: "music.note")
                                     .font(.system(size: 50))
-                                    .foregroundColor(Color("primary").opacity(0.35))
+                                    .foregroundColor(Color(.systemGray2))
                             )
                     }
                 }
-                .frame(width: 220, height: 220)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .frame(width: 270, height: 270)
+                .clipShape(RoundedRectangle(cornerRadius: 25))
                 .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
             } else {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color("primary").opacity(0.08))
+                    RoundedRectangle(cornerRadius: 25)
+                        .fill(Color(.systemGray5))
                     Image(systemName: "music.note")
                         .font(.system(size: 40))
-                        .foregroundColor(Color("primary").opacity(0.4))
+                        .foregroundColor(Color(.systemGray2))
                 }
                 .frame(width: 220, height: 220)
             }
@@ -143,20 +144,29 @@ struct CurrentSongPlaying: View {
             }
         }
         .padding(20)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 25))
         .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 
 #Preview {
-    CurrentSongPlaying(
-        song: .init(
-            title: "Test",
-            artist: "Test",
-            imageUrl:
-                "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"
-        ),
-        isPlaying: true,
-        isLoading: false
-    )
+    ZStack {
+        LinearGradient(
+            colors: [Color("primary"), Color("secondary"), Color("accent")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+        CurrentSongPlaying(
+            song: .init(
+                title: "Test",
+                artist: "Test",
+                imageUrl:
+                    "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"
+            ),
+            isPlaying: true,
+            isLoading: false
+        )
+        .padding()
+    }
 }

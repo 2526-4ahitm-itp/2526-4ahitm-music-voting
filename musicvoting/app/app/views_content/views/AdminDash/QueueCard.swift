@@ -44,13 +44,20 @@ struct QueueCard: View {
                 .padding(.bottom, 8)
             }
         }
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 25))
         .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 
 #Preview {
-    QueueCard(songs: [])
-        .padding()
-        .background(Color.purple.opacity(0.3))
+    ZStack {
+        LinearGradient(
+            colors: [Color("primary"), Color("secondary"), Color("accent")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+        QueueCard(songs: [])
+            .padding()
+    }
 }

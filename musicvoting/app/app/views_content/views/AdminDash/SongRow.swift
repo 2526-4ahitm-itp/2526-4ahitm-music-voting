@@ -7,24 +7,49 @@
 
 import SwiftUI
 
+/// Replacement for AsyncImage that loads through URLSession.shared and stores
+/// results in ImageCache.shared so every view in the session shares one cache.
+struct CachedAsyncImage<Content: View>: View {
+    let url: URL?
+    @ViewBuilder let content: (UIImage?) -> Content
+
+    @State private var uiImage: UIImage?
+
+    var body: some View {
+        content(uiImage)
+            .task(id: url) {
+                uiImage = await load(url)
+            }
+    }
+
+    private func load(_ url: URL?) async -> UIImage? {
+        guard let url else { return nil }
+        if let cached = ImageCache.shared.image(for: url) { return cached }
+        guard let (data, _) = try? await URLSession.shared.data(from: url),
+              let img = UIImage(data: data) else { return nil }
+        ImageCache.shared.store(img, for: url)
+        return img
+    }
+}
+
 struct SongRow: View {
     let song: Song
     var onDelete: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: song.imageUrl)) { phase in
-                if let image = phase.image {
-                    image.resizable().scaledToFill()
+            CachedAsyncImage(url: song.imageUrl.isEmpty ? nil : URL(string: song.imageUrl)) { image in
+                if let image {
+                    Image(uiImage: image).resizable().scaledToFill()
                         .frame(width: 52, height: 52)
                         .clipped()
                 } else {
-                    Color("primary").opacity(0.08)
+                    Color(.systemGray5)
                         .frame(width: 52, height: 52)
                         .overlay(
                             Image(systemName: "music.note")
                                 .font(.system(size: 18))
-                                .foregroundColor(Color("primary").opacity(0.35))
+                                .foregroundColor(Color(.systemGray2))
                         )
                 }
             }

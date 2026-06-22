@@ -100,10 +100,13 @@ final class AdminDashboardViewModel: ObservableObject {
                     else { continue }
 
                     if event.type == "progress", let payload = event.payload {
-                        currentPosition = payload.position.flatMap(Double.init) ?? 0
-                        currentDuration = payload.duration.flatMap(Double.init) ?? 0
+                        let newPos = payload.position.flatMap(Double.init) ?? 0
+                        let newDur = payload.duration.flatMap(Double.init) ?? 0
+                        if newPos != currentPosition { currentPosition = newPos }
+                        if newDur != currentDuration { currentDuration = newDur }
                         if let pausedStr = payload.paused {
-                            isPlaying = pausedStr != "true"
+                            let playing = pausedStr != "true"
+                            if playing != isPlaying { isPlaying = playing }
                         }
                     } else if event.type == "track-changed" {
                         currentPosition = 0
@@ -133,14 +136,19 @@ final class AdminDashboardViewModel: ObservableObject {
 
     func loadQueue() async {
         do {
-            let (data, _) = try await URLSession.shared.data(from: queueURL)
+            var request = URLRequest(url: queueURL)
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            let (data, _) = try await URLSession.shared.data(for: request)
             let response = try JSONDecoder().decode(QueueResponse.self, from: data)
             let allSongs = response.queue.map(Self.mapTrackToSong)
 
-            // Before the party starts, preview the top queued song and keep it in
-            // sync as votes reorder the queue — matches webapp behaviour. Once the
-            // party has started, currentSong reflects what's actually playing.
-            if !partyStarted {
+            // If nothing is currently playing, always track the top queued song as
+            // the preview — so the preview stays consistent with what pressing play
+            // would actually start.
+            if !isPlaying {
+                let top = allSongs.first
+                if top != currentSong { currentSong = top }
+            } else if currentSong == nil {
                 currentSong = allSongs.first
             }
 
@@ -154,19 +162,38 @@ final class AdminDashboardViewModel: ObservableObject {
             if filtered != queueSongs {
                 queueSongs = filtered
             }
+
+            prefetchImages(for: allSongs)
         } catch {
             queueSongs = []
         }
     }
 
+    private func prefetchImages(for songs: [Song]) {
+        for song in songs where !song.imageUrl.isEmpty {
+            guard let url = URL(string: song.imageUrl),
+                  ImageCache.shared.image(for: url) == nil else { continue }
+            Task {
+                guard let (data, _) = try? await URLSession.shared.data(from: url),
+                      let img = UIImage(data: data) else { return }
+                ImageCache.shared.store(img, for: url)
+            }
+        }
+    }
+
     func loadCurrentPlayback() async {
         do {
-            let (data, _) = try await URLSession.shared.data(from: currentURL)
+            var request = URLRequest(url: currentURL)
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            let (data, _) = try await URLSession.shared.data(for: request)
             let response = try JSONDecoder().decode(CurrentPlaybackResponse.self, from: data)
-            isPlaying = response.isPlaying
-            deviceActive = response.deviceActive ?? true
+            let newIsPlaying = response.isPlaying
+            let newDeviceActive = response.deviceActive ?? true
+            if newIsPlaying != isPlaying { isPlaying = newIsPlaying }
+            if newDeviceActive != deviceActive { deviceActive = newDeviceActive }
             if let track = response.track {
-                currentSong = Self.mapTrackToSong(track)
+                let updated = Self.mapTrackToSong(track)
+                if updated != currentSong { currentSong = updated }
             } else {
                 currentPosition = 0
                 currentDuration = 0
@@ -177,8 +204,8 @@ final class AdminDashboardViewModel: ObservableObject {
     }
 
     func refreshDashboardState() async {
-        await loadQueue()
         await loadCurrentPlayback()
+        await loadQueue()
     }
 
     func togglePlayPause() async {
@@ -338,11 +365,14 @@ final class AdminDashboardViewModel: ObservableObject {
 
     private static func mapTrackToSong(_ track: QueueTrack) -> Song {
         let artistText = track.artists.map(\.name).joined(separator: ", ")
+        let dbImageUrl = track.album.images.first?.url ?? ""
+        let imageUrl = dbImageUrl.isEmpty
+            ? UserDefaults.standard.string(forKey: "imageUrl_\(track.uri ?? "")") ?? ""
+            : dbImageUrl
         return Song(
             title: track.name,
             artist: artistText.isEmpty ? String(localized: "unknown") : artistText,
-            imageUrl: track.album.images.first?.url
-                ?? "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb",
+            imageUrl: imageUrl,
             uri: track.uri
         )
     }
@@ -371,7 +401,7 @@ struct AdminDashboard: View {
                                     .foregroundColor(Color("accent"))
                                 Text(hostPin)
                                     .font(.system(size: 28, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(.white)
                                     .tracking(4)
                             }
                             Spacer()
@@ -380,8 +410,7 @@ struct AdminDashboard: View {
                                 .foregroundStyle(Color("accent"))
                         }
                         .padding()
-                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
-                        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
+                        .background(Color.white.opacity(0.15), in: RoundedRectangle(cornerRadius: 25))
                     }
 
                     // Gerade Spielender Song
