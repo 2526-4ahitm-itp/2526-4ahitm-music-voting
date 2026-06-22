@@ -126,6 +126,37 @@ The host MUST be able to end the party. Ending a party MUST close the party, emp
 - AND provider tokens for this party are deleted
 - AND every connected client receives a "party ended" notification
 
+### Requirement: Party Auto-Ends After 2 Days
+The system MUST automatically end any party that has not been explicitly ended within 2 days of its creation. Auto-ending MUST have the same effects as the host-triggered "Host Ends Party" flow: the queue is emptied, provider tokens are cleared, `endedAt` is set, the party is removed from the active registry, and a `party-ended` event is broadcast to all connected clients.
+
+#### Scenario: Forgotten party auto-ends after 2 days
+- GIVEN a party was created more than 2 days ago and was never explicitly ended
+- WHEN the auto-expiry job runs
+- THEN the party's queue is emptied
+- AND its provider tokens are cleared
+- AND `endedAt` is set to the current time
+- AND every client connected to that party's SSE stream receives a `party-ended` event
+
+#### Scenario: Recently created party is not auto-ended
+- GIVEN a party was created less than 2 days ago
+- WHEN the auto-expiry job runs
+- THEN the party remains active and `endedAt` stays `NULL`
+
+### Requirement: Ended Party Data Deleted After 1 Month
+The system MUST permanently delete a party's data (the `party` row and its cascading `queue_entry`/`vote` rows) once 1 month has passed since `endedAt`.
+
+#### Scenario: Old ended party is purged
+- GIVEN a party was ended more than 1 month ago
+- WHEN the cleanup job runs
+- THEN the party's row is deleted from the database
+- AND all of its `queue_entry` and `vote` rows are deleted
+- AND `GET /api/party/join/{pin}` and any `/api/party/{id}/...` requests for that party return 404
+
+#### Scenario: Recently ended party is retained
+- GIVEN a party was ended less than 1 month ago
+- WHEN the cleanup job runs
+- THEN the party's row and its data remain in the database
+
 ### Requirement: Host PIN Required for Party-Mutating Requests
 Requests to host-only endpoints MUST include the party's host PIN as an `Authorization: Bearer <hostPin>` header. The server MUST reject requests that omit the header with HTTP 401. The server MUST reject requests that supply an incorrect host PIN with HTTP 403.
 
@@ -152,3 +183,25 @@ All clients (host, guest, dashboard) MUST automatically attempt to reconnect whe
 - WHEN the guest's network drops and recovers within a reasonable window
 - THEN the client reconnects without user action
 - AND the displayed queue and playback state match the server state after reconnect
+
+### Requirement: Party Operations Survive Backend Restart
+All endpoints that accept a party ID MUST resolve the party from the database if it
+is not present in the in-memory registry. The system MUST NOT return 404 solely
+because the backend was restarted after the party was created.
+
+#### Scenario: QR endpoint after backend restart
+- GIVEN a party was created before the last backend restart
+- WHEN `GET /api/party/{id}/qr` is called
+- THEN the system finds the party in the database and returns the QR code PNG
+- AND HTTP 200 is returned
+
+#### Scenario: Track operations after backend restart
+- GIVEN a party was created before the last backend restart
+- WHEN `GET /api/party/{id}/track/queue` is called
+- THEN the system reconstructs the party from the database and returns the queue
+- AND HTTP 200 is returned
+
+#### Scenario: Ended or unknown party still returns 404
+- GIVEN no active party exists with a given ID (ended or never created)
+- WHEN any `/api/party/{id}/…` endpoint is called
+- THEN HTTP 404 is returned

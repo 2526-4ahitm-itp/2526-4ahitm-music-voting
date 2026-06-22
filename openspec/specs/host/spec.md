@@ -4,6 +4,34 @@
 
 Defines the host role: the party creator who has exclusive permission to control playback, curate the queue manually, and manage a party-scoped blacklist. Host controls run on the host's own device (typically a phone); the dashboard never exposes host controls.
 ## Requirements
+### Requirement: Play Controls Locked Without Active Playback Device
+The web host-dashboard and the iOS admin dashboard MUST disable Play/Pause/Skip controls while `deviceActive` (from `GET /party/{id}/track/current`) is `false`, and MUST show a short hint explaining that the dashboard/startpage needs to be opened first. Controls MUST become interactive again as soon as `deviceActive` becomes `true`, without requiring a page reload or app restart.
+
+#### Scenario: Host opens dashboard before startpage
+- GIVEN the host opens the web host-dashboard before any startpage/TV has registered a playback device
+- WHEN the dashboard loads
+- THEN Play/Pause/Skip are shown disabled
+- AND a hint is shown explaining that the player needs to be opened
+
+#### Scenario: Controls unlock once device registers
+- GIVEN the host-dashboard shows Play/Pause/Skip disabled because no device is active
+- WHEN the TV/startpage opens and registers a Spotify Web Playback SDK device
+- THEN the host-dashboard's Play/Pause/Skip controls become enabled without a reload
+
+#### Scenario: iOS admin view reflects the same lock
+- GIVEN a Spotify party with no active playback device
+- WHEN the host opens the iOS admin dashboard
+- THEN Play/Pause/Skip are shown disabled with the same hint as the web dashboard
+
+### Requirement: Create Party Back Navigation Returns to Host Options
+The back arrow on the "Create party" page MUST navigate to the "Host options" page (`/host-options`), the page from which "Create party" is reached, rather than skipping back to the home page.
+
+#### Scenario: Host navigates back from Create party
+- GIVEN the host navigated Home → Host options → Create party
+- WHEN the host taps the back arrow on the "Create party" page
+- THEN the host is taken to the "Host options" page
+- AND not directly to the home page
+
 ### Requirement: Host Creates Party Before Provider Login
 Before authenticating with a provider, the host MUST explicitly create a party by selecting the music provider on a dedicated "Party erstellen" screen. The system MUST call `POST /api/party` with the chosen provider and MUST store the returned party ID and host PIN for the duration of the session. Only after successful party creation does the host proceed to the provider OAuth login.
 
@@ -223,4 +251,22 @@ The iOS host admin view MUST display a progress bar for the current song, kept i
 #### Scenario: No active player leaves the bar at zero
 - GIVEN the iOS host admin view is open and no TV player is publishing progress
 - THEN the progress bar shows `0:00` with no fill
+
+### Requirement: iOS Login Does Not Trigger Webapp Refresh
+When a host authenticates via the iOS app, the backend MUST NOT emit a
+`login-success` SSE event with `source=web`. Only an iOS-scoped event
+(`source=ios`) MUST be emitted. This prevents the web app's SSE listener from
+reinitializing its player in response to an iOS login.
+
+#### Scenario: iOS host creates a party — webapp stays stable
+- GIVEN the webapp has an active party open with its SSE stream connected
+- WHEN the iOS host completes Spotify authentication for a new or existing party
+- THEN the webapp does NOT receive a `login-success` event with `source=web`
+- AND the webapp does NOT reinitialize or refresh its player
+
+#### Scenario: Web login still triggers webapp initialization
+- GIVEN the webapp is awaiting Spotify authentication
+- WHEN the host completes Spotify authentication via the web flow
+- THEN the webapp receives a `login-success` event with `source=web`
+- AND the webapp initializes its player normally
 

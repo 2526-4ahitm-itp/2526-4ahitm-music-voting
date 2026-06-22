@@ -63,7 +63,7 @@ public class SpotifyCallbackResource {
                         .entity(Map.of("error", "Missing or invalid state parameter")).build();
             }
 
-            Party party = partyRegistry.find(PartyId.of(partyIdStr))
+            Party party = partyRegistry.findById(partyIdStr)
                     .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
             Map<String, String> tokenMap = exchangeAuthorizationCode(code, redirectUri);
@@ -167,7 +167,7 @@ public class SpotifyCallbackResource {
                         .build();
             }
 
-            Party party = partyRegistry.find(PartyId.of(partyIdStr))
+            Party party = partyRegistry.findById(partyIdStr)
                     .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
             Map<String, String> tokenMap = exchangeAuthorizationCode(code, iosRedirectUri);
@@ -195,11 +195,6 @@ public class SpotifyCallbackResource {
                             "source", "ios",
                             "installationId", installationId == null ? "" : installationId
                     )
-            ));
-            loginEventBus.emit(new LoginEvent(
-                    "login-success",
-                    Instant.now(),
-                    Map.of("source", "web")
             ));
 
             return Response.ok(Map.of("status", "ok")).build();

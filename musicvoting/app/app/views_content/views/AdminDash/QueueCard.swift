@@ -13,37 +13,51 @@ struct QueueCard: View {
     var onDelete: (Song) -> Void = { _ in }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             Text("dashboard.queue.title")
-                .font(.title2) // title2 wirkt oft harmonischer in Cards
+                .font(.headline)
                 .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.bottom, 4)
+                .foregroundColor(Color("primary"))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
+
+            Divider()
 
             if songs.isEmpty {
                 Text("dashboard.queue.empty")
-                    .foregroundColor(.secondary) // Wirkt besser im Glass-Look
+                    .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 20)
             } else {
-                ForEach(songs) { song in
-                    SongRow(song: song, onDelete: { onDelete(song) })
+                VStack(spacing: 0) {
+                    ForEach(songs) { song in
+                        SongRow(song: song, onDelete: { onDelete(song) })
+
+                        if song.id != songs.last?.id {
+                            Divider()
+                                .padding(.leading, 76)
+                        }
+                    }
                 }
+                .padding(.bottom, 8)
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 35)
-                .fill(.ultraThinMaterial) // Der Glas-Effekt
-                .overlay(
-                    RoundedRectangle(cornerRadius: 35)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.5) // Hauchdünne Kontur
-                )
-        )
-        .padding()
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 25))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 
 #Preview {
-    QueueCard(songs: [])
+    ZStack {
+        LinearGradient(
+            colors: [Color("primary"), Color("secondary"), Color("accent")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+        QueueCard(songs: [])
+            .padding()
+    }
 }

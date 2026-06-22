@@ -1,31 +1,11 @@
 <div class="music-voting-container">
-
-  <div class="side-menu" [class.open]="menuOpen">
-    <h2>MusicVoting</h2>
-    <ul>
-      <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
-      <li class="active"><a routerLink="/vote" (click)="toggleMenu()">Voting</a></li>
-      <li><a routerLink="/guest" (click)="toggleMenu()">Suchen</a></li>
-    </ul>
-  </div>
-
-  @if (menuOpen) {
-    <div class="overlay" (click)="toggleMenu()"></div>
-  }
-
   <div class="main-wrapper">
-
     <div class="sticky-top">
-
       <nav class="navbar">
-        <button class="burger" type="button" (click)="toggleMenu()">
-          <p>☰</p>
-        </button>
         <header class="header">
           <h1>Vote für deine Lieblingssongs!</h1>
         </header>
       </nav>
-
 
       <div class="search-section">
         <div class="search-bar">
@@ -48,13 +28,30 @@
     <div class="main-content">
       <div class="track-list">
         @for (track of filteredTracks(); track track.id) {
-          <div class="track-card">
+          <div class="track-card" [class.voted]="track.hasVoted" [class.now-playing]="track.isCurrentlyPlaying">
             <img class="album-cover" [src]="track.album?.images[0]?.url" alt="Cover">
             <div class="track-info">
               <span class="track-name">{{ track.name }}</span>
               <span class="artist-name">{{ track.artists[0]?.name }}</span>
             </div>
-            <button class="vote-button">♡</button>
+            <div class="vote-section">
+              @if (track.isCurrentlyPlaying) {
+                <div class="soundwave">
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                  <span class="soundwave-bar"></span>
+                </div>
+              } @else {
+                @if (track.likeCount > 0) {
+                  <span class="like-count">{{ track.likeCount }}</span>
+                }
+                <button class="vote-button" (click)="toggleVote(track)">
+                  {{ track.hasVoted ? '♥' : '♡' }}
+                </button>
+              }
+            </div>
           </div>
         } @empty {
           <div class="empty-state">
@@ -64,12 +61,15 @@
               </div>
               <h2>Die Playlist ist leer</h2>
               <p>Es sind noch keine Songs zum Voten da.</p>
-
             </div>
           </div>
         }
       </div>
     </div>
-
   </div>
+
+  <nav class="bottom-nav">
+    <button class="bottom-nav-btn active" routerLink="/voting">Voten</button>
+    <button class="bottom-nav-btn" routerLink="/guest">Hinzufügen</button>
+  </nav>
 </div>

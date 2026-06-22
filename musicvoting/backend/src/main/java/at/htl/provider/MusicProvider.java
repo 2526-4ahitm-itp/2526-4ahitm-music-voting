@@ -33,4 +33,12 @@ public interface MusicProvider {
     Response getCurrentPlayback(Party party);
 
     Response toggleVote(Party party, String trackUri, String deviceId);
+
+    default List<Map<String, Object>> getQueueForDevice(Party party, String deviceId) {
+        return getQueue(party).stream().map(entry -> {
+            java.util.Map<String, Object> copy = new java.util.HashMap<>(entry);
+            copy.put("hasVoted", false);
+            return copy;
+        }).toList();
+    }
 }

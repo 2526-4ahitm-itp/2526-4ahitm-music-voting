@@ -42,7 +42,7 @@ public class SpotifyTokenResource {
     String iosRedirectUri;
 
     private Party resolveParty() {
-        return partyRegistry.find(PartyId.of(partyId))
+        return partyRegistry.findById(partyId)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
     }
 

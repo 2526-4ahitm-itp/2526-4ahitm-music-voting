@@ -30,6 +30,6 @@ export class CreateParty {
   }
 
   goBack() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/host-options']);
   }
 }

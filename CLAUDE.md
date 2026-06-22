@@ -35,7 +35,6 @@ Directory layout:
 
 ## Permanent pitfalls
 
-- **`ExampleResourceTest` fails** with missing `spotify.client.id/secret/redirect.uri` on a clean checkout — pre-existing, not a regression. Ignore.
 - **`PartyEntity` vs `Party`** — `Party.java` is the in-memory representation used by `PartyRegistry`. `PartyEntity.java` is the separate Panache entity for the `party` DB table. They are intentionally separate; do not merge them.
 - **`pom.xml`** already includes `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, and `com.google.zxing`. Do not add duplicates.
 - **MoM files** under `hugo/content/project/mom/` have wrong years in the 2025-12-15 meeting (typos). Do not trust those dates.

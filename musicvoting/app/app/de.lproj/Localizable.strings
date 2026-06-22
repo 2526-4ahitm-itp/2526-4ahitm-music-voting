@@ -49,6 +49,7 @@
 /* VotingView */
 "voting.title" = "Voten Sie für Ihre Lieblingsongs";
 "voting.queue.empty" = "Warteschlange ist leer";
+"voting.queue.emptyHint" = "Noch keine Songs hinzugefügt. Füge Songs unter \"Add Song\" hinzu!";
 
 /* ExitView */
 "exit.guest.confirm" = "Möchtest du die Party wirklich verlassen?";
@@ -58,7 +59,8 @@
 
 /* QRCodeView */
 "qr.title" = "QR-Code & PIN";
-"qr.guestPin" = "Gäste-PIN";
+"qr.guestPin" = "Voting-PIN";
+"qr.hint" = "QR-Code scannen & mitmachen: Songs hinzufügen oder für deine Favoriten voten!";
 "qr.loading" = "QR-Code wird geladen…";
 "qr.error.load" = "QR-Code konnte nicht geladen werden.";
 "qr.error.unavailable" = "Kein QR-Code verfügbar.";
@@ -80,6 +82,7 @@
 "dashboard.nowPlaying.pressPlay" = "Druecke auf Play";
 "dashboard.queue.title" = "Warteschlange";
 "dashboard.queue.empty" = "Keine Songs in der Warteschlange";
+"dashboard.controls.noDevice" = "Player muss zuerst geöffnet werden.";
 
 /* Tab labels */
 "tab.addSong" = "Add Song";

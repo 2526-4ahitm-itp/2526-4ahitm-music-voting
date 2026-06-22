@@ -20,7 +20,7 @@ private struct TrackItem: Decodable {
     let id: String
     let uri: String
     let name: String
-    let artists: [ArtistItem]	
+    let artists: [ArtistItem]
     let album: AlbumItem
 
     struct ArtistItem: Decodable {
@@ -83,8 +83,6 @@ final class SongAddViewModel: ObservableObject {
         partySession?.partyURL(path: "track/queue") ?? BackendConfiguration.endpoint("/api/party/unknown/track/queue")
     }
 
-    /// Loads the current queue's track URIs so search results already in the
-    /// queue can be shown as a disabled checkmark for every client.
     func loadQueue() async {
         do {
             let (data, _) = try await URLSession.shared.data(from: queueURL)
@@ -95,8 +93,6 @@ final class SongAddViewModel: ObservableObject {
         }
     }
 
-    /// Listens for `queue-updated` SSE events and reloads the queue so the
-    /// checkmark state stays in sync with what other clients add or remove.
     func listenForQueueUpdates() async {
         guard let url = partySession?.sseEventsURL else { return }
         var request = URLRequest(url: url)
@@ -163,7 +159,9 @@ final class SongAddViewModel: ObservableObject {
             results = decoded.tracks.items.compactMap { $0 }.map(Self.mapTrackToSearch)
         } catch {
             results = []
-            errorMessage = String(localized: "error.backendUnreachable")
+            if !Task.isCancelled {
+                errorMessage = String(localized: "error.backendUnreachable")
+            }
         }
 
         isLoading = false
@@ -217,47 +215,56 @@ struct SongAddView: View {
     @StateObject private var viewModel = SongAddViewModel()
     @EnvironmentObject private var partySession: PartySessionStore
 
-    var body: some View {
-            VStack(spacing: 0) { // Haupt-Container, um Suche und ScrollView zu trennen
-                
-                // 1. Fixierter Bereich (Suchleiste)
-                VStack(alignment: .leading, spacing: 0) {
-                    searchField
-                        .padding()
-                }
-                .background(Color(UIColor.systemBackground)) // Verhindert Durchscheinen beim Scrollen
-                
-                // 2. Scrollbarer Bereich
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        
-                        if let error = viewModel.errorMessage {
-                            Text(error)
-                                .font(.footnote)
-                                .foregroundColor(.red)
-                                .multilineTextAlignment(.leading)
-                                .padding(.horizontal)
-                        }
+    private var gradient: some View {
+        LinearGradient(
+            colors: [Color("primary"), Color("secondary"), Color("accent")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
 
-                        resultsCard
+    var body: some View {
+        ZStack {
+            gradient
+            VStack(spacing: 0) {
+            // Search bar — pinned at top
+            VStack(alignment: .leading, spacing: 0) {
+                searchField
+                    .padding(.horizontal)
+                    .padding(.vertical, 12)
+            }
+
+            // Scrollable results
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if let error = viewModel.errorMessage {
+                        Text(error)
+                            .font(.footnote)
+                            .foregroundColor(.red)
                             .padding(.horizontal)
                     }
-                    .padding(.vertical)
+
+                    resultsCard
+                        .padding(.horizontal)
                 }
-            }
-            .onAppear {
-                viewModel.configure(partySession: partySession)
-                Task { await viewModel.loadQueue() }
-            }
-            .task {
-                await viewModel.listenForQueueUpdates()
+                .padding(.vertical)
             }
         }
+        } // ZStack
+        .onAppear {
+            viewModel.configure(partySession: partySession)
+            Task { await viewModel.loadQueue() }
+        }
+        .task {
+            await viewModel.listenForQueueUpdates()
+        }
+    }
 
     private var searchField: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundColor(Color("primary"))
 
             TextField("search.placeholder", text: $viewModel.query)
                 .textInputAutocapitalization(.never)
@@ -267,80 +274,72 @@ struct SongAddView: View {
                 }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(
-            Capsule() // Apple nutzt meistens die Capsule-Form für Suchleisten
-                .fill(.ultraThinMaterial) // Der Glas-Effekt
-                .overlay(
-                    Capsule()
-                        .stroke(Color.primary.opacity(0.15), lineWidth: 0.5) // Subtile, dünne Linie
-                )
-        )
+        .padding(.vertical, 12)
+        .background(Color.white, in: Capsule())
+        .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
     }
 
     private var resultsCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             if viewModel.isLoading {
                 HStack {
                     Spacer()
                     ProgressView()
+                        .tint(Color("primary"))
                     Spacer()
                 }
-                .padding(.vertical, 12)
+                .padding(.vertical, 20)
+                .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
             } else if viewModel.results.isEmpty {
-                // Logik für den Platzhalter-Text
-                Group {
-                    if viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
-                        // Dies wird angezeigt, wenn noch nichts (oder zu wenig) eingegeben wurde
-                        
-                        VStack(spacing: 8) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 70))
-                                .foregroundColor(.gray)
-                                .padding(.bottom, 20)
+                if viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
+                    VStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 50))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .padding(.bottom, 8)
 
-                            Text("search.hint")
-                                .font(.title2)
-                                .bold()
-                                .foregroundColor(.primary)
-                                .multilineTextAlignment(.center)
+                        Text("search.hint")
+                            .font(.title3)
+                            .bold()
+                            .foregroundStyle(.white)
+                            .multilineTextAlignment(.center)
 
-                            Text("search.hintDetail")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 40)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color(UIColor.systemBackground)) // Nutzt das System-Weiß
-                        
-                        
-                       
-                    } else {
-                        // Dies wird angezeigt, wenn gesucht wurde, aber nichts gefunden wurde
-                        Text(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2
-                             ? ""
-                             : String(localized: "search.noResults"))
-                            .foregroundColor(Color("accent"))
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.vertical, 12)
+                        Text("search.hintDetail")
+                            .font(.body)
+                            .foregroundStyle(.white.opacity(0.8))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 48)
+                } else {
+                    Text(String(localized: "search.noResults"))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
                 }
-                
-                
             } else {
-                ForEach(viewModel.results) { track in
-                    SearchResultRow(
-                        track: track,
-                        isAdding: viewModel.addingTrackIds.contains(track.id),
-                        isAdded: viewModel.addedTrackIds.contains(track.id) || viewModel.queuedTrackUris.contains(track.uri)
-                    ) {
-                        Task { await viewModel.addToPlaylist(track) }
+                VStack(spacing: 0) {
+                    ForEach(viewModel.results) { track in
+                        SearchResultRow(
+                            track: track,
+                            isAdding: viewModel.addingTrackIds.contains(track.id),
+                            isAdded: viewModel.addedTrackIds.contains(track.id) || viewModel.queuedTrackUris.contains(track.uri)
+                        ) {
+                            Task { await viewModel.addToPlaylist(track) }
+                        }
+
+                        if track.id != viewModel.results.last?.id {
+                            Divider()
+                                .padding(.leading, 76)
+                        }
                     }
                 }
+                .padding(.vertical, 8)
+                .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
             }
         }
-        .padding()
     }
 }
 
@@ -353,36 +352,32 @@ private struct SearchResultRow: View {
     var body: some View {
         HStack(spacing: 12) {
             AsyncImage(url: URL(string: track.imageUrl)) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    ZStack {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-
-                        Image(systemName: "music.note")
-                            .foregroundColor(.secondary)
-                    }
-                @unknown default:
-                    EmptyView()
+                if let image = phase.image {
+                    image.resizable().scaledToFill()
+                        .frame(width: 52, height: 52)
+                        .clipped()
+                } else {
+                    Color("primary").opacity(0.08)
+                        .frame(width: 52, height: 52)
+                        .overlay(
+                            Image(systemName: "music.note")
+                                .font(.system(size: 18))
+                                .foregroundColor(Color("primary").opacity(0.35))
+                        )
                 }
             }
-            .frame(width: 60, height: 60)
-            .cornerRadius(6)
-            .clipped()
+            .frame(width: 52, height: 52)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(track.title)
                     .font(.headline)
-
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
                 Text(track.artist)
                     .font(.subheadline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
 
             Spacer()
@@ -390,22 +385,24 @@ private struct SearchResultRow: View {
             Button(action: onAdd) {
                 ZStack {
                     Circle()
-                        .stroke(Color.primary, lineWidth: 2)
-                        .frame(width: 28, height: 28)
+                        .fill(Color("primary").opacity(0.12))
+                        .frame(width: 36, height: 36)
 
                     if isAdding {
                         ProgressView()
                             .scaleEffect(0.6)
+                            .tint(Color("primary"))
                     } else {
                         Image(systemName: isAdded ? "checkmark" : "plus")
-                            .foregroundColor(.primary)
-                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(isAdded ? Color("primary") : Color("primary"))
+                            .font(.system(size: 14, weight: .bold))
                     }
                 }
             }
             .disabled(isAdding || isAdded)
         }
-        .padding(.vertical, 6)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 }
 

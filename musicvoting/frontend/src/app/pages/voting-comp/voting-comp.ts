@@ -13,14 +13,12 @@ import { PartyService } from '../../services/party.service';
   styleUrl: './voting-comp.css',
 })
 export class VotingComp implements OnInit, OnDestroy {
-  // Signals für reaktive Daten
   tracks = signal<any[]>([]);
   searchQuery = signal<string>('');
-  isSearching = signal<boolean>(false);
   menuOpen = false;
 
-  // Gefilterte Liste (Signal), falls du lokal in der Queue suchen willst
   private eventSource?: EventSource;
+  private deviceId: string;
 
   filteredTracks = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
@@ -37,7 +35,9 @@ export class VotingComp implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private partyService: PartyService
-  ) {}
+  ) {
+    this.deviceId = this.partyService.deviceId;
+  }
 
   ngOnInit() {
     this.loadPlaylist();
@@ -49,7 +49,7 @@ export class VotingComp implements OnInit, OnDestroy {
         const data = JSON.parse(event.data);
         if (data?.type === 'party-ended') {
           this.ngZone.run(() => this.router.navigate(['/']));
-        } else if (data?.type === 'queue-updated' || data?.type === 'vote-updated') {
+        } else if (data?.type === 'queue-updated' || data?.type === 'vote-updated' || data?.type === 'track-changed') {
           this.loadPlaylist();
         }
       } catch { /* ignore malformed events */ }
@@ -62,20 +62,34 @@ export class VotingComp implements OnInit, OnDestroy {
 
   async loadPlaylist() {
     try {
-      const res: any = await lastValueFrom(this.spotifyService.getQueue());
+      const res: any = await lastValueFrom(this.spotifyService.getQueue(this.deviceId));
       this.ngZone.run(() => {
-        if (res && Array.isArray(res.queue)) {
-          this.tracks.set(res.queue);
-        } else {
-          this.tracks.set([]);
-        }
+        this.tracks.set(Array.isArray(res?.queue) ? res.queue : []);
       });
     } catch (err) {
       console.error('Fehler beim Laden der Playlist:', err);
     }
   }
 
-  async onSearch(event: Event) {
+  async toggleVote(track: any) {
+    try {
+      const res: any = await lastValueFrom(
+        this.spotifyService.toggleVote(track.uri, this.deviceId)
+      );
+      this.ngZone.run(() => {
+        this.tracks.update(list =>
+          list.map(t => t.uri === track.uri
+            ? { ...t, likeCount: res.likeCount, hasVoted: res.liked }
+            : t
+          )
+        );
+      });
+    } catch (err) {
+      console.error('Fehler beim Abstimmen:', err);
+    }
+  }
+
+  onSearch(event: Event) {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
   }
@@ -83,5 +97,4 @@ export class VotingComp implements OnInit, OnDestroy {
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
   }
-
 }

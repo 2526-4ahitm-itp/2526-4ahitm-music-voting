@@ -1,7 +1,6 @@
 package at.htl.endpoints;
 
 import at.htl.domain.Party;
-import at.htl.domain.PartyId;
 import at.htl.domain.PartyRegistry;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -31,7 +30,7 @@ public class HostAuthFilter implements ContainerRequestFilter {
             return;
         }
 
-        Optional<Party> partyOpt = partyRegistry.find(PartyId.of(partyIdStr));
+        Optional<Party> partyOpt = partyRegistry.findById(partyIdStr);
         if (partyOpt.isEmpty()) {
             ctx.abortWith(Response.status(Response.Status.NOT_FOUND).build());
             return;

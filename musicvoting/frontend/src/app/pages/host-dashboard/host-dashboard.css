@@ -207,6 +207,23 @@ body{
   transform: scale(1.2);
 }
 
+.play-icon:disabled,
+.skip-icon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.play-icon:disabled:hover,
+.skip-icon:disabled:hover {
+  transform: none;
+}
+
+.device-hint {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #888;
+}
+
 /* WARTESCHLANGE */
 
 .queue{

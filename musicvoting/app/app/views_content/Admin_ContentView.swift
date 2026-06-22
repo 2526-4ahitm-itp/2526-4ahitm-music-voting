@@ -18,32 +18,42 @@ struct Admin_ContentView: View {
 
     var body: some View {
         NavigationStack {
-            TabView {
-                AdminDashboard()
-                    .tabItem {
-                        Label("tab.admin", systemImage: "person.crop.circle")
-                    }
+            ZStack {
+                LinearGradient(
+                    colors: [Color("primary"), Color("secondary"), Color("accent")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-                QRCodeView()
-                    .tabItem {
-                        Label("tab.qrCode", systemImage: "qrcode")
-                    }
+                TabView {
+                    AdminDashboard()
+                        .tabItem {
+                            Label("tab.admin", systemImage: "person.crop.circle")
+                        }
 
-                VotingView()
-                    .tabItem {
-                        Label("tab.voting", systemImage: "heart")
-                    }
+                    QRCodeView()
+                        .tabItem {
+                            Label("tab.qrCode", systemImage: "qrcode")
+                        }
 
-                SongAddView()
-                    .tabItem {
-                        Label("tab.addSong", systemImage: "plus")
-                    }
+                    VotingView()
+                        .tabItem {
+                            Label("tab.voting", systemImage: "heart")
+                        }
+
+                    SongAddView()
+                        .tabItem {
+                            Label("tab.addSong", systemImage: "plus")
+                        }
+                }
+                .background(.clear)
             }
             .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.hidden, for: .navigationBar)
-            //.toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarColorScheme(.light, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: ExitView()) {
@@ -53,7 +63,7 @@ struct Admin_ContentView: View {
                 }
             }
         }
-        .tint(Color("secondary"))
+        .tint(Color("accent"))
         .task { await listenForPartyEnded() }
     }
 
@@ -88,5 +98,4 @@ struct Admin_ContentView: View {
     Admin_ContentView()
         .environmentObject(AppState())
         .environmentObject(PartySessionStore())
-        .preferredColorScheme(.dark)
 }
