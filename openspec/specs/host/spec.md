@@ -70,28 +70,37 @@ The host MUST be able to end the party from any client (web dashboard or iOS adm
 - AND the iOS app clears the stored session and returns to the start screen
 
 ### Requirement: Party-Ended Redirect for Host and Dashboard
-When the host or dashboard receives a `party-ended` SSE event (e.g. triggered from another device), the view MUST navigate to the home page and clear the stored party ID.
+When the host or dashboard receives a `party-ended` SSE event, the view MUST navigate to the home page and clear the stored party ID, **only if the event's `partyId` matches the client's current party**. Events for a different party MUST be ignored.
+(Previously: no partyId check — any `party-ended` event triggered navigation regardless of which party it referred to.)
 
-#### Scenario: Party ended externally
-- GIVEN the host dashboard is open
-- WHEN a `party-ended` SSE event is received
+#### Scenario: Party ended externally for the same party
+- GIVEN the host dashboard is open for party A
+- WHEN a `party-ended` SSE event with `partyId=A` is received
 - THEN the view navigates to the home page
 - AND the session party ID is cleared
 
+#### Scenario: party-ended for a different party is ignored
+- GIVEN the host dashboard is open for party A
+- WHEN a `party-ended` SSE event with `partyId=B` is received
+- THEN the view does NOT navigate away
+- AND the party A session remains active
+
 ### Requirement: Host Controls Playback
-The host MUST be able to pause, resume, and skip the currently playing song.
+The host MUST be able to start, pause, resume, and skip the currently playing song from the iOS admin view. The first tap on the play button MUST call `/track/start` (starting the first song from the queue). Subsequent taps when playback is paused MUST call `/track/resume`. Tapping while playing MUST call `/track/pause`.
+(Previously: the play/pause toggle used `currentSong != nil` to decide between start and resume. After the queue-preview feature set `currentSong` before playback, first-press always called resume instead of start.)
 
-#### Scenario: Host pauses playback
-- GIVEN a song is playing
-- WHEN the host taps "Pause"
-- THEN playback on the dashboard pauses
-- AND the paused state is reflected on every connected client
+#### Scenario: First play starts the queue
+- GIVEN the party has not started playing yet
+- WHEN the host taps the play button for the first time
+- THEN `POST /api/party/{id}/track/start` is called
+- AND the first song in the queue begins playing on the TV player
 
-#### Scenario: Host skips the current song
-- GIVEN a song is playing
-- WHEN the host taps "Skip"
-- THEN the current song is removed from the queue
-- AND the next song in sort order begins playing
+#### Scenario: Pause and resume after start
+- GIVEN a song is playing (party has started)
+- WHEN the host taps pause
+- THEN `POST /api/party/{id}/track/pause` is called
+- WHEN the host taps play again
+- THEN `POST /api/party/{id}/track/resume` is called
 
 ### Requirement: Host Removes Songs from Queue
 The host MUST be able to remove any song from the queue, including ones not yet played.
@@ -188,14 +197,21 @@ Guests MUST NOT be able to invoke pause, resume, skip, remove-from-queue, blackl
 - AND the current playback is unaffected
 
 ### Requirement: iOS Admin View Reacts to Party-Ended SSE Event
-The iOS admin view MUST maintain an SSE connection while open. When a `party-ended` event is received (e.g. party ended from the web dashboard while the iOS admin is open), the admin view MUST clear the stored session and return the host to the start screen.
+The iOS admin view MUST maintain an SSE connection while open. When a `party-ended` event is received **whose `partyId` matches the current session's party ID**, the admin view MUST clear the stored session and return the host to the start screen. Events for other parties MUST be ignored.
+(Previously: any `party-ended` event triggered navigation.)
 
-#### Scenario: Party ended from web while iOS admin is open
-- GIVEN the host has the iOS admin view open
+#### Scenario: Party ended from web while iOS admin is open (same party)
+- GIVEN the host has the iOS admin view open for party A
 - AND the party is ended from the web dashboard
-- WHEN the `party-ended` SSE event is received by the iOS app
+- WHEN the `party-ended` SSE event with `partyId=A` is received by the iOS app
 - THEN the stored session is cleared from UserDefaults
 - AND the app returns to the start screen
+
+#### Scenario: Another party ends while iOS admin is open
+- GIVEN the host has the iOS admin view open for party A
+- WHEN a `party-ended` event with `partyId=B` is received
+- THEN the iOS app does NOT navigate away
+- AND party A's session remains intact
 
 ### Requirement: iOS Host Session Survives App Close
 When the iOS app is fully closed and reopened, and a host session is stored locally, the app MUST navigate directly to the admin (host dashboard) view without prompting the host to re-create the party or re-authenticate with Spotify.
@@ -237,19 +253,28 @@ The host play/pause control MUST show a Play icon (▶) when playback is stopped
 ### Requirement: iOS Admin View Shows Synchronized Progress Bar
 The iOS host admin view MUST display a progress bar for the current song, kept in sync with the TV player, matching the web host dashboard. Because the iOS app does not run the Spotify Web Playback SDK, it MUST derive the position from `progress` SSE events (see `playback/spec.md` "Cross-Client Playback Progress Relay") rather than polling Spotify.
 
-- The iOS admin view MUST maintain an SSE connection that supplies the party's `partyId`, so the backend delivers party-scoped `progress` events to it.
-- On each `progress` event the view MUST set `currentPosition` / `currentDuration` (milliseconds) from the payload — whose values arrive as strings — and recompute the bar fraction (`position / duration`, clamped to `0…1`).
-- The bar MUST render elapsed time, an accent-colored fill, and total time; both times MUST display as `m:ss`. When no `progress` event has arrived (no active TV player), the bar MUST read `0:00` and show no fill.
+- The iOS admin view MUST maintain an SSE connection that supplies the party's `partyId`, so the backend delivers party-scoped events to it.
+- On each `progress` event the view MUST update `currentPosition` / `currentDuration` and the `isPlaying` state (from the `paused` field).
+- When a `track-changed` SSE event is received, the view MUST immediately reset `currentPosition` and `currentDuration` to `0` and refresh the current-track state, without waiting for the poll timer.
+- When `GET /track/current` returns no active track, the view MUST reset `currentPosition` and `currentDuration` to `0`.
+- The bar MUST read `0:00` with no fill when no `progress` event has arrived or when no song is active.
 - The hardcoded placeholder slider MUST be removed.
+(Previously: `isPlaying` was not updated from progress events; position was not reset on `track-changed` or when no track was active.)
 
 #### Scenario: iOS progress bar mirrors the player
 - GIVEN the iOS host admin view and the TV player are on the same party
-- WHEN the player publishes its position via the progress relay
+- WHEN the player publishes its position
 - THEN the iOS admin view's progress bar reflects that position within ~1 s
-- AND the iOS app makes no Spotify API call to obtain it
 
-#### Scenario: No active player leaves the bar at zero
-- GIVEN the iOS host admin view is open and no TV player is publishing progress
+#### Scenario: Progress resets immediately on track change
+- GIVEN a song is playing and the progress bar is at 2:30
+- WHEN the host skips to the next song
+- THEN the progress bar resets to `0:00` immediately on receipt of the `track-changed` event
+- AND does not briefly show `2:30` for the new song
+
+#### Scenario: Dashboard opened with no active playback shows zero
+- GIVEN no song is currently playing
+- WHEN the iOS admin view loads
 - THEN the progress bar shows `0:00` with no fill
 
 ### Requirement: iOS Login Does Not Trigger Webapp Refresh
@@ -269,4 +294,93 @@ reinitializing its player in response to an iOS login.
 - WHEN the host completes Spotify authentication via the web flow
 - THEN the webapp receives a `login-success` event with `source=web`
 - AND the webapp initializes its player normally
+
+### Requirement: iOS Admin Album Art Loads Reliably via a Session Cache
+The iOS admin dashboard MUST load album art through `URLSession.shared` and store fetched images in a session-scoped, thread-safe in-memory cache shared by every view (queue rows and the current-song view), rather than relying on `AsyncImage` (whose private URLSession ignores `URLCache.shared` on iOS 26). Once an image for a given URL has been fetched, subsequent views displaying the same URL MUST use the cached image without re-fetching. After the queue loads, the app MUST prefetch the queue's album-art URLs to warm the cache before the rows render.
+
+#### Scenario: Album art is fetched once and reused
+- GIVEN the iOS admin dashboard shows the same album art in the queue and in the current-song view
+- WHEN both views display a track whose art URL has already been fetched
+- THEN the image is served from the shared session cache
+- AND no additional network request is made for that URL
+
+#### Scenario: Art is ready when rows appear
+- GIVEN the queue has just loaded with album-art URLs
+- WHEN the queue rows render
+- THEN their album art appears without a visible late-load flicker, because the URLs were prefetched into the cache
+
+### Requirement: iOS Admin Shows a Placeholder When Album Art Is Missing
+When a track has no album-art URL, or the image fails to load, the iOS admin dashboard MUST render a neutral placeholder showing a `music.note` symbol in place of the artwork, in both the queue rows and the current-song view.
+
+#### Scenario: Track without album art
+- GIVEN a queued track whose album-art URL is empty or fails to load
+- WHEN its row or the current-song view renders
+- THEN a placeholder with a `music.note` symbol is shown instead of artwork
+
+### Requirement: iOS Admin Polling Does Not Cause Redundant Re-renders
+The iOS admin dashboard polls playback state on a fixed interval. Polled `@Published` state (`isPlaying`, `deviceActive`, `currentPosition`, `currentDuration`) MUST only be reassigned when the newly polled value differs from the current value, so that SwiftUI does not re-render views when nothing has changed.
+
+#### Scenario: Poll returns unchanged state
+- GIVEN the iOS admin dashboard is polling and the playback state is unchanged between two polls
+- WHEN the next poll completes with the same values
+- THEN the `@Published` properties are not reassigned
+- AND the views are not re-rendered for that poll
+
+### Requirement: iOS Admin Shows a Loading Indicator While the QR Code Fetches
+The iOS admin dashboard MUST show a loading indicator (spinner) for the QR code from the moment the dashboard opens until `GET /api/party/{id}/qr` resolves, instead of an invisible or "unavailable" placeholder. On success the fetched QR image MUST be shown; on failure the unavailable/error state MUST be shown.
+
+#### Scenario: QR code is still loading
+- GIVEN the host opens the iOS admin dashboard for an active party
+- WHEN the QR image request to `/api/party/{id}/qr` has not yet completed
+- THEN a loading spinner is shown in the QR area
+- AND no invisible or "unavailable" placeholder is shown in its place
+
+#### Scenario: QR code finishes loading
+- GIVEN the QR image request to `/api/party/{id}/qr` completes successfully
+- WHEN the response is received
+- THEN the QR code image is displayed in place of the spinner
+
+### Requirement: iOS Host Controls Include Authorization Header
+The iOS admin view MUST include an `Authorization: Bearer <hostPin>` header on every request to a host-only endpoint (play, pause, resume, skip, start, remove). If no host PIN is stored in the session, the header MUST NOT be added.
+
+#### Scenario: iOS play request reaches the backend
+- GIVEN the host has a stored host PIN and is on the iOS admin view
+- WHEN the host taps the play button
+- THEN the request to `POST /api/party/{id}/track/start` carries `Authorization: Bearer <hostPin>`
+- AND the backend accepts the request and starts playback
+
+#### Scenario: Missing PIN — request has no auth header
+- GIVEN no host PIN is stored in the session
+- WHEN a control request is built
+- THEN no `Authorization` header is added to the request
+
+### Requirement: iOS Admin View Previews First Queued Song Before Playback
+Before playback has started (no current track from the backend), the iOS admin view MUST display the first song in the queue as a preview in the current-song area. The previewed song MUST be excluded from the queue list to avoid duplication.
+
+#### Scenario: Dashboard opened before first play
+- GIVEN the party has songs in the queue but no song is currently playing
+- WHEN the iOS admin view loads its queue
+- THEN the first queued song is shown in the current-song area
+- AND that song does NOT appear again in the queue list below
+
+#### Scenario: After playback starts the actual playing song is shown
+- GIVEN the preview song is displayed
+- WHEN the host taps play and a song starts
+- THEN the current-song area updates to the actually playing track (from the backend)
+- AND the queue reflects the remaining songs
+
+### Requirement: iOS Host PIN Entry Uses Digit-Box Input
+The iOS host PIN entry view MUST use the same five-digit-box input style as the guest code entry view: five individual rounded boxes, each showing one digit, with the keyboard cursor indicated by a highlighted active box. The view MUST auto-submit when the fifth digit is entered. On incorrect PIN the view MUST show a shake animation and haptic feedback, then clear the input for retry.
+
+#### Scenario: Auto-submit on fifth digit
+- GIVEN the host PIN entry view is open
+- WHEN the host types the fifth digit of a valid PIN
+- THEN the view submits automatically without requiring a separate "Weiter" button tap
+- AND the host is navigated to the admin view on success
+
+#### Scenario: Wrong PIN triggers shake and clears input
+- GIVEN the host types an incorrect 5-digit PIN
+- WHEN the submit is rejected by the backend
+- THEN the digit boxes shake and haptic feedback fires
+- AND all boxes are cleared so the host can retry
 
