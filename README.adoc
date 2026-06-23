@@ -4,17 +4,42 @@
 :sectnums:
 
 
-== Website
+== Links
 
-**https://2526-4ahitm-itp.github.io/2526-4ahitm-music-voting/**
+* *Live-App (deployed):* **https://it220241.cloud.htl-leonding.ac.at**
+* *Doku-Website:* https://2526-4ahitm-itp.github.io/2526-4ahitm-music-voting/
 
 == Beschreibung
 
 MusicVoting ist eine interaktive Webanwendung, die Partygästen ermöglicht, die Musikauswahl aktiv mitzugestalten.
-Gäste können Songs vorschlagen, über ein Voting-System die Reihenfolge der Playlist bestimmen und die beliebtesten Songs in Echtzeit sehen.
-Die Musik wird direkt über den Spotify-Premium-Account des Gastgebers abgespielt, sodass die Partyatmosphäre dynamisch und unterhaltsam bleibt.
+Gäste treten **anonym** per QR-Code oder 5-stelligem PIN bei, schlagen Songs vor und bestimmen über ein **Voting-System** (Likes) die Reihenfolge der Warteschlange.
+Auf einem Monitor/TV läuft ein **Dashboard**, das die Musik im Browser abspielt und live anzeigt, was gerade läuft und was als Nächstes dran ist.
+Die Wiedergabe erfolgt über den **Spotify-Premium-Account** des Gastgebers.
+
+=== Funktionsumfang
+
+* **Pro Party eine Warteschlange**, sortiert nach Likes (mehr Likes zuerst, bei Gleichstand ältester Wunsch zuerst).
+* **Genau ein Anbieter pro Party** – Spotify (implementiert) oder YouTube (vorgesehen); nach dem Erstellen fix.
+* **Anonyme Gäste** mit persistenter `deviceId`; ein Like pro Gast und Song (togglebar).
+* **Host-Steuerung** (Play/Pause/Skip, Songs entfernen, Blacklist, Party beenden) – abgesichert über einen Host-PIN.
+* **Live-Updates** über Server-Sent Events (Queue, Votes, aktueller Track, Fortschritt, Party-Ende).
+* Optionale **iOS-App** (SwiftUI) als native Alternative für Gast und Host.
+
+=== Technologie-Stack
+
+[cols="1,3"]
+|===
+| Ebene | Technologie
+
+| Backend | Quarkus (Java 21), REST + SSE
+| Frontend | Angular (Gast, Host, Dashboard)
+| Datenbank | PostgreSQL 16 (via Docker)
+| Mobile (optional) | SwiftUI iOS-App
+| Doku | Hugo-Site unter `hugo/`
+|===
 
 == Starten des Programms
+
 === Konfiguration der Anwendung
 
 ==== Spotify-Zugangsdaten hinterlegen
@@ -36,14 +61,49 @@ Siehe unter Projektübernahme!
 
 [source,properties]
 ----
+app.public.host=127.0.0.1
+app.public.port=8080
+app.web.port=4200
 spotify.client.id=client_id_here
 spotify.client.secret=client_secret_here
-spotify.redirect.uri=http://127.0.0.1:8080/api/spotify/callback
+spotify.redirect.uri=http://${app.public.host}:${app.public.port}/api/spotify/callback
+spotify.web.redirect.uri=http://${app.public.host}:${app.web.port}/dashboard
+spotify.ios.redirect.uri=musicvotingapp://callback
+quarkus.http.host=0.0.0.0
+quarkus.http.port=${app.public.port}
+quarkus.datasource.db-kind=postgresql
+quarkus.datasource.username=musicvoting
+quarkus.datasource.password=musicvoting
+quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/musicvoting
+quarkus.hibernate-orm.database.generation=none
+musicvoting.join.base-url=http://localhost:4200/join
 ----
 
-=== Backend starten
+=== Schnellstart (alles auf einmal)
 
-Um das Quarkus-Backend im Entwicklungsmodus zu starten, folgen Sie diesen Schritten:
+Das Skript startet Datenbank, Backend und Frontend zusammen:
+
+[source,bash]
+----
+cd script
+./start.sh
+----
+
+=== Komponenten einzeln starten
+
+==== Datenbank (PostgreSQL via Docker)
+
+Die Datenbank läuft über Docker Compose (DB: `musicvoting`, User/Passwort: `musicvoting`, Port `5432`). Das Schema wird beim ersten Start aus `musicvoting/backend/setup.sql` initialisiert.
+
+[source,bash]
+----
+cd musicvoting
+docker compose up -d
+----
+
+==== Backend starten
+
+Um das Quarkus-Backend im Entwicklungsmodus zu starten:
 
 . Navigieren Sie in das Backend-Verzeichnis:
 +
@@ -59,7 +119,7 @@ cd musicvoting/backend
 ./mvnw quarkus:dev
 ----
 
-=== Frontend starten
+==== Frontend starten
 
 Sobald das Backend läuft, kann die Angular-Anwendung gestartet werden:
 
@@ -94,8 +154,9 @@ Falls Sie dieses Projekt übernehmen möchten, folgen Sie bitte diesen Schritten
 === Voraussetzungen
 
 * *Premium Spotify Account*
-** Wird benötigt, um die Spotify API nutzen zu können.
+** Wird benötigt, um die Spotify Playback API nutzen zu können.
 * *Spotify Developer Konto*
+* *Docker* (für die PostgreSQL-Datenbank)
 
 === Allgemeine Entwicklungshinweise
 
@@ -119,7 +180,11 @@ Falls noch kein Konto vorhanden ist, folgen Sie diesen Schritten:
 1. Navigieren Sie zu Ihrem *Spotify Developer Dashboard*.
 2. Wählen Sie die Anwendung aus, die Sie mit MusicVoting verbinden möchten.
 3. Notieren Sie sich die `Client ID` und das `Client Secret`.
-4. Fügen Sie die Redirect URI `http://127.0.0.1:8080/api/spotify/callback` in die Liste der *Redirect URIs* ein.
+4. Fügen Sie die folgenden Redirect URIs in die Liste der *Redirect URIs* ein:
++
+* `http://127.0.0.1:8080/api/spotify/callback`
+* `http://127.0.0.1:4200/dashboard`
+* `musicvotingapp://callback` (für die iOS-App)
 5. Speichern Sie die Änderungen.
 6. Tragen Sie die Zugangsdaten in der Datei `musicvoting/backend/src/main/resources/application.properties` ein:
 
@@ -127,7 +192,6 @@ Falls noch kein Konto vorhanden ist, folgen Sie diesen Schritten:
 ----
 spotify.client.id=your_client_id
 spotify.client.secret=your_client_secret
-spotify.redirect.uri=http://127.0.0.1:8080/api/spotify/callback
 ----
 
 NOTE: Ersetzen Sie `your_client_id` und `your_client_secret` durch die tatsächlichen Werte aus Ihrem Dashboard.

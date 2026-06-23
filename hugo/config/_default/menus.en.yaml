@@ -15,6 +15,10 @@ main:
     pageRef: docs
     weight: 10
 
+  - name: Technical Docs
+    pageRef: dev
+    weight: 15
+
   - identifier: slides
     name: Presentation
     url: /slides/
