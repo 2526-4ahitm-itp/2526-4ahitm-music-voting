@@ -56,6 +56,7 @@ struct HostMenuView: View {
                                         Text("hostmenu.createPartySubtitle")
                                             .font(.caption)
                                             .opacity(0.8)
+                                            .lineLimit(1)
                                     }
                                     Spacer()
                                 }
