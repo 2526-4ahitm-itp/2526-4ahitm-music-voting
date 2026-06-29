@@ -290,4 +290,63 @@ class SpotifyMusicProviderTest {
         assertEquals("empty", body.get("status"));
         assertEquals("Warteschlange ist leer", body.get("message"));
     }
+
+    @Test
+    @TestTransaction
+    void getQueue_autofilledEntriesSortBelowGuestEntries() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        persistPartyEntity(party);
+
+        OffsetDateTime now = OffsetDateTime.now();
+        // Auto-filled entry added earlier AND with a like — it must still sort below the
+        // guest entry, proving the autofilled flag outranks both recency and vote count.
+        QueueEntry autofilled = persistQueueEntry(partyId, "spotify:track:auto", "Auto", now);
+        autofilled.autofilled = true;
+        autofilled.persist();
+
+        Vote vote = new Vote();
+        vote.queueEntry = autofilled;
+        vote.deviceId = "device-1";
+        vote.votedAt = now;
+        vote.persist();
+
+        persistQueueEntry(partyId, "spotify:track:guest", "Guest", now.plusSeconds(5));
+
+        List<Map<String, Object>> queue = provider.getQueue(party);
+
+        assertEquals(2, queue.size());
+        assertEquals("spotify:track:guest", queue.get(0).get("uri"));
+        assertEquals("spotify:track:auto", queue.get(1).get("uri"));
+    }
+
+    @Test
+    @TestTransaction
+    void refillQueue_whenNothingPlaying_addsNothing() {
+        Party party = newParty();
+        persistPartyEntity(party); // currentlyPlayingEntryId stays null
+
+        provider.refillQueue(party);
+
+        assertEquals(0, QueueEntry.count("partyId", party.id().value()));
+    }
+
+    @Test
+    @TestTransaction
+    void refillQueue_whenOtherSongsStillQueued_addsNothing() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        PartyEntity pe = persistPartyEntity(party);
+
+        OffsetDateTime now = OffsetDateTime.now();
+        QueueEntry current = persistQueueEntry(partyId, "spotify:track:current", "Current", now);
+        persistQueueEntry(partyId, "spotify:track:next", "Next", now.plusSeconds(1));
+
+        pe.currentlyPlayingEntryId = current.id;
+        pe.persist();
+
+        provider.refillQueue(party);
+
+        assertEquals(2, QueueEntry.count("partyId", party.id().value()));
+    }
 }

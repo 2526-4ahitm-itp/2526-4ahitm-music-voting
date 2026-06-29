@@ -38,6 +38,12 @@ public class PartyEntity extends PanacheEntityBase {
     @Column(name = "paused_position_ms")
     public Long pausedPositionMs;
 
+    @Column(name = "default_playlist_id")
+    public String defaultPlaylistId;
+
+    @Column(name = "spotify_refresh_token")
+    public String spotifyRefreshToken;
+
     public static Optional<PartyEntity> findByPin(String pin) {
         return find("pin = ?1 and endedAt is null", pin).firstResultOptional();
     }

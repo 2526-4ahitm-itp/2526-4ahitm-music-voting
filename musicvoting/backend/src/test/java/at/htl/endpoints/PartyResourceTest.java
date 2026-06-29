@@ -247,6 +247,61 @@ class PartyResourceTest {
                 .statusCode(404);
     }
 
+    @Test
+    @TestTransaction
+    void setDefaultPlaylist_withoutAuthHeader_returnsUnauthorized() {
+        String partyId = UUID.randomUUID().toString();
+        Party party = new Party(PartyId.of(partyId), ProviderKind.SPOTIFY, "88888", "98888");
+        partyRegistry.register(party);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(Map.of("playlistId", "pl-1"))
+                .when().put("/api/party/{id}/default-playlist", partyId)
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @TestTransaction
+    void setDefaultPlaylist_withWrongHostPin_returnsForbidden() {
+        String partyId = UUID.randomUUID().toString();
+        Party party = new Party(PartyId.of(partyId), ProviderKind.SPOTIFY, "89999", "98999");
+        partyRegistry.register(party);
+
+        given()
+                .header("Authorization", "Bearer wrong-pin")
+                .contentType(ContentType.JSON)
+                .body(Map.of("playlistId", "pl-1"))
+                .when().put("/api/party/{id}/default-playlist", partyId)
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void setDefaultPlaylist_withCorrectHostPin_storesPlaylistId() {
+        String partyId = UUID.randomUUID().toString();
+        String pin = nextPin();
+        String hostPin = nextPin();
+        Party party = new Party(PartyId.of(partyId), ProviderKind.SPOTIFY, pin, hostPin);
+        partyRegistry.register(party);
+        persistPartyEntity(partyId, pin, hostPin, null);
+
+        given()
+                .header("Authorization", "Bearer " + hostPin)
+                .contentType(ContentType.JSON)
+                .body(Map.of("playlistId", "pl-42"))
+                .when().put("/api/party/{id}/default-playlist", partyId)
+                .then()
+                .statusCode(200)
+                .body("defaultPlaylistId", equalTo("pl-42"));
+
+        String stored = QuarkusTransaction.requiringNew().call(
+                () -> PartyEntity.<PartyEntity>findById(partyId).defaultPlaylistId);
+        assertEquals("pl-42", stored);
+        assertEquals("pl-42", party.defaultPlaylistId());
+    }
+
     private void persistPartyEntity(String partyId, String pin, String hostPin, OffsetDateTime endedAt) {
         persistedPartyIds.add(partyId);
         QuarkusTransaction.requiringNew().run(() -> {

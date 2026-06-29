@@ -34,6 +34,12 @@ public interface MusicProvider {
 
     Response toggleVote(Party party, String trackUri, String deviceId);
 
+    /**
+     * If the queue would otherwise empty out while a song is playing, top it up with one song
+     * (default playlist / recommendations). No-op for providers without auto-refill support.
+     */
+    default void refillQueue(Party party) { }
+
     default List<Map<String, Object>> getQueueForDevice(Party party, String deviceId) {
         return getQueue(party).stream().map(entry -> {
             java.util.Map<String, Object> copy = new java.util.HashMap<>(entry);

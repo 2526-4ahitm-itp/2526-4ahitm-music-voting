@@ -38,6 +38,12 @@ public class PartyRegistry {
         Party existing = parties.get(id);
         if (existing != null) return existing;
         Party rebuilt = new Party(id, ProviderKind.valueOf(entity.providerKind), entity.pin, entity.hostPin);
+        rebuilt.setDefaultPlaylistId(entity.defaultPlaylistId);
+        // Restore the persisted refresh token so the host stays logged in across restarts; the
+        // access token is then re-minted from it on the next Spotify call.
+        if (rebuilt.providerKind() == ProviderKind.SPOTIFY && entity.spotifyRefreshToken != null) {
+            rebuilt.getSpotifyCredentials().setRefreshToken(entity.spotifyRefreshToken);
+        }
         parties.putIfAbsent(id, rebuilt);
         return parties.get(id);
     }

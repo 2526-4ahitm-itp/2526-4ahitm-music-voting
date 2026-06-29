@@ -139,6 +139,7 @@ export class HostDashboard implements OnInit, OnDestroy {
           const currentUri = this.currentTrack?.uri;
           const currentId = this.currentTrack?.id;
           const filtered = res.queue.filter((track: any) => {
+            if (track?.isCurrentlyPlaying) return false;
             if (currentUri && track?.uri === currentUri) return false;
             if (currentId && track?.id === currentId) return false;
             return true;

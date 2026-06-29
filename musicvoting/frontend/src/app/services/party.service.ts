@@ -1,6 +1,6 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 
 export interface CreatePartyResponse {
@@ -19,6 +19,13 @@ export interface PartyDetailsResponse {
 export interface HostJoinResponse {
   id: string;
   guestPin: string;
+}
+
+export interface HostPlaylist {
+  id: string;
+  name: string;
+  trackCount: number;
+  imageUrl: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -102,6 +109,16 @@ export class PartyService {
         }
       })
     );
+  }
+
+  getPlaylists(id: string): Observable<HostPlaylist[]> {
+    return this.http
+      .get<{ playlists: HostPlaylist[] }>(`/api/party/${id}/spotify/playlists`)
+      .pipe(map(res => res.playlists ?? []));
+  }
+
+  setDefaultPlaylist(id: string, playlistId: string | null): Observable<{ defaultPlaylistId: string }> {
+    return this.http.put<{ defaultPlaylistId: string }>(`/api/party/${id}/default-playlist`, { playlistId });
   }
 
   endParty(id: string): Observable<void> {

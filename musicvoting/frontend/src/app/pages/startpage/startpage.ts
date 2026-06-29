@@ -29,6 +29,8 @@ export class Startpage implements OnInit, OnDestroy {
 
   private partyId: string | null = null;
   private isAdvancing = false;
+  private preparedNextForUri: string | null = null;
+  private readonly PREPARE_NEXT_LEAD_MS = 3000;
   pin: string | null = null;
   qrUrl: string | null = null;
 
@@ -138,10 +140,31 @@ export class Startpage implements OnInit, OnDestroy {
           this.currentPosition += 1000;
         }
         this.updateProgressPercent();
+        this.maybePrepareNext(state, paused);
         this.publishProgress(paused);
         this.cd.detectChanges();
       });
     }, 1000);
+  }
+
+  /**
+   * ~3 seconds before the current song ends, ask the backend to preload one playlist song (only
+   * if the queue is empty) so autoplay continues without a load gap. Fires once per track, so the
+   * "up next" list stays empty during most of the song — long enough for guests to add their own
+   * songs, which then take precedence over the auto-fill.
+   */
+  private maybePrepareNext(state: any, paused: boolean) {
+    if (paused || !this.partyId) return;
+    const uri = state?.track_window?.current_track?.uri ?? this.currentTrack?.uri;
+    const duration = state?.duration ?? this.currentDuration;
+    const position = state?.position ?? this.currentPosition;
+    if (!uri || !duration || duration <= 0) return;
+    const remaining = duration - position;
+    if (remaining > 0 && remaining <= this.PREPARE_NEXT_LEAD_MS && this.preparedNextForUri !== uri) {
+      this.preparedNextForUri = uri;
+      this.http.post(`/api/party/${this.partyId}/track/prepare-next`, {})
+        .subscribe({ error: () => { /* best-effort preload */ } });
+    }
   }
 
   stopProgressTimer() {
@@ -219,6 +242,7 @@ export class Startpage implements OnInit, OnDestroy {
           const currentUri = this.currentTrack?.uri;
           const currentId = this.currentTrack?.id;
           this.tracks = res.queue.filter((track: any) => {
+            if (track?.isCurrentlyPlaying) return false;
             if (currentUri && track?.uri === currentUri) return false;
             if (currentId && track?.id === currentId) return false;
             return true;

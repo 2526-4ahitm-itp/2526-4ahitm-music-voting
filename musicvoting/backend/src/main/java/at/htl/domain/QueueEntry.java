@@ -37,4 +37,7 @@ public class QueueEntry extends PanacheEntityBase {
 
     @Column(name = "added_at", nullable = false)
     public OffsetDateTime addedAt;
+
+    @Column(name = "autofilled", nullable = false)
+    public boolean autofilled;
 }

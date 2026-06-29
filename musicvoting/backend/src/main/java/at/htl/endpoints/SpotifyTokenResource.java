@@ -53,7 +53,17 @@ public class SpotifyTokenResource {
     @GET
     @Path("/token")
     public String getToken() {
-        return credentials().getToken();
+        // Re-mint the access token from the (possibly just-restored) refresh token if needed,
+        // so the player gets a working token even right after a backend restart.
+        return spotifyMusicProvider.getValidAccessToken(resolveParty());
+    }
+
+    @GET
+    @Path("/playlists")
+    @HostOnly
+    public Response playlists() {
+        Party party = resolveParty();
+        return Response.ok(Map.of("playlists", spotifyMusicProvider.listHostPlaylists(party))).build();
     }
 
     @GET
@@ -64,7 +74,11 @@ public class SpotifyTokenResource {
     ) {
         SpotifyCredentials creds = credentials();
         String token = creds.getToken();
-        boolean tokenAvailable = token != null && !token.isBlank();
+        String refreshToken = creds.getRefreshToken();
+        // A stored refresh token (e.g. reloaded after a restart) counts as logged in — the access
+        // token is re-minted from it on the next /token call.
+        boolean tokenAvailable = (token != null && !token.isBlank())
+                || (refreshToken != null && !refreshToken.isBlank());
         boolean iosSource = "ios".equalsIgnoreCase(source);
 
         boolean loggedIn;

@@ -78,6 +78,42 @@ class PartyServiceTest {
 
     @Test
     @TestTransaction
+    void persistSpotifyRefreshToken_writesRefreshTokenOnEntity() {
+        String partyId = UUID.randomUUID().toString();
+        PartyEntity entity = new PartyEntity();
+        entity.id = partyId;
+        entity.providerKind = ProviderKind.SPOTIFY.name();
+        entity.createdAt = OffsetDateTime.now();
+        entity.pin = "15151";
+        entity.hostPin = "91515";
+        entity.persist();
+
+        partyService.persistSpotifyRefreshToken(PartyId.of(partyId), "refresh-abc");
+
+        PartyEntity reloaded = PartyEntity.findById(partyId);
+        assertEquals("refresh-abc", reloaded.spotifyRefreshToken);
+    }
+
+    @Test
+    @TestTransaction
+    void persistSpotifyRefreshToken_ignoresBlankToken() {
+        String partyId = UUID.randomUUID().toString();
+        PartyEntity entity = new PartyEntity();
+        entity.id = partyId;
+        entity.providerKind = ProviderKind.SPOTIFY.name();
+        entity.createdAt = OffsetDateTime.now();
+        entity.pin = "16161";
+        entity.hostPin = "91616";
+        entity.persist();
+
+        partyService.persistSpotifyRefreshToken(PartyId.of(partyId), "  ");
+
+        PartyEntity reloaded = PartyEntity.findById(partyId);
+        assertNull(reloaded.spotifyRefreshToken);
+    }
+
+    @Test
+    @TestTransaction
     void endParty_whenEntityMissing_stillRemovesFromRegistry() {
         String partyId = UUID.randomUUID().toString();
         Party party = new Party(PartyId.of(partyId), ProviderKind.SPOTIFY, "14141", "91414");
