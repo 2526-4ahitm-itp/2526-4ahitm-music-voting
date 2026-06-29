@@ -21,22 +21,6 @@ export class SpotifyWebPlayerService {
   }
 
   /**
-   * Triggers a manual refresh of the SDK state to update subscribers.
-   * Useful after backend-initiated playback changes.
-   */
-  async refreshPlayerState(): Promise<void> {
-    if (!this.player) return;
-    try {
-      const state = await this.player.getCurrentState();
-      if (state) {
-        this.playerStateSubject.next(state);
-      }
-    } catch (error) {
-      console.warn('refreshPlayerState fehlgeschlagen:', error);
-    }
-  }
-
-  /**
    * Liefert den aktuellen Wiedergabe-Zustand direkt aus dem Web Playback SDK.
    * Enthält die echte `position` und `duration` (ms) des aktuellen Tracks.
    * Gibt null zurück, wenn kein Player verbunden oder dieses Gerät nicht aktiv ist.
