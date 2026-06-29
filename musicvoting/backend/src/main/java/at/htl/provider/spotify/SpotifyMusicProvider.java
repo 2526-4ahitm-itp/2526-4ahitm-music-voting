@@ -409,6 +409,7 @@ public class SpotifyMusicProvider implements MusicProvider {
 
             List<Map<String, Object>> queue = getQueue(party);
             if (queue == null || queue.isEmpty()) {
+                System.err.println("[playNext] Queue is empty for party " + party.id().value());
                 return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
             }
 
@@ -426,6 +427,7 @@ public class SpotifyMusicProvider implements MusicProvider {
                 // Nothing queued. The player normally preloads a playlist song ~3s before the end
                 // (POST /track/prepare-next); this is the safety net if that was missed — pull one
                 // now so playback doesn't dead-stop (may cause a short gap).
+                System.err.println("[playNext] No next track found (currentId=" + currentId + "), attempting refillQueue for party " + party.id().value());
                 refillQueue(party);
                 nextTrack = getQueue(party).stream()
                         .filter(t -> !t.get("id").toString().equals(currentId))
@@ -435,6 +437,7 @@ public class SpotifyMusicProvider implements MusicProvider {
                 if (nextTrack == null) {
                     // Still nothing (no default playlist / refill yielded nothing) — remove the
                     // finished song and report empty.
+                    System.err.println("[playNext] Still no next track after refill, queue empty for party " + party.id().value());
                     if (partyEntity.currentlyPlayingEntryId != null) {
                         QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
                         partyEntity.currentlyPlayingEntryId = null;
@@ -444,10 +447,13 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
 
             String uri = (String) nextTrack.get("uri");
+            String trackName = (String) nextTrack.get("name");
+            System.err.println("[playNext] Playing next track: " + trackName + " (" + uri + ") for party " + party.id().value());
 
             // Try to start playback first. Only if playback succeeds remove the previous entry
             Response playResponse = play(party, uri);
             if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
+                System.err.println("[playNext] play() failed with status " + playResponse.getStatus() + " for party " + party.id().value());
                 return playResponse;
             }
 
@@ -456,9 +462,12 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
 
             partyEntity.currentlyPlayingEntryId = UUID.fromString((String) nextTrack.get("id"));
+            System.err.println("[playNext] Successfully updated currentlyPlayingEntryId for party " + party.id().value());
 
             return Response.ok(Map.of("status", "playing", "trackName", nextTrack.get("name"))).build();
         } catch (Exception e) {
+            System.err.println("[playNext] Exception in playNextAndRemove for party " + party.id().value() + ": " + e.getMessage());
+            e.printStackTrace();
             return propagateOrUnexpected("Das Wechseln zum naechsten Song", e);
         }
     }

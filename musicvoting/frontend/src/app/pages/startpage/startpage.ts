@@ -223,13 +223,20 @@ export class Startpage implements OnInit, OnDestroy {
     this.isAdvancing = true;
     this.ignoreInitialEndedState = true;
     try {
-      await lastValueFrom(this.http.post(`/api/party/${this.partyId}/track/next`, {}));
+      const response: any = await lastValueFrom(this.http.post(`/api/party/${this.partyId}/track/next`, {}));
+      if (response && response.status === 'empty') {
+        console.warn('playNext: queue is empty');
+      }
       await this.loadCurrentTrack();
       this.loadPlaylist();
     } catch (err) {
-      console.error('Fehler beim Weiterschalten', err);
+      console.error('Fehler beim Weiterschalten:', err);
+      // Reset flag on error so next song can be attempted
+      this.isAdvancing = false;
     } finally {
-      setTimeout(() => { this.isAdvancing = false; }, 3000);
+      if (this.isAdvancing) {
+        setTimeout(() => { this.isAdvancing = false; }, 3000);
+      }
     }
   }
 
