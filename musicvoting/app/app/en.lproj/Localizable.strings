@@ -29,6 +29,15 @@
 "hostpin.title" = "Open Dashboard";
 "hostpin.subtitle" = "Enter your party's host PIN.";
 
+/* PlaylistPickerView */
+"playlistpicker.title" = "Choose default playlist";
+"playlistpicker.subtitle" = "Pick a playlist to fill the queue when it runs dry.";
+"playlistpicker.skip" = "Continue without default playlist";
+"playlistpicker.trackCount" = "%lld songs";
+"playlistpicker.error.load" = "Could not load playlists.";
+"playlistpicker.error.save" = "Could not save playlist.";
+"playlistpicker.retry" = "Try again";
+
 /* SpotifyAuthView */
 "spotify.title" = "Spotify Login";
 "spotify.checking" = "Checking Spotify login…";
