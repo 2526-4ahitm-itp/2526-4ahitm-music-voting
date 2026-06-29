@@ -1,0 +1,42 @@
+<div class="select-playlist-page">
+  <header>
+    <h1>MusicVoting</h1>
+  </header>
+
+  <div class="select-playlist-wrapper">
+    <h2>Standard-Playlist wählen</h2>
+    <p class="subtitle">
+      Wenn die Warteschlange leer wird, spielt MusicVoting automatisch Songs aus dieser Playlist weiter.
+    </p>
+
+    @if (error) {
+      <p class="error-message">{{ error }}</p>
+    }
+
+    @if (isLoading) {
+      <p class="status">Playlists werden geladen…</p>
+    } @else {
+      <div class="playlist-list">
+        @for (playlist of playlists; track playlist.id) {
+          <button class="playlist-item" type="button" [disabled]="isSaving" (click)="choose(playlist)">
+            @if (playlist.imageUrl) {
+              <img class="playlist-cover" [src]="playlist.imageUrl" alt="" />
+            } @else {
+              <div class="playlist-cover placeholder">♪</div>
+            }
+            <div class="playlist-info">
+              <span class="playlist-name">{{ playlist.name }}</span>
+              <span class="playlist-count">{{ playlist.trackCount }} Songs</span>
+            </div>
+          </button>
+        } @empty {
+          <p class="status">Keine Playlists gefunden.</p>
+        }
+      </div>
+    }
+
+    <button class="skip-btn" type="button" [disabled]="isSaving" (click)="skip()">
+      Ohne Standard-Playlist fortfahren
+    </button>
+  </div>
+</div>

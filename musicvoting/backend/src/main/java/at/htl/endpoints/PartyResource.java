@@ -93,6 +93,31 @@ public class PartyResource {
         return Response.noContent().build();
     }
 
+    @PUT
+    @Path("/{id}/default-playlist")
+    @Transactional
+    @HostOnly
+    public Response setDefaultPlaylist(@PathParam("id") String id, Map<String, String> body) {
+        Party party = partyRegistry.findById(id)
+                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+
+        String playlistId = body == null ? null : body.get("playlistId");
+        if (playlistId != null && playlistId.isBlank()) {
+            playlistId = null;
+        }
+
+        PartyEntity entity = PartyEntity.findById(id);
+        if (entity == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        entity.defaultPlaylistId = playlistId;
+        entity.persist();
+
+        party.setDefaultPlaylistId(playlistId);
+
+        return Response.ok(Map.of("defaultPlaylistId", playlistId == null ? "" : playlistId)).build();
+    }
+
     @GET
     @Path("/join/{pin}")
     public Response join(@PathParam("pin") String pin) {

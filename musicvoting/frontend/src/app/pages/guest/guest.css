@@ -167,10 +167,10 @@ html, body {
 .add-button {
   background-color: #f3e8ff;
   border: none;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 3.25rem;
+  height: 3.25rem;
   border-radius: 50%;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   color: #8b00a5;
   cursor: pointer;
   display: flex;
@@ -238,7 +238,7 @@ html, body {
 .bottom-nav {
   display: flex;
   flex-shrink: 0;
-  height: calc(3.25rem + env(safe-area-inset-bottom, 0px));
+  height: calc(4rem + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -248,7 +248,7 @@ html, body {
   border-top: 3px solid white;
   background: white;
   color: black;
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   font-family: var(--font), sans-serif;
   cursor: pointer;
@@ -330,7 +330,13 @@ html, body {
     font-size: 0.8rem;
   }
 
+  .add-button {
+    width: 3.75rem;
+    height: 3.75rem;
+    font-size: 2.2rem;
+  }
+
   .bottom-nav-btn {
-    font-size: 0.875rem;
+    font-size: 1.1rem;
   }
 }

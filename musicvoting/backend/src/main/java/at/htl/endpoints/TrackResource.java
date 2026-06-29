@@ -192,6 +192,20 @@ public class TrackResource {
         return response;
     }
 
+    /**
+     * Called by the player ~3 seconds before the current song ends: if the queue would otherwise
+     * empty out, preloads one song from the default playlist so autoplay continues seamlessly.
+     * No-op if a guest song is already queued (guest songs take precedence over auto-fill).
+     */
+    @POST
+    @Path("/prepare-next")
+    @HostOnly
+    public Response prepareNext() {
+        Party party = resolveParty();
+        provider(party).refillQueue(party);
+        return Response.noContent().build();
+    }
+
     @POST
     @Path("/pause")
     @HostOnly

@@ -56,6 +56,24 @@ class PartyRegistryReconstructTest {
 
     @Test
     @TestTransaction
+    void findById_whenNotInMemory_restoresRefreshTokenIntoCredentials() {
+        String partyId = UUID.randomUUID().toString();
+        PartyEntity entity = new PartyEntity();
+        entity.id = partyId;
+        entity.providerKind = ProviderKind.SPOTIFY.name();
+        entity.createdAt = OffsetDateTime.now();
+        entity.pin = "60006";
+        entity.hostPin = "70006";
+        entity.spotifyRefreshToken = "refresh-xyz";
+        entity.persist();
+
+        Party found = partyRegistry.findById(partyId).orElseThrow();
+
+        assertEquals("refresh-xyz", found.getSpotifyCredentials().getRefreshToken());
+    }
+
+    @Test
+    @TestTransaction
     void findByPin_whenAlreadyRegistered_returnsExistingInstance() {
         String partyId = UUID.randomUUID().toString();
         persistPartyEntity(partyId, "60003", "70003", null);

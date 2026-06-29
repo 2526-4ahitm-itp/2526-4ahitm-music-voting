@@ -12,6 +12,7 @@ enum SiteState {
     case hostMenu
     case hostPinEntry
     case spotifyAuth
+    case playlistPicker
     case admin
     case guest
     case codeInput
@@ -36,6 +37,8 @@ struct ContentView: View {
             HostPinEntryView()
         case .spotifyAuth:
             SpotifyAuthView()
+        case .playlistPicker:
+            PlaylistPickerView()
         case .admin:
             Admin_ContentView()
         case .guest:

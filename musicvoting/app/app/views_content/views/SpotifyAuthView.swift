@@ -285,7 +285,7 @@ struct SpotifyAuthView: View {
                 await auth.checkLoginStatus()
             }
             if auth.isLoggedIn {
-                appState.currentSite = .admin
+                appState.currentSite = .playlistPicker
             }
         }
         .task {
@@ -293,7 +293,7 @@ struct SpotifyAuthView: View {
         }
         .onChange(of: auth.isLoggedIn) { isLoggedIn in
             if isLoggedIn {
-                appState.currentSite = .admin
+                appState.currentSite = .playlistPicker
             }
         }
     }

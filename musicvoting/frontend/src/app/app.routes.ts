@@ -9,6 +9,7 @@ import {VotingHost} from './pages/voting-host/voting-host';
 import { SearchHost } from './pages/search-host/search-host';
 import { CodeInput } from './pages/code-input/code-input';
 import { CreateParty } from './pages/create-party/create-party';
+import { SelectPlaylist } from './pages/select-playlist/select-playlist';
 import { hostGuard } from './host.guard';
 
 export const routes: Routes = [
@@ -40,6 +41,13 @@ export const routes: Routes = [
     path: 'create-party',
     component: CreateParty,
     title: 'Party erstellen - MusicVoting'
+  },
+
+  {
+    path: 'select-playlist',
+    component: SelectPlaylist,
+    canActivate: [hostGuard],
+    title: 'Standard-Playlist - MusicVoting'
   },
 
   {

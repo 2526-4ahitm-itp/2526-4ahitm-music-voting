@@ -21,6 +21,18 @@ public class PartyService {
     @Inject
     LoginEventBus loginEventBus;
 
+    /** Persists the party's Spotify refresh token so the host's session survives a restart. */
+    @Transactional
+    public void persistSpotifyRefreshToken(PartyId partyId, String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return;
+        }
+        PartyEntity entity = PartyEntity.findById(partyId.value());
+        if (entity != null) {
+            entity.spotifyRefreshToken = refreshToken;
+        }
+    }
+
     @Transactional
     public void endParty(PartyId partyId) {
         QueueEntry.delete("partyId", partyId.value());

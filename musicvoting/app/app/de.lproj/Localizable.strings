@@ -29,6 +29,15 @@
 "hostpin.title" = "Dashboard öffnen";
 "hostpin.subtitle" = "Gib den Host-PIN deiner Party ein.";
 
+/* PlaylistPickerView */
+"playlistpicker.title" = "Standard-Playlist wählen";
+"playlistpicker.subtitle" = "Wähle eine Playlist als Fallback, wenn die Warteschlange leer wird.";
+"playlistpicker.skip" = "Ohne Standard-Playlist fortfahren";
+"playlistpicker.trackCount" = "%lld Songs";
+"playlistpicker.error.load" = "Playlists konnten nicht geladen werden.";
+"playlistpicker.error.save" = "Playlist konnte nicht gespeichert werden.";
+"playlistpicker.retry" = "Erneut versuchen";
+
 /* SpotifyAuthView */
 "spotify.title" = "Spotify Login";
 "spotify.checking" = "Spotify Login wird gepruft...";

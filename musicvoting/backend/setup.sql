@@ -7,7 +7,9 @@ CREATE TABLE party (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     pin             VARCHAR(5)  NOT NULL DEFAULT '',
     host_pin        VARCHAR(5),
-    ended_at        TIMESTAMPTZ
+    ended_at        TIMESTAMPTZ,
+    default_playlist_id VARCHAR,
+    spotify_refresh_token TEXT
 );
 
 CREATE TABLE queue_entry (
@@ -20,7 +22,9 @@ CREATE TABLE queue_entry (
     image_url   TEXT,
     duration_ms INTEGER,
     added_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (party_id, track_uri)
+    autofilled  BOOLEAN     NOT NULL DEFAULT FALSE
+    -- No (party_id, track_uri) uniqueness: a song that is currently playing may be
+    -- queued again, so the same track URI can appear twice (the playing one + a waiting one).
 );
 
 CREATE TABLE vote (

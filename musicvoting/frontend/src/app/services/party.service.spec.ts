@@ -109,6 +109,35 @@ describe('PartyService', () => {
     expect(localStorage.getItem('mv_party_id')).toBeNull();
   });
 
+  it('getPlaylists unwraps the playlists array', () => {
+    let result: any;
+    service.getPlaylists('party-7').subscribe(res => result = res);
+
+    const req = httpMock.expectOne('/api/party/party-7/spotify/playlists');
+    expect(req.request.method).toBe('GET');
+    req.flush({ playlists: [{ id: 'pl-1', name: 'My List', trackCount: 3, imageUrl: null }] });
+
+    expect(result.length).toBe(1);
+    expect(result[0].id).toBe('pl-1');
+  });
+
+  it('setDefaultPlaylist PUTs the chosen playlist id', () => {
+    service.setDefaultPlaylist('party-8', 'pl-9').subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-8/default-playlist');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ playlistId: 'pl-9' });
+    req.flush({ defaultPlaylistId: 'pl-9' });
+  });
+
+  it('setDefaultPlaylist sends null to clear the default playlist', () => {
+    service.setDefaultPlaylist('party-8', null).subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-8/default-playlist');
+    expect(req.request.body).toEqual({ playlistId: null });
+    req.flush({ defaultPlaylistId: '' });
+  });
+
   describe('deviceId', () => {
     const COOKIE_KEY = 'mv_device_id';
     const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

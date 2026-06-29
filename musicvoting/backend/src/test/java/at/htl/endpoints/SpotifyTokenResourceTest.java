@@ -13,12 +13,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 class SpotifyTokenResourceTest {
@@ -58,9 +61,9 @@ class SpotifyTokenResourceTest {
     }
 
     @Test
-    void getToken_returnsCurrentAccessToken() {
+    void getToken_returnsValidAccessToken() {
         Party party = registerParty();
-        party.getSpotifyCredentials().setToken("access-token-123");
+        when(spotifyMusicProvider.getValidAccessToken(any())).thenReturn("access-token-123");
 
         given()
                 .when().get("/api/party/{partyId}/spotify/token", party.id().value())
@@ -90,6 +93,19 @@ class SpotifyTokenResourceTest {
                 .then()
                 .statusCode(200)
                 .body("loggedIn", equalTo(false));
+    }
+
+    @Test
+    void status_web_withOnlyRefreshToken_returnsLoggedInTrue() {
+        Party party = registerParty();
+        // No access token (e.g. just after a restart) but a restored refresh token.
+        party.getSpotifyCredentials().setRefreshToken("refresh-abc");
+
+        given()
+                .when().get("/api/party/{partyId}/spotify/status", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("loggedIn", equalTo(true));
     }
 
     @Test
@@ -179,6 +195,42 @@ class SpotifyTokenResourceTest {
         } finally {
             subscription.cancel();
         }
+    }
+
+    @Test
+    void playlists_withoutAuthHeader_returnsUnauthorized() {
+        Party party = registerParty();
+
+        given()
+                .when().get("/api/party/{partyId}/spotify/playlists", party.id().value())
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    void playlists_withWrongHostPin_returnsForbidden() {
+        Party party = registerParty();
+
+        given()
+                .header("Authorization", "Bearer wrong-pin")
+                .when().get("/api/party/{partyId}/spotify/playlists", party.id().value())
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void playlists_withCorrectHostPin_returnsHostPlaylists() {
+        Party party = registerParty();
+        when(spotifyMusicProvider.listHostPlaylists(any()))
+                .thenReturn(List.of(Map.of("id", "pl-1", "name", "My List", "trackCount", 7)));
+
+        given()
+                .header("Authorization", "Bearer " + party.hostPin())
+                .when().get("/api/party/{partyId}/spotify/playlists", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("playlists[0].id", equalTo("pl-1"))
+                .body("playlists[0].name", equalTo("My List"));
     }
 
     @Test

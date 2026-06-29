@@ -5,6 +5,7 @@ import at.htl.domain.PartyId;
 import at.htl.domain.PartyRegistry;
 import at.htl.provider.spotify.SpotifyCredentials;
 import at.htl.provider.spotify.SpotifyMusicProvider;
+import at.htl.service.PartyService;
 import at.htl.service.SpotifyApiErrors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Multi;
@@ -37,6 +38,9 @@ public class SpotifyCallbackResource {
 
     @Inject
     LoginEventBus loginEventBus;
+
+    @Inject
+    PartyService partyService;
 
     @ConfigProperty(name = "spotify.client.id")
     String clientId;
@@ -71,6 +75,7 @@ public class SpotifyCallbackResource {
             creds.setToken(tokenMap.get("access_token"));
             if (tokenMap.get("refresh_token") != null) {
                 creds.setRefreshToken(tokenMap.get("refresh_token"));
+                partyService.persistSpotifyRefreshToken(party.id(), tokenMap.get("refresh_token"));
             }
             if (tokenMap.get("expires_in") != null) {
                 int expiresIn = Integer.parseInt(String.valueOf(tokenMap.get("expires_in")));
@@ -175,6 +180,7 @@ public class SpotifyCallbackResource {
             creds.setToken(tokenMap.get("access_token"));
             if (tokenMap.get("refresh_token") != null) {
                 creds.setRefreshToken(tokenMap.get("refresh_token"));
+                partyService.persistSpotifyRefreshToken(party.id(), tokenMap.get("refresh_token"));
             }
             if (tokenMap.get("expires_in") != null) {
                 int expiresIn = Integer.parseInt(String.valueOf(tokenMap.get("expires_in")));
