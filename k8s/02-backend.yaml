@@ -38,7 +38,7 @@ spec:
             - name: SPOTIFY_REDIRECT_URI
               value: "https://it220241.cloud.htl-leonding.ac.at/api/spotify/callback"
             - name: SPOTIFY_WEB_REDIRECT_URI
-              value: "https://it220241.cloud.htl-leonding.ac.at/dashboard"
+              value: "https://it220241.cloud.htl-leonding.ac.at/select-playlist"
             - name: SPOTIFY_IOS_REDIRECT_URI
               value: "musicvotingapp://callback"
             # Auto-refill of the empty queue:
