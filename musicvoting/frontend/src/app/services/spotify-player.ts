@@ -95,6 +95,17 @@ export class SpotifyWebPlayerService {
 
     this.player.addListener('player_state_changed', (state: any) => {
       if (!state) return;
+      try {
+        // Debug logging to help diagnose autoplay transition issues
+        console.log('[spotify] player_state_changed', {
+          paused: state.paused,
+          position: state.position,
+          duration: state.duration,
+          track_uri: state?.track_window?.current_track?.uri
+        });
+      } catch (e) {
+        console.log('[spotify] player_state_changed (failed to format)', state);
+      }
       this.playerStateSubject.next(state);
     });
 
