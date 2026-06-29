@@ -45,16 +45,24 @@ enum BackendConfiguration {
         let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
-        let withScheme = trimmed.contains("://") ? trimmed : "http://\(trimmed)"
+        let isLocal = trimmed.hasPrefix("localhost") || trimmed.hasPrefix("127.") ||
+                      isIPv4Address(trimmed.components(separatedBy: ":").first ?? "")
+
+        let withScheme = trimmed.contains("://") ? trimmed
+                         : isLocal ? "http://\(trimmed)"
+                         : "https://\(trimmed)"
         guard var components = URLComponents(string: withScheme) else { return nil }
 
         guard components.scheme == "http" || components.scheme == "https" else { return nil }
         guard let host = components.host else { return nil }
 
-        // Local dev backends are reached via a raw IP/localhost on a non-standard
-        // port; real hostnames (e.g. an ingress) use the scheme's standard port.
-        if components.port == nil && (host == "localhost" || isIPv4Address(host)) {
-            components.port = defaultPort
+        let isLocalHost = host == "localhost" || isIPv4Address(host)
+        if isLocalHost {
+            if components.port == nil { components.port = defaultPort }
+        } else {
+            // Cloud/ingress hosts: strip any explicit port and enforce https
+            components.port = nil
+            if components.scheme == "http" { components.scheme = "https" }
         }
 
         components.user = nil

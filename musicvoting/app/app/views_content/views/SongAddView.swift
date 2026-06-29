@@ -277,7 +277,7 @@ struct SongAddView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(Color.white, in: Capsule())
+        .background(Color(.systemBackground), in:Capsule())
         .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
     }
 
@@ -291,7 +291,7 @@ struct SongAddView: View {
                     Spacer()
                 }
                 .padding(.vertical, 20)
-                .background(Color.white, in: RoundedRectangle(cornerRadius: 15))
+                .background(Color(.systemBackground), in:RoundedRectangle(cornerRadius: 15))
             } else if viewModel.results.isEmpty {
                 if viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                     VStack(spacing: 12) {
@@ -330,7 +330,7 @@ struct SongAddView: View {
                         ) {
                             Task { await viewModel.addToPlaylist(track) }
                         }
-                        .background(Color.white, in: RoundedRectangle(cornerRadius: 15))
+                        .background(Color(.systemBackground), in:RoundedRectangle(cornerRadius: 15))
                         .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
                     }
                 }
