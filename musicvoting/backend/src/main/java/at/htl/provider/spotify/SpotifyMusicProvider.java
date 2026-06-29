@@ -212,9 +212,12 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getQueue(Party party) {
         try {
+            backfillMissingImageUrls(party);
+
             List<Object[]> rows = em.createNativeQuery(
                     "SELECT qe.id, qe.track_uri, qe.track_name, qe.artist_name, qe.album_name, " +
                     "qe.image_url, qe.duration_ms, COUNT(v.id) AS like_count, " +
@@ -250,9 +253,12 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
+    @Transactional
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getQueueForDevice(Party party, String deviceId) {
         try {
+            backfillMissingImageUrls(party);
+
             List<Object[]> rows = em.createNativeQuery(
                     "SELECT qe.id, qe.track_uri, qe.track_name, qe.artist_name, qe.album_name, " +
                     "qe.image_url, qe.duration_ms, COUNT(v.id) AS like_count, " +
@@ -288,6 +294,43 @@ public class SpotifyMusicProvider implements MusicProvider {
         } catch (Exception e) {
             if (e instanceof WebApplicationException wae) throw wae;
             throw new WebApplicationException(SpotifyApiErrors.unexpectedError("Das Laden der Warteschlange", e));
+        }
+    }
+
+    /**
+     * For queue entries missing image_url (e.g. added before this field existed),
+     * fetch metadata from Spotify and persist the URL. Silently skips failures.
+     * Caps at 5 entries per call so it never blocks a queue fetch noticeably.
+     * Must be called from within an active transaction.
+     */
+    private void backfillMissingImageUrls(Party party) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Object[]> missing = em.createNativeQuery(
+                    "SELECT id, track_uri FROM queue_entry " +
+                    "WHERE party_id = :partyId AND image_url IS NULL AND track_uri IS NOT NULL " +
+                    "LIMIT 5"
+            ).setParameter("partyId", party.id().value()).getResultList();
+
+            for (Object[] row : missing) {
+                try {
+                    String uri = (String) row[1];
+                    String trackId = uri.contains(":") ? uri.substring(uri.lastIndexOf(":") + 1) : uri;
+                    Map<String, Object> meta = fetchTrackMetadata(party, trackId);
+                    String imageUrl = parseImageUrl(meta);
+                    if (imageUrl != null) {
+                        em.createNativeQuery(
+                                "UPDATE queue_entry SET image_url = :imageUrl WHERE id = :id"
+                        ).setParameter("imageUrl", imageUrl)
+                         .setParameter("id", row[0])
+                         .executeUpdate();
+                    }
+                } catch (Exception ignored) {
+                    // Skip individual entries that can't be resolved
+                }
+            }
+        } catch (Exception ignored) {
+            // Never fail a queue fetch due to backfill errors
         }
     }
 
