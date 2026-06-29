@@ -91,6 +91,11 @@ jobs:
 
       - name: Rollout restart to pull new images
         run: |
+          # Postgres has no PVC and only runs setup.sql on a fresh pod, so restart it
+          # first to re-initialise the schema from the (possibly updated) ConfigMap before
+          # the backend connects. NOTE: this resets party data on every deploy.
+          kubectl rollout restart deployment/postgres -n student-it220241
+          kubectl rollout status deployment/postgres -n student-it220241 --timeout=120s
           kubectl rollout restart deployment/backend -n student-it220241
           kubectl rollout restart deployment/frontend -n student-it220241
           kubectl rollout status deployment/backend -n student-it220241 --timeout=120s
