@@ -224,6 +224,9 @@ export class Startpage implements OnInit, OnDestroy {
     this.ignoreInitialEndedState = true;
     try {
       await lastValueFrom(this.http.post(`/api/party/${this.partyId}/track/next`, {}));
+      // Force SDK to refresh state after backend starts new playback
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await this.spotifyService.refreshPlayerState();
       await this.loadCurrentTrack();
       this.loadPlaylist();
     } catch (err) {
