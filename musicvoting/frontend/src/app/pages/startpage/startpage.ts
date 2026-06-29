@@ -250,6 +250,8 @@ export class Startpage implements OnInit, OnDestroy {
             if (currentId && track?.id === currentId) return false;
             return true;
           });
+          // Reset prepareNext flag when queue changes so autoplay can trigger again
+          this.preparedNextForUri = null;
         }
       });
     } catch (err) {
