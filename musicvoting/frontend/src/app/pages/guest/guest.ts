@@ -104,7 +104,6 @@ export class Guest implements OnInit, OnDestroy {
 
     try {
       await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
-      console.log(`${track.name} wurde zur Playlist hinzugefügt`);
       this.queueState.refresh();
     } catch (err) {
       console.error('Fehler beim Hinzufügen:', err);

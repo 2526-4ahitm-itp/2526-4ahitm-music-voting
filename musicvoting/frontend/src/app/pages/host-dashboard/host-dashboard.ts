@@ -354,7 +354,4 @@ export class HostDashboard implements OnInit, OnDestroy {
       console.error('Fehler beim Beenden der Party:', err);
     }
   }
-  test() {
-    console.log('Test');
-  }
 }

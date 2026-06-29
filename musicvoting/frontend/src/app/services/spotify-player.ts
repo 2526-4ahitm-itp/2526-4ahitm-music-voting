@@ -95,17 +95,6 @@ export class SpotifyWebPlayerService {
 
     this.player.addListener('player_state_changed', (state: any) => {
       if (!state) return;
-      try {
-        // Debug logging to help diagnose autoplay transition issues
-        console.log('[spotify] player_state_changed', {
-          paused: state.paused,
-          position: state.position,
-          duration: state.duration,
-          track_uri: state?.track_window?.current_track?.uri
-        });
-      } catch (e) {
-        console.log('[spotify] player_state_changed (failed to format)', state);
-      }
       this.playerStateSubject.next(state);
     });
 
@@ -123,13 +112,11 @@ export class SpotifyWebPlayerService {
     });
 
     this.player.addListener('ready', ({ device_id }: any) => {
-      console.log('Spotify ready, device:', device_id);
       if (!registerPlaybackDevice) return;
 
       this.http.put(`/api/party/${partyId}/spotify/deviceId`, device_id, {
         headers: new HttpHeaders({ 'Content-Type': 'text/plain' })
       }).subscribe({
-        next: () => console.log('Device ID an Backend gesendet:', device_id),
         error: (err) => console.error('Fehler beim Senden der Device ID:', err)
       });
     });
@@ -138,9 +125,7 @@ export class SpotifyWebPlayerService {
       console.warn('Spotify device not ready:', device_id);
     });
 
-    await this.player.connect().then((connected: boolean) => {
-      console.log('Spotify connect result:', connected);
-    });
+    await this.player.connect();
   }
 
   private loadSpotifySDK(): Promise<void> {
