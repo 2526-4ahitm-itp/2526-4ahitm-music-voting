@@ -41,6 +41,16 @@ spec:
               value: "https://it220241.cloud.htl-leonding.ac.at/dashboard"
             - name: SPOTIFY_IOS_REDIRECT_URI
               value: "musicvotingapp://callback"
+            # Auto-refill of the empty queue:
+            # Market (ISO country) for the "similar songs" (played artists' top tracks).
+            - name: SPOTIFY_MARKET
+              value: "AT"
+            # Optional fallback playlist when neither a default playlist nor similar songs
+            # yield anything. Spotify blocks its OWN editorial playlists (37i9dQZEV...) for
+            # this app, so use a PUBLIC, USER-OWNED playlist ID here. Left empty: the built-in
+            # search backstop still guarantees a next song.
+            - name: SPOTIFY_TOPCHARTS_PLAYLIST_ID
+              value: ""
             - name: SPOTIFY_CLIENT_ID
               valueFrom:
                 secretKeyRef:
