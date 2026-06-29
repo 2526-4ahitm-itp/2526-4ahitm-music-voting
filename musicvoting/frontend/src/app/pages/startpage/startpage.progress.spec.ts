@@ -92,4 +92,25 @@ describe('Startpage progress bar', () => {
 
     expect(comp.currentPosition).toBe(6_000); // fallback +1000ms
   });
+
+  // The reported bug: an auto-filled song ends, the web player stops being the active
+  // device, so the SDK emits no end event AND getCurrentState() returns null — the next
+  // song just shows up paused. The progress timer must still advance via elapsed time.
+  it('advances when the SDK goes silent and elapsed time reaches the duration', async () => {
+    const playNext = spyOn(comp, 'playNext').and.resolveTo(undefined);
+    // A track was playing and is now ~1s from its end...
+    (comp as any).playingUri = 'spotify:track:song2';
+    (comp as any).sawPlaybackForUri = true;
+    (comp as any).endHandledForUri = false;
+    comp.currentDuration = 200_000;
+    comp.currentPosition = 199_000;
+    // ...and the SDK has gone completely silent (web player no longer the active device).
+    spotifyService.getCurrentState.and.resolveTo(null);
+
+    comp.startProgressTimer();
+    await oneTick(); // 199_000 -> 200_000, reaches the duration
+    comp.stopProgressTimer();
+
+    expect(playNext).toHaveBeenCalledTimes(1);
+  });
 });

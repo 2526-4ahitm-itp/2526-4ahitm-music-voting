@@ -409,7 +409,6 @@ public class SpotifyMusicProvider implements MusicProvider {
 
             List<Map<String, Object>> queue = getQueue(party);
             if (queue == null || queue.isEmpty()) {
-                System.err.println("[playNext] Queue is empty for party " + party.id().value());
                 return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
             }
 
@@ -427,7 +426,6 @@ public class SpotifyMusicProvider implements MusicProvider {
                 // Nothing queued. The player normally preloads a playlist song ~3s before the end
                 // (POST /track/prepare-next); this is the safety net if that was missed — pull one
                 // now so playback doesn't dead-stop (may cause a short gap).
-                System.err.println("[playNext] No next track found (currentId=" + currentId + "), attempting refillQueue for party " + party.id().value());
                 refillQueue(party);
                 nextTrack = getQueue(party).stream()
                         .filter(t -> !t.get("id").toString().equals(currentId))
@@ -437,7 +435,6 @@ public class SpotifyMusicProvider implements MusicProvider {
                 if (nextTrack == null) {
                     // Still nothing (no default playlist / refill yielded nothing) — remove the
                     // finished song and report empty.
-                    System.err.println("[playNext] Still no next track after refill, queue empty for party " + party.id().value());
                     if (partyEntity.currentlyPlayingEntryId != null) {
                         QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
                         partyEntity.currentlyPlayingEntryId = null;
@@ -447,13 +444,10 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
 
             String uri = (String) nextTrack.get("uri");
-            String trackName = (String) nextTrack.get("name");
-            System.err.println("[playNext] Playing next track: " + trackName + " (" + uri + ") for party " + party.id().value());
 
             // Try to start playback first. Only if playback succeeds remove the previous entry
             Response playResponse = play(party, uri);
             if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
-                System.err.println("[playNext] play() failed with status " + playResponse.getStatus() + " for party " + party.id().value());
                 return playResponse;
             }
 
@@ -462,12 +456,9 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
 
             partyEntity.currentlyPlayingEntryId = UUID.fromString((String) nextTrack.get("id"));
-            System.err.println("[playNext] Successfully updated currentlyPlayingEntryId for party " + party.id().value());
 
             return Response.ok(Map.of("status", "playing", "trackName", nextTrack.get("name"))).build();
         } catch (Exception e) {
-            System.err.println("[playNext] Exception in playNextAndRemove for party " + party.id().value() + ": " + e.getMessage());
-            e.printStackTrace();
             return propagateOrUnexpected("Das Wechseln zum naechsten Song", e);
         }
     }
@@ -950,7 +941,6 @@ public class SpotifyMusicProvider implements MusicProvider {
                 return; // real songs still queued — no filler needed
             }
 
-            List<String> candidates;
             String defaultPlaylistId = party.defaultPlaylistId();
 
             // If the host didn't choose a default playlist, try to create/find a "Musicvoting party"
@@ -964,13 +954,25 @@ public class SpotifyMusicProvider implements MusicProvider {
                 }
             }
 
+            // One shared fall-through chain: the default playlist is just the first preference, so
+            // it can never dead-end. If reading it yields nothing (transient error / unreadable /
+            // empty), keep going — similar songs → Top-Charts → search — exactly like the
+            // no-default-playlist path, so autoplay always advances.
+            List<String> candidates = List.of();
             if (defaultPlaylistId != null && !defaultPlaylistId.isBlank()) {
                 candidates = getPlaylistTrackUris(party, defaultPlaylistId);
-            } else {
+            }
+            if (candidates.isEmpty()) {
                 candidates = getSimilarTrackUris(party, currentSeedTrackId(pe));
-                if (candidates.isEmpty()) {
-                    candidates = getPlaylistTrackUris(party, topChartsPlaylistId.orElse(null));
-                }
+            }
+            if (candidates.isEmpty()) {
+                candidates = getPlaylistTrackUris(party, topChartsPlaylistId.orElse(null));
+            }
+            if (candidates.isEmpty()) {
+                // Last resort that survives Spotify's API restrictions: /search still works
+                // (it powers the in-app search), so search for more tracks by the current
+                // song's artist. This keeps autoplay going on-vibe without any host config.
+                candidates = getSearchFallbackUris(party, currentTrackArtistName(pe));
             }
             if (candidates.isEmpty()) {
                 return; // refill genuinely yields nothing → playback stops ("Warteschlange ist leer")
@@ -1021,6 +1023,78 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
         } catch (Exception ignored) {
             // Auto-refill is best-effort; never break the advance/start flow.
+        }
+    }
+
+    private String currentTrackArtistName(PartyEntity pe) {
+        if (pe.currentlyPlayingEntryId == null) {
+            return null;
+        }
+        QueueEntry current = QueueEntry.findById(pe.currentlyPlayingEntryId);
+        return current != null ? current.artistName : null;
+    }
+
+    /**
+     * Reliable last-resort refill source. Spotify's recommendation, related-artist and
+     * editorial-playlist endpoints are all blocked for newer apps, but {@code /search}
+     * still works — so we search for tracks by the current song's artist, and if that
+     * yields nothing fall back to a broad query. This guarantees there is always a next
+     * song so autoplay never dead-stops. Best-effort: empty list only if every search
+     * fails (e.g. no network).
+     */
+    @SuppressWarnings("unchecked")
+    private List<String> getSearchFallbackUris(Party party, String artistName) {
+        String primaryArtist = null;
+        if (artistName != null && !artistName.isBlank()) {
+            primaryArtist = artistName.contains(",")
+                    ? artistName.substring(0, artistName.indexOf(",")).trim()
+                    : artistName.trim();
+        }
+
+        List<String> byArtist = (primaryArtist == null || primaryArtist.isBlank())
+                ? List.of()
+                : searchTrackUris(party, "artist:" + primaryArtist);
+        if (!byArtist.isEmpty()) {
+            return byArtist;
+        }
+        // Nothing by that artist (or no artist known) — a broad query so something always plays.
+        return searchTrackUris(party, "year:2010-2025");
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> searchTrackUris(Party party, String query) {
+        try {
+            String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
+            String url = "https://api.spotify.com/v1/search?q=" + encoded
+                    + "&type=track&limit=50&market=" + URLEncoder.encode(market, StandardCharsets.UTF_8);
+            HttpResponse<String> res = executeSpotifyRequest(party, () ->
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(url))
+                            .header("Authorization", authHeader(party))
+                            .GET()
+                            .build());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return List.of();
+            }
+            Map<String, Object> json = mapper.readValue(res.body(), Map.class);
+            Map<String, Object> tracks = (Map<String, Object>) json.get("tracks");
+            if (tracks == null) {
+                return List.of();
+            }
+            List<Map<String, Object>> items = (List<Map<String, Object>>) tracks.get("items");
+            if (items == null) {
+                return List.of();
+            }
+            List<String> uris = new ArrayList<>();
+            for (Map<String, Object> item : items) {
+                if (item != null && item.get("uri") instanceof String uri && !uri.isBlank()) {
+                    uris.add(uri);
+                }
+            }
+            Collections.shuffle(uris);
+            return uris;
+        } catch (Exception e) {
+            return List.of();
         }
     }
 
