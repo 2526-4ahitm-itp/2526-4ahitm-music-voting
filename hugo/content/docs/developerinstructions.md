@@ -81,6 +81,18 @@ quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/musicvoting
 quarkus.hibernate-orm.database.generation=none
 musicvoting.join.base-url=http://localhost:4200/join
 
+# === Automatisches Nachfüllen der Warteschlange (Auto-Refill) ===
+# Markt (ISO-Land) für die "ähnlichen Songs" (Top-Tracks der gespielten Künstler),
+# wenn keine Standard-Playlist gesetzt ist. Standard: AT.
+spotify.market=AT
+# Optionale Fallback-Playlist, falls weder eine Standard-Playlist noch ähnliche Songs
+# etwas liefern. Leer lassen zum Deaktivieren. WICHTIG: Spotify sperrt für neue Apps
+# den Zugriff auf seine EIGENEN Editorial-Playlists (IDs mit 37i9dQZEV...), die liefern
+# dann 0 Tracks – hier am besten die ID einer ÖFFENTLICHEN, EIGENEN Playlist eintragen.
+# (Selbst wenn diese leer ist, sorgt die eingebaute Spotify-Suche dafür, dass immer ein
+# nächster Song gefunden wird.)
+spotify.topcharts.playlist.id=
+
 # Nur wenn du die iOS-App nutzt: Redirect-URI der App
 #spotify.ios.redirect.uri=musicvotingapp://callback
 
