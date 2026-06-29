@@ -21,6 +21,8 @@
 - [x] 4.3 Call `refillQueue` after `playNextAndRemove(...)` and `startFirstSongWithoutRemoving(...)`
 - [x] 4.4 Apply the `autofilled` secondary sort so guest entries (and upvotes) always outrank auto-filled songs
 - [x] 4.5 Emit the existing `queue-updated` SSE event after a refill so clients reload
+- [x] 4.6 Search-based refill backstop: when default-playlist, similar, and Top-Charts all yield nothing, fall back to `GET /v1/search` (by the current song's artist, then a broad query) so there is always a next song while Spotify is reachable
+- [x] 4.7 Single shared fall-through chain: the default playlist is the first preference but no longer a dead-end — if reading it yields nothing it falls through to similar → Top-Charts → search, exactly like the no-default-playlist path (fixed autoplay stalling when a default playlist was set)
 
 ## 5. Web host creation flow
 - [x] 5.1 After the Spotify OAuth callback, route the web host to a playlist-picker page instead of straight to the dashboard (`spotify.web.redirect.uri` → `/select-playlist`)
@@ -33,9 +35,17 @@
 - [x] 6.3 Backend: endpoint auth (`@HostOnly`) for playlists + default-playlist (401/403 + authorized success)
 - [x] 6.4 Frontend: playlist-picker component (list, select, skip → dashboard) + `PartyService.getPlaylists/setDefaultPlaylist`
 
+## 8. Reliable autoplay continuation (web player)
+- [x] 8.1 Advance at the track's **natural end** (not early), so the displayed/now-playing song stays in sync with the audio (early-advance made the backend's "current" lead the audio, visible as an off-by-one on the fast default-playlist refill)
+- [x] 8.2 Detect the advance point via multiple independent paths (SDK state event, periodic SDK-state poll, elapsed-time reaching duration) so a dropped SDK event / null state does not stall playback
+- [x] 8.3 Advance each track at most once, keyed to the track URI (idempotent across paths and duplicate events)
+- [x] 8.4 Idle-restart: when nothing is playing (queue ran dry) and a song is added, start playback automatically without disturbing active playback or an intentional pause
+- [x] 8.5 Frontend tests: end/near-end detection, elapsed-time fallback (incl. timer integration), idle-restart branches
+- [x] 8.6 Remove the temporary diagnostic logging used to isolate the device-pause/refill issues (backend `[playNext]`/`[refill]`, the `/clientlog` sink, and debug `console.log`s)
+
 ## 7. Verify
-- [x] 7.1 Run backend + frontend test suites; confirm green — backend 130/130; frontend new specs pass (3 unrelated pre-existing failures in code-input/create-party specs)
-- [ ] 7.2 Manually verify end-to-end (needs a live Spotify host session): create party → pick playlist → let queue drain → playback continues from playlist; repeat with skip → continues via recommendations/Top-Charts; confirm a guest add jumps ahead of auto-filled songs
+- [x] 7.1 Run backend + frontend test suites; confirm green
+- [x] 7.2 Manually verify end-to-end on a live Spotify Premium host session: queue drains → playback continues via the similar/search refill; songs advance across tracks without the player reverting/pausing. (Default-playlist happy-path still benefits from a dedicated run.)
 ```
 
 > Note: the live-Spotify happy paths (default playlist / recommendations actually adding songs) are not unit-tested because the provider's `HttpClient` is not injectable for mocking — consistent with the existing test suite, which only covers DB-only and best-effort/early-return paths. Those paths are covered by the manual E2E in 7.2.
