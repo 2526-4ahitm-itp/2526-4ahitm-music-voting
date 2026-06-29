@@ -20,7 +20,7 @@
 "hostmenu.title" = "Host";
 "hostmenu.subtitle" = "What would you like to do?";
 "hostmenu.createParty" = "Create party";
-"hostmenu.createPartySubtitle" = "Start a new party and connect Spotify";
+"hostmenu.createPartySubtitle" = "Start a new party";
 "hostmenu.openDashboard" = "Open dashboard";
 "hostmenu.openDashboardSubtitle" = "Control existing party via PIN";
 "hostmenu.error.createFailed" = "Could not create party. Please try again.";
@@ -40,7 +40,7 @@
 /* SongAddView */
 "search.placeholder" = "Search…";
 "search.hint" = "Start searching!";
-"search.hintDetail" = "Search for songs, artists, and albums!";
+"search.hintDetail" = "Search for songs and artists!";
 "search.noResults" = "No results found.";
 "search.error.invalid" = "Invalid search query.";
 "search.error.failed" = "Search failed. Please try again.";

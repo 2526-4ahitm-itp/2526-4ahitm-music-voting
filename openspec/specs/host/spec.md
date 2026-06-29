@@ -252,6 +252,50 @@ The iOS host admin view MUST display a progress bar for the current song, kept i
 - GIVEN the iOS host admin view is open and no TV player is publishing progress
 - THEN the progress bar shows `0:00` with no fill
 
+### Requirement: iOS Host Controls Include Authorization Header
+The iOS admin view MUST include an `Authorization: Bearer <hostPin>` header on every request to a host-only endpoint (play, pause, resume, skip, start, remove). If no host PIN is stored in the session, the header MUST NOT be added.
+
+#### Scenario: iOS play request reaches the backend
+- GIVEN the host has a stored host PIN and is on the iOS admin view
+- WHEN the host taps the play button
+- THEN the request to `POST /api/party/{id}/track/start` carries `Authorization: Bearer <hostPin>`
+- AND the backend accepts the request and starts playback
+
+#### Scenario: Missing PIN — request has no auth header
+- GIVEN no host PIN is stored in the session
+- WHEN a control request is built
+- THEN no `Authorization` header is added to the request
+
+### Requirement: iOS Admin View Previews First Queued Song Before Playback
+Before playback has started (no current track from the backend), the iOS admin view MUST display the first song in the queue as a preview in the current-song area. The previewed song MUST be excluded from the queue list to avoid duplication.
+
+#### Scenario: Dashboard opened before first play
+- GIVEN the party has songs in the queue but no song is currently playing
+- WHEN the iOS admin view loads its queue
+- THEN the first queued song is shown in the current-song area
+- AND that song does NOT appear again in the queue list below
+
+#### Scenario: After playback starts the actual playing song is shown
+- GIVEN the preview song is displayed
+- WHEN the host taps play and a song starts
+- THEN the current-song area updates to the actually playing track (from the backend)
+- AND the queue reflects the remaining songs
+
+### Requirement: iOS Host PIN Entry Uses Digit-Box Input
+The iOS host PIN entry view MUST use the same five-digit-box input style as the guest code entry view: five individual rounded boxes, each showing one digit, with the keyboard cursor indicated by a highlighted active box. The view MUST auto-submit when the fifth digit is entered. On incorrect PIN the view MUST show a shake animation and haptic feedback, then clear the input for retry.
+
+#### Scenario: Auto-submit on fifth digit
+- GIVEN the host PIN entry view is open
+- WHEN the host types the fifth digit of a valid PIN
+- THEN the view submits automatically without requiring a separate "Weiter" button tap
+- AND the host is navigated to the admin view on success
+
+#### Scenario: Wrong PIN triggers shake and clears input
+- GIVEN the host types an incorrect 5-digit PIN
+- WHEN the submit is rejected by the backend
+- THEN the digit boxes shake and haptic feedback fires
+- AND all boxes are cleared so the host can retry
+
 ### Requirement: iOS Login Does Not Trigger Webapp Refresh
 When a host authenticates via the iOS app, the backend MUST NOT emit a
 `login-success` SSE event with `source=web`. Only an iOS-scoped event

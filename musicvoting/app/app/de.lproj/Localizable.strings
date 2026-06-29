@@ -20,7 +20,7 @@
 "hostmenu.title" = "Gastgeber";
 "hostmenu.subtitle" = "Was möchtest du tun?";
 "hostmenu.createParty" = "Party erstellen";
-"hostmenu.createPartySubtitle" = "Neue Party starten und Spotify verbinden";
+"hostmenu.createPartySubtitle" = "Neue Party starten";
 "hostmenu.openDashboard" = "Dashboard öffnen";
 "hostmenu.openDashboardSubtitle" = "Bestehende Party per PIN steuern";
 "hostmenu.error.createFailed" = "Party konnte nicht erstellt werden. Bitte versuche es erneut.";
@@ -40,7 +40,7 @@
 /* SongAddView */
 "search.placeholder" = "Suchen...";
 "search.hint" = "Fange an zu suchen!";
-"search.hintDetail" = "Suche nach Songs, Sängern und nach Musik Alben!";
+"search.hintDetail" = "Suche nach Songs und Sängern!";
 "search.noResults" = "Keine Ergebnisse gefunden.";
 "search.error.invalid" = "Ungueltige Suchanfrage.";
 "search.error.failed" = "Suche fehlgeschlagen. Bitte erneut versuchen.";

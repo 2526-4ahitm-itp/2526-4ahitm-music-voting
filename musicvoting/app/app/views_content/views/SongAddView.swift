@@ -174,8 +174,7 @@ final class SongAddViewModel: ObservableObject {
             uri: item.uri,
             title: item.name,
             artist: artists.isEmpty ? String(localized: "unknown") : artists,
-            imageUrl: item.album.images.first?.url
-                ?? "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb"
+            imageUrl: item.album.images.first?.url ?? ""
         )
     }
 
@@ -200,6 +199,9 @@ final class SongAddViewModel: ObservableObject {
             }
 
             if (200...299).contains(httpResponse.statusCode) {
+                if !track.imageUrl.isEmpty {
+                    UserDefaults.standard.set(track.imageUrl, forKey: "imageUrl_\(track.uri)")
+                }
                 addedTrackIds.insert(track.id)
                 await loadQueue()
             } else {
@@ -289,7 +291,7 @@ struct SongAddView: View {
                     Spacer()
                 }
                 .padding(.vertical, 20)
-                .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                .background(Color.white, in: RoundedRectangle(cornerRadius: 15))
             } else if viewModel.results.isEmpty {
                 if viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                     VStack(spacing: 12) {
@@ -319,7 +321,7 @@ struct SongAddView: View {
                         .padding(.vertical, 20)
                 }
             } else {
-                VStack(spacing: 0) {
+                VStack(spacing: 12) {
                     ForEach(viewModel.results) { track in
                         SearchResultRow(
                             track: track,
@@ -328,16 +330,10 @@ struct SongAddView: View {
                         ) {
                             Task { await viewModel.addToPlaylist(track) }
                         }
-
-                        if track.id != viewModel.results.last?.id {
-                            Divider()
-                                .padding(.leading, 76)
-                        }
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 15))
+                        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
                     }
                 }
-                .padding(.vertical, 8)
-                .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
-                .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
             }
         }
     }
@@ -351,18 +347,18 @@ private struct SearchResultRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: track.imageUrl)) { phase in
+            AsyncImage(url: track.imageUrl.isEmpty ? nil : URL(string: track.imageUrl)) { phase in
                 if let image = phase.image {
                     image.resizable().scaledToFill()
                         .frame(width: 52, height: 52)
                         .clipped()
                 } else {
-                    Color("primary").opacity(0.08)
+                    Color(.systemGray5)
                         .frame(width: 52, height: 52)
                         .overlay(
                             Image(systemName: "music.note")
                                 .font(.system(size: 18))
-                                .foregroundColor(Color("primary").opacity(0.35))
+                                .foregroundColor(Color(.systemGray2))
                         )
                 }
             }

@@ -177,8 +177,7 @@ final class VotingViewModel: ObservableObject {
             uri: track.uri,
             title: track.name,
             artist: artist.isEmpty ? String(localized: "unknown") : artist,
-            imageUrl: track.album.images.first?.url
-                ?? "https://i.scdn.co/image/ab67616d0000b273a6ca20eceb5f6c7199b98ccb",
+            imageUrl: track.album.images.first?.url ?? "",
             likeCount: track.likeCount,
             hasVoted: track.hasVoted,
             isCurrentlyPlaying: track.isCurrentlyPlaying
@@ -243,7 +242,7 @@ struct VotingView: View {
                         }
                     }
                     .padding(.bottom, 8)
-                    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 25))
                     .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
                 }
             }
@@ -268,21 +267,22 @@ private struct VotingRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: entry.imageUrl)) { phase in
+            AsyncImage(url: entry.imageUrl.isEmpty ? nil : URL(string: entry.imageUrl)) { phase in
                 if let image = phase.image {
                     image.resizable().scaledToFill()
                         .frame(width: 52, height: 52)
                         .clipped()
                 } else {
-                    Color("primary").opacity(0.08)
+                    Color(.systemGray5)
                         .frame(width: 52, height: 52)
                         .overlay(
                             Image(systemName: "music.note")
                                 .font(.system(size: 18))
-                                .foregroundColor(Color("primary").opacity(0.35))
+                                .foregroundColor(Color(.systemGray2))
                         )
                 }
             }
+            .id(entry.imageUrl)
             .frame(width: 52, height: 52)
             .clipShape(RoundedRectangle(cornerRadius: 6))
 
