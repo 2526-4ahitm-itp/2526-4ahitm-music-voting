@@ -1,0 +1,3 @@
+# Echte Konfiguration mit Secrets — niemals committen.
+# Nur .env.example gehört ins Repo.
+.env

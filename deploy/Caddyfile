@@ -1,0 +1,23 @@
+# Reverse-Proxy für MusicVoting.
+# Caddy holt automatisch ein gültiges HTTPS-Zertifikat (Let's Encrypt)
+# für die in .env gesetzte DOMAIN. Es ist hier KEIN Domainname hardcodiert —
+# alles kommt aus den Umgebungsvariablen (siehe docker-compose.yml -> caddy).
+
+{$DOMAIN} {
+	encode gzip
+
+	# Backend: REST + SSE (Server-Sent Events unter /api/spotify/events).
+	# flush_interval -1 schaltet Buffering ab, damit SSE-Events sofort durchgehen.
+	handle /api/* {
+		reverse_proxy backend:8080 {
+			flush_interval -1
+		}
+	}
+
+	# Alles andere -> Angular-SPA (eigener nginx im frontend-Container).
+	handle {
+		reverse_proxy frontend:80
+	}
+
+	tls {$ACME_EMAIL}
+}
