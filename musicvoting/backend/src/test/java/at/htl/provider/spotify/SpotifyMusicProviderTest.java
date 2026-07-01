@@ -321,6 +321,55 @@ class SpotifyMusicProviderTest {
     }
 
     @Test
+    void buildResumeBody_withCurrentUri_carriesThatUriAndPosition() throws Exception {
+        String body = provider.buildResumeBody("spotify:track:B", 12345L);
+
+        // Resume must re-assert the current track's uri, not issue a bare resume.
+        assertTrue(body.contains("spotify:track:B"), "body must name the current uri");
+        assertTrue(body.contains("uris"), "body must carry a uris array");
+        assertTrue(body.contains("12345"), "body must carry the paused position");
+    }
+
+    @Test
+    void buildResumeBody_withoutCurrentUri_fallsBackToBareResume() throws Exception {
+        // No known current track and no paused position → bare resume (null body).
+        assertNull(provider.buildResumeBody(null, null));
+
+        // No current track but a paused position → position-only resume, no uris.
+        String posOnly = provider.buildResumeBody(null, 5000L);
+        assertNotNull(posOnly);
+        assertTrue(posOnly.contains("5000"));
+        assertFalse(posOnly.contains("uris"), "bare resume must not name a uri");
+    }
+
+    @Test
+    @TestTransaction
+    void playbackTransitionLogging_whenDeviceSnapshotUnavailable_doesNotThrowOrAlterState() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        PartyEntity pe = persistPartyEntity(party);
+
+        OffsetDateTime now = OffsetDateTime.now();
+        QueueEntry current = persistQueueEntry(partyId, "spotify:track:current", "Current", now);
+        persistQueueEntry(partyId, "spotify:track:next", "Next", now.plusSeconds(1));
+        pe.currentlyPlayingEntryId = current.id;
+        pe.persist();
+
+        // pausePlayback logs a playback transition first — rendering queue/current/next and making a
+        // best-effort device snapshot call that fails in test (no Spotify token). The logging must
+        // neither throw nor change any persisted state; the operation returns its usual error.
+        Response response = provider.pausePlayback(party);
+
+        assertTrue(response.getStatus() >= 400, "device resolution fails without a token");
+
+        // Logging left the queue and current-track state untouched.
+        assertEquals(2, QueueEntry.count("partyId", partyId));
+        PartyEntity after = PartyEntity.findById(partyId);
+        assertEquals(current.id, after.currentlyPlayingEntryId);
+        assertNull(after.pausedPositionMs);
+    }
+
+    @Test
     @TestTransaction
     void refillQueue_whenNothingPlaying_addsNothing() {
         Party party = newParty();

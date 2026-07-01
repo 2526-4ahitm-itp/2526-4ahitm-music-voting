@@ -7,3 +7,6 @@ target/
 .quarkus/
 README.md
 setup.sql
+# Local dev config (gitignored) — must never ship in the image; prod config comes
+# from k8s env vars. Baking it in leaks secrets and overrides quarkus.http.port.
+src/main/resources/application.properties

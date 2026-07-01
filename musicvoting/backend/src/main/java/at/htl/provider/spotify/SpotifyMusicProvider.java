@@ -10,6 +10,7 @@ import at.htl.provider.MusicProvider;
 import at.htl.service.PartyService;
 import at.htl.service.SpotifyApiErrors;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -70,6 +71,74 @@ public class SpotifyMusicProvider implements MusicProvider {
         return "Bearer " + party.getSpotifyCredentials().getToken();
     }
 
+    /**
+     * Emits one INFO log line capturing backend-vs-device playback state at the moment a
+     * start/stop operation begins. Pure observability: gathering the data is best-effort and
+     * MUST NOT change the outcome of the operation. See change
+     * {@code add-playback-transition-logging}.
+     */
+    private void logPlaybackTransition(String op, Party party) {
+        try {
+            String partyId = party.id().value();
+
+            // Ordered queue, exactly as /track/queue returns it (name | uri | id per entry).
+            List<Map<String, Object>> queue;
+            try {
+                queue = getQueue(party);
+            } catch (Exception e) {
+                queue = List.of();
+            }
+            String queueStr = queue.stream()
+                    .map(e -> e.get("name") + " | " + e.get("uri") + " | " + e.get("id"))
+                    .collect(Collectors.joining(" ;; "));
+            if (queueStr.isEmpty()) {
+                queueStr = "<empty>";
+            }
+
+            // The entry the backend considers current/displayed.
+            PartyEntity pe = PartyEntity.findById(partyId);
+            String currentId = (pe != null && pe.currentlyPlayingEntryId != null)
+                    ? pe.currentlyPlayingEntryId.toString()
+                    : null;
+            String currentStr;
+            if (currentId == null) {
+                currentStr = "none";
+            } else {
+                currentStr = queue.stream()
+                        .filter(e -> currentId.equals(e.get("id").toString()))
+                        .findFirst()
+                        .map(e -> e.get("name") + " | " + e.get("uri") + " | " + currentId)
+                        .orElse(currentId + " (not in queue)");
+            }
+
+            // Next song, computed exactly as playNextAndRemove does (first entry whose id != current).
+            String nextStr = queue.stream()
+                    .filter(e -> currentId == null || !e.get("id").toString().equals(currentId))
+                    .findFirst()
+                    .map(e -> e.get("name") + " | " + e.get("uri") + " | " + e.get("id"))
+                    .orElse("none");
+
+            // What the Spotify device actually holds — best-effort, never fatal.
+            String deviceStr;
+            try {
+                Map<String, Object> snapshot = getCurrentPlaybackSnapshot(party);
+                if (snapshot == null) {
+                    deviceStr = "unavailable (no content)";
+                } else {
+                    deviceStr = snapshot.get("uri") + " | is_playing=" + Boolean.TRUE.equals(snapshot.get("isPlaying"));
+                }
+            } catch (Exception e) {
+                deviceStr = "unavailable";
+            }
+
+            Log.infof("[playback %s] party=%s | queue=[%s] | current=%s | next=%s | device=%s",
+                    op, partyId, queueStr, currentStr, nextStr, deviceStr);
+        } catch (Exception e) {
+            // Logging must never break or alter playback.
+            Log.debugf("logPlaybackTransition failed for op=%s: %s", op, e.getMessage());
+        }
+    }
+
     @Override
     public Map<String, Object> searchTracks(Party party, String query) {
         try {
@@ -112,6 +181,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     @Transactional
     public Response play(Party party, String uri) {
         try {
+            logPlaybackTransition("PLAY", party);
             String deviceId = resolvePlayableDeviceId(party);
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -447,6 +517,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     @Transactional
     public Response playNextAndRemove(Party party) {
         try {
+            logPlaybackTransition("NEXT", party);
             PartyEntity partyEntity = PartyEntity.findById(party.id().value());
             if (partyEntity == null) throw new WebApplicationException(Response.Status.NOT_FOUND);
 
@@ -488,7 +559,12 @@ public class SpotifyMusicProvider implements MusicProvider {
 
             String uri = (String) nextTrack.get("uri");
 
-            // Try to start playback first. Only if playback succeeds remove the previous entry
+            // Try to start playback first. Only if playback succeeds remove the previous entry.
+            // Commit on the 2xx — do NOT probe getCurrentPlaybackSnapshot to confirm the switch:
+            // Spotify's currently-playing read lags the play command by seconds and reports the
+            // *previous* track meanwhile, so gating the commit on it refuses healthy advances and
+            // stalls autoplay. Any real drift is observed via the logging and corrected by the
+            // resume re-assert. See change fix-resume-plays-previous-song (advance-confirmation reverted).
             Response playResponse = play(party, uri);
             if (playResponse.getStatus() < 200 || playResponse.getStatus() >= 300) {
                 return playResponse;
@@ -510,6 +586,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     @Transactional
     public Response pausePlayback(Party party) {
         try {
+            logPlaybackTransition("PAUSE", party);
             String deviceId = resolvePlayableDeviceId(party);
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -533,10 +610,28 @@ public class SpotifyMusicProvider implements MusicProvider {
         }
     }
 
+    /**
+     * Body for the resume play call. When a current track uri is known, re-asserts it (with the
+     * paused position when available) so resume plays the displayed song deterministically;
+     * otherwise falls back to a bare resume ({@code position_ms} only, or {@code null}).
+     */
+    String buildResumeBody(String currentUri, Long pausedPositionMs) throws Exception {
+        if (currentUri != null && !currentUri.isBlank()) {
+            Map<String, Object> bodyMap = pausedPositionMs != null
+                    ? Map.of("uris", List.of(currentUri), "position_ms", pausedPositionMs)
+                    : Map.of("uris", List.of(currentUri));
+            return mapper.writeValueAsString(bodyMap);
+        }
+        return pausedPositionMs != null
+                ? mapper.writeValueAsString(Map.of("position_ms", pausedPositionMs))
+                : null;
+    }
+
     @Override
     @Transactional
     public Response resumePlayback(Party party) {
         try {
+            logPlaybackTransition("RESUME", party);
             String deviceId = resolvePlayableDeviceId(party);
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -548,10 +643,19 @@ public class SpotifyMusicProvider implements MusicProvider {
             PartyEntity peBefore = PartyEntity.findById(party.id().value());
             Long pausedPositionMs = peBefore != null ? peBefore.pausedPositionMs : null;
 
+            // Re-assert the current track's uri so resume always plays the displayed song,
+            // regardless of what the device happens to hold after an auto-advance. Falls back
+            // to a bare resume only when there is no known current track.
+            String currentUri = null;
+            if (peBefore != null && peBefore.currentlyPlayingEntryId != null) {
+                QueueEntry current = QueueEntry.findById(peBefore.currentlyPlayingEntryId);
+                if (current != null && current.trackUri != null && !current.trackUri.isBlank()) {
+                    currentUri = current.trackUri;
+                }
+            }
+
             String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
-            String body = pausedPositionMs != null
-                    ? mapper.writeValueAsString(Map.of("position_ms", pausedPositionMs))
-                    : null;
+            String body = buildResumeBody(currentUri, pausedPositionMs);
             Response response = sendPut(party, url, body);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 party.getSpotifyCredentials().setLastPlaybackActive(true);
@@ -674,6 +778,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     @Transactional
     public Response startFirstSongWithoutRemoving(Party party) {
         try {
+            logPlaybackTransition("START", party);
             List<Map<String, Object>> queue = getQueue(party);
             if (queue == null || queue.isEmpty()) {
                 return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
