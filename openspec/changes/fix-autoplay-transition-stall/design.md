@@ -40,6 +40,33 @@ At end-of-track the SDK device briefly goes `not_ready` and drops off `GET /me/p
 
 **Decisive datapoint:** log the *resolved device id* plus the full `/me/player/devices` list (id, is_active, name) at the moment of the advance `play`. If the SDK device is absent/inactive there, the hypothesis holds.
 
+## Diagnostic Finding (2026-07-01, party `753d4f14`)
+
+The `[playback …-device]` logging from task 1.1 **refutes the leading hypothesis**. Across a 4-song reproduction that stalled going into song 3, **every** advance resolved the party's SDK device and reported it active:
+
+```
+NEXT/PLAY current=Hello        device=Hello         is_playing=true    → song 2 STARTS
+  PLAY-device resolved=242a7fbe… devices=[id=242a7fbe… is_active=true name=Web Player MusicVoting]
+NEXT       current=tau mich auf device=tau mich auf  is_playing=TRUE
+PLAY       current=tau mich auf device=tau mich auf  is_playing=FALSE   ← device already idled
+  PLAY-device resolved=242a7fbe… devices=[id=242a7fbe… is_active=true name=Web Player MusicVoting]   → song 3 STALLS
+```
+
+So the SDK device is **never absent, never inactive, and always the resolved target** — `resolvePlayableDeviceId` is correct and needs no change (task 2.2 is unnecessary). The only thing that differs between the two advances that *worked* (songs 1→2) and the one that *stalled* (2→3) is the device's `is_playing` at the instant `play(next)` was issued: the working advances hit the device while it still read `is_playing=true`; the stalled one hit it 106 ms after it had flipped to `is_playing=false` (end-of-track idle).
+
+**Confirmed mechanism (timing, not wrong-device):** because `maybeAdvanceOnEnd` fires only after the SDK has paused, `play(next)` lands in the end-of-track idle window. A bare `PUT /me/player/play {uris:[next]}` into a *just-idled but still active* SDK device is accepted (`2xx`) but does **not** wake it, so playback stays paused on the finished song. The identical call succeeds once the device has settled — which is why **resume always works** and autoplay stalls.
+
+## Chosen Fix Layer
+
+- **Not** device-resolution (2.2): the resolver already returns the correct active device.
+- **Rejected: device transfer (2.1).** Two live iterations proved `PUT /me/player {device_ids:[id], play:true}` is unsafe regardless of order relative to `play(uris)`:
+  - *Transfer before play (14:16, party `154acf1e`):* `play:true` resumed the previous track, the following `play(uris)` lost the race → device played the *previous* song while `current` showed the next.
+  - *Transfer after play (new-party start 15:00, party `7525322c`):* the new party's first `play(uris)` hadn't propagated, so `transfer{play:true}` resumed the **account's stale currently-playing context** (a track left over from a prior party/session) → played the wrong song while `current` showed the new first song.
+  - Root problem: a transfer with `play:true` resumes *whatever context the account/device currently holds*, which is not deterministically the uri we just set. Any transfer can therefore play the wrong song. Abandoned.
+- **Chosen backend fix (2.3): bounded re-assert of the exact uri.** Issue `play(uris:[next])` to the resolved device (commits on `2xx`), then — best-effort — re-issue the **same** `play(uris:[next])` once after a ~700 ms settle delay, carrying `position_ms` so a play that already took continues seamlessly instead of restarting. Because the re-assert always names the exact next uri, it can only ever (re)play the *correct* song; the worst case is a silent stall (recoverable by resume), never a wrong song. Re-play only; never gates the `2xx` commit.
+- **Fallback held in reserve (2.3):** if a single transfer+play still races the settle in the next live test, add one bounded re-assert (re-issue play after a short delay) — re-play only, never gating the commit. Not implemented yet; revisit after re-testing.
+- Frontend advance-timing (2.4) is **not** taken as the primary fix: since the advance fires only after the SDK has locally paused, success would still hinge on racy server-side lag; keeping the reliability backend-owned avoids truncating songs.
+
 ## Decisions
 
 - **Diagnose before fixing.** First extend the advance/play logging with the resolved device id + devices snapshot and reproduce once. Cheap, and it prevents fixing the wrong layer. (The `[playback …]` logging from `fix-resume-plays-previous-song` already gives us the scaffolding.)

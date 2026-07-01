@@ -370,6 +370,57 @@ class SpotifyMusicProviderTest {
     }
 
     @Test
+    void formatDevicesSnapshot_withNullOrEmpty_returnsNoneMarker() {
+        assertEquals("<none>", SpotifyMusicProvider.formatDevicesSnapshot(null));
+        assertEquals("<none>", SpotifyMusicProvider.formatDevicesSnapshot(List.of()));
+    }
+
+    @Test
+    void formatDevicesSnapshot_rendersIdIsActiveAndNamePerDevice() {
+        List<Map<String, Object>> devices = List.of(
+                Map.of("id", "dev-A", "is_active", true, "name", "Web Player"),
+                Map.of("id", "dev-B", "is_active", false, "name", "Phone"));
+
+        String rendered = SpotifyMusicProvider.formatDevicesSnapshot(devices);
+
+        // The diagnostic must expose each device's id, is_active and name so the
+        // "SDK device absent/inactive at advance" hypothesis is checkable from the logs.
+        assertTrue(rendered.contains("id=dev-A"));
+        assertTrue(rendered.contains("is_active=true"));
+        assertTrue(rendered.contains("name=Web Player"));
+        assertTrue(rendered.contains("id=dev-B"));
+        assertTrue(rendered.contains("is_active=false"));
+        assertTrue(rendered.contains("name=Phone"));
+        assertTrue(rendered.contains(" ;; "), "multiple devices are separated");
+    }
+
+    @Test
+    void formatDevicesSnapshot_missingIsActiveTreatedAsFalse() {
+        // A device Spotify returns without an explicit is_active must not render as active.
+        List<Map<String, Object>> devices = new java.util.ArrayList<>();
+        java.util.HashMap<String, Object> d = new java.util.HashMap<>();
+        d.put("id", "dev-C");
+        d.put("name", "No Flag");
+        devices.add(d);
+
+        String rendered = SpotifyMusicProvider.formatDevicesSnapshot(devices);
+
+        assertTrue(rendered.contains("is_active=false"));
+    }
+
+    @Test
+    void buildResumeBody_asReassert_carriesUriAndSettlePosition() throws Exception {
+        // The advance re-assert reuses buildResumeBody to re-issue the exact next uri with a
+        // settle position_ms — so it can only ever (re)play the correct song, never a stale one
+        // (per fix-autoplay-transition-stall). uri is always known here, so the body is never bare.
+        String body = provider.buildResumeBody("spotify:track:next", 700L);
+
+        assertTrue(body.contains("spotify:track:next"), "re-assert must name the next uri");
+        assertTrue(body.contains("uris"), "re-assert must carry a uris array");
+        assertTrue(body.contains("700"), "re-assert must carry the settle position");
+    }
+
+    @Test
     @TestTransaction
     void refillQueue_whenNothingPlaying_addsNothing() {
         Party party = newParty();

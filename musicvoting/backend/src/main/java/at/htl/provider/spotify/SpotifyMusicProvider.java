@@ -139,6 +139,90 @@ public class SpotifyMusicProvider implements MusicProvider {
         }
     }
 
+    /**
+     * Emits one INFO line naming the device id the advance/play path resolved and a best-effort
+     * snapshot of {@code GET /me/player/devices} (each device's {@code id}, {@code is_active},
+     * {@code name}) at the moment {@code play} runs. This is the decisive datapoint for the
+     * "SDK device dropped / wrong device targeted at end-of-track" hypothesis — see change
+     * {@code fix-autoplay-transition-stall}. Pure observability: gathering the snapshot is
+     * best-effort and MUST NOT change the outcome of the operation.
+     */
+    private void logResolvedDevice(String op, Party party, String resolvedDeviceId) {
+        try {
+            Log.infof("[playback %s-device] party=%s | resolved=%s | devices=%s",
+                    op, party.id().value(),
+                    (resolvedDeviceId == null || resolvedDeviceId.isBlank()) ? "none" : resolvedDeviceId,
+                    fetchDevicesSnapshot(party));
+        } catch (Exception e) {
+            Log.debugf("logResolvedDevice failed for op=%s: %s", op, e.getMessage());
+        }
+    }
+
+    /**
+     * Best-effort read of {@code GET /me/player/devices} rendered via {@link #formatDevicesSnapshot}.
+     * Never throws — returns a marker string on any failure so diagnostics never break playback.
+     */
+    @SuppressWarnings("unchecked")
+    private String fetchDevicesSnapshot(Party party) {
+        try {
+            HttpResponse<String> res = executeSpotifyRequest(party, () ->
+                    HttpRequest.newBuilder()
+                            .uri(URI.create("https://api.spotify.com/v1/me/player/devices"))
+                            .header("Authorization", authHeader(party))
+                            .GET()
+                            .build());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return "unavailable (status " + res.statusCode() + ")";
+            }
+            Map<String, Object> map = mapper.readValue(res.body(), Map.class);
+            return formatDevicesSnapshot((List<Map<String, Object>>) map.get("devices"));
+        } catch (Exception e) {
+            return "unavailable";
+        }
+    }
+
+    /**
+     * Renders a {@code GET /me/player/devices} device list into a compact diagnostic string —
+     * one bracketed entry per device with {@code id}, {@code is_active} and {@code name}. Pure and
+     * package-private so it can be unit-tested without HTTP (this repo mocks no HTTP).
+     */
+    static String formatDevicesSnapshot(List<Map<String, Object>> devices) {
+        if (devices == null || devices.isEmpty()) {
+            return "<none>";
+        }
+        return devices.stream()
+                .map(d -> "[id=" + d.get("id")
+                        + " is_active=" + Boolean.TRUE.equals(d.get("is_active"))
+                        + " name=" + d.get("name") + "]")
+                .collect(Collectors.joining(" ;; "));
+    }
+
+    /** How long to wait for a just-idled SDK device to settle before re-asserting the play. */
+    private static final long REASSERT_DELAY_MS = 700;
+
+    /**
+     * Bounded, best-effort re-assert of a play that may have 2xx'd without the SDK device actually
+     * switching tracks. Waits a short settle delay, then re-issues the SAME uri once (with
+     * {@code position_ms} so an already-successful play continues seamlessly rather than
+     * restarting). Re-play only: it never transfers the device (a transfer would resume the
+     * account's stale context and play the wrong song) and never gates the commit. Scoped to the
+     * party's own resolved device; never throws. See change {@code fix-autoplay-transition-stall}.
+     */
+    private void reassertPlay(Party party, String deviceId, String uri) {
+        if (deviceId == null || deviceId.isBlank() || uri == null || uri.isBlank()) {
+            return;
+        }
+        try {
+            Thread.sleep(REASSERT_DELAY_MS);
+            String url = "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId;
+            sendPut(party, url, buildResumeBody(uri, REASSERT_DELAY_MS));
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        } catch (Exception ignored) {
+            // re-assert is best-effort; the play has already committed
+        }
+    }
+
     @Override
     public Map<String, Object> searchTracks(Party party, String query) {
         try {
@@ -183,6 +267,7 @@ public class SpotifyMusicProvider implements MusicProvider {
         try {
             logPlaybackTransition("PLAY", party);
             String deviceId = resolvePlayableDeviceId(party);
+            logResolvedDevice("PLAY", party, deviceId);
             if (deviceId == null || deviceId.isBlank()) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(Map.of("error", "No active Spotify device found."))
@@ -198,6 +283,14 @@ public class SpotifyMusicProvider implements MusicProvider {
 
             Response response = sendPut(party, url, body);
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
+                // A bare play(uris) into a just-idled SDK device is sometimes accepted (2xx) but
+                // doesn't switch the device, leaving playback stalled on the finished song. Re-issue
+                // the SAME uri once, after a short settle delay, so it lands once the device is
+                // ready (mirroring why a settled resume always works). It carries position_ms so a
+                // play that already took continues seamlessly instead of restarting. Re-play only —
+                // never a device transfer, which would resume the account's stale context and play
+                // the WRONG song; never gates the commit. See change fix-autoplay-transition-stall.
+                reassertPlay(party, deviceId, uri);
                 try {
                     sendPut(party, "https://api.spotify.com/v1/me/player/repeat?state=off&device_id=" + deviceId, null);
                 } catch (Exception ignored) {}
