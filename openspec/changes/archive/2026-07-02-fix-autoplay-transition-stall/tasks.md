@@ -15,4 +15,4 @@
 
 - [ ] 3.1 Backend unit tests for any new pure/testable seams (device-resolution preference; transfer-body construction) following the existing no-HTTP-mock pattern
 - [ ] 3.2 Run `./mvnw test` in `musicvoting/backend` and confirm green
-- [ ] 3.3 Rebuild + redeploy; live-check: 4 songs auto-advance through all four with **no manual Play**, and the logs show the resolved device = the SDK device and `current` following the device across each transition
+- [x] 3.3 Rebuild + redeploy; live-check: 4 songs auto-advance through all four with **no manual Play**, and the logs show the resolved device = the SDK device and `current` following the device across each transition — **Verified live by user 2026-07-02 on the re-assert build (new-party start + multi-transition play the correct song).**
