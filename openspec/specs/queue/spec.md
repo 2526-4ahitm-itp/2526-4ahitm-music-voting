@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines the single per-party queue: how songs get in, how it is ordered, how duplicates and blacklist violations are handled, and how songs leave. The queue is the source of truth for what will play next.
-
 ## Requirements
-
 ### Requirement: Single Queue per Party
 The system MUST maintain a persistent, database-backed queue per party. The database MUST be the single source of truth for queue state; the Spotify playlist MUST NOT be read to determine queue contents. Every queue operation MUST use the real party ID from the request path — the hardcoded `"default"` party shim MUST NOT be used.
 
@@ -52,13 +50,28 @@ The queue MUST be sorted by the count of votes (see `voting/spec.md`) descending
 - THEN entries contain `likeCount` but no `hasVoted` field is required
 
 ### Requirement: No Duplicate Songs in Queue
-A song MUST appear in the queue at most once per party. The uniqueness constraint MUST be enforced at the database level on `(party_id, track_uri)` in addition to any application-level check.
+A song MUST appear at most once among the **waiting** queue entries of a party. The currently playing song is excluded from this check, so a song that is currently playing (or has just finished and is still the current entry) MAY be added again as a waiting entry — the same track URI may therefore appear at most twice for a party: once as the playing entry and once waiting. The duplicate check is enforced at the application level against waiting entries only; there is no longer a database-level uniqueness constraint on `(party_id, track_uri)`.
 
-#### Scenario: Guest adds a song already in the queue
-- GIVEN song X is already in the queue
+When the same URI exists both playing and waiting, queue mutations target the waiting entry: removing the song deletes the waiting copy and leaves the playing one untouched, and a vote applies to the waiting copy.
+
+#### Scenario: Guest adds a song already waiting in the queue
+- GIVEN song X is already waiting in the queue
 - WHEN a guest attempts to add song X
 - THEN the add is rejected
 - AND the guest sees "Song ist schon in der Warteschlange."
+
+#### Scenario: Guest re-adds the currently playing song
+- GIVEN song X is the currently playing song
+- AND song X is not otherwise waiting in the queue
+- WHEN a guest adds song X
+- THEN the add is accepted
+- AND song X is queued as a waiting entry to play again later
+
+#### Scenario: Removing a re-queued song keeps the playing one
+- GIVEN song X is both currently playing and queued once as a waiting entry
+- WHEN the host removes song X from the queue
+- THEN the waiting entry is removed
+- AND the currently playing song X keeps playing
 
 ### Requirement: Songs Are Added Only via Search
 Guests MUST add songs via search results only. Pasting links or IDs MUST NOT be a supported add path.
@@ -101,3 +114,4 @@ An add MUST be rejected if any blacklist word appears as a substring in the song
 - WHEN a guest attempts to add "Song X (Live)"
 - THEN the add is rejected
 - AND the guest sees "Nicht erlaubt."
+

@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines the lifecycle of a party: how it is created, how it is identified to clients, which music provider it uses, and how it ends. A party is the top-level aggregate that owns a queue, a host session, guests, a dashboard, and a provider binding.
-
 ## Requirements
-
 ### Requirement: Party Creation by Host
 The system MUST allow a host to create a new party and MUST require the host to select exactly one music provider (Spotify or YouTube) during creation.
 
@@ -205,3 +203,17 @@ because the backend was restarted after the party was created.
 - GIVEN no active party exists with a given ID (ended or never created)
 - WHEN any `/api/party/{id}/…` endpoint is called
 - THEN HTTP 404 is returned
+
+### Requirement: Party Stores an Optional Default Playlist
+A party MUST be able to store an optional default-playlist reference (the Spotify playlist id) chosen at creation. The value MUST be nullable (a party may have no default playlist) and MUST be persisted on the party's database row so it survives a backend restart and is available wherever the party is resolved by id.
+
+#### Scenario: Default playlist persists across restart
+- GIVEN a party was created with a default playlist set
+- WHEN the backend restarts and the party is reconstructed from the database
+- THEN the party's default playlist id is still present
+
+#### Scenario: Party without a default playlist
+- GIVEN a party was created without choosing a default playlist
+- WHEN the party is resolved
+- THEN its default playlist reference is null
+

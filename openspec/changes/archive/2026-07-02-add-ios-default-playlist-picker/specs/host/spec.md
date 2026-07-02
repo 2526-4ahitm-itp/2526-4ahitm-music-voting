@@ -1,6 +1,6 @@
 # Delta spec — host/spec.md
 
-## Add after the existing "iOS Host Controls Include Authorization Header" requirement
+## ADDED Requirements
 
 ### Requirement: iOS Host Picks a Default Playlist After Spotify Auth
 After Spotify authentication succeeds on iOS, the app MUST navigate to a playlist picker before opening the admin dashboard. The picker MUST list the host's Spotify playlists (fetched from `GET /api/party/{id}/spotify/playlists`) and offer a prominent "Ohne Standard-Playlist fortfahren" skip action. Selecting a playlist MUST call `PUT /api/party/{id}/default-playlist`; skipping MUST NOT call that endpoint. Both paths MUST then navigate to the admin dashboard.
