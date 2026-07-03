@@ -320,7 +320,7 @@ html, body {
 /* BOTTOM NAV (SCHWEBEND UND ABGERUNDET) */
 .bottom-nav {
   position: fixed;
-  bottom: 15vh;          /* Schwebt exakt 25vh über dem Bildschirmende */
+  bottom: 2vh;          /* Schwebt exakt 25vh über dem Bildschirmende */
   left: 5vw;             /* 5% Abstand vom linken Rand */
   right: 5vw;            /* 5% Abstand vom rechten Rand */
   width: 90vw;           /* Nutzt 90% der Bildschirmbreite (geht nicht bis zum Rand) */
