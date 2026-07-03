@@ -236,16 +236,25 @@ html, body {
 
 /* BOTTOM NAV */
 .bottom-nav {
+  position: fixed;
+  bottom: 15vh;          /* Schwebt exakt 25vh über dem Bildschirmende */
+  left: 5vw;             /* 5% Abstand vom linken Rand */
+  right: 5vw;            /* 5% Abstand vom rechten Rand */
+  width: 90vw;           /* Nutzt 90% der Bildschirmbreite (geht nicht bis zum Rand) */
+  max-width: 450px;      /* Verhindert, dass die Bar auf iPads/Tablets zu breit gezogen wird */
+  margin: 0 auto;        /* Zentriert die Bar, wenn max-width greift */
+
   display: flex;
-  flex-shrink: 0;
-  height: calc(4rem + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: 4rem;
+  border-radius: 1.25rem; /* Sorgt für den modernen, abgerundeten Look */
+  overflow: hidden;      /* Schneidet die inneren Buttons an den Ecken sauber ab */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); /* Schatten, der den "Schwebe-Effekt" verstärkt */
+  z-index: 1000;         /* Liegt immer über dem Content */
 }
 
 .bottom-nav-btn {
   flex: 1;
   border: none;
-  border-top: 3px solid white;
   background: white;
   color: black;
   font-size: 1.15rem;
@@ -256,6 +265,7 @@ html, body {
   letter-spacing: 0.03em;
 }
 
+/* Trennlinie zwischen den Buttons */
 .bottom-nav-btn + .bottom-nav-btn {
   border-left: 1px solid rgba(0, 0, 0, 0.08);
 }
@@ -263,7 +273,6 @@ html, body {
 .bottom-nav-btn.active {
   color: white;
   background: #8403A6;
-  border-top: 3px solid #5c0070;
 }
 
 .bottom-nav-btn:active {
