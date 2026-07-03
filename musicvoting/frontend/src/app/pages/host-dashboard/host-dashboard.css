@@ -25,7 +25,7 @@ body{
   width: 20vw;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: calc(100vh - 4rem);
 }
 
 /* NAVBAR */
@@ -394,14 +394,16 @@ body{
   align-items: center;
   justify-content: start;
 
-  width: calc(20vw - 2rem);
-  height: calc(100vh - 13rem);
+  gap: 2rem;
+  width: auto;
   box-sizing: border-box;
   padding: 2rem;
 
+  flex-grow: 1;
+  overflow: auto;
+
+  margin: 2rem 2rem 2rem 0;
   background-color: white;
-  position: fixed;
-  top: 4rem;
 
   border-radius: 30px;
   box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
@@ -544,21 +546,42 @@ body{
 
 .logo-box {
   width: calc(20vw - 2rem);
-  height: 5rem;
+  height: auto;
   box-sizing: border-box;
   align-content: center;
   text-align: center;
-  margin-top: 2rem;
+  margin-top: auto;
   margin-bottom: 2rem;
-
-  position: fixed;
-  bottom: 0;
 }
 
 span.logo {
   font-size: calc((20vw - 2rem)/6.5);
   font-weight: bold;
   text-align: center;
+}
+
+.powered-by {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.powered-by-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  opacity: 0.7;
+}
+
+.htl-logo {
+  height: 2.9rem;
+  width: auto;
+  max-width: 100%;
+  mix-blend-mode: multiply;
 }
 
 .open-player {
