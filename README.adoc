@@ -9,6 +9,7 @@
 * *Live-App (deployed):* **https://it220241.cloud.htl-leonding.ac.at**
 * *Doku-Website:* https://2526-4ahitm-itp.github.io/2526-4ahitm-music-voting/
 
+
 == Beschreibung
 
 MusicVoting ist eine interaktive Webanwendung, die Partygästen ermöglicht, die Musikauswahl aktiv mitzugestalten.
