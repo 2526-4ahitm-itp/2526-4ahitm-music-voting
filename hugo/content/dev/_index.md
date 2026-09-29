@@ -21,7 +21,7 @@ Der Aufbau orientiert sich grob am [Diátaxis](https://diataxis.fr/)-Schema.
 - **[iOS-App](ios-app/)** – SwiftUI-Aufbau
 
 ## How-To / Betrieb
-- **[CI/CD & Deployment](ci-cd-deployment/)** – GitHub Actions, GHCR, Kubernetes
+- **[CI/CD & Deployment](ci-cd-deployment/)** – GitHub Actions, GHCR, Kubernetes, eigener Server mit Caddy
 
 > [!NOTE]
 > Die fachliche Spezifikation (was die App tun soll) liegt in der

@@ -4,7 +4,7 @@ description: Setup für die Weiterentwicklung – Spotify-Konto, application.pro
 tags: [ Developer ]
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 authors:
   - simone
 ---
@@ -41,13 +41,13 @@ Willst du die App nur starten/ausprobieren, siehe {{< article link="docs/runinst
 Trage in der Spotify-App unter **Settings → Redirect URIs** folgende Einträge ein:
 
 - `http://127.0.0.1:8080/api/spotify/callback` – Backend-Callback (Pflicht)
-- `http://127.0.0.1:4200/dashboard` – Web-Dashboard (Pflicht)
+- `http://127.0.0.1:4200/select-playlist` – Ziel nach dem Web-Login: Standard-Playlist wählen, danach geht es zum Dashboard (Pflicht)
 - `musicvotingapp://callback` – nur wenn du die iOS-App nutzt
 
 Nur falls die Swift-App per Xcode auf einem **echten iPhone** läuft (Hotspot am Handy): zusätzlich die folgenden URIs mit der **aktuellen IP-Adresse deines Handys** statt `127.0.0.1`. Ersetze `<HANDY-IP>` durch diese Adresse (z. B. `172.20.10.2`, wenn das iPhone als Hotspot dient – die genaue IP findest du in den WLAN-/Hotspot-Einstellungen):
 
 - `http://<HANDY-IP>:8080/api/spotify/callback`
-- `http://<HANDY-IP>:4200/dashboard`
+- `http://<HANDY-IP>:4200/select-playlist`
 
 Anschließend **Save**.
 
@@ -71,7 +71,7 @@ app.public.host=127.0.0.1
 app.public.port=8080
 app.web.port=4200
 spotify.redirect.uri=http://${app.public.host}:${app.public.port}/api/spotify/callback
-spotify.web.redirect.uri=http://${app.public.host}:${app.web.port}/dashboard
+spotify.web.redirect.uri=http://${app.public.host}:${app.web.port}/select-playlist
 quarkus.http.host=0.0.0.0
 quarkus.http.port=${app.public.port}
 quarkus.datasource.db-kind=postgresql
@@ -107,6 +107,10 @@ spotify.topcharts.playlist.id=
 > Die Redirect-URIs in `application.properties` und im Spotify-Dashboard (Schritt 2)
 > **müssen exakt übereinstimmen** – sonst schlägt der Login fehl.
 
+> [!TIP]
+> `application.properties` ist **nicht** im Git (enthält das Secret). Nach einem frischen Clone musst
+> du die Datei selbst anlegen.
+
 ---
 
 ## Schritt 4 – App starten
@@ -132,6 +136,7 @@ cd script
 | Mobile (optional) | SwiftUI iOS-App |
 
 - Die verbindliche fachliche Spezifikation liegt unter `openspec/specs/`; eine lesbare Zusammenfassung ist die {{< article link="docs/specification/" >}}.
+- Technische Details (API, Schema, SSE, Spotify-Anbindung) stehen in den [Technical Docs](../../dev/).
 - Feature-Arbeit läuft über den **OpenSpec-Workflow** (`openspec/changes/<name>/`): Proposal → Delta-Specs → Design → Tasks → Implementierung → Verify → Archive. `openspec/specs/` wird **nie** direkt für ein neues Feature bearbeitet.
 
 ---
@@ -143,8 +148,11 @@ Die App ist im HTL-Leonding-Cluster deployed und unter **https://it220241.cloud.
 - Workflow: `.github/workflows/build-push-deploy.yml` (läuft bei Push auf `main`, wenn `musicvoting/**` oder `k8s/**` betroffen ist; zusätzlich manuell per *workflow_dispatch*).
 - Backend- und Frontend-Images werden gebaut und nach **GHCR** gepusht
   (`ghcr.io/2526-4ahitm-itp/music-voting-backend` / `…-frontend`).
-- `kubectl apply -f k8s/` im Namespace `student-it220241`, anschließend Rollout-Restart von Backend und Frontend.
+- `kubectl apply -f k8s/` im Namespace `student-it220241`, anschließend Rollout-Restart von **Postgres**, Backend und Frontend.
+- Postgres hat kein Volume: **jeder Deploy setzt die Datenbank zurück**. Das Schema kommt aus der ConfigMap in `k8s/01-postgres.yaml` – bei Schema-Änderungen dort **und** in `setup.sql` anpassen.
 - Die k8s-Manifests liegen unter `k8s/` (`01-postgres.yaml`, `02-backend.yaml`, `03-frontend.yaml`, `ingress.yaml`).
+
+Details und die Variante mit eigenem Server (Caddy + HTTPS, Ordner `deploy/`) stehen unter [CI/CD & Deployment](../../dev/ci-cd-deployment/).
 
 > [!NOTE]
 > In Produktion kommen Client ID/Secret aus einem Kubernetes-Secret (`spotify-credentials`),

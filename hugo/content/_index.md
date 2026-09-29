@@ -28,6 +28,16 @@ Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwicke
 # Anleitung
 {{< article link="docs/anleitung/" >}}
 
+# Präsentationen
+- **[Projektpräsentation](slides/)** – das Projekt in 15 Folien.
+- **[Projektstatus](status/)** – Ist- und Soll-Zustand, Architektur und Screenshots vom aktuellen Stand; wird laufend erneuert.
+
+Pfeiltasten zum Blättern, `F` für Vollbild, `S` für Sprechernotizen.
+
+# Spezifikation
+{{< article link="docs/specification/" >}}
+{{< article link="swift/docs/swift-specification/" >}}
+
 
 # Other Documents
 {{< article link="project/projectassignment/" >}}
@@ -39,6 +49,8 @@ Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwicke
 {{< article link="docs/runinstructions/" >}}
 ### Developer Instructions
 {{< article link="docs/developerinstructions/" >}}
+### Technical Docs
+Architektur, REST-API, Datenbankschema, SSE, Spotify-Anbindung und Deployment: **[Technical Docs](dev/)**
 
 <br>
 
