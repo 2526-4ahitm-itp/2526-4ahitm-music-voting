@@ -4,7 +4,7 @@ description: Vollständige Spezifikation der Web-Anwendung
 tags: [ Docs ]
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 authors:
   - simone
 ---
@@ -38,10 +38,12 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
 ## Gastgeber (Host – Smartphone oder Laptop)
 - Erstellt eine Party und wählt den Anbieter (Spotify/YouTube).
 - Meldet sich beim Anbieter an (OAuth-Login gilt **nur für diese Party**).
-- Steuert die Wiedergabe: Play/Pause/Resume, Skip, Songs entfernen, Blacklist pflegen, Party beenden.
+- Wählt nach dem Login optional eine **Standard-Playlist**, aus der nachgefüllt wird, wenn die Warteschlange leer wird.
+- Steuert die Wiedergabe: Play/Pause/Resume, Song neu starten, Skip, Songs entfernen, Party beenden (Blacklist: spezifiziert, noch nicht umgesetzt).
 - Die Host-Bedienelemente laufen **auf dem Gerät des Hosts** – niemals auf dem Monitor/TV.
 
-## Monitor/TV (Startpage / Dashboard)
+## Monitor/TV (Startpage / Player)
+- Wird über **„Player öffnen“** gestartet – im Host-Dashboard oder unter „Gastgeber einer Party“ mit dem **Host-PIN**.
 - Zeigt die Party und spielt die Musik **im Browser auf dem Monitor/TV** ab (Spotify Web Playback SDK).
 - Zeigt dauerhaft QR-Code, aktuellen Song, Fortschritt (Zeitbalken) und die Warteschlange.
 - Hat **keine Host-Bedienelemente** (kein Pause/Skip/Remove/Blacklist/Beenden).
@@ -60,7 +62,8 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
     - einen **5-stelligen Host-PIN** (`hostPin`) – beide unterscheiden sich und sind unter allen aktiven Partys eindeutig,
     - eine **Join-URL** für den QR-Code.
 3. Erst danach folgt der **OAuth-Login** beim Anbieter.
-4. Der Host sieht den großen Gast-PIN und das per `GET /api/party/{id}/qr` geladene QR-Bild.
+4. Nach dem Login wählt der Host eine **Standard-Playlist** aus seinen Spotify-Playlists (`GET /api/party/{id}/spotify/playlists`, `PUT /api/party/{id}/default-playlist`) – oder „**Ohne Standard-Playlist fortfahren**“.
+5. Im Host-Dashboard sieht der Host Host-PIN und das per `GET /api/party/{id}/qr` geladene QR-Bild.
 
 ## Beitreten (Gast)
 - QR-Code kodiert `<base-url>/join/<pin>`. Scannen öffnet die App unter `/join/<pin>`.
@@ -79,6 +82,7 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
 ## Robustheit
 - **Alle** Endpunkte mit Party-ID lösen die Party bei Bedarf aus der DB auf – ein **Backend-Neustart** führt nicht zu 404.
 - Unbekannte/beendete Party-IDs liefern weiterhin **HTTP 404**.
+- Auch der **Spotify-Login** übersteht einen Neustart: Der Refresh-Token wird in der DB gespeichert, das Access-Token wird daraus neu geholt.
 
 ---
 
@@ -86,14 +90,14 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
 - Host-Aktionen erfordern den **Host-PIN** als `Authorization: Bearer <hostPin>`-Header.
     - Fehlender Header → **401**, falscher PIN → **403**.
 - Der Web-Client hängt diesen Header automatisch an **jede** Anfrage, sobald ein Host-PIN im `localStorage` liegt; Gäste senden keinen Header.
-- Geschützte Host-Routen (`startpage`, `dashboard`, `voting-host`, `search-host`) sind durch einen Route-Guard gesichert: ohne gespeicherten Host-PIN → Weiterleitung auf `/`.
+- Geschützte Host-Routen (`select-playlist`, `startpage`, `dashboard`, `voting-host`, `search-host`) sind durch einen Route-Guard gesichert: ohne gespeicherten Host-PIN → Weiterleitung auf `/`.
 - Gäste können **nicht** pausieren, skippen, entfernen, die Blacklist ändern oder die Party beenden.
 
 ---
 
 # Anbieter (Provider)
 - Der Host authentifiziert sich beim Erstellen über den **OAuth-Flow** des gewählten Anbieters.
-- Tokens sind **party-spezifisch** und werden beim Party-Ende gelöscht; sie werden **nicht** zwischen Partys geteilt.
+- Tokens sind **party-spezifisch** und werden **nicht** zwischen Partys geteilt. Beim Party-Ende wird das Access-Token gelöscht (der in der DB gespeicherte Refresh-Token bleibt derzeit bis zum Purge erhalten).
 - **Spotify** erfordert ein **Premium-Konto** des Hosts (Wiedergabe-API ist Premium-only); andernfalls klare Fehlermeldung.
 - Bei **YouTube** gilt für Werbefreiheit nur **Best effort** – keine Garantie auf werbefreie Wiedergabe.
 
@@ -108,16 +112,19 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
 
 ## Sortierung
 Die Warteschlange ist DB-gestützt (die DB ist die einzige Quelle der Wahrheit; die Spotify-Playlist wird **nicht** ausgelesen) und wird bei jedem Lesen frisch sortiert:
-1. **mehr Likes zuerst**,
-2. bei gleicher Like-Zahl: **ältester Wunsch zuerst** (`added_at` aufsteigend).
+1. der **gerade spielende** Song steht oben,
+2. **Gast-Wünsche vor automatisch nachgefüllten Songs**,
+3. **mehr Likes zuerst**,
+4. bei gleicher Like-Zahl: **ältester Wunsch zuerst** (`added_at` aufsteigend).
 
 Mit `?deviceId=...` enthält jeder Eintrag zusätzlich `hasVoted`.
 
 ## Keine Duplikate
-- Ein Song darf pro Party nur **einmal** vorkommen (DB-Constraint auf `(party_id, track_uri)`).
-- Beim Versuch, einen bereits vorhandenen Song hinzuzufügen: „**Song ist schon in der Warteschlange.**“
+- Ein Song darf unter den **wartenden** Songs nur **einmal** vorkommen (Prüfung im Backend, HTTP 409).
+- Der **gerade spielende** Song zählt nicht mit – er darf erneut gewünscht werden.
+- Beim Versuch, einen bereits wartenden Song hinzuzufügen: „**Song ist schon in der Warteschlange.**“
 
-## Limit für Musikwünsche
+## Limit für Musikwünsche *(spezifiziert, noch nicht umgesetzt)*
 - Pro Gast maximal **10 hinzugefügte Songs pro rollender Minute**.
 - Bei Überschreitung: „**Zu viele Anfragen — bitte kurz warten.**“
 
@@ -142,7 +149,7 @@ Mit `?deviceId=...` enthält jeder Eintrag zusätzlich `hasVoted`.
 
 ---
 
-# Blacklist (pro Party)
+# Blacklist (pro Party) *(spezifiziert, noch nicht umgesetzt)*
 - Der Host pflegt pro Party eine **Wortliste**.
 - Beim Hinzufügen wird geprüft, ob ein Blacklist-Wort als **Teilstring** im Titel oder Künstlernamen vorkommt.
 - Wenn geblockt, sieht der Gast: „**Nicht erlaubt.**“
@@ -163,13 +170,17 @@ Mit `?deviceId=...` enthält jeder Eintrag zusätzlich `hasVoted`.
 - Fortschritt wird DB-seitig aus `playbackStartedAt`/`pausedPositionMs` berechnet (kein Spotify-Polling).
 - **Geräteverfügbarkeit:** `GET /track/current` liefert `deviceActive`. Solange `false` (kein aktives Playback-Gerät), sind Play/Pause/Skip beim Host **deaktiviert** mit Hinweis, dass zuerst die Startpage/TV geöffnet werden muss; sie aktivieren sich automatisch, sobald ein Gerät registriert ist.
 - **Weiterschalten:** Bei Songende (vom TV via SDK erkannt) oder Skip ruft das System `/track/next`, entfernt den Song aus der Queue und startet den nächsten gemäß Sortierung; danach folgt ein `track-changed`-Event. Es wird der erste Eintrag gewählt, dessen ID sich vom aktuellen unterscheidet; ein Doppel-Advance innerhalb von ~3 s wird verhindert.
+- **Autoplay:** Der Player erkennt das Songende über drei unabhängige Wege (SDK-Event, Poll, verstrichene Zeit) und schaltet pro Song genau einmal weiter – am natürlichen Ende, damit Anzeige und Ton synchron bleiben. Nach dem Play-Befehl setzt das Backend die URI nach ~700 ms noch einmal ab, damit das Gerät sicher wechselt.
+- **Resume spielt den angezeigten Song:** `POST /track/resume` startet den aktuellen Song per URI an der pausierten Position.
+- **Neu starten:** Der Host kann den aktuellen Song von vorne starten.
 - **Keine History:** Ein Song, der die Queue verlässt, kehrt nicht automatisch zurück.
-- **Leere Queue:** Das Dashboard zeigt „**Warteschlange ist leer**“; die Wiedergabe stoppt/pausiert (anbieterabhängig).
+- **Leere Queue → Auto-Refill:** Würde die Warteschlange leer, fügt das System automatisch einen Song hinzu (~3 s vor Songende): aus der **Standard-Playlist**, sonst **ähnliche Songs** (Top-Tracks der Künstler dieser Party), sonst eine **Top-Charts-Playlist**, zuletzt über die **Spotify-Suche**. Nachgefüllte Songs stehen immer **unter** den Gast-Wünschen. Nur wenn wirklich keine Quelle etwas liefert (z. B. Spotify nicht erreichbar), stoppt die Wiedergabe und das Dashboard zeigt „**Warteschlange ist leer**“.
+- **Song zu stiller Party hinzufügen:** Läuft gerade nichts und ein Gast fügt einen Song hinzu, startet der Player automatisch.
 - **Gerät neu registrieren:** Öffnet/lädt der TV die Startpage neu, setzt das Backend die Wiedergabe an der **aktuellen Position** fort (nicht 0:00) und sendet `track-changed`.
 - **Party-Ende:** Erhält die Startpage `party-ended`, wird der SDK-Player **pausiert und getrennt**, bevor zur Startseite navigiert wird – kein Ton nach dem Ende.
 
 > [!NOTE]
-> Offene Frage: Verhalten bei leerer Queue – die Web-Spezifikation sagt „stoppen/pausieren“, der Swift-Entwurf sah früher „zufällige Top-Charts“ vor. Diese Frage ist noch nicht abschließend entschieden.
+> Offen ist noch die genaue Blacklist-Semantik (Groß-/Kleinschreibung, Teilwort-Treffer).
 
 ---
 
@@ -178,7 +189,7 @@ Alle Live-Aktualisierungen laufen über **Server-Sent Events** auf `/api/spotify
 
 | Event | Wirkung |
 |---|---|
-| `queue-updated` | Queue neu laden (`GET /track/queue`) |
+| `queue-updated` | Queue neu laden (`GET /track/queue`) – auch nach Auto-Refill |
 | `vote-updated` | Queue neu laden (Like-Zahlen / Sortierung) |
 | `track-changed` | Aktuellen Song (`GET /track/current`) und Queue neu laden |
 | `progress` | Fortschrittsbalken aktualisieren (`position`, `duration`, `paused`) |
@@ -208,9 +219,9 @@ Nicht vorhanden: jegliche Host-Bedienelemente sowie jede Anzeige, **wer** einen 
 
 # Akzeptanzkriterien (Checkliste)
 1. Gäste können per QR-Code **oder** 5-stelligem PIN beitreten und sehen Updates live.
-2. Pro Gast maximal 10 Songs pro Minute; darüber wird mit deutscher Meldung geblockt.
-3. Duplikate werden DB-seitig verhindert und sauber gemeldet.
-4. Blacklist blockiert Songs (Teilstring) und zeigt „Nicht erlaubt.“
+2. *(offen)* Pro Gast maximal 10 Songs pro Minute; darüber wird mit deutscher Meldung geblockt.
+3. Wartende Duplikate werden verhindert und sauber gemeldet; der laufende Song darf erneut gewünscht werden.
+4. *(offen)* Blacklist blockiert Songs (Teilstring) und zeigt „Nicht erlaubt.“
 5. Likes sind togglebar (1 pro Gast/Song, serverseitig erzwungen) und aktualisieren live.
 6. Sortierung ist immer: Likes desc, dann ältester zuerst.
 7. Nur der Host (mit Host-PIN) kann entfernen/pausieren/skippen/beenden.
@@ -218,4 +229,6 @@ Nicht vorhanden: jegliche Host-Bedienelemente sowie jede Anzeige, **wer** einen 
 9. Dashboard reconnectet nach Reload ohne PIN.
 10. Bei Netzproblemen reconnecten alle Clients automatisch und synchronisieren sich.
 11. Eine Party endet automatisch nach 2 Tagen; Daten werden 1 Monat nach Ende gelöscht.
-12. Spotify-Tokens werden automatisch erneuert; eine Party überlebt mehr als eine Stunde ohne Host-Eingriff.
+12. Spotify-Tokens werden automatisch erneuert; eine Party überlebt mehr als eine Stunde ohne Host-Eingriff – und einen Backend-Neustart ohne neuen Login.
+13. Die Musik geht nicht aus: Bei leerer Queue wird automatisch nachgefüllt (Standard-Playlist → ähnliche Songs → Top-Charts → Suche).
+14. Play/Resume spielt immer den angezeigten Song; nach Songende startet der nächste ohne manuelles Play.

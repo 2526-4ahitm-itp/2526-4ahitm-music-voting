@@ -5,7 +5,7 @@ tags: [ Developer ]
 weight: 50
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 ---
 
 Es gibt **keine Benutzerkonten**. Zwei Mechanismen regeln Identität und Rechte:
@@ -14,7 +14,7 @@ ein **Host-PIN** für privilegierte Aktionen und eine anonyme **`deviceId`** fü
 ## Host-Autorisierung (Backend)
 
 Privilegierte Endpunkte sind mit **`@HostOnly`** annotiert (Pause, Resume, Skip, Start, Remove,
-Play, SaveToPlaylist, Party beenden). Der **`HostAuthFilter`** prüft jede solche Anfrage:
+Play, Prepare-Next, SaveToPlaylist, Standard-Playlist setzen, Host-Playlists lesen, Party beenden). Der **`HostAuthFilter`** prüft jede solche Anfrage:
 
 - Header `Authorization: Bearer <hostPin>` erforderlich.
 - **Fehlt** der Header → **HTTP 401**.
@@ -28,8 +28,8 @@ Gast-PIN verschieden) und ist nur unter aktiven Partys eindeutig.
 
 - **`host-auth.interceptor.ts`** hängt `Authorization: Bearer <hostPin>` automatisch an **jede**
   HTTP-Anfrage an, sobald ein Host-PIN im `localStorage` liegt. Gäste (kein PIN) senden keinen Header.
-- **`host.guard.ts`** schützt die Host-Routen (`startpage`, `dashboard`, `voting-host`,
-  `search-host`): ohne gespeicherten Host-PIN → Redirect auf `/`.
+- **`host.guard.ts`** schützt die Host-Routen (`select-playlist`, `startpage`, `dashboard`,
+  `voting-host`, `search-host`): ohne gespeicherten Host-PIN → Redirect auf `/`.
 
 ## Anonyme Gäste — `deviceId`
 
@@ -45,8 +45,9 @@ siehe [Datenbankschema](../database-schema/)) und liefert `hasVoted` beim Queue-
 
 ## Provider-Login (party-scoped)
 
-Der Host authentifiziert sich beim Erstellen über Spotify-OAuth. Tokens sind **pro Party** gespeichert
-und werden beim Party-Ende gelöscht – Details unter [Spotify-Integration](../spotify-integration/).
+Der Host authentifiziert sich beim Erstellen über Spotify-OAuth. Tokens sind **pro Party** gespeichert;
+der Refresh-Token liegt auch in der DB, damit der Login einen Backend-Neustart übersteht – Details unter
+[Spotify-Integration](../spotify-integration/).
 
 ## SSE-Scoping
 

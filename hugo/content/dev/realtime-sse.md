@@ -5,7 +5,7 @@ tags: [ Developer ]
 weight: 60
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 ---
 
 Live-Updates laufen über **Server-Sent Events** (kein WebSocket, kein reines Polling).
@@ -17,9 +17,9 @@ Der Stream ist `GET /api/spotify/events?source={web|ios}&partyId={id}`
 
 | Event | Auslöser | Reaktion der Clients |
 |---|---|---|
-| `queue-updated` | Song hinzugefügt/entfernt | Queue neu laden (`GET /track/queue`) |
+| `queue-updated` | Song hinzugefügt/entfernt (auch durch Auto-Refill) | Queue neu laden (`GET /track/queue`) |
 | `vote-updated` | Like hinzugefügt/entfernt | Queue neu laden (Like-Zahlen / Sortierung) |
-| `track-changed` | `/track/next` oder `/track/start` | aktuellen Track **und** Queue neu laden |
+| `track-changed` | `/track/next`, `/track/start` oder Geräte-Registrierung | aktuellen Track **und** Queue neu laden |
 | `progress` | TV-Player sendet Position | Fortschrittsbalken aktualisieren |
 | `party-ended` | Party beendet (manuell/Auto-Expiry) | zur Startseite, Session löschen |
 | `login-success` | Provider-Login abgeschlossen | Player initialisieren (siehe Hinweis) |

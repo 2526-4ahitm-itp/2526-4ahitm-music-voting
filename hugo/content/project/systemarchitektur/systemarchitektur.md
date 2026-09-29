@@ -9,7 +9,11 @@ authors:
 
 
 
-Eine Übersciht der Systemarchitektur ist unten dargestellt:
+> [!NOTE]
+> Dieses Diagramm ist der **Planungsstand vom Dezember 2025**. Die aktuelle Architektur
+> (inkl. SSE, Auto-Refill und Deployment) steht unter [Technical Docs → Architektur](../../../dev/architecture/).
+
+Eine Übersicht der Systemarchitektur ist unten dargestellt:
 ![Systemarchitektur Diagramm](../sys_img.png)
 
 <!--

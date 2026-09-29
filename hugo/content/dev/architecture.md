@@ -5,7 +5,7 @@ tags: [ Developer ]
 weight: 10
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 ---
 
 ## Überblick
@@ -71,10 +71,15 @@ tv --> sp : Playback (SDK)
   `PartyEntity` die Panache-Entity der DB-Tabelle `party`. Sie sind **bewusst getrennt** und werden
   nicht zusammengeführt.
 - **Restart-fest.** Endpunkte lösen eine Party bei Bedarf aus der DB auf, wenn sie nicht in der
-  In-Memory-Registry liegt – ein Backend-Neustart führt nicht zu 404.
+  In-Memory-Registry liegt – ein Backend-Neustart führt nicht zu 404. Auch der Spotify-Login
+  überlebt, weil der Refresh-Token in der DB liegt.
 - **Ein Provider pro Party.** Über `ProviderKind` (Spotify implementiert, YouTube vorgesehen),
   abstrahiert durch das `MusicProvider`-Interface und die `MusicProviderFactory`.
 - **Live-Updates über SSE**, nicht über Polling (siehe [Realtime / SSE](../realtime-sse/)).
+- **Die Musik geht nie aus.** Würde die Queue leer, füllt das Backend automatisch einen Song nach
+  (Standard-Playlist → ähnliche Songs → Top-Charts → Suche). Gast-Songs haben immer Vorrang.
+- **Der Player treibt das Autoplay.** Nur die Startpage kennt das echte Songende (Web Playback SDK)
+  und ruft `/track/next` auf – über drei unabhängige Erkennungswege, pro Song genau einmal.
 
 ## Datenfluss (Beispiel: Gast fügt einen Song hinzu)
 
@@ -87,3 +92,12 @@ tv --> sp : Playback (SDK)
 
 - **`PartyExpiryScheduler`** beendet Partys automatisch nach 2 Tagen und löscht beendete Partys
   1 Monat nach `endedAt` (siehe [Datenbankschema](../database-schema/)).
+
+## Betriebsvarianten
+
+| Variante | Wo | Beschreibung |
+|---|---|---|
+| Kubernetes | HTL-Cluster | Produktiv, per GitHub Actions (siehe [CI/CD](../ci-cd-deployment/)) |
+| `deploy/` | eigener Server | Docker Compose + **Caddy** (HTTPS via Let's Encrypt) |
+| `compose/` | lokal | fertige GHCR-Images + PostgreSQL |
+| Quellcode | lokal | `quarkus:dev` + `npm start` + DB aus `musicvoting/docker-compose.yaml` |

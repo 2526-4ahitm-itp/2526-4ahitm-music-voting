@@ -5,7 +5,7 @@ tags: [ Developer ]
 weight: 20
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 ---
 
 Das Backend ist eine **Quarkus**-Anwendung (Java 21) unter `musicvoting/backend/`.
@@ -50,15 +50,20 @@ at.htl
 
 - **`PartyResource`** – Party-Lebenszyklus: Erstellen (`POST /party`), Beenden
   (`DELETE /party/{id}`, host-only), PIN-Auflösung (`/join/{pin}`, `/host-join/{hostPin}`),
-  Party-Info und QR-Code-PNG (`/{id}/qr`).
+  Party-Info, QR-Code-PNG (`/{id}/qr`) und Standard-Playlist (`PUT /{id}/default-playlist`, host-only).
 - **`TrackResource`** – Queue, Voting und Playback-Steuerung unter
   `/api/party/{partyId}/track` (Suche, Queue lesen, hinzufügen, entfernen, vote, start/pause/
-  resume/next, current, progress).
-- **`SpotifyTokenResource`** – Token-Abruf, Status, Geräte-Registrierung (`PUT/GET /deviceId`) und
-  Login-Einstieg unter `/api/party/{partyId}/spotify`.
+  resume/next, prepare-next, current, progress).
+- **`SpotifyTokenResource`** – Token-Abruf, Status, Host-Playlists (`/playlists`),
+  Geräte-Registrierung (`PUT/GET /deviceId`) und Login-Einstieg unter `/api/party/{partyId}/spotify`.
 - **`SpotifyCallbackResource`** – OAuth-Callbacks (Web + iOS) und der **SSE-Stream** `/api/spotify/events`.
 - **`SpotifyCredentials`** – hält pro Party Access-/Refresh-Token, `deviceId`, Ablaufzeit und
-  `lastPlaybackActive`. Basis für Token-Refresh und `deviceActive`.
+  `lastPlaybackActive`. Basis für Token-Refresh und `deviceActive`. Der Refresh-Token wird über
+  `PartyService#persistSpotifyRefreshToken` zusätzlich in der DB gespeichert.
+- **`SpotifyMusicProvider`** – die gesamte Spotify-Logik: Suche, Queue (DB), Voting, Wiedergabe
+  (`play`, `playNextAndRemove`, `resumePlayback` mit Re-Assert), Auto-Refill (`refillQueue`) und die
+  `[playback …]`-Diagnose-Logs (`io.quarkus.logging.Log`). Details:
+  [Spotify-Integration](../spotify-integration/).
 - **`HostAuthFilter`** – prüft `@HostOnly`-Endpunkte gegen den Host-PIN (siehe
   [Authentifizierung](../authentication/)).
 
@@ -75,3 +80,23 @@ Das Schema wird **nicht** von Hibernate generiert (`database.generation=none`), 
 ## Lokal starten
 
 Siehe {{< article link="docs/runinstructions/" >}} – kurz: `cd musicvoting/backend && ./mvnw quarkus:dev`.
+
+## Konfiguration
+
+Wichtige Properties (lokal in `application.properties`, in Kubernetes als Env-Variablen):
+
+| Property | Env-Variable | Zweck |
+|---|---|---|
+| `spotify.client.id` / `spotify.client.secret` | `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` | Spotify-App |
+| `spotify.redirect.uri` | `SPOTIFY_REDIRECT_URI` | OAuth-Callback (`…/api/spotify/callback`) |
+| `spotify.web.redirect.uri` | `SPOTIFY_WEB_REDIRECT_URI` | Ziel nach Web-Login – **`…/select-playlist`** |
+| `spotify.ios.redirect.uri` | `SPOTIFY_IOS_REDIRECT_URI` | `musicvotingapp://callback` |
+| `spotify.market` | `SPOTIFY_MARKET` | Markt für „ähnliche Songs“ (Default `AT`) |
+| `spotify.topcharts.playlist.id` | `SPOTIFY_TOPCHARTS_PLAYLIST_ID` | optionale Fallback-Playlist |
+| `musicvoting.join.base-url` | `MUSICVOTING_JOIN_BASE_URL` | Basis-URL im QR-Code |
+
+## Tests
+
+`./mvnw test` im Backend-Ordner. HTTP zu Spotify wird nicht gemockt; testbare Logik liegt deshalb in
+package-privaten statischen Helfern (z. B. `buildResumeBody`, `formatDevicesSnapshot`), die direkt
+getestet werden.

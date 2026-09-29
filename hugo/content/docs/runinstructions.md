@@ -4,7 +4,7 @@ description: Die App ist bereits deployed – und so startet man sie lokal
 tags: [ Developer ]
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 ---
 
 ## Live-Deployment (Kubernetes)
@@ -27,6 +27,9 @@ Es gibt zwei Wege:
 
 - **Variante A – Fertige Images aus GHCR (nur Docker):** am einfachsten, ohne Java/Node und ohne Bauen.
 - **Variante B – Aus dem Quellcode bauen:** für die aktive Entwicklung am Backend/Frontend.
+
+Wer die App auf einem **eigenen Server mit HTTPS** betreiben will, nimmt den Stack unter `deploy/`
+(Caddy + Let's Encrypt) – siehe [CI/CD & Deployment](../../dev/ci-cd-deployment/#eigener-server-mit-https-deploy).
 
 ---
 
@@ -52,17 +55,19 @@ kein Java, kein Node, kein `application.properties` editieren.
 > Mit `docker compose pull` holst du die jeweils neuesten `:latest`-Images.
 
 > [!IMPORTANT]
-> Für den **Spotify-Login** musst du dem Backend deine Zugangsdaten als Umgebungsvariablen
-> mitgeben (die Compose-Datei setzt sie nicht). Lege dazu im Ordner `compose` eine Datei
-> `docker-compose.override.yaml` an:
+> Das Backend-Image enthält **keine** `application.properties`. Spotify-Zugangsdaten und
+> Redirect-URIs musst du als Umgebungsvariablen mitgeben – ohne `SPOTIFY_REDIRECT_URI` startet das
+> Backend nicht. Lege dazu im Ordner `compose` eine Datei `docker-compose.override.yaml` an:
 > ```yaml
 > services:
 >   backend:
 >     environment:
 >       - SPOTIFY_CLIENT_ID=deine_client_id
 >       - SPOTIFY_CLIENT_SECRET=dein_client_secret
+>       - SPOTIFY_REDIRECT_URI=http://127.0.0.1:8080/api/spotify/callback
+>       - SPOTIFY_WEB_REDIRECT_URI=http://127.0.0.1:4200/select-playlist
 > ```
-> Ohne diese Werte läuft die App, aber Anmeldung und Wiedergabe über Spotify funktionieren nicht.
+> Beide Redirect-URIs müssen auch im Spotify-Dashboard eingetragen sein (siehe *How To Develop*).
 
 > [!TIP]
 > Vor dem Start kannst du die zusammengeführte Konfiguration prüfen – so siehst du,
@@ -98,7 +103,7 @@ app.public.host=127.0.0.1
 app.public.port=8080
 app.web.port=4200
 spotify.redirect.uri=http://${app.public.host}:${app.public.port}/api/spotify/callback
-spotify.web.redirect.uri=http://${app.public.host}:${app.web.port}/dashboard
+spotify.web.redirect.uri=http://${app.public.host}:${app.web.port}/select-playlist
 quarkus.http.host=0.0.0.0
 quarkus.http.port=${app.public.port}
 quarkus.datasource.db-kind=postgresql

@@ -4,7 +4,7 @@ description: Spezifikation der iOS-App
 tags: [ Docs, Swift ]
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 authors:
   - simone
 ---
@@ -75,10 +75,11 @@ Die Swift-App ist die mobile Version der Webanwendung. Sie ermöglicht Gästen, 
 2. Wählt **Spotify** oder **YouTube**; die App ruft `POST /api/party` mit dem Anbieter.
 3. Host loggt sich beim Anbieter ein (OAuth) – **nur für diese Party**.
 4. Das System erzeugt Party-ID, Gast-PIN, Host-PIN und Join-URL.
-5. Host sieht PIN, QR-Code und die Host-Steuerung in der Admin-Ansicht.
+5. Nach dem Login öffnet sich der **Playlist-Picker** (`GET /api/party/{id}/spotify/playlists`): Tippen auf eine Playlist setzt sie als Standard-Playlist (`PUT /api/party/{id}/default-playlist`), „**Ohne Standard-Playlist fortfahren**“ überspringt. Überspringen bleibt auch bei einem Ladefehler möglich.
+6. Host sieht PIN, QR-Code und die Host-Steuerung in der Admin-Ansicht.
 
 ## 2) Party am Monitor anzeigen
-- Erfolgt über die **Web-App** auf dem Monitor/TV (PIN eingeben, danach Auto-Reconnect ohne PIN). Die Swift-App ersetzt den Monitor nicht.
+- Erfolgt über die **Web-App** auf dem Monitor/TV („Gastgeber einer Party“ → „Player öffnen“ → Host-PIN, danach Auto-Reconnect ohne PIN). Die Swift-App ersetzt den Monitor nicht.
 
 ## 3) Gäste beitreten
 ### Version A: QR-Code
@@ -97,6 +98,12 @@ Die Swift-App ist die mobile Version der Webanwendung. Sie ermöglicht Gästen, 
 - **Persistente Identität:** `deviceId` (UUID) wird in `UserDefaults` gespeichert und übersteht App-Neustarts.
 - **Gast-Sitzung übersteht App-Schließen:** Ist eine Gast-Sitzung gespeichert, navigiert die App nach vollständigem Schließen/Neuöffnen **direkt** in die Gast-Ansicht – ohne PIN-Abfrage. Explizites Verlassen löscht die Sitzung aus `UserDefaults`.
 - **Host-Sitzung übersteht App-Schließen:** Analog navigiert die App direkt in die Admin-Ansicht – ohne erneutes Erstellen oder Spotify-Login. Explizites Verlassen löscht die Sitzung.
+
+---
+
+# Backend-Verbindung (iOS)
+- Standard-Backend ist die Cloud-Instanz `https://it220241.cloud.htl-leonding.ac.at` (`BackendBaseURL` in `Info.plist`); ein in `UserDefaults` gespeicherter Wert hat Vorrang.
+- Nicht-lokale Hosts werden immer auf **HTTPS ohne Port** normalisiert; `localhost`/IP-Adressen nutzen `http` und Port 8080.
 
 ---
 
@@ -122,6 +129,7 @@ Die Swift-App ist die mobile Version der Webanwendung. Sie ermöglicht Gästen, 
 # Darstellung & Medien (iOS)
 - **QR-Code-Ladeindikator:** Die Admin-Ansicht zeigt vom Öffnen bis zum Auflösen von `GET /api/party/{id}/qr` einen **Spinner**; bei Erfolg das QR-Bild, bei Fehler den Fehlerzustand – kein unsichtbarer Platzhalter.
 - **Album-Cover über Session-Cache:** Cover werden über `URLSession.shared` geladen und in einem **gemeinsamen, thread-sicheren In-Memory-Cache** gehalten (statt `AsyncImage`, das auf iOS 26 `URLCache.shared` ignoriert). Bereits geladene URLs werden ohne erneuten Request wiederverwendet; nach dem Laden der Queue werden die Cover-URLs **vorausgeladen**.
+- **Dark Mode:** Hintergründe passen sich dem System-Erscheinungsbild an.
 - **Platzhalter:** Fehlt eine Cover-URL oder schlägt das Laden fehl, wird ein neutraler `music.note`-Platzhalter gezeigt (in Queue-Zeilen und im „Now Playing“-Bereich).
 
 ---
@@ -144,17 +152,12 @@ Die Swift-App ist die mobile Version der Webanwendung. Sie ermöglicht Gästen, 
 
 # Regeln der Warteschlange, Voting, Blacklist, Playback
 Diese Regeln gelten identisch zur Web-App – siehe allgemeine Spezifikation:
-- **Sortierung:** mehr Likes zuerst, bei Gleichstand ältester Wunsch zuerst.
-- **Keine Duplikate:** „Song ist schon in der Warteschlange.“
-- **Limit:** max. 10 Songs/Minute → „Zu viele Anfragen — bitte kurz warten.“
+- **Sortierung:** mehr Likes zuerst, bei Gleichstand ältester Wunsch zuerst; automatisch nachgefüllte Songs stehen unter den Gast-Wünschen.
+- **Keine Duplikate:** „Song ist schon in der Warteschlange.“ (der gerade laufende Song darf erneut gewünscht werden)
 - **Likes:** 1 pro Gast/Song, togglebar, live; Optimistic UI.
-- **Blacklist:** Teilstring-Treffer → „Nicht erlaubt.“
 - **Playback:** läuft auf dem Monitor/TV; bei Songende/Skip wird der Song entfernt und der nächste gemäß Sortierung gestartet; keine History.
-
-> [!NOTE]
-> Offene Frage: Verhalten bei leerer Queue – die Web-Spezifikation sagt
-> „stoppen/pausieren“, ein früherer Swift-Entwurf sah „zufällige Top-Charts“
-> vor. Diese Frage ist noch nicht abschließend entschieden.
+- **Leere Queue:** wird automatisch nachgefüllt – Standard-Playlist → ähnliche Songs → Top-Charts → Suche. (Damit ist die frühere offene Frage „stoppen vs. zufällige Top-Charts“ entschieden.)
+- **Limit** (10 Songs/Minute) und **Blacklist** sind spezifiziert, aber noch nicht umgesetzt.
 
 ---
 
@@ -167,6 +170,7 @@ Diese Regeln gelten identisch zur Web-App – siehe allgemeine Spezifikation:
 6. Fortschrittsbalken ist synchron zum TV-Player (aus `progress`-Events), resettet bei `track-changed`.
 7. QR-Code zeigt einen Ladeindikator; Cover laden über einen Session-Cache mit Platzhalter-Fallback.
 8. Host-PIN-Eingabe nutzt Ziffern-Boxen mit Auto-Submit und Shake bei Fehler.
+9. Nach dem Spotify-Login kann der Host eine Standard-Playlist wählen oder überspringen.
 
 ---
 # An dieser App arbeiten:

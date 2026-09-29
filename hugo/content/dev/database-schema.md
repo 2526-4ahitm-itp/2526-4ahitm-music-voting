@@ -5,7 +5,7 @@ tags: [ Developer ]
 weight: 30
 showDate: true
 date: 2026-06-23
-lastmod: 2026-06-23
+lastmod: 2026-09-28
 ---
 
 PostgreSQL 16. Das Schema wird beim ersten Start aus
@@ -27,6 +27,8 @@ Eine Party (Top-Level-Aggregat).
 | `currently_playing_entry_id` | `UUID` → `queue_entry(id)` | aktueller Song; `ON DELETE SET NULL` |
 | `playback_started_at` | `TIMESTAMPTZ` | Basis für DB-berechneten Fortschritt |
 | `paused_position_ms` | `BIGINT` | Position bei Pause |
+| `default_playlist_id` | `VARCHAR` | Standard-Playlist des Hosts für den Auto-Refill (`NULL` = keine) |
+| `spotify_refresh_token` | `TEXT` | Persistierter Spotify-Refresh-Token – Host-Login übersteht Backend-Neustarts |
 
 ### `queue_entry`
 Ein Song in der Warteschlange einer Party.
@@ -42,7 +44,13 @@ Ein Song in der Warteschlange einer Party.
 | `image_url` | `TEXT` | Cover |
 | `duration_ms` | `INTEGER` | |
 | `added_at` | `TIMESTAMPTZ` | Default `NOW()` – FIFO-Tiebreak |
-| | | **UNIQUE (`party_id`, `track_uri`)** → keine Duplikate |
+| `autofilled` | `BOOLEAN` NOT NULL | Default `FALSE`; `TRUE` = vom Auto-Refill eingefügt (sortiert unter Gast-Songs) |
+
+> [!NOTE]
+> Es gibt **keinen** Unique-Constraint auf (`party_id`, `track_uri`) mehr. Der gerade laufende Song
+> darf erneut eingereiht werden, dieselbe URI kann also zweimal vorkommen (einmal spielend, einmal
+> wartend). Duplikate unter den **wartenden** Einträgen verhindert das Backend in
+> `SpotifyMusicProvider#addTracksToPlaylist` (HTTP 409, „Song ist schon in der Warteschlange.“).
 
 ### `vote`
 Ein Like eines Geräts für einen Queue-Eintrag.
@@ -72,6 +80,8 @@ entity "party" as party {
   currently_playing_entry_id : UUID <<FK>>
   playback_started_at
   paused_position_ms
+  default_playlist_id
+  spotify_refresh_token
 }
 
 entity "queue_entry" as qe {
@@ -82,6 +92,7 @@ entity "queue_entry" as qe {
   track_name / artist_name
   album_name / image_url
   duration_ms / added_at
+  autofilled : BOOLEAN
 }
 
 entity "vote" as vote {
@@ -115,11 +126,26 @@ Party gibt ihren PIN-Slot wieder frei.
 
 ## Sortierung der Queue
 
-Nicht im Schema, sondern beim Lesen berechnet: **Likes desc**, bei Gleichstand `added_at`
-aufsteigend (FIFO). Mit `?deviceId=` liefert `GET /track/queue` zusätzlich `hasVoted` pro Eintrag.
+Nicht im Schema, sondern beim Lesen berechnet:
+
+1. der **aktuell spielende** Eintrag zuerst,
+2. **Gast-Songs vor Auto-Refill-Songs** (`autofilled ASC`),
+3. **Likes desc**,
+4. bei Gleichstand `added_at` aufsteigend (FIFO).
+ Mit `?deviceId=` liefert `GET /track/queue` zusätzlich `hasVoted` pro Eintrag.
 
 ## Aufräum-Lebenszyklus
 
 Über den `PartyExpiryScheduler`:
-- **Auto-Ende nach 2 Tagen**: Queue leeren, Tokens löschen, `ended_at` setzen, `party-ended`-Event.
+- **Auto-Ende nach 2 Tagen**: Queue leeren, Access-Token im Speicher löschen, `ended_at` setzen, `party-ended`-Event.
 - **Purge nach 1 Monat** (`ended_at`): `party`-Zeile löschen → `queue_entry`/`vote` kaskadieren.
+
+> [!WARNING]
+> Beim Beenden wird `spotify_refresh_token` derzeit **nicht** geleert – er bleibt bis zum Purge in der
+> `party`-Zeile. Laut `provider/spec.md` sollen beim Party-Ende alle Tokens gelöscht werden.
+
+## Schema in Produktion
+
+In Kubernetes liegt das Schema **nicht** in `setup.sql`, sondern als Kopie in der ConfigMap in
+`k8s/01-postgres.yaml`. Bei jeder Schema-Änderung **beide** Dateien anpassen. Siehe
+[CI/CD & Deployment](../ci-cd-deployment/).
