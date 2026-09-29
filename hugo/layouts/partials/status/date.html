@@ -1,0 +1,4 @@
+{{- /* Datum aus data/status.yaml auf Deutsch, z. B. "28. September 2026". */ -}}
+{{- $months := slice "Jänner" "Februar" "März" "April" "Mai" "Juni" "Juli" "August" "September" "Oktober" "November" "Dezember" -}}
+{{- $d := time.AsTime site.Data.status.stand -}}
+{{- printf "%d. %s %d" $d.Day (index $months (sub (int $d.Month) 1)) $d.Year -}}

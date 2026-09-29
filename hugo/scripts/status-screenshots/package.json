@@ -1,0 +1,13 @@
+{
+  "name": "musicvoting-status-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Erzeugt die Screenshots für die Hugo-Präsentation 'Projektstatus'.",
+  "scripts": {
+    "screenshots": "node screenshots.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.0.0",
+    "yaml": "^2.5.0"
+  }
+}

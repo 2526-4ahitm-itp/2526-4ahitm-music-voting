@@ -1,4 +1,11 @@
-<section>
-    <h2>{{ .Get "title" }}</h2>
-    <p>{{ .Inner }}</p>
+{{- /*
+  Eine Reveal.js-Folie.
+  Parameter: title, kicker (kleine Überzeile), class, notes (Sprechernotizen, Taste S).
+  Der Inhalt wird unverändert übernommen (HTML), nicht mehr in <p> verpackt.
+*/ -}}
+<section{{ with .Get "class" }} class="{{ . }}"{{ end }}>
+    {{ with .Get "kicker" }}<p class="kicker">{{ . }}</p>{{ end }}
+    {{ with .Get "title" }}<h2>{{ . }}</h2>{{ end }}
+    {{ .Inner }}
+    {{ with .Get "notes" }}<aside class="notes">{{ . }}</aside>{{ end }}
 </section>

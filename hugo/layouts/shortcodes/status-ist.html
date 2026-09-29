@@ -1,0 +1,10 @@
+{{- /* Ist-Zustand: Karten aus data/status.yaml (ist) plus Hinweisbox (limits). */ -}}
+{{- $s := site.Data.status -}}
+<div class="cards">
+{{- range $s.ist }}
+<div class="card"><div class="icon">{{ .icon }}</div><h4>{{ .title }}</h4><p>{{ .text }}</p></div>
+{{- end }}
+</div>
+{{- with $s.limits }}
+<div class="limits"><strong>Einschränkungen:</strong> {{ delimit . " · " }}</div>
+{{- end }}
