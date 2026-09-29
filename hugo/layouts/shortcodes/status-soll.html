@@ -1,0 +1,12 @@
+{{- /* Soll-Zustand: eine Karte je Gruppe aus data/status.yaml (soll). */ -}}
+<div class="cards soll">
+{{- range site.Data.status.soll }}
+<div class="card accent"><div class="icon">{{ .icon }}</div><h4>{{ .title }}</h4>
+{{- if .items }}
+<ul>{{ range .items }}<li>{{ . }}</li>{{ end }}</ul>
+{{- else }}
+<p><em>Wird noch ergänzt.</em></p>
+{{- end }}
+</div>
+{{- end }}
+</div>

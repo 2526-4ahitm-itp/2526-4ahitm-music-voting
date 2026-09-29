@@ -3,113 +3,82 @@ title: "Präsentation: MusicVoting"
 layout: "presentation"
 ---
 
-{{< slide title="🎵 MusicVoting" >}}
+{{< slide class="title-slide" notes="Kurz vorstellen: wer wir sind, dass es um Partymusik geht. Live-App am Ende zeigen." >}}
+<p class="kicker">ITP-Projekt · HTL Leonding · 4AHITM</p>
+<h1>🎵 MusicVoting</h1>
 <h3>Keine langweiligen Partys mehr</h3>
-<p>Die Gäste bestimmen die Musik – live, anonym, per Smartphone.</p>
+<p class="lead">Die Gäste bestimmen die Musik – live, anonym, per Smartphone.</p>
+<div class="powered-by"><span>powered by</span><img src="htl-leonding-logo.jpg" alt="HTL Leonding"></div>
 {{< /slide >}}
 
-{{< slide title="❌ Problem" >}}
+{{< slide title="Das Problem" >}}
 <ul>
-  <li>Der Gastgeber hat keine Zeit, sich um die Musik zu kümmern</li>
-  <li>Oder: Er hat nicht den gleichen Musikgeschmack wie die Gäste</li>
-  <li>Ergebnis: schlechte Stimmung auf der Party</li>
+<li>Der Gastgeber hat <strong>keine Zeit</strong>, sich um die Musik zu kümmern</li>
+<li>… oder nicht den <strong>gleichen Geschmack</strong> wie die Gäste</li>
+<li>Ergebnis: schlechte Stimmung auf der Party 😴</li>
 </ul>
 {{< /slide >}}
 
-{{< slide title="✅ Lösung" >}}
+{{< slide title="Die Lösung" >}}
+<div class="cards">
+<div class="card"><div class="icon">➕</div><h4>Wünschen</h4><p>Gäste suchen Songs und fügen sie zur Warteschlange hinzu.</p></div>
+<div class="card"><div class="icon">❤️</div><h4>Voten</h4><p>Likes entscheiden, was als Nächstes läuft.</p></div>
+<div class="card accent"><div class="icon">🔊</div><h4>Abspielen</h4><p>Die Musik läuft über den Spotify-Premium-Account des Gastgebers.</p></div>
+</div>
+{{< /slide >}}
+
+{{< slide title="Drei Rollen" >}}
+<div class="cards">
+<div class="card"><div class="icon">📱</div><h4>Gast</h4><p>Tritt anonym bei, sucht, wünscht und liked – ohne Account.</p></div>
+<div class="card"><div class="icon">👑</div><h4>Gastgeber</h4><p>Erstellt die Party, wählt eine Standard-Playlist und steuert die Wiedergabe.</p></div>
+<div class="card accent"><div class="icon">🖥️</div><h4>Player (TV)</h4><p>Spielt die Musik ab und zeigt QR-Code, aktuellen Song und Warteschlange.</p></div>
+</div>
+{{< /slide >}}
+
+
+{{< slide title="Voting & Warteschlange" >}}
 <ul>
-  <li>Gäste schlagen eigene Songs vor</li>
-  <li>Per Likes wird abgestimmt, was als Nächstes läuft</li>
-  <li>Die Musik läuft über den <strong>Spotify-Premium-Account</strong> des Gastgebers</li>
+<li>Sortierung: <strong>mehr Likes zuerst</strong>, bei Gleichstand der ältere Wunsch</li>
+<li>Keine Duplikate – nur der gerade laufende Song darf nochmal gewünscht werden</li>
+<li>Jede Änderung erscheint <strong>sofort auf allen Geräten</strong></li>
 </ul>
 {{< /slide >}}
 
-{{< slide title="👥 Rollen" >}}
-<ul>
-  <li><strong>Gast</strong> (Smartphone): tritt anonym bei, sucht, fügt hinzu, liked</li>
-  <li><strong>Gastgeber</strong> (Host): erstellt die Party, steuert die Wiedergabe</li>
-  <li><strong>Monitor/TV</strong>: spielt die Musik ab und zeigt alles live an</li>
-</ul>
+{{< slide title="Die Musik geht nie aus" notes="Früher offene Frage: was bei leerer Queue passiert. Jetzt entschieden: automatisch nachfüllen. Gast-Wünsche haben immer Vorrang." >}}
+<p class="lead">Wünscht gerade niemand etwas, füllt MusicVoting kurz vor Songende <strong>einen</strong> Song nach:</p>
+<div class="steps">
+<div class="step"><span class="num">1</span><br>Standard-Playlist des Hosts</div>
+<div class="arrow">→</div>
+<div class="step"><span class="num">2</span><br>Ähnliche Songs der Party-Künstler</div>
+<div class="arrow">→</div>
+<div class="step"><span class="num">3</span><br>Top-Charts</div>
+<div class="arrow">→</div>
+<div class="step"><span class="num">4</span><br>Spotify-Suche</div>
+</div>
+<p class="lead">Wünsche der Gäste spielen <strong>immer zuerst</strong>.</p>
 {{< /slide >}}
 
-{{< slide title="📱 Beitreten" >}}
-<ul>
-  <li><strong>QR-Code</strong> am Monitor scannen – oder</li>
-  <li><strong>5-stelligen PIN</strong> eingeben</li>
-  <li>Kein Account, kein Name → Gäste bleiben anonym</li>
-</ul>
+
+{{< slide title="Technischer Stack" >}}
+<div class="cards" style="--cols: 4">
+<div class="card"><div class="icon">☕</div><h4>Backend</h4><p>Quarkus (Java 21), REST + Server-Sent Events</p></div>
+<div class="card"><div class="icon">🅰️</div><h4>Frontend</h4><p>Angular – Gast, Host und Player</p></div>
+<div class="card"><div class="icon">🐘</div><h4>Datenbank</h4><p>PostgreSQL 16 – Quelle der Wahrheit für Warteschlange</p></div>
+<div class="card accent"><div class="icon">📱</div><h4>iOS-App</h4><p>SwiftUI – Gast- und Host-Ansicht</p></div>
+</div>
 {{< /slide >}}
 
-{{< slide title="🗳️ Voting & Warteschlange" >}}
-<ul>
-  <li>Sortierung: <strong>mehr Likes zuerst</strong>, bei Gleichstand der ältere Wunsch</li>
-  <li>Ein Like pro Gast und Song (umschaltbar)</li>
-  <li>Updates erscheinen <strong>live auf allen Geräten</strong></li>
-</ul>
+
+{{< slide kicker="Die Programmiererinnen dahinter!" title="Team" >}}
+<div class="team">
+<div class="member"><strong>Miriam Gnadlinger</strong><span class="role">Project Lead</span></div>
+<div class="member"><strong>Simone Sperrer</strong><span class="role">Team</span></div>
+<div class="member"><strong>Marlies Winklbauer</strong><span class="role">Team</span></div>
+</div>
+<div class="powered-by"><span>powered by</span><img src="htl-leonding-logo.jpg" alt="HTL Leonding"></div>
 {{< /slide >}}
 
-{{< slide title="🛡️ Regeln" >}}
-<ul>
-  <li>Songs nur über die Suche – keine Duplikate</li>
-  <li>Limit: max. 10 Songs pro Gast und Minute</li>
-  <li><strong>Blacklist</strong>: der Host kann unerwünschte Wörter sperren</li>
-</ul>
-{{< /slide >}}
-
-{{< slide title="🖥️ Dashboard (Monitor/TV)" >}}
-<ul>
-  <li>QR-Code zum Beitreten</li>
-  <li>Aktueller Song mit animiertem Fortschrittsbalken</li>
-  <li>Die sortierte Warteschlange</li>
-  <li>Keine Host-Bedienelemente, keine Anzeige wer was gewünscht hat</li>
-</ul>
-{{< /slide >}}
-
-{{< slide title="⚙️ Technischer Stack" >}}
-<ul>
-  <li><strong>Backend</strong>: Quarkus (Java 21), REST + SSE</li>
-  <li><strong>Frontend</strong>: Angular (Gast, Host, Dashboard)</li>
-  <li><strong>Datenbank</strong>: PostgreSQL 16</li>
-  <li><strong>Mobile</strong> (optional): SwiftUI iOS-App</li>
-</ul>
-{{< /slide >}}
-
-{{< slide title="🎧 Spotify-Anbindung" >}}
-<ul>
-  <li>Wiedergabe über das <strong>Spotify Web Playback SDK</strong> (läuft am Monitor)</li>
-  <li>OAuth-Login pro Party (Premium-Account erforderlich)</li>
-  <li>Access Token läuft nach 1 h ab → wird <strong>automatisch erneuert</strong></li>
-</ul>
-{{< /slide >}}
-
-{{< slide title="🔄 Live-Updates (SSE)" >}}
-<ul>
-  <li>Server-Sent Events statt Polling</li>
-  <li>Queue, Likes, aktueller Track und Fortschritt aktualisieren sich sofort</li>
-  <li>Clients reconnecten nach Verbindungsabbruch automatisch</li>
-</ul>
-{{< /slide >}}
-
-{{< slide title="🚀 Deployment" >}}
-<ul>
-  <li>Live im HTL-Cluster: <a href="https://it220241.cloud.htl-leonding.ac.at">it220241.cloud.htl-leonding.ac.at</a></li>
-  <li>CI/CD über GitHub Actions → Images in GHCR</li>
-  <li>Betrieb auf <strong>Kubernetes</strong> (Backend, Frontend, PostgreSQL)</li>
-</ul>
-{{< /slide >}}
-
-{{< slide title="🎯 Ergebnis" >}}
-<p><strong>Eine einfache, voll funktionsfähige Party-Musik-App</strong></p>
-<ul>
-  <li>Intuitiv bedienbar, anonym für Gäste</li>
-  <li>Spotify-kompatibel, live und deployed</li>
-</ul>
-{{< /slide >}}
-
-{{< slide title="🙌 Team" >}}
-<ul>
-  <li>Miriam Gnadlinger – Project Lead</li>
-  <li>Simone Sperrer</li>
-  <li>Marlies Winklbauer</li>
-</ul>
+{{< slide title="Live-Demo" notes="Party mit eigenem Premium-Account erstellen, Player am Beamer öffnen, Publikum per QR beitreten lassen." >}}
+<p class="lead">Die App läuft – einfach im Browser öffnen:</p>
+<a class="big-link" href="https://it220241.cloud.htl-leonding.ac.at">it220241.cloud.htl-leonding.ac.at</a>
 {{< /slide >}}

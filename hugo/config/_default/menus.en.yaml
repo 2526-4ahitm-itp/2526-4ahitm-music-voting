@@ -19,9 +19,18 @@ main:
     pageRef: dev
     weight: 15
 
-  - identifier: slides
+  - identifier: presentations
     name: Presentation
-    url: /slides/
+    weight: 20
+
+  - name: Projektpräsentation
+    parent: presentations
+    pageRef: slides
+    weight: 10
+
+  - name: Projektstatus
+    parent: presentations
+    pageRef: status
     weight: 20
 
   - name: Project

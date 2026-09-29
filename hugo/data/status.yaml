@@ -1,0 +1,114 @@
+# Stand-Datei für die Präsentation "Projektstatus" (hugo/content/status/).
+#
+# Beim Erneuern:
+#   1. `stand` auf das heutige Datum setzen.
+#   2. Ist-/Soll-Punkte anpassen.
+#   3. Screenshots neu machen: siehe hugo/scripts/status-screenshots/README.md
+#   4. Texte der Screenshots prüfen (screens[].text).
+
+stand: 2026-09-28
+
+# ---------------------------------------------------------------------------
+# Ist-Zustand: was heute funktioniert
+# ---------------------------------------------------------------------------
+ist:
+  - icon: "👑"
+    title: Gastgeber
+    text: Party erstellen, Spotify-Login, Standard-Playlist wählen, Wiedergabe steuern, Songs entfernen, Party beenden.
+  - icon: "📱"
+    title: Gäste
+    text: Beitritt per QR-Code oder 5-stelligem PIN, anonym. Songs suchen, wünschen und liken – alles live.
+  - icon: "🖥️"
+    title: Player (TV)
+    text: Spielt über das Spotify Web Playback SDK, zeigt QR-Code, aktuellen Song mit Fortschritt und die Warteschlange.
+  - icon: "🔁"
+    title: Musik geht nie aus
+    text: Bei leerer Warteschlange wird automatisch nachgefüllt (Standard-Playlist → ähnliche Songs → Top-Charts → Suche).
+  - icon: "🍏"
+    title: iOS-App
+    text: Gast- und Host-Ansicht in SwiftUI
+  - icon: "🚀"
+    title: Live & automatisiert
+    text: Läuft im HTL-Kubernetes-Cluster, jeder Push auf main wird automatisch gebaut und deployed.
+
+
+# ---------------------------------------------------------------------------
+# Soll-Zustand: wohin es geht
+# ---------------------------------------------------------------------------
+soll:
+  - title: Songs an die Party anpassen
+    icon: "🚫"
+    items:
+      - "Blacklist: Der Host sperrt Wörter, passende Songs werden mit „Nicht erlaubt.“ abgelehnt"
+  - title: Mehrere Musikanbieter
+    icon: "🎵"
+    items:
+      - Suche und Wiedergabe auch über andere Anbieter
+      - z. B. Amazon Music, YouTube Music, …
+  - title: Karaoke-Modus
+    icon: "🎤"
+    items:
+      - Songtexte am Player (TV) anzeigen – zum Mitsingen
+
+# ---------------------------------------------------------------------------
+# Screenshots: Reihenfolge = Reihenfolge der Folien.
+# file: Dateiname in hugo/content/status/screens/ (vom Skript erzeugt)
+# device: mobile | desktop (bestimmt Fenstergröße im Skript und Rahmen auf der Folie)
+# search: optionaler Suchbegriff, den das Skript vor dem Screenshot eintippt
+# ---------------------------------------------------------------------------
+screens:
+  - file: home.png
+    route: /
+    device: mobile
+    role: Alle
+    title: Startseite
+    text: Einstieg für alle – als Gastgeber oder als Gast weiter.
+  - file: host-options.png
+    route: /host-options
+    device: mobile
+    role: Gastgeber
+    title: Gastgeber-Optionen
+    text: Neue Party erstellen oder mit dem Host-PIN Dashboard bzw. Player einer laufenden Party öffnen.
+  - file: create-party.png
+    route: /create-party
+    device: mobile
+    role: Gastgeber
+    title: Party erstellen
+    text: Anbieter wählen – derzeit funktioniert nur Spotify („Amazon Music“ steht nur in der Auswahl). Danach geht es zum Spotify-Login.
+  - file: select-playlist.png
+    route: /select-playlist
+    device: mobile
+    role: Gastgeber
+    title: Standard-Playlist
+    text: Nach dem Login wählt der Host optional eine Playlist, aus der nachgefüllt wird, wenn niemand etwas wünscht.
+  - file: dashboard.png
+    route: /dashboard
+    device: desktop
+    role: Gastgeber
+    title: Host-Dashboard
+    text: Aktueller Song mit Steuerung (Neu starten, Play/Pause, Skip), Warteschlange mit Löschen, Host-PIN, QR-Code, Player öffnen und Party beenden.
+  - file: startpage.png
+    route: /startpage
+    device: desktop
+    role: Player (TV)
+    title: Player
+    text: Läuft am Fernseher und spielt die Musik ab. Gäste scannen hier den QR-Code.
+  - file: code-input.png
+    route: /code
+    device: mobile
+    role: Gast
+    title: Beitreten
+    text: Gäste geben den 5-stelligen PIN ein – oder landen direkt hier, wenn sie den QR-Code scannen.
+  - file: voting.png
+    route: /voting
+    device: mobile
+    role: Gast
+    title: Voten
+    text: Die Warteschlange, sortiert nach Likes. Ein Tipp auf das Herz liked oder nimmt das Like zurück.
+  - file: guest-search.png
+    route: /guest
+    device: mobile
+    role: Gast
+    title: Songs hinzufügen
+    search: Daft Punk   # wird vom Skript ins Suchfeld getippt
+    text: Suche bei Spotify; „+“ fügt den Song hinzu, ein Häkchen zeigt Songs, die schon warten.

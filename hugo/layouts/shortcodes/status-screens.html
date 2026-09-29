@@ -1,0 +1,26 @@
+{{- /*
+  Eine Folie pro Eintrag in data/status.yaml (screens).
+  Bilder liegen im Page-Bundle unter screens/ und werden von
+  hugo/scripts/status-screenshots erzeugt. Fehlt eins, erscheint ein Platzhalter.
+*/ -}}
+{{- $page := .Page -}}
+{{- $stand := partial "status/date.html" . -}}
+{{- $total := len site.Data.status.screens -}}
+{{- range $i, $s := site.Data.status.screens }}
+<section class="screen-slide {{ $s.device }}">
+<div class="screen-frame {{ $s.device }}">
+{{- with $page.Resources.GetMatch (printf "screens/%s" $s.file) }}
+<img src="{{ .RelPermalink }}" alt="Screenshot {{ $s.title }}">
+{{- else }}
+<div class="screen-missing">Screenshot fehlt<br><code>{{ $s.file }}</code></div>
+{{- end }}
+</div>
+<div class="screen-text">
+<p class="kicker">Aktueller Stand · {{ add $i 1 }}/{{ $total }}</p>
+<span class="role-badge">{{ $s.role }}</span>
+<h2>{{ $s.title }}</h2>
+<p>{{ $s.text }}</p>
+<p class="screen-meta"><code>{{ $s.route }}</code> · Stand {{ $stand }}</p>
+</div>
+</section>
+{{- end }}
