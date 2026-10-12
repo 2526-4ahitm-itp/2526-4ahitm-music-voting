@@ -15,7 +15,7 @@ Die App ist im HTL-Leonding-Cluster deployed und unter
 
 | Workflow | Trigger | Aufgabe |
 |---|---|---|
-| `.github/workflows/build-push-deploy.yml` | Push auf `main` oder `feature/deployment` (Pfade `musicvoting/**`, `k8s/**`, der Workflow selbst) + manuell | App bauen, Images pushen, deployen |
+| `.github/workflows/build-push-deploy.yml` | Push auf `main` oder `feature/deployment` (Pfade `musicvoting/**`, `deployment/k8s/**`, der Workflow selbst) + manuell | App bauen, Images pushen, deployen |
 | `.github/workflows/hugo.yaml` | Push auf `main` (Pfade `hugo/**`, `.github/workflows/**`) + manuell | Diese Doku-Website nach GitHub Pages bauen (Hugo Extended 0.145.0) |
 
 ### App-Pipeline (build-push-deploy)
@@ -33,7 +33,7 @@ Die App ist im HTL-Leonding-Cluster deployed und unter
 > Postgres hat **kein PersistentVolume**. Jeder Deploy (und jeder Pod-Neustart) setzt die Datenbank
 > zurück – alle Partys gehen dabei verloren.
 
-## Kubernetes-Manifests (`k8s/`)
+## Kubernetes-Manifests (`deployment/k8s/`)
 
 | Datei | Inhalt |
 |---|---|
@@ -58,15 +58,15 @@ Die App ist im HTL-Leonding-Cluster deployed und unter
 
 > [!IMPORTANT]
 > **Schema-Änderung = zwei Dateien.** Neue Spalten müssen in `musicvoting/backend/setup.sql` **und** in
-> der ConfigMap in `k8s/01-postgres.yaml` stehen. Fehlt eine Spalte in der ConfigMap, antwortet das
+> der ConfigMap in `deployment/k8s/01-postgres.yaml` stehen. Fehlt eine Spalte in der ConfigMap, antwortet das
 > Backend in Produktion mit HTTP 500 (so geschehen im Juni 2026).
 
-## Eigener Server mit HTTPS (`deploy/`)
+## Eigener Server mit HTTPS (`deployment/server/`)
 
-`deploy/` enthält einen eigenständigen Produktions-Stack: **Caddy** (Reverse-Proxy mit automatischem
+`deployment/server/` enthält einen eigenständigen Produktions-Stack: **Caddy** (Reverse-Proxy mit automatischem
 Let's-Encrypt-Zertifikat), Frontend, Backend und PostgreSQL (mit Volume).
 
-1. `cd deploy && cp .env.example .env` und die Werte eintragen – `DOMAIN`, `ACME_EMAIL`,
+1. `cd deployment/server && cp .env.example .env` und die Werte eintragen – `DOMAIN`, `ACME_EMAIL`,
    `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` sind Pflicht. Alle URLs (QR-Join, OAuth-Callback,
    `/select-playlist`) werden aus `DOMAIN` abgeleitet.
 2. DNS-Eintrag auf den Server, Ports **80 und 443** offen.
@@ -75,9 +75,9 @@ Let's-Encrypt-Zertifikat), Frontend, Backend und PostgreSQL (mit Volume).
 4. `docker compose up -d --build`.
 
 Caddy leitet `/api/*` ungepuffert (`flush_interval -1`, wichtig für SSE) ans Backend, alles andere
-an die Angular-SPA. Alle Details: `deploy/PLACEHOLDERS.md`.
+an die Angular-SPA. Alle Details: `deployment/server/PLACEHOLDERS.md`.
 
 ## Lokal mit denselben Images
 
-Unter `compose/` liegt ein Docker-Compose-Stack, der die GHCR-Images plus PostgreSQL startet –
+Unter `deployment/compose/` liegt ein Docker-Compose-Stack, der die GHCR-Images plus PostgreSQL startet –
 siehe Variante A in {{< article link="docs/runinstructions/" >}}.

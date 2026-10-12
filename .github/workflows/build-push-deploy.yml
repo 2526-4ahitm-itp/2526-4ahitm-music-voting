@@ -5,7 +5,7 @@ on:
     branches: [main, feature/deployment]
     paths:
       - "musicvoting/**"
-      - "k8s/**"
+      - "deployment/k8s/**"
       - ".github/workflows/build-push-deploy.yml"
   workflow_dispatch:
 
@@ -87,7 +87,7 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" | tr -d '[:space:]' | base64 -d > $HOME/.kube/config
 
       - name: Apply k8s manifests
-        run: kubectl apply -f k8s/ -n student-it220241
+        run: kubectl apply -f deployment/k8s/ -n student-it220241
 
       - name: Rollout restart to pull new images
         run: |

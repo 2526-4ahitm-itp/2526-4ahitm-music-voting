@@ -145,14 +145,14 @@ cd script
 
 Die App ist im HTL-Leonding-Cluster deployed und unter **https://it220241.cloud.htl-leonding.ac.at** erreichbar.
 
-- Workflow: `.github/workflows/build-push-deploy.yml` (läuft bei Push auf `main`, wenn `musicvoting/**` oder `k8s/**` betroffen ist; zusätzlich manuell per *workflow_dispatch*).
+- Workflow: `.github/workflows/build-push-deploy.yml` (läuft bei Push auf `main`, wenn `musicvoting/**` oder `deployment/k8s/**` betroffen ist; zusätzlich manuell per *workflow_dispatch*).
 - Backend- und Frontend-Images werden gebaut und nach **GHCR** gepusht
   (`ghcr.io/2526-4ahitm-itp/music-voting-backend` / `…-frontend`).
 - `kubectl apply -f k8s/` im Namespace `student-it220241`, anschließend Rollout-Restart von **Postgres**, Backend und Frontend.
-- Postgres hat kein Volume: **jeder Deploy setzt die Datenbank zurück**. Das Schema kommt aus der ConfigMap in `k8s/01-postgres.yaml` – bei Schema-Änderungen dort **und** in `setup.sql` anpassen.
-- Die k8s-Manifests liegen unter `k8s/` (`01-postgres.yaml`, `02-backend.yaml`, `03-frontend.yaml`, `ingress.yaml`).
+- Postgres hat kein Volume: **jeder Deploy setzt die Datenbank zurück**. Das Schema kommt aus der ConfigMap in `deployment/k8s/01-postgres.yaml` – bei Schema-Änderungen dort **und** in `setup.sql` anpassen.
+- Die k8s-Manifests liegen unter `deployment/k8s/` (`01-postgres.yaml`, `02-backend.yaml`, `03-frontend.yaml`, `ingress.yaml`).
 
-Details und die Variante mit eigenem Server (Caddy + HTTPS, Ordner `deploy/`) stehen unter [CI/CD & Deployment](../../dev/ci-cd-deployment/).
+Details und die Variante mit eigenem Server (Caddy + HTTPS, Ordner `deployment/server/`) stehen unter [CI/CD & Deployment](../../dev/ci-cd-deployment/).
 
 > [!NOTE]
 > In Produktion kommen Client ID/Secret aus einem Kubernetes-Secret (`spotify-credentials`),
