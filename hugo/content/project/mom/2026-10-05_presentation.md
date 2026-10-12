@@ -34,11 +34,21 @@ authors:
 
 ## Vereinbarungen und Entscheidungen
 
+Offene To-dos
+* Ist- und Soll-Zustand umbennenen
+* Commit-Messages nach Conventional Commits formulieren (feat:, fix:, docs: …)
+* Fehlschlagende Tests beheben (3 von 209 Tests fehlgeschlagen)
+* Tests in CI ausführen
+* Teamseite unvollständig: alle Teammitglieder mit Rolle nennen
+* Präsentation: eigene Folie „Projekttermine“
+* Präsentation: eigene Folie „Meilensteine“
+* Präsentation: C4-Kontextdiagramm ergänzen
+
 ### Was wurde vereinbart?
 
 | wer     | macht was                                        | bis wann   |
 |---------|--------------------------------------------------|------------|
-| Simone  | Präsentation überarbeiten                        | 12.10.2026 |
-| Miriam  | Präsentation überarbeiten                        | 12.10.2026 |
-| Marlies | Präsentation überarbeiten                        | 12.10.2026 |
-| Miriam  | Informationen über Musik Anbieter zusammentragen | 12.10.2026 |
+| Simone  | Präsentation überarbeiten                        | 19.10.2026 |
+| Miriam  | Präsentation überarbeiten                        | 19.10.2026 |
+| Marlies | Präsentation überarbeiten                        | 19.10.2026 |
+| Miriam  | Informationen über Musik Anbieter zusammentragen | 19.10.2026 |
