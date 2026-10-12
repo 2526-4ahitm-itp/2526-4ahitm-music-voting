@@ -29,8 +29,8 @@ Das Ziel des Projektes ist es, eine benutzerfreundliche Webanwendung zu entwicke
 {{< article link="docs/anleitung/" >}}
 
 # Präsentationen
-- **[Projektpräsentation](slides/)** – das Projekt in 15 Folien.
-- **[Projektstatus](status/)** – Ist- und Soll-Zustand, Architektur und Screenshots vom aktuellen Stand; wird laufend erneuert.
+- **[Projectpresentation](slides/)** – das Projekt in 15 Folien.
+- **[Projectstatus](status/)** – Ist- und Soll-Zustand, Architektur und Screenshots vom aktuellen Stand; wird laufend erneuert.
 
 Pfeiltasten zum Blättern, `F` für Vollbild, `S` für Sprechernotizen.
 
