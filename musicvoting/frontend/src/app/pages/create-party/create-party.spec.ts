@@ -27,9 +27,9 @@ describe('CreateParty', () => {
     expect(comp.error).toBe('Party konnte nicht erstellt werden. Bitte versuche es erneut.');
   });
 
-  it('goBack navigates to home', () => {
+  it('goBack navigates to host options', () => {
     comp.goBack();
 
-    expect(router.navigate).toHaveBeenCalledWith(['/']);
+    expect(router.navigate).toHaveBeenCalledWith(['/host-options']);
   });
 });

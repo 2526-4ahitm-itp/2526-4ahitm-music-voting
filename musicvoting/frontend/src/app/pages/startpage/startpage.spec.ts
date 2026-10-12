@@ -92,10 +92,14 @@ describe('Startpage', () => {
 
   describe('loadPlaylist', () => {
     it('does nothing without an active party', async () => {
+      const getQueue = jasmine.createSpy('getQueue');
+      (comp as any).spotifyService = { getQueue };
+      comp.tracks = [{ uri: 'spotify:track:existing' }];
+
       await comp.loadPlaylist();
 
-      // SpotifyWebPlayerService is null here, so any call would throw -
-      // absence of a thrown error confirms the early return.
+      expect(getQueue).not.toHaveBeenCalled();
+      expect(comp.tracks).toEqual([{ uri: 'spotify:track:existing' }]);
     });
 
     it('filters out the currently playing track by uri', async () => {

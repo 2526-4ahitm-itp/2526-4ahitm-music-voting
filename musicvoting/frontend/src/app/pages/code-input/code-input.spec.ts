@@ -77,7 +77,7 @@ describe('CodeInput', () => {
     expect(inputs[0].focus).toHaveBeenCalled();
   });
 
-  it('checkCode joins the party and navigates to /guest on success', () => {
+  it('checkCode joins the party and navigates to /voting on success', () => {
     partyService.resolvePin.and.returnValue(of({}));
     const inputs = getInputs();
     inputs.forEach((input, i) => (input.value = String(i + 1)));
@@ -85,7 +85,7 @@ describe('CodeInput', () => {
     comp.checkCode({ target: inputs[4] });
 
     expect(partyService.resolvePin).toHaveBeenCalledWith('12345');
-    expect(router.navigate).toHaveBeenCalledWith(['/guest']);
+    expect(router.navigate).toHaveBeenCalledWith(['/voting']);
   });
 
   it('checkCode shows an error when the party is not found', () => {
@@ -111,7 +111,7 @@ describe('CodeInput', () => {
 
     expect(inputs.map((i) => i.value)).toEqual(['5', '4', '3', '2', '1']);
     expect(partyService.resolvePin).toHaveBeenCalledWith('54321');
-    expect(router.navigate).toHaveBeenCalledWith(['/guest']);
+    expect(router.navigate).toHaveBeenCalledWith(['/voting']);
   });
 
   it('handlePaste rejects a non-numeric pasted code', () => {
