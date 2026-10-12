@@ -98,6 +98,6 @@ tv --> sp : Playback (SDK)
 | Variante | Wo | Beschreibung |
 |---|---|---|
 | Kubernetes | HTL-Cluster | Produktiv, per GitHub Actions (siehe [CI/CD](../ci-cd-deployment/)) |
-| `deploy/` | eigener Server | Docker Compose + **Caddy** (HTTPS via Let's Encrypt) |
-| `compose/` | lokal | fertige GHCR-Images + PostgreSQL |
+| `deployment/server/` | eigener Server | Docker Compose + **Caddy** (HTTPS via Let's Encrypt) |
+| `deployment/compose/` | lokal | fertige GHCR-Images + PostgreSQL |
 | Quellcode | lokal | `quarkus:dev` + `npm start` + DB aus `musicvoting/docker-compose.yaml` |

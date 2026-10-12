@@ -28,7 +28,7 @@ Es gibt zwei Wege:
 - **Variante A – Fertige Images aus GHCR (nur Docker):** am einfachsten, ohne Java/Node und ohne Bauen.
 - **Variante B – Aus dem Quellcode bauen:** für die aktive Entwicklung am Backend/Frontend.
 
-Wer die App auf einem **eigenen Server mit HTTPS** betreiben will, nimmt den Stack unter `deploy/`
+Wer die App auf einem **eigenen Server mit HTTPS** betreiben will, nimmt den Stack unter `deployment/server/`
 (Caddy + Let's Encrypt) – siehe [CI/CD & Deployment](../../dev/ci-cd-deployment/#eigener-server-mit-https-deploy).
 
 ---
@@ -42,7 +42,7 @@ kein Java, kein Node, kein `application.properties` editieren.
 
 1. Stack starten:
    ```bash
-   cd compose
+   cd deployment/compose
    docker compose up -d
    ```
 2. Öffnen:

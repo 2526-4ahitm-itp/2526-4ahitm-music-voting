@@ -19,14 +19,25 @@ Team: Miriam Gnadlinger (lead), Simone Sperrer, Marlies Winklbauer.
 Key directories:
 - `musicvoting/backend/` — Quarkus backend
 - `musicvoting/frontend/` — Angular frontend
-- `legacyProject/` — predecessor repo, **ignore unless explicitly asked**
+- `musicvoting/app/` — SwiftUI iOS app
 - `hugo/` — documentation site only
+- `openspec/` — specs and change proposals (must stay at repo root for OpenSpec tooling)
+- `deployment/` — everything for deploying:
+  - `deployment/k8s/` — Kubernetes manifests (LeoCloud, applied by `.github/workflows/build-push-deploy.yml`)
+  - `deployment/compose/` — local stack from prebuilt GHCR images + PostgreSQL
+  - `deployment/server/` — own server with Caddy + HTTPS (see `PLACEHOLDERS.md`)
+- `ai/` — AI-agent documents:
+  - `ai/ARBEITSREGELN.md` — team working rules
+  - `ai/continuations/` — session hand-off notes
+  - `ai/scratch/` — git-ignored scratch space for prompts and notes
+- `script/` — local dev start scripts (DB, backend, frontend)
+- `.claude/` (skills, commands) and this `CLAUDE.md` stay at the repo root because Claude Code loads them from there.
 
 ## Working rules
 
-Binding team rules (spec-driven, tests, commits, docs, versions) live in `ARBEITSREGELN.md` — follow them:
+Binding team rules (spec-driven, tests, commits, docs, versions) live in `ai/ARBEITSREGELN.md` — follow them:
 
-@ARBEITSREGELN.md
+@ai/ARBEITSREGELN.md
 
 ## Spec-driven development (OpenSpec)
 

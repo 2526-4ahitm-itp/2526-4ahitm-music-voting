@@ -39,6 +39,22 @@ Die Wiedergabe erfolgt über den **Spotify-Premium-Account** des Gastgebers.
 | Doku | Hugo-Site unter `hugo/`
 |===
 
+=== Projektstruktur
+
+[source]
+----
+musicvoting/        Anwendung: backend/ (Quarkus), frontend/ (Angular), app/ (iOS)
+openspec/           Specs und Change-Proposals (spec-driven development)
+hugo/               Dokumentations-Website und Präsentation
+deployment/
+  k8s/              Kubernetes-Manifests (LeoCloud, automatisch per GitHub Actions)
+  compose/          Lokaler Stack aus fertigen GHCR-Images + PostgreSQL
+  server/           Eigener Server mit Caddy + HTTPS
+ai/                 KI-Agent-Dokumente (Claude): Arbeitsregeln, Session-Notizen
+script/             Startskripte für die lokale Entwicklung
+.claude/, CLAUDE.md Konfiguration für Claude Code (muss im Root liegen)
+----
+
 == Starten des Programms
 
 === Konfiguration der Anwendung

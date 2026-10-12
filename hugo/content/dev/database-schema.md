@@ -147,5 +147,5 @@ Nicht im Schema, sondern beim Lesen berechnet:
 ## Schema in Produktion
 
 In Kubernetes liegt das Schema **nicht** in `setup.sql`, sondern als Kopie in der ConfigMap in
-`k8s/01-postgres.yaml`. Bei jeder Schema-Änderung **beide** Dateien anpassen. Siehe
+`deployment/k8s/01-postgres.yaml`. Bei jeder Schema-Änderung **beide** Dateien anpassen. Siehe
 [CI/CD & Deployment](../ci-cd-deployment/).
