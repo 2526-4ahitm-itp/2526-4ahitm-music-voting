@@ -22,6 +22,12 @@ Key directories:
 - `legacyProject/` — predecessor repo, **ignore unless explicitly asked**
 - `hugo/` — documentation site only
 
+## Working rules
+
+Binding team rules (spec-driven, tests, commits, docs, versions) live in `ARBEITSREGELN.md` — follow them:
+
+@ARBEITSREGELN.md
+
 ## Spec-driven development (OpenSpec)
 
 All feature work goes through the OpenSpec workflow. The skill is at `.claude/skills/openspec/SKILL.md` — invoke it via `/openspec` or when working in `openspec/`.
