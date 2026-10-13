@@ -71,9 +71,9 @@ layout: "presentation"
 
 {{< slide kicker="Die Programmiererinnen dahinter!" title="Team" >}}
 <div class="team">
-<div class="member"><strong>Miriam Gnadlinger</strong><span class="role">Project Lead</span></div>
-<div class="member"><strong>Simone Sperrer</strong><span class="role">Team</span></div>
-<div class="member"><strong>Marlies Winklbauer</strong><span class="role">Team</span></div>
+<div class="member"><img class="avatar" src="https://avatars.githubusercontent.com/u/114646339?v=4" alt="GitHub-Profilbild von Miriam Gnadlinger"><strong>Miriam Gnadlinger</strong><span class="role">Project Owner</span></div>
+<div class="member"><img class="avatar" src="https://avatars.githubusercontent.com/u/114646354?v=4" alt="GitHub-Profilbild von Simone Sperrer"><strong>Simone Sperrer</strong><span class="role">Team Member</span></div>
+<div class="member"><img class="avatar" src="https://avatars.githubusercontent.com/u/114646298?v=4" alt="GitHub-Profilbild von Marlies Winklbauer"><strong>Marlies Winklbauer</strong><span class="role">Team Member</span></div>
 </div>
 <div class="powered-by"><span>powered by</span><img src="htl-leonding-logo.jpg" alt="HTL Leonding"></div>
 {{< /slide >}}

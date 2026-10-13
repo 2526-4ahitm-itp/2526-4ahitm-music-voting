@@ -127,7 +127,9 @@
         }
 
         .reveal .team { display: flex; gap: 1.2em; justify-content: center; margin-top: 0.8em; }
-        .reveal .team .member { font-size: 0.7em; }
+        .reveal .team .member { font-size: 0.7em; display: flex; flex-direction: column; align-items: center; }
+        /* GitHub-Profilbilder (gleiche URLs wie in data/authors) */
+        .reveal .team .avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; margin: 0 0 0.4em; border: 3px solid var(--mv-primary); box-shadow: none; }
         .reveal .team .role { display: block; color: var(--mv-muted); font-size: 0.8em; }
 
         .reveal .powered-by {
@@ -237,12 +239,22 @@
         .reveal .screen-meta code { color: var(--mv-accent); }
 
         /* ---- Architektur-Diagramm ---- */
+        /* PlantUML-Diagramme (z. B. C4-Kontext) sind hell – auf eigener Fläche, damit sie auf dem dunklen Hintergrund lesbar bleiben */
+        .reveal .plantuml-diagram { max-height: 560px; background: #ffffff; border-radius: 12px; padding: 12px; }
+
+        /* Tabellen für Projekttermine und Meilensteine */
+        .reveal table.plan { margin: 0 auto; font-size: 0.7em; border-collapse: collapse; min-width: 60%; }
+        .reveal table.plan th { color: var(--mv-primary-soft); border-bottom: 2px solid var(--mv-primary); }
+        .reveal table.plan td { border-bottom: 1px solid var(--mv-border); color: var(--mv-text); }
+
         .reveal .arch-svg { width: 100%; max-height: 560px; }
         .reveal .arch-svg text { font-family: "Inter", system-ui, sans-serif; fill: var(--mv-text); }
         .reveal .arch-svg .muted { fill: var(--mv-muted); }
         .reveal .arch-svg .box { fill: var(--mv-surface); stroke: var(--mv-border); stroke-width: 2; }
         .reveal .arch-svg .box.primary { stroke: var(--mv-primary); }
         .reveal .arch-svg .box.accent { stroke: var(--mv-accent); }
+        /* Externe Systeme (C4-Kontext) gestrichelt, damit sie sich vom eigenen System abheben */
+        .reveal .arch-svg .box.ext { stroke-dasharray: 6 6; }
         .reveal .arch-svg .group { fill: none; stroke: var(--mv-border); stroke-dasharray: 6 6; }
         .reveal .arch-svg .edge { stroke: var(--mv-muted); stroke-width: 2; fill: none; }
         .reveal .arch-svg .edge.sse { stroke: var(--mv-accent); stroke-dasharray: 5 5; }
