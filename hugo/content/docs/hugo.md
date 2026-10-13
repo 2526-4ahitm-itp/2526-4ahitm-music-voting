@@ -6,7 +6,7 @@ authors:
   - simone
 date: 2025-03-03
 lastmod: 2026-06-23
-_build:
+build:
   list: never
 ---
 
