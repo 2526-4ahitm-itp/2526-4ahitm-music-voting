@@ -31,7 +31,7 @@ Gelten für das gesamte Team und für Claude (wird über `CLAUDE.md` eingebunden
 
 ## 5. Commits & Push
 
-- Commit und Push erfolgen **nur nach Nachfrage** bei Miriam.
+- Commit und Push erfolgen **nur nach Nachfrage**.
 - Alle Commits folgen **Conventional Commits** (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`, … optional mit Scope, z. B. `feat(frontend): …`).
   Siehe `hugo/content/project/convetional-commits-cheatsheet.md`.
 - Regelmäßig committen: nach jedem abgeschlossenen, sinnvollen Arbeitsschritt einen Commit vorschlagen (und nach Zustimmung durchführen).
@@ -48,5 +48,5 @@ Gelten für das gesamte Team und für Claude (wird über `CLAUDE.md` eingebunden
 ## 8. Versionen & Abhängigkeiten
 
 - Es werden immer die neuesten stabilen Versionen verwendet (Quarkus, Angular, Java, Node-Pakete, Docker-Images, …).
-- Gibt es neuere Versionen, wird darauf hingewiesen — **aktualisiert wird erst nach Nachfrage** bei Miriam.
+- Gibt es neuere Versionen, wird darauf hingewiesen — **aktualisiert wird erst nach Nachfrage**.
 - Nach einem Update müssen alle Tests wieder durchlaufen.
