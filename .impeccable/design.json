@@ -1,0 +1,583 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T11:23:21+00:00",
+  "title": "Design System: MusicVoting",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Velvet Plum",
+        "canonical": "oklch(45.6% 0.221 316.4)",
+        "tonalRamp": [
+          "#180022",
+          "#3b034c",
+          "#62167a",
+          "#8c2aab",
+          "#b051d1",
+          "#cd82e8",
+          "#e9b0ff",
+          "#ffdeff"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Velvet Plum Glow",
+        "canonical": "oklch(58.8% 0.241 332.9)",
+        "tonalRamp": [
+          "#1e001b",
+          "#460040",
+          "#730069",
+          "#a20395",
+          "#c93db9",
+          "#e476d4",
+          "#fda7ef",
+          "#ffd8ff"
+        ]
+      },
+      "primary-pressed": {
+        "role": "primary",
+        "displayName": "Velvet Plum Pressed",
+        "canonical": "oklch(39.2% 0.193 315.3)",
+        "tonalRamp": [
+          "#16001f",
+          "#380c48",
+          "#5d2174",
+          "#8537a3",
+          "#a95bc9",
+          "#c788e1",
+          "#e4b4f9",
+          "#ffe0ff"
+        ]
+      },
+      "primary-deep": {
+        "role": "primary",
+        "displayName": "Velvet Plum Deep",
+        "canonical": "oklch(34.8% 0.169 318.5)",
+        "tonalRamp": [
+          "#16011c",
+          "#371142",
+          "#5c276b",
+          "#843e98",
+          "#a860bc",
+          "#c68bd7",
+          "#e4b6f1",
+          "#ffe2ff"
+        ]
+      },
+      "plum-night": {
+        "role": "primary",
+        "displayName": "Plum Night",
+        "canonical": "oklch(33.4% 0.166 310.9)",
+        "tonalRamp": [
+          "#13021e",
+          "#331345",
+          "#562a71",
+          "#7c429f",
+          "#9f64c4",
+          "#be8edd",
+          "#ddb8f6",
+          "#fce3ff"
+        ]
+      },
+      "primary-tint": {
+        "role": "primary",
+        "displayName": "Plum Mist",
+        "canonical": "oklch(94.6% 0.033 307.2)",
+        "tonalRamp": [
+          "#0d0a0f",
+          "#27232c",
+          "#453f4c",
+          "#665d6f",
+          "#877e91",
+          "#a9a1b1",
+          "#ccc6d3",
+          "#f1ecf5"
+        ]
+      },
+      "primary-tint-soft": {
+        "role": "primary",
+        "displayName": "Plum Whisper",
+        "canonical": "oklch(98.9% 0.007 312.3)",
+        "tonalRamp": [
+          "#0c0a0d",
+          "#262428",
+          "#434145",
+          "#636064",
+          "#848185",
+          "#a6a4a8",
+          "#cbc8cd",
+          "#f0edf2"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Neon Coral",
+        "canonical": "oklch(66.5% 0.191 28.5)",
+        "tonalRamp": [
+          "#220000",
+          "#4d0102",
+          "#7c120e",
+          "#ae261f",
+          "#d64e42",
+          "#f08072",
+          "#ffafa2",
+          "#ffddd3"
+        ]
+      },
+      "accent-pressed": {
+        "role": "secondary",
+        "displayName": "Coral Pressed",
+        "canonical": "oklch(60.5% 0.183 14.3)",
+        "tonalRamp": [
+          "#210003",
+          "#4b0215",
+          "#79142b",
+          "#ab2743",
+          "#d24e63",
+          "#ec7f8b",
+          "#ffaeb5",
+          "#ffdce0"
+        ]
+      },
+      "accent-tint": {
+        "role": "secondary",
+        "displayName": "Coral Blush",
+        "canonical": "oklch(89.7% 0.054 23.9)",
+        "tonalRamp": [
+          "#130807",
+          "#321f1e",
+          "#553a38",
+          "#7b5654",
+          "#9e7774",
+          "#bd9c99",
+          "#dcc2c0",
+          "#fceae8"
+        ]
+      },
+      "danger": {
+        "role": "neutral",
+        "displayName": "Signal Red",
+        "canonical": "oklch(65.4% 0.232 28.7)",
+        "tonalRamp": [
+          "#260000",
+          "#540000",
+          "#860000",
+          "#bc0000",
+          "#e6372d",
+          "#fe7565",
+          "#ffa899",
+          "#ffd9cd"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "surface-subtle": {
+        "role": "neutral",
+        "displayName": "Mist Grey",
+        "canonical": "oklch(98.2% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "surface-muted": {
+        "role": "neutral",
+        "displayName": "Cool Mist",
+        "canonical": "oklch(96.8% 0.007 247.9)",
+        "tonalRamp": [
+          "#090b0e",
+          "#222528",
+          "#3f4246",
+          "#5e6265",
+          "#7f8386",
+          "#a2a5a9",
+          "#c6cacd",
+          "#ebeff3"
+        ]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Cloud Grey",
+        "canonical": "oklch(96.0% 0.005 258.3)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#242527",
+          "#404244",
+          "#606164",
+          "#818285",
+          "#a3a5a8",
+          "#c7c9cc",
+          "#edeff2"
+        ]
+      },
+      "divider": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(94.9% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Slate Border",
+        "canonical": "oklch(92.9% 0.013 255.5)",
+        "tonalRamp": [
+          "#080b10",
+          "#21252b",
+          "#3e4249",
+          "#5d6268",
+          "#7d838a",
+          "#a0a6ad",
+          "#c4cad1",
+          "#e9eff7"
+        ]
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "Slate Border Strong",
+        "canonical": "oklch(86.9% 0.020 252.9)",
+        "tonalRamp": [
+          "#060c13",
+          "#1e262f",
+          "#3b434d",
+          "#59626d",
+          "#7a838e",
+          "#9da6b2",
+          "#c0cad6",
+          "#e5f0fc"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(17.8% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "oklch(32.1% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Ash",
+        "canonical": "oklch(51.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "text-subtle": {
+        "role": "neutral",
+        "displayName": "Smoke",
+        "canonical": "oklch(62.7% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "text-placeholder": {
+        "role": "neutral",
+        "displayName": "Slate Placeholder",
+        "canonical": "oklch(71.1% 0.035 256.8)",
+        "tonalRamp": [
+          "#080b11",
+          "#1f262f",
+          "#394350",
+          "#566274",
+          "#768396",
+          "#9ba6b6",
+          "#c1cad6",
+          "#e9eff8"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The MusicVoting wordmark on the home page only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "White page titles on the gradient."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings and the current song on host view and TV."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explanations, subtitles, artist names."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "Song titles in track cards."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Pill buttons and bottom tabs."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "5-digit party and host PIN."
+      }
+    },
+    "gradients": [
+      {
+        "name": "brand",
+        "value": "linear-gradient(135deg, var(--color-primary), var(--color-accent))",
+        "purpose": "Full-bleed background of every web screen."
+      },
+      {
+        "name": "brand-ios",
+        "value": "linear-gradient(135deg, #510273, #8303a6, #f2593f)",
+        "purpose": "Three-stop background of the iOS app (Plum Night → Velvet Plum → Neon Coral)."
+      },
+      {
+        "name": "tint",
+        "value": "linear-gradient(135deg, var(--color-primary-tint) 0%, var(--color-surface) 100%)",
+        "purpose": "Soft plum panels on white."
+      }
+    ],
+    "shadows": [
+      {
+        "name": "halo",
+        "value": "0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1)",
+        "purpose": "Resting cards on host view and focused search field."
+      },
+      {
+        "name": "soft-lift",
+        "value": "0 0.25rem 0.5rem rgba(0, 0, 0, 0.1)",
+        "purpose": "Album covers inside cards."
+      },
+      {
+        "name": "plum-glow",
+        "value": "0 0.625rem 1.25rem rgba(var(--color-primary-rgb), 0.05)",
+        "purpose": "Tint-gradient panels."
+      },
+      {
+        "name": "float",
+        "value": "0 10px 30px rgba(0, 0, 0, 0.25)",
+        "purpose": "Floating bottom tab bar only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "quick",
+        "value": "0.15s–0.2s ease",
+        "purpose": "Tab color changes, card hover, like-button press."
+      },
+      {
+        "name": "standard",
+        "value": "0.3s ease",
+        "purpose": "Pill-button lift, search focus."
+      },
+      {
+        "name": "press",
+        "value": "transform: scale(0.9)",
+        "purpose": "Like button while pressed."
+      },
+      {
+        "name": "lift",
+        "value": "transform: translateY(-0.2rem) scale(1.05)",
+        "purpose": "Pill button hover."
+      },
+      {
+        "name": "soundwave",
+        "value": "0.8s ease-in-out infinite alternate, scaleY 0.25 → 1, staggered 0.15s",
+        "purpose": "Now-playing indicator."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "max-width: 48rem"
+      },
+      {
+        "name": "tablet",
+        "value": "48rem – 87.5rem"
+      },
+      {
+        "name": "desktop",
+        "value": "min-width: 87.5rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Pill Button",
+      "kind": "button",
+      "refersTo": "button-pill",
+      "description": "Chunky primary action on the gradient, e.g. „Gast auf einer Party“.",
+      "html": "<button class=\"ds-btn-pill\">Gast auf einer Party</button>",
+      "css": ".ds-btn-pill { font-family: var(--font), sans-serif; min-width: 15rem; padding: 0.75rem 2rem; font-size: 1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--color-text); background: var(--color-surface); border: none; border-radius: var(--radius-xl); cursor: pointer; transition: transform 0.3s ease, color 0.3s ease; } .ds-btn-pill:hover { transform: translateY(-0.2rem) scale(1.05); color: var(--color-primary); } .ds-btn-pill:focus-visible { outline: 3px solid var(--color-surface); outline-offset: 3px; } .ds-btn-pill:disabled { opacity: 0.6; cursor: default; transform: none; }"
+    },
+    {
+      "name": "Glass Option Button",
+      "kind": "button",
+      "description": "Full-width choice row on the setup flow (host options, provider choice).",
+      "html": "<div class=\"ds-glass-stage\"><button class=\"ds-option\"><span class=\"ds-option-icon\">🎉</span><span class=\"ds-option-text\"><strong>Neue Party erstellen</strong><small>Als Gastgeber eine Party starten</small></span></button></div>",
+      "css": ".ds-glass-stage { background: var(--gradient-brand); padding: 1.5rem; border-radius: var(--radius-md); } .ds-option { font-family: var(--font), sans-serif; display: flex; align-items: center; gap: 1rem; width: 100%; padding: 1rem 1.5rem; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); color: white; text-align: left; cursor: pointer; transition: background 0.2s; } .ds-option:hover { background: rgba(255,255,255,0.25); } .ds-option:focus-visible { outline: 2px solid white; outline-offset: 2px; } .ds-option-icon { font-size: 1.6rem; } .ds-option-text { display: flex; flex-direction: column; } .ds-option-text strong { font-size: 1.05rem; } .ds-option-text small { font-size: 0.85rem; opacity: 0.85; }"
+    },
+    {
+      "name": "Track Card with Like Button",
+      "kind": "card",
+      "refersTo": "track-card",
+      "description": "Signature queue row: cover, title, artist, plum like count and round like button.",
+      "html": "<div class=\"ds-track\"><div class=\"ds-cover\"></div><div class=\"ds-track-info\"><span class=\"ds-track-name\">Mr. Brightside</span><span class=\"ds-artist\">The Killers</span></div><span class=\"ds-like-count\">12</span><button class=\"ds-vote\" aria-label=\"Song liken\"><svg viewBox=\"0 0 24 24\" width=\"26\" height=\"26\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 21s-7.5-4.6-10-9.3C.4 8.4 2.3 4.5 6 4.5c2.1 0 3.4 1.1 4 2.1.6-1 1.9-2.1 4-2.1 3.7 0 5.6 3.9 4 7.2C19.5 16.4 12 21 12 21z\"/></svg></button></div>",
+      "css": ".ds-track { font-family: var(--font), sans-serif; display: flex; align-items: center; gap: 0.3rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--color-surface); transition: background 0.2s ease; } .ds-track:hover { background: var(--color-primary-tint-soft); } .ds-cover { width: 3.5rem; height: 3.5rem; border-radius: var(--radius-sm); background: var(--gradient-brand); margin-right: 0.875rem; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1); flex-shrink: 0; } .ds-track-info { flex: 1; min-width: 0; display: flex; flex-direction: column; } .ds-track-name { font-size: 1.06rem; font-weight: 700; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-artist { font-size: 0.875rem; color: var(--color-text-muted); } .ds-like-count { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); min-width: 1rem; text-align: right; } .ds-vote { width: 3.25rem; height: 3.25rem; border: none; border-radius: var(--radius-round); background: var(--color-primary-tint); color: var(--color-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s ease; } .ds-vote:active { transform: scale(0.9); } .ds-vote:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Song search on guest and host search pages.",
+      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.5-3.5\"/></svg><input type=\"search\" placeholder=\"In Playlist suchen...\"></label>",
+      "css": ".ds-search { position: relative; display: flex; align-items: center; color: var(--color-text-placeholder); } .ds-search svg { position: absolute; left: 1rem; pointer-events: none; } .ds-search input { font-family: var(--font), sans-serif; width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; font-size: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-subtle); color: var(--color-text); outline: none; transition: background 0.3s ease, box-shadow 0.3s ease; } .ds-search input:focus-visible { background: var(--color-surface); box-shadow: 0 0 0.9rem 0.9rem rgba(0,0,0,0.1); }"
+    },
+    {
+      "name": "PIN Digit Boxes",
+      "kind": "input",
+      "description": "Five glass boxes for the 5-digit party code on the join page.",
+      "html": "<div class=\"ds-glass-stage\"><div class=\"ds-pin\"><input maxlength=\"1\" value=\"6\" aria-label=\"Ziffer 1\"><input maxlength=\"1\" value=\"1\" aria-label=\"Ziffer 2\"><input maxlength=\"1\" value=\"4\" aria-label=\"Ziffer 3\"><input maxlength=\"1\" aria-label=\"Ziffer 4\"><input maxlength=\"1\" aria-label=\"Ziffer 5\"></div></div>",
+      "css": ".ds-glass-stage { background: var(--gradient-brand); padding: 1.5rem; border-radius: var(--radius-md); } .ds-pin { display: flex; gap: 10px; justify-content: center; } .ds-pin input { font-family: var(--font), sans-serif; width: 50px; height: 70px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.2); color: white; text-align: center; font-size: 24px; outline: none; caret-color: transparent; } .ds-pin input:focus-visible { border: 2px solid white; }"
+    },
+    {
+      "name": "Guest Bottom Tab Bar",
+      "kind": "nav",
+      "refersTo": "bottom-nav-tab",
+      "description": "Floating two-tab navigation on guest screens („Voten“ / „Hinzufügen“).",
+      "html": "<nav class=\"ds-tabs\"><button class=\"ds-tab ds-tab-active\">Voten</button><button class=\"ds-tab\">Hinzufügen</button></nav>",
+      "css": ".ds-tabs { display: flex; width: 90%; max-width: 450px; height: 4rem; margin: 0 auto; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.25); } .ds-tab { font-family: var(--font), sans-serif; flex: 1; border: none; background: var(--color-surface); color: var(--color-text); font-size: 1.15rem; font-weight: 600; letter-spacing: 0.03em; cursor: pointer; transition: color 0.15s ease, background 0.15s ease; } .ds-tab + .ds-tab { border-left: 1px solid rgba(0,0,0,0.08); } .ds-tab-active { background: var(--color-primary); color: white; } .ds-tab:active { background: var(--color-primary-pressed); color: white; } .ds-tab:focus-visible { outline: 3px solid var(--color-accent); outline-offset: -3px; }"
+    },
+    {
+      "name": "PIN & QR Panel",
+      "kind": "custom",
+      "description": "Signature join panel on the TV player and host view, with the binding „powered by HTL Leonding“ mark.",
+      "html": "<aside class=\"ds-join\"><div class=\"ds-join-pin\"><span>Voting-PIN</span><strong>61671</strong></div><div class=\"ds-join-qr\" aria-label=\"QR-Code\"></div><div class=\"ds-join-brand\"><b>MusicVoting</b><small>powered by HTL Leonding</small></div></aside>",
+      "css": ".ds-join { font-family: var(--font), sans-serif; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; width: 16rem; padding: 2rem 1.5rem; background: var(--color-surface); border-radius: var(--radius-pill); box-shadow: 0 0 0.9rem 0.9rem rgba(0,0,0,0.1); } .ds-join-pin { width: 100%; padding: 1rem 1.5rem; border-radius: var(--radius-lg); background: var(--color-divider); display: flex; flex-direction: column; } .ds-join-pin span { font-size: 14px; color: var(--color-text-subtle); } .ds-join-pin strong { font-size: 38px; font-weight: 800; letter-spacing: 20%; color: var(--color-text); } .ds-join-qr { width: 7rem; height: 7rem; background: repeating-conic-gradient(var(--color-text) 0 25%, var(--color-surface) 0 50%) 0 0 / 1.4rem 1.4rem; } .ds-join-brand { display: flex; flex-direction: column; align-items: center; } .ds-join-brand b { font-size: 1.6rem; color: var(--color-text); } .ds-join-brand small { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Glowing Wristband",
+    "overview": "MusicVoting looks like the festival wristband on a guest's arm: one loud, unmistakable brand band, compact enough to live on a phone, and always within thumb's reach. The Velvet Plum to Neon Coral gradient is that band. It fills the whole background of every screen, on the web and in the iOS app, so the moment someone sees the colors on the TV or a friend's phone, they know which party app it is.\n\nOn top of the band, surfaces float as light: translucent white glass panels for setup and choices, and solid white cards only where something has to be read fast, such as the queue, a song, or the PIN. Controls are chunky and thumb-first: big pills, round like buttons and a tall bottom tab bar, made to be hit with one thumb, in the dark, with a drink in the other hand. The TV player is the same wristband scaled up: huge type, the current song, the queue, and the PIN and QR code readable from across the room.\n\nThe system is deliberately small: one gradient, one purple family, one coral, white, and a short grey ramp. Personality comes from the band and from scale, not from many colors or ornaments.",
+    "keyCharacteristics": [
+      "Full-bleed Velvet Plum → Neon Coral gradient as the base of every screen.",
+      "Glass on light: translucent white panels by default, solid white where content must be read.",
+      "Chunky, thumb-first controls: pills, 52px round like buttons, a 64px bottom tab bar.",
+      "Heavy, tight headlines in white directly on the gradient.",
+      "Built for a dark room on the phone and for distance on the TV.",
+      "The „powered by HTL Leonding“ mark stays on the TV player and the host view."
+    ],
+    "rules": [
+      {
+        "name": "The One Band Rule",
+        "body": "The brand gradient (135°, Velvet Plum → Neon Coral) is the background of a screen, never a decoration on a component. One band per screen, full-bleed.",
+        "section": "colors"
+      },
+      {
+        "name": "The Plum Speaks Rule",
+        "body": "Solid Velvet Plum marks the one active or primary thing in view: the active tab, the like count, the now-playing song. If two things are plum, one of them is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Token Rule",
+        "body": "Page stylesheets never write hex values. Every color comes from a `--color-…` or `--gradient-…` token in `src/styles.css`; brand transparency uses `rgba(var(--color-primary-rgb), a)`.",
+        "section": "colors"
+      },
+      {
+        "name": "The Heavy Header Rule",
+        "body": "Text that sits directly on the gradient is white and at least 600 weight; light weights disappear in the band.",
+        "section": "typography"
+      },
+      {
+        "name": "The PIN Rule",
+        "body": "PINs are always set as spaced numerals, large enough to read from across the room on the TV.",
+        "section": "typography"
+      },
+      {
+        "name": "The Thumb Zone Rule",
+        "body": "Primary guest actions live in the bottom third of the phone screen: the bottom tab bar and the like buttons on the right edge of each card.",
+        "section": "layout"
+      },
+      {
+        "name": "The Glass First Rule",
+        "body": "A new surface on the gradient starts as glass (white at 15–25% opacity, 30–50% white border). Upgrade to solid white only when it holds text people must scan.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** use the full-bleed brand gradient (`var(--gradient-brand)`) as the background of every guest, host and TV screen.",
+      "**Do** take every color, gradient and radius from the tokens in `src/styles.css`.",
+      "**Do** keep text on the gradient white and at least 600 weight.",
+      "**Do** keep guest touch targets at least 3.25rem (52px), the size of the like button.",
+      "**Do** keep the PIN, the QR code and „powered by HTL Leonding“ visible on the TV player.",
+      "**Do** use Plum Night (#510273) for the darkest brand moments, consistently on web and iOS."
+    ],
+    "donts": [
+      "**Don't** write hex colors or `html`/`body` rules in page stylesheets.",
+      "**Don't** put the brand gradient on small components such as buttons or chips; it belongs to the screen.",
+      "**Don't** use more than one solid Velvet Plum element per view for \"active\" or \"primary\".",
+      "**Don't** use sharp corners or hard, dark drop shadows on surfaces resting on the gradient.",
+      "**Don't** shrink guest controls below thumb size to fit more content."
+    ]
+  }
+}

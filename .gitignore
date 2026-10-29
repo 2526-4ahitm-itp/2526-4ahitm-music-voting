@@ -197,3 +197,17 @@ xcuserdata/
 
 .codex 
 
+
+# Impeccable (design skill): shared files are tracked (.impeccable/config.json,
+# .impeccable/design.json, .impeccable/critique/), per-developer settings,
+# caches, live-mode runtime state and generated images are not.
+.impeccable/config.local.json
+**/.impeccable/hook.cache.json
+**/.impeccable/hook.pending.json
+.impeccable/history/
+.impeccable/build/
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/provider-smoke/
+.impeccable/live/*
+!.impeccable/live/config.json
