@@ -57,7 +57,7 @@ kein Java, kein Node, kein `application.properties` editieren.
 > [!IMPORTANT]
 > Das Backend-Image enthält **keine** `application.properties`. Spotify-Zugangsdaten und
 > Redirect-URIs musst du als Umgebungsvariablen mitgeben – ohne `SPOTIFY_REDIRECT_URI` startet das
-> Backend nicht. Lege dazu im Ordner `compose` eine Datei `docker-compose.override.yaml` an:
+> Backend nicht. Lege dazu im Ordner `deployment/compose` eine Datei `docker-compose.override.yaml` an:
 > ```yaml
 > services:
 >   backend:

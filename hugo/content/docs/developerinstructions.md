@@ -148,7 +148,7 @@ Die App ist im HTL-Leonding-Cluster deployed und unter **https://it220241.cloud.
 - Workflow: `.github/workflows/build-push-deploy.yml` (läuft bei Push auf `main`, wenn `musicvoting/**` oder `deployment/k8s/**` betroffen ist; zusätzlich manuell per *workflow_dispatch*).
 - Backend- und Frontend-Images werden gebaut und nach **GHCR** gepusht
   (`ghcr.io/2526-4ahitm-itp/music-voting-backend` / `…-frontend`).
-- `kubectl apply -f k8s/` im Namespace `student-it220241`, anschließend Rollout-Restart von **Postgres**, Backend und Frontend.
+- `kubectl apply -f deployment/k8s/` im Namespace `student-it220241`, anschließend Rollout-Restart von **Postgres**, Backend und Frontend.
 - Postgres hat kein Volume: **jeder Deploy setzt die Datenbank zurück**. Das Schema kommt aus der ConfigMap in `deployment/k8s/01-postgres.yaml` – bei Schema-Änderungen dort **und** in `setup.sql` anpassen.
 - Die k8s-Manifests liegen unter `deployment/k8s/` (`01-postgres.yaml`, `02-backend.yaml`, `03-frontend.yaml`, `ingress.yaml`).
 
