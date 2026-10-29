@@ -99,6 +99,18 @@ describe('CodeInput', () => {
     expect(comp.errorMessage).toBe('Party nicht gefunden.');
   });
 
+  it('clears all boxes and focuses the first one when the party is not found', () => {
+    partyService.resolvePin.and.returnValue(throwError(() => new Error('not found')));
+    const inputs = getInputs();
+    inputs.forEach((input, i) => (input.value = String(i + 1)));
+    inputs[4].focus();
+
+    comp.checkCode({ target: inputs[4] });
+
+    expect(Array.from(inputs).map(input => input.value).join('')).toBe('');
+    expect(document.activeElement).toBe(inputs[0]);
+  });
+
   it('handlePaste distributes a valid pasted code and joins the party', () => {
     partyService.resolvePin.and.returnValue(of({}));
     const inputs = getInputs();

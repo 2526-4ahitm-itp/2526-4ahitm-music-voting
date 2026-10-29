@@ -49,8 +49,17 @@
       Code aus Zwischenablage einfügen
     </button>
 
-    @if (showError) {
-      <p class="error-message">{{ errorMessage }}</p>
-    }
+    <div class="error-region" role="alert">
+      @if (showError) {
+        <p class="error-message">
+          <svg class="error-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="7" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12" y2="17"></line>
+          </svg>
+          {{ errorMessage }}
+        </p>
+      }
+    </div>
   </div>
 </div>

@@ -6,6 +6,7 @@ import { TrackService } from '../../services/spotify-tracks';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { QueueStateService } from '../../services/queue-state';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 
 describe('Guest', () => {
   let trackApi: { searchTracks: jasmine.Spy };
@@ -14,6 +15,7 @@ describe('Guest', () => {
   let cdr: { detectChanges: jasmine.Spy };
   let router: { navigate: jasmine.Spy };
   let ngZone: { run: jasmine.Spy };
+  let feedback: { show: jasmine.Spy };
   let comp: Guest;
 
   beforeEach(() => {
@@ -26,11 +28,12 @@ describe('Guest', () => {
     cdr = { detectChanges: jasmine.createSpy('detectChanges') };
     router = { navigate: jasmine.createSpy('navigate') };
     ngZone = { run: jasmine.createSpy('run').and.callFake((fn: () => void) => fn()) };
+    feedback = { show: jasmine.createSpy('show') };
 
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
 
     comp = TestBed.runInInjectionContext(
-      () => new Guest(trackApi as any, spotifyService as any, queueState as any, cdr as any, router as any, ngZone as any)
+      () => new Guest(trackApi as any, spotifyService as any, queueState as any, cdr as any, router as any, ngZone as any, feedback as any)
     );
   });
 
@@ -53,7 +56,7 @@ describe('Guest', () => {
     expect(comp.isSearching()).toBe(false);
   });
 
-  it('search logs an error when the request fails', async () => {
+  it('search logs an error and tells the guest when the request fails', async () => {
     spyOn(console, 'error');
     trackApi.searchTracks.and.returnValue(throwError(() => new Error('boom')));
 
@@ -61,9 +64,28 @@ describe('Guest', () => {
 
     expect(console.error).toHaveBeenCalled();
     expect(comp.isSearching()).toBe(false);
+    expect(feedback.show).toHaveBeenCalledWith('Die Suche hat nicht geklappt. Versuch es nochmal.', 'error');
   });
 
-  it('addToPlaylist adds the track and refreshes the queue state', async () => {
+  it('search flags no results when the provider returns no tracks', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] } }));
+
+    await comp.search('xqzvw');
+
+    expect(comp.tracks()).toEqual([]);
+    expect(comp.noResults()).toBe(true);
+  });
+
+  it('search clears the no-results flag for a new query', async () => {
+    comp.noResults.set(true);
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [{ id: 'a' }] } }));
+
+    await comp.search('abba');
+
+    expect(comp.noResults()).toBe(false);
+  });
+
+  it('addToPlaylist adds the track, refreshes the queue state and confirms it', async () => {
     spotifyService.addToPlaylist.and.returnValue(of({}));
     const track = { id: 't1', uri: 'spotify:track:t1', name: 'Song' };
 
@@ -75,40 +97,37 @@ describe('Guest', () => {
     expect(spotifyService.addToPlaylist).toHaveBeenCalledWith('spotify:track:t1');
     expect(queueState.refresh).toHaveBeenCalled();
     expect(comp.addingTrackId).toBeNull();
+    expect(feedback.show).toHaveBeenCalledWith('„Song“ ist in der Warteschlange.');
   });
 
-  it('addToPlaylist logs an error and resets addingTrackId on failure', async () => {
+  it('addToPlaylist shows the duplicate message on 409', async () => {
     spyOn(console, 'error');
-    spotifyService.addToPlaylist.and.returnValue(throwError(() => new Error('boom')));
-    const track = { id: 't1', uri: 'spotify:track:t1', name: 'Song' };
+    spotifyService.addToPlaylist.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
 
-    await comp.addToPlaylist(track);
+    await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
 
-    expect(console.error).toHaveBeenCalled();
+    expect(feedback.show).toHaveBeenCalledWith('Song ist schon in der Warteschlange.', 'error');
     expect(comp.addingTrackId).toBeNull();
   });
 
-  it('toggleMenu toggles menuOpen', () => {
-    expect(comp.menuOpen).toBe(false);
+  it('addToPlaylist shows the rate-limit message on 429', async () => {
+    spyOn(console, 'error');
+    spotifyService.addToPlaylist.and.returnValue(throwError(() => new HttpErrorResponse({ status: 429 })));
 
-    comp.toggleMenu();
-    expect(comp.menuOpen).toBe(true);
+    await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+
+    expect(feedback.show).toHaveBeenCalledWith('Zu viele Anfragen — bitte kurz warten.', 'error');
   });
 
-  it('trackById combines the track id and index', () => {
-    expect(comp.trackById(2, { id: 'abc' })).toBe('abc-2');
-  });
+  it('addToPlaylist shows a retry message on other failures', async () => {
+    spyOn(console, 'error');
+    spotifyService.addToPlaylist.and.returnValue(throwError(() => new Error('boom')));
 
-  it('goToVoting navigates to /vote', () => {
-    comp.goToVoting();
+    await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
 
-    expect(router.navigate).toHaveBeenCalledWith(['/vote']);
-  });
-
-  it('goToAddSongs navigates to /guest', () => {
-    comp.goToAddSongs();
-
-    expect(router.navigate).toHaveBeenCalledWith(['/guest']);
+    expect(console.error).toHaveBeenCalled();
+    expect(feedback.show).toHaveBeenCalledWith('Das hat nicht geklappt. Versuch es nochmal.', 'error');
+    expect(comp.addingTrackId).toBeNull();
   });
 
   it('ngOnInit syncs inQueueUris from the queue state service', () => {

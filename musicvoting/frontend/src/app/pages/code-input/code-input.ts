@@ -134,8 +134,19 @@ export class CodeInput implements OnInit {
       error: () => {
         this.showError = true;
         this.errorMessage = 'Party nicht gefunden.';
+        this.resetInputs();
       }
     });
+  }
+
+  /**
+   * Leert alle fünf Felder und setzt den Fokus ins erste, damit der Gast den PIN nach
+   * „Party nicht gefunden.“ sofort neu tippen kann, statt fünfmal zurückzulöschen.
+   */
+  private resetInputs(): void {
+    const inputs = this.getInputs();
+    inputs.forEach(input => (input.value = ''));
+    inputs[0]?.focus();
   }
 
   goBack() {

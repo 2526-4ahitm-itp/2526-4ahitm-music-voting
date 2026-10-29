@@ -76,13 +76,37 @@ header > h1 {
 
 /* Error Message */
 
-.error-message {
-  color: var(--color-danger); /* Ein kräftiges Rot, passend zum Screenshot */
-  font-weight: bold;
+/* Fester Platz für die Meldung, damit die Seite beim Ein- und Ausblenden nicht springt. */
+.error-region {
+  min-height: 3.5rem;
   margin-top: 15px;
-  font-size: 1.1rem;
-  /* Optional: Eine kleine Animation, damit die Nachricht "aufpoppt" */
+}
+
+/* Rot direkt auf dem Korallen-Verlauf war kaum lesbar (≈1,3:1). Daher ein weißer Chip
+   mit dunklem Text; das Rot bleibt nur am Icon als Signal. */
+.error-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   animation: fadeIn 0.3s ease-in-out;
+}
+
+.error-icon {
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+  fill: none;
+  stroke: var(--color-danger);
+  stroke-width: 2.5;
+  stroke-linecap: round;
 }
 
 /* paste button */

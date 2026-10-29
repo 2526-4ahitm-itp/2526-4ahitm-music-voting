@@ -1,0 +1,19 @@
+<div class="toast-region" role="status" aria-live="polite">
+  @if (feedback.message(); as message) {
+    <div class="toast" [class.toast-error]="message.kind === 'error'">
+      @if (message.kind === 'error') {
+        <svg class="toast-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="7" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12" y2="17"></line>
+        </svg>
+      } @else {
+        <svg class="toast-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="7.5 12.5 10.5 15.5 16.5 9"></polyline>
+        </svg>
+      }
+      <span class="toast-text">{{ message.text }}</span>
+    </div>
+  }
+</div>

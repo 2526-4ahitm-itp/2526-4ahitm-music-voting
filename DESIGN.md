@@ -85,6 +85,17 @@ components:
     textColor: "{colors.primary}"
     rounded: "{rounded.round}"
     size: "3.25rem"
+  button-vote-liked:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.surface}"
+    rounded: "{rounded.round}"
+    size: "3.25rem"
+  toast:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+    typography: "{typography.label}"
+    rounded: "{rounded.md}"
+    padding: "0.875rem 1rem"
   track-card:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
@@ -226,8 +237,10 @@ Chunky and thumb-first.
 - **Glass option button:** full-width row on the setup flow (icon, bold label, small explanation), glass fill, 0.75rem radius, 1rem × 1.5rem padding; the recommended option is slightly more opaque.
 
 ### Like Button (signature)
-- **Style:** 3.25rem circle in Plum Mist with a Velvet Plum heart, on the right edge of every track card, with the like count in plum next to it.
-- **State:** shrinks to 90% while pressed; a voted card fades to 50%. Updates optimistically.
+- **Style:** 3.25rem circle (3.75rem on phones) in Plum Mist with a drawn Velvet Plum outline heart (SVG, no text glyph), on the right edge of every track card, with the like count in plum next to it.
+- **Liked:** the button turns solid Velvet Plum with a filled white heart; the card itself stays fully visible and tappable, because a like can be taken back. `aria-pressed` and the label („Song liken“ / „Like entfernen“) follow the state.
+- **Feedback:** heart and count change instantly on tap (optimistic); the count gives a short 250ms pop (exponential ease-out, off with reduced motion). Shrinks to 90% while pressed. A failed like reverts and shows a toast.
+- **Already in the queue (search results):** the add button shows a Velvet Plum checkmark on Plum Mist, labelled „In der Warteschlange“. It reads as a state, never as a greyed-out disabled control.
 
 ### Cards / Containers
 - **Track card:** solid white, 0.75rem radius, 0.75rem × 1rem padding; 3.5rem album cover with 0.5rem radius; song title in Body Strong, artist in Ash. Hover tints to Plum Whisper.
@@ -238,11 +251,16 @@ Chunky and thumb-first.
 - **Search:** Mist Grey fill, Slate Border, 0.75rem radius, search icon inside on the left; on focus the fill turns white and the Halo appears.
 - **PIN digit boxes:** five 50 × 70px glass boxes with white text; the focused box gets a 2px white border.
 - **Host PIN field:** one wide glass field, 2rem spaced numerals.
-- **Error:** Signal Red, bold, fades in below the field.
+- **Error:** a white chip with Ink text and a Signal Red alert icon below the field, announced via `role="alert"`. Never red text directly on the gradient (≈1.3:1). After „Party nicht gefunden.“ the PIN boxes clear and focus returns to the first box.
 
 ### Navigation
 - **Guest bottom tab bar:** floats near the bottom of the screen, 90% width (max 450px), 4rem tall, 1.25rem radius, Float shadow. Two tabs („Voten“, „Hinzufügen“): inactive tabs are white with Ink text, the active tab is Velvet Plum with white text, pressed is Velvet Plum Pressed.
 - **Host side menu:** a hamburger opens a side menu on the host view.
+
+### Feedback Toast
+- **Style:** white chip (0.75rem radius) with Ink text, 600 weight, and a drawn icon: Velvet Plum check for confirmations, Signal Red alert for errors. Soft offset shadow.
+- **Placement:** floats directly above the guest bottom tab bar, same width (max 450px), so message and navigation read as one unit in the thumb zone.
+- **Behavior:** one message at a time, replaces the previous one, disappears after 3.5s; lives in an always-present `aria-live="polite"` region. Enters with a 280ms slide-up (exponential ease-out, off with reduced motion).
 
 ### PIN & QR Panel (signature)
 The right column of the host view and TV player: the PIN in Numeral style on a pale panel, the QR code below it, then actions, and at the bottom „MusicVoting – powered by HTL Leonding“ with the school logo. This panel is how guests join, so it is always visible on the TV.
@@ -263,3 +281,6 @@ The right column of the host view and TV player: the PIN in Numeral style on a p
 - **Don't** use more than one solid Velvet Plum element per view for "active" or "primary".
 - **Don't** use sharp corners or hard, dark drop shadows on surfaces resting on the gradient.
 - **Don't** shrink guest controls below thumb size to fit more content.
+- **Don't** fade, grey out or disable a whole card to show a state; show the state on the control itself.
+- **Don't** use text glyphs or emoji (♥, ✓, ⚠) as icons; draw them as SVG in the shared stroke style.
+- **Don't** let the floating tab bar cover content: scrolling lists reserve `4rem + 2vh + 1rem + env(safe-area-inset-bottom)` at their end.

@@ -10,6 +10,7 @@ import { SelectPlaylist } from './pages/select-playlist/select-playlist';
 import { Startpage } from './pages/startpage/startpage';
 import { VotingComp } from './pages/voting-comp/voting-comp';
 import { VotingHost } from './pages/voting-host/voting-host';
+import { GuestToast } from './components/guest-toast/guest-toast';
 
 /**
  * Guards the web design system (spec: web-design-system).
@@ -21,6 +22,8 @@ describe('Design tokens', () => {
   const pages: Record<string, Type<unknown>> = {
     CodeInput, CreateParty, Guest, Home, HostDashboard, HostOptions,
     SearchHost, SelectPlaylist, Startpage, VotingComp, VotingHost,
+    // Shared components follow the same rules as the pages.
+    GuestToast,
   };
 
   /**

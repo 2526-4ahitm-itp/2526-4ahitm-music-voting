@@ -44,13 +44,17 @@
               <span class="artist-name">{{ track.artists[0]?.name }}</span>
             </div>
 
-            <button class="add-button" (click)="addToPlaylist(track)" [disabled]="addingTrackId === track.id || inQueueUris.has(track.uri)">
+            <button class="add-button"
+                    [class.queued]="inQueueUris.has(track.uri)"
+                    [attr.aria-label]="inQueueUris.has(track.uri) ? 'In der Warteschlange' : 'Zur Warteschlange hinzufügen'"
+                    (click)="addToPlaylist(track)"
+                    [disabled]="addingTrackId === track.id || inQueueUris.has(track.uri)">
               @if (addingTrackId === track.id || inQueueUris.has(track.uri)) {
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               } @else {
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
@@ -59,7 +63,14 @@
           </div>
         } @empty {
           <div class="empty-state">
-            @if (!isSearching() && searchQuery().length === 0) {
+            @if (isSearching()) {
+              <p class="search-status" role="status">Suche läuft…</p>
+            } @else if (noResults() && searchQuery().trim().length > 0) {
+              <div class="welcome-screen">
+                <h2>Keine Songs gefunden.</h2>
+                <p>Versuch einen anderen Suchbegriff.</p>
+              </div>
+            } @else if (searchQuery().length === 0) {
               <div class="welcome-screen">
                 <div class="icon-circle">
                   <span class="main-icon">🎵</span>
@@ -73,6 +84,8 @@
       </div>
     </main>
   </div>
+
+  <app-guest-toast></app-guest-toast>
 
   <nav class="bottom-nav">
     <button class="bottom-nav-btn" routerLink="/voting">Voten</button>

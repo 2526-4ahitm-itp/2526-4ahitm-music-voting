@@ -7,6 +7,9 @@
 }
 
 .music-voting-container {
+  /* Platz am Listenende für die schwebende Tab-Leiste (Höhe 4rem, Abstand 2vh),
+     etwas Luft und den iPhone-Home-Indikator, damit die letzte Karte frei scrollbar ist. */
+  --bottom-nav-clearance: calc(4rem + 2vh + 1rem + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -98,7 +101,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 1rem 2.5rem 2rem 2.5rem;
+  padding: 1rem 2.5rem var(--bottom-nav-clearance) 2.5rem;
 }
 
 .main-content::-webkit-scrollbar {
@@ -166,6 +169,7 @@
 }
 
 .like-count {
+  display: inline-block;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-primary);
@@ -226,10 +230,43 @@
   transform: scale(0.9);
 }
 
-.track-card.voted {
-  opacity: 0.5;
-  pointer-events: none;
-  filter: grayscale(1);
+/* Herz als gezeichnetes Icon; Größe folgt der Button-Größe. */
+.vote-icon {
+  width: 55%;
+  height: 55%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+/* Geliked: Die Karte bleibt aktiv und voll sichtbar (Like lässt sich zurücknehmen);
+   nur der Button wird Velvet Plum mit weißem, gefülltem Herz (The Plum Speaks Rule). */
+.vote-button.liked {
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.vote-button.liked .vote-icon {
+  fill: currentColor;
+}
+
+.vote-button:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Kurzes Aufleuchten der Zahl nach einem Like, damit die eigene Stimme sichtbar zählt. */
+@media (prefers-reduced-motion: no-preference) {
+  .like-count.bumped {
+    animation: like-count-bump 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes like-count-bump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
 }
 
 .empty-state {
@@ -314,7 +351,7 @@
 /* BOTTOM NAV (SCHWEBEND UND ABGERUNDET) */
 .bottom-nav {
   position: fixed;
-  bottom: 2vh;          /* Schwebt exakt 25vh über dem Bildschirmende */
+  bottom: calc(2vh + env(safe-area-inset-bottom, 0px)); /* schwebt knapp über dem Bildschirmende bzw. dem iPhone-Home-Indikator */
   left: 5vw;             /* 5% Abstand vom linken Rand */
   right: 5vw;            /* 5% Abstand vom rechten Rand */
   width: 90vw;           /* Nutzt 90% der Bildschirmbreite (geht nicht bis zum Rand) */
@@ -402,7 +439,7 @@
   }
 
   .main-content {
-    padding: 0.625rem 0.75rem 1rem 0.75rem;
+    padding: 0.625rem 0.75rem var(--bottom-nav-clearance) 0.75rem;
   }
 
   .welcome-screen {

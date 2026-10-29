@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-29T11:23:21+00:00",
+  "generatedAt": "2026-10-29T12:29:57+00:00",
   "title": "Design System: MusicVoting",
   "extensions": {
     "colorMeta": {
@@ -417,6 +417,11 @@
         "name": "float",
         "value": "0 10px 30px rgba(0, 0, 0, 0.25)",
         "purpose": "Floating bottom tab bar only."
+      },
+      {
+        "name": "toast",
+        "value": "0 6px 20px rgba(0, 0, 0, 0.2)",
+        "purpose": "Feedback toast above the tab bar."
       }
     ],
     "motion": [
@@ -444,6 +449,16 @@
         "name": "soundwave",
         "value": "0.8s ease-in-out infinite alternate, scaleY 0.25 → 1, staggered 0.15s",
         "purpose": "Now-playing indicator."
+      },
+      {
+        "name": "like-count-bump",
+        "value": "250ms cubic-bezier(0.16, 1, 0.3, 1), scale 1 → 1.35 → 1",
+        "purpose": "Like count after a change; off with prefers-reduced-motion."
+      },
+      {
+        "name": "toast-in",
+        "value": "280ms cubic-bezier(0.16, 1, 0.3, 1), translateY(0.75rem) + fade",
+        "purpose": "Toast entrance; off with prefers-reduced-motion."
       }
     ],
     "breakpoints": [
@@ -481,9 +496,9 @@
       "name": "Track Card with Like Button",
       "kind": "card",
       "refersTo": "track-card",
-      "description": "Signature queue row: cover, title, artist, plum like count and round like button.",
-      "html": "<div class=\"ds-track\"><div class=\"ds-cover\"></div><div class=\"ds-track-info\"><span class=\"ds-track-name\">Mr. Brightside</span><span class=\"ds-artist\">The Killers</span></div><span class=\"ds-like-count\">12</span><button class=\"ds-vote\" aria-label=\"Song liken\"><svg viewBox=\"0 0 24 24\" width=\"26\" height=\"26\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 21s-7.5-4.6-10-9.3C.4 8.4 2.3 4.5 6 4.5c2.1 0 3.4 1.1 4 2.1.6-1 1.9-2.1 4-2.1 3.7 0 5.6 3.9 4 7.2C19.5 16.4 12 21 12 21z\"/></svg></button></div>",
-      "css": ".ds-track { font-family: var(--font), sans-serif; display: flex; align-items: center; gap: 0.3rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--color-surface); transition: background 0.2s ease; } .ds-track:hover { background: var(--color-primary-tint-soft); } .ds-cover { width: 3.5rem; height: 3.5rem; border-radius: var(--radius-sm); background: var(--gradient-brand); margin-right: 0.875rem; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1); flex-shrink: 0; } .ds-track-info { flex: 1; min-width: 0; display: flex; flex-direction: column; } .ds-track-name { font-size: 1.06rem; font-weight: 700; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-artist { font-size: 0.875rem; color: var(--color-text-muted); } .ds-like-count { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); min-width: 1rem; text-align: right; } .ds-vote { width: 3.25rem; height: 3.25rem; border: none; border-radius: var(--radius-round); background: var(--color-primary-tint); color: var(--color-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s ease; } .ds-vote:active { transform: scale(0.9); } .ds-vote:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }"
+      "description": "Signature queue row: cover, title, artist, plum like count and round like button; liked = solid plum button with white heart, card stays active.",
+      "html": "<div class=\"ds-track\"><div class=\"ds-cover\"></div><div class=\"ds-track-info\"><span class=\"ds-track-name\">Mr. Brightside</span><span class=\"ds-artist\">The Killers</span></div><span class=\"ds-like-count\">7</span><button class=\"ds-vote ds-vote-liked\" aria-pressed=\"true\" aria-label=\"Like entfernen\"><svg viewBox=\"0 0 24 24\" width=\"26\" height=\"26\" aria-hidden=\"true\"><path d=\"M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z\"/></svg></button></div>",
+      "css": ".ds-track { font-family: var(--font), sans-serif; display: flex; align-items: center; gap: 0.3rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--color-surface); transition: background 0.2s ease; } .ds-track:hover { background: var(--color-primary-tint-soft); } .ds-cover { width: 3.5rem; height: 3.5rem; border-radius: var(--radius-sm); background: var(--gradient-brand); margin-right: 0.875rem; box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1); flex-shrink: 0; } .ds-track-info { flex: 1; min-width: 0; display: flex; flex-direction: column; } .ds-track-name { font-size: 1.06rem; font-weight: 700; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-artist { font-size: 0.875rem; color: var(--color-text-muted); } .ds-like-count { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); min-width: 1rem; text-align: right; } .ds-vote { width: 3.25rem; height: 3.25rem; border: none; border-radius: var(--radius-round); background: var(--color-primary-tint); color: var(--color-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s ease; } .ds-vote svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; } .ds-vote-liked { background: var(--color-primary); color: var(--color-surface); } .ds-vote-liked svg { fill: currentColor; } .ds-vote:active { transform: scale(0.9); } .ds-vote:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }"
     },
     {
       "name": "Search Field",
@@ -496,9 +511,17 @@
     {
       "name": "PIN Digit Boxes",
       "kind": "input",
-      "description": "Five glass boxes for the 5-digit party code on the join page.",
-      "html": "<div class=\"ds-glass-stage\"><div class=\"ds-pin\"><input maxlength=\"1\" value=\"6\" aria-label=\"Ziffer 1\"><input maxlength=\"1\" value=\"1\" aria-label=\"Ziffer 2\"><input maxlength=\"1\" value=\"4\" aria-label=\"Ziffer 3\"><input maxlength=\"1\" aria-label=\"Ziffer 4\"><input maxlength=\"1\" aria-label=\"Ziffer 5\"></div></div>",
-      "css": ".ds-glass-stage { background: var(--gradient-brand); padding: 1.5rem; border-radius: var(--radius-md); } .ds-pin { display: flex; gap: 10px; justify-content: center; } .ds-pin input { font-family: var(--font), sans-serif; width: 50px; height: 70px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.2); color: white; text-align: center; font-size: 24px; outline: none; caret-color: transparent; } .ds-pin input:focus-visible { border: 2px solid white; }"
+      "description": "Five glass boxes for the 5-digit party code on the join page; errors appear as a white chip below.",
+      "html": "<div class=\"ds-glass-stage\"><div class=\"ds-pin\"><input maxlength=\"1\" value=\"6\" aria-label=\"Ziffer 1\"><input maxlength=\"1\" value=\"1\" aria-label=\"Ziffer 2\"><input maxlength=\"1\" value=\"4\" aria-label=\"Ziffer 3\"><input maxlength=\"1\" aria-label=\"Ziffer 4\"><input maxlength=\"1\" aria-label=\"Ziffer 5\"></div><p class=\"ds-pin-error\" role=\"alert\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"7\" x2=\"12\" y2=\"13\"/><line x1=\"12\" y1=\"17\" x2=\"12\" y2=\"17\"/></svg>Party nicht gefunden.</p></div>",
+      "css": ".ds-glass-stage { background: var(--gradient-brand); padding: 1.5rem; border-radius: var(--radius-md); } .ds-pin { display: flex; gap: 10px; justify-content: center; } .ds-pin input { font-family: var(--font), sans-serif; width: 50px; height: 70px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.2); color: white; text-align: center; font-size: 24px; outline: none; caret-color: transparent; } .ds-pin input:focus-visible { border: 2px solid white; } .ds-pin-error { display: inline-flex; align-items: center; gap: 0.5rem; margin: 1rem 0 0; padding: 0.625rem 1rem; border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.15); } .ds-pin-error svg { width: 1.375rem; height: 1.375rem; fill: none; stroke: var(--color-danger); stroke-width: 2.5; stroke-linecap: round; }"
+    },
+    {
+      "name": "Feedback Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Short confirmation or error above the guest tab bar, in an aria-live region.",
+      "html": "<div role=\"status\" aria-live=\"polite\"><div class=\"ds-toast ds-toast-error\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"7\" x2=\"12\" y2=\"13\"/><line x1=\"12\" y1=\"17\" x2=\"12\" y2=\"17\"/></svg><span>Zu viele Anfragen — bitte kurz warten.</span></div></div>",
+      "css": ".ds-toast { font-family: var(--font), sans-serif; display: flex; align-items: center; gap: 0.75rem; max-width: 450px; padding: 0.875rem 1rem; border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); font-size: 1rem; font-weight: 600; line-height: 1.35; box-shadow: 0 6px 20px rgba(0,0,0,0.2); } .ds-toast svg { width: 1.5rem; height: 1.5rem; flex-shrink: 0; fill: none; stroke: var(--color-primary); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; } .ds-toast-error svg { stroke: var(--color-danger); }"
     },
     {
       "name": "Guest Bottom Tab Bar",
@@ -577,7 +600,10 @@
       "**Don't** put the brand gradient on small components such as buttons or chips; it belongs to the screen.",
       "**Don't** use more than one solid Velvet Plum element per view for \"active\" or \"primary\".",
       "**Don't** use sharp corners or hard, dark drop shadows on surfaces resting on the gradient.",
-      "**Don't** shrink guest controls below thumb size to fit more content."
+      "**Don't** shrink guest controls below thumb size to fit more content.",
+      "**Don't** fade, grey out or disable a whole card to show a state; show the state on the control itself.",
+      "**Don't** use text glyphs or emoji (♥, ✓, ⚠) as icons; draw them as SVG in the shared stroke style.",
+      "**Don't** let the floating tab bar cover content: scrolling lists reserve `4rem + 2vh + 1rem + env(safe-area-inset-bottom)` at their end."
     ]
   }
 }

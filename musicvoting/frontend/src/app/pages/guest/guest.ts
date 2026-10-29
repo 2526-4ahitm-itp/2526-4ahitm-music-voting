@@ -8,11 +8,13 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
+import { GuestFeedbackService, addErrorMessage } from '../../services/guest-feedback';
+import { GuestToast } from '../../components/guest-toast/guest-toast';
 
 @Component({
   selector: 'app-guest',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, GuestToast],
   templateUrl: './guest.html',
   styleUrls: ['./guest.css'],
 })
@@ -20,7 +22,8 @@ export class Guest implements OnInit, OnDestroy {
   searchQuery = signal<string>('');
   tracks = signal<any[]>([]);
   isSearching = signal<boolean>(false);
-  menuOpen = false;
+  /** true, wenn die letzte abgeschlossene Suche keine Treffer hatte („Keine Songs gefunden.“). */
+  noResults = signal<boolean>(false);
   addingTrackId: string | null = null;
   inQueueUris = new Set<string>();
   private eventSource?: EventSource;
@@ -37,7 +40,8 @@ export class Guest implements OnInit, OnDestroy {
     private queueState: QueueStateService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private feedback: GuestFeedbackService
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +72,7 @@ export class Guest implements OnInit, OnDestroy {
   /** Suche nach Tracks */
   async search(query?: string) {
     const searchTerm = (query ?? this.searchQuery()).trim();
+    this.noResults.set(false);
     if (searchTerm.length < 1) {
       this.tracks.set([]);
       return;
@@ -77,21 +82,21 @@ export class Guest implements OnInit, OnDestroy {
 
     try {
       const res: any = await lastValueFrom(this.trackApi.searchTracks(searchTerm));
-
-      if (res?.tracks?.items) {
-        const seen = new Set<string>();
-        this.tracks.set(
-          res.tracks.items
-            .filter((track: any) => track?.id && !seen.has(track.id))
-            .map((track: any) => {
-              seen.add(track.id);
-              return track;
-            })
-            .slice(0, 25)
-        );
-      }
+      const items: any[] = res?.tracks?.items ?? [];
+      const seen = new Set<string>();
+      this.tracks.set(
+        items
+          .filter((track: any) => track?.id && !seen.has(track.id))
+          .map((track: any) => {
+            seen.add(track.id);
+            return track;
+          })
+          .slice(0, 25)
+      );
+      this.noResults.set(this.tracks().length === 0);
     } catch (err) {
       console.error('Fehler bei der Suche:', err);
+      this.feedback.show('Die Suche hat nicht geklappt. Versuch es nochmal.', 'error');
     } finally {
       this.isSearching.set(false);
     }
@@ -105,28 +110,14 @@ export class Guest implements OnInit, OnDestroy {
     try {
       await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
       this.queueState.refresh();
+      this.feedback.show(`„${track.name}“ ist in der Warteschlange.`);
     } catch (err) {
       console.error('Fehler beim Hinzufügen:', err);
+      // 409 (schon in der Warteschlange) und 429 (zu viele Anfragen) bekommen ihre Spec-Texte.
+      this.feedback.show(addErrorMessage(err), 'error');
     } finally {
       this.addingTrackId = null;
       this.cdr.detectChanges();
     }
   }
-
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
-  }
-
-  trackById(index: number, track: any): string {
-    return track.id + '-' + index;
-  }
-
-  goToVoting() {
-    this.router.navigate(['/vote']);
-  }
-
-  goToAddSongs() {
-    this.router.navigate(['/guest']);
-  }
-
 }

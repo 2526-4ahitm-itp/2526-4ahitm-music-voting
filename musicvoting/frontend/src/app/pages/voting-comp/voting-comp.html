@@ -28,7 +28,7 @@
     <div class="main-content">
       <div class="track-list">
         @for (track of filteredTracks(); track track.id) {
-          <div class="track-card" [class.voted]="track.hasVoted" [class.now-playing]="track.isCurrentlyPlaying">
+          <div class="track-card" [class.now-playing]="track.isCurrentlyPlaying">
             <img class="album-cover" [src]="track.album?.images[0]?.url" alt="Cover">
             <div class="track-info">
               <span class="track-name">{{ track.name }}</span>
@@ -45,10 +45,16 @@
                 </div>
               } @else {
                 @if (track.likeCount > 0) {
-                  <span class="like-count">{{ track.likeCount }}</span>
+                  <span class="like-count" [class.bumped]="bumpedUris().has(track.uri)">{{ track.likeCount }}</span>
                 }
-                <button class="vote-button" (click)="toggleVote(track)">
-                  {{ track.hasVoted ? '♥' : '♡' }}
+                <button class="vote-button"
+                        [class.liked]="track.hasVoted"
+                        [attr.aria-pressed]="!!track.hasVoted"
+                        [attr.aria-label]="track.hasVoted ? 'Like entfernen' : 'Song liken'"
+                        (click)="toggleVote(track)">
+                  <svg class="vote-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
                 </button>
               }
             </div>
@@ -67,6 +73,8 @@
       </div>
     </div>
   </div>
+
+  <app-guest-toast></app-guest-toast>
 
   <nav class="bottom-nav">
     <button class="bottom-nav-btn active" routerLink="/voting">Voten</button>

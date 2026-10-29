@@ -1,19 +1,21 @@
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 import { VotingComp } from './voting-comp';
 
 describe('VotingComp', () => {
-  let spotifyService: { getQueue: jasmine.Spy };
+  let spotifyService: { getQueue: jasmine.Spy; toggleVote: jasmine.Spy };
+  let feedback: { show: jasmine.Spy };
   let ngZone: { run: jasmine.Spy };
   let router: { navigate: jasmine.Spy };
   let partyService: { currentPartyId: string | null };
   let comp: VotingComp;
 
   beforeEach(() => {
-    spotifyService = { getQueue: jasmine.createSpy('getQueue') };
+    spotifyService = { getQueue: jasmine.createSpy('getQueue'), toggleVote: jasmine.createSpy('toggleVote') };
+    feedback = { show: jasmine.createSpy('show') };
     ngZone = { run: jasmine.createSpy('run').and.callFake((fn: () => void) => fn()) };
     router = { navigate: jasmine.createSpy('navigate') };
     partyService = { currentPartyId: 'party-1' };
-    comp = new VotingComp(spotifyService as any, ngZone as any, null as any, router as any, partyService as any);
+    comp = new VotingComp(spotifyService as any, ngZone as any, null as any, router as any, partyService as any, feedback as any);
   });
 
   afterEach(() => comp.ngOnDestroy());
@@ -70,14 +72,75 @@ describe('VotingComp', () => {
     expect(comp.searchQuery()).toBe('song a');
   });
 
-  it('toggleMenu toggles menuOpen', () => {
-    expect(comp.menuOpen).toBe(false);
+  describe('toggleVote', () => {
+    const song = () => comp.tracks().find(t => t.uri === 'uri-x');
 
-    comp.toggleMenu();
-    expect(comp.menuOpen).toBe(true);
+    beforeEach(() => {
+      comp.tracks.set([{ uri: 'uri-x', name: 'X', artists: [], likeCount: 2, hasVoted: false }]);
+    });
 
-    comp.toggleMenu();
-    expect(comp.menuOpen).toBe(false);
+    it('fills the heart and counts up before the server answers', () => {
+      const reply = new Subject<any>();
+      spotifyService.toggleVote.and.returnValue(reply);
+
+      comp.toggleVote(song());
+
+      expect(song().hasVoted).toBe(true);
+      expect(song().likeCount).toBe(3);
+      expect(comp.bumpedUris().has('uri-x')).toBe(true);
+    });
+
+    it('lets a liked song be un-liked optimistically', () => {
+      comp.tracks.set([{ uri: 'uri-x', name: 'X', artists: [], likeCount: 3, hasVoted: true }]);
+      spotifyService.toggleVote.and.returnValue(new Subject<any>());
+
+      comp.toggleVote(song());
+
+      expect(song().hasVoted).toBe(false);
+      expect(song().likeCount).toBe(2);
+    });
+
+    it('takes the server reply as the final state', async () => {
+      spotifyService.toggleVote.and.returnValue(of({ liked: true, likeCount: 5 }));
+
+      await comp.toggleVote(song());
+
+      expect(song().hasVoted).toBe(true);
+      expect(song().likeCount).toBe(5);
+    });
+
+    it('reverts and shows a message when the vote fails', async () => {
+      spyOn(console, 'error');
+      spotifyService.toggleVote.and.returnValue(throwError(() => new Error('boom')));
+
+      await comp.toggleVote(song());
+
+      expect(song().hasVoted).toBe(false);
+      expect(song().likeCount).toBe(2);
+      expect(feedback.show).toHaveBeenCalledWith('Das Liken hat nicht geklappt. Versuch es nochmal.', 'error');
+    });
+
+    it('ignores a second tap while the first request is pending', () => {
+      spotifyService.toggleVote.and.returnValue(new Subject<any>());
+
+      comp.toggleVote(song());
+      comp.toggleVote(song());
+
+      expect(spotifyService.toggleVote).toHaveBeenCalledTimes(1);
+      expect(song().hasVoted).toBe(true);
+      expect(song().likeCount).toBe(3);
+    });
+
+    it('keeps the optimistic state when a live reload arrives during the request', async () => {
+      spotifyService.toggleVote.and.returnValue(new Subject<any>());
+      spotifyService.getQueue.and.returnValue(of({ queue: [{ uri: 'uri-x', name: 'X', artists: [], likeCount: 2, hasVoted: false }] }));
+
+      comp.toggleVote(song());
+      await comp.loadPlaylist();
+
+      expect(song().hasVoted).toBe(true);
+      expect(song().likeCount).toBe(3);
+    });
   });
 
   it('ngOnInit opens an EventSource for live updates including the party id', async () => {
