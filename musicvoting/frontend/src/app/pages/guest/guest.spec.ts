@@ -205,6 +205,15 @@ describe('Guest template', () => {
     expect(el.querySelector('input[type="search"]')!.getAttribute('aria-label')).toBe('Song oder Künstler suchen');
   });
 
+  it('draws the welcome icon as SVG and hides the submit button without inline styles', async () => {
+    const el = await render();
+    const submit = el.querySelector('button[type="submit"]')!;
+
+    expect(el.querySelector('.icon-circle svg')).not.toBeNull();
+    expect(submit.hasAttribute('hidden')).toBe(true);
+    expect(submit.hasAttribute('style')).toBe(false);
+  });
+
   it('uses „Warteschlange“ in the welcome text', async () => {
     const el = await render();
 

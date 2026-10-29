@@ -235,6 +235,20 @@ describe('VotingComp template', () => {
     expect(el.querySelector('.welcome-screen h2')!.textContent).toContain('Warteschlange ist leer');
   });
 
+  it('draws the empty-state icon as SVG instead of an emoji', async () => {
+    const el = await render([]);
+    const circle = el.querySelector('.icon-circle')!;
+
+    expect(circle.querySelector('svg')).not.toBeNull();
+    expect(circle.textContent).not.toContain('🎵');
+  });
+
+  it('falls back to the placeholder when a song has no cover', async () => {
+    const el = await render([{ id: '1', uri: 'u1', name: 'Song', artists: [{ name: 'A' }], album: { images: [] }, likeCount: 0 }]);
+
+    expect(el.querySelector('.album-cover')!.getAttribute('src')).toBe('assets/img/placeholder.png');
+  });
+
   it('treats covers as decorative because the title is next to them', async () => {
     const el = await render([{ id: '1', uri: 'u1', name: 'Song', artists: [{ name: 'A' }], album: { images: [{ url: 'x.png' }] }, likeCount: 0 }]);
 

@@ -41,27 +41,6 @@ describe('Startpage', () => {
     });
   });
 
-  describe('trackById', () => {
-    it('prefers the track id', () => {
-      expect(comp.trackById(2, { id: 'abc', uri: 'spotify:track:abc' })).toBe('abc');
-    });
-
-    it('falls back to the uri when there is no id', () => {
-      expect(comp.trackById(2, { uri: 'spotify:track:abc' })).toBe('spotify:track:abc');
-    });
-
-    it('falls back to the index when there is neither id nor uri', () => {
-      expect(comp.trackById(2, {})).toBe(2);
-    });
-  });
-
-  it('toggleMenu toggles menuOpen', () => {
-    expect(comp.menuOpen).toBe(false);
-
-    comp.toggleMenu();
-    expect(comp.menuOpen).toBe(true);
-  });
-
   describe('loadCurrentTrack', () => {
     it('does nothing without an active party', async () => {
       await comp.loadCurrentTrack();

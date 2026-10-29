@@ -202,9 +202,10 @@
   text-align: right;
 }
 
+/* Der laufende Song ist durch die halbtransparente Karte und die Soundwave markiert;
+   kein farbiger Seitenstreifen (DESIGN.md / Detector: side-tab). */
 .track-card.now-playing {
   background-color: rgba(255, 255, 255, 0.5);
-  border-left: 3px solid var(--color-primary);
 }
 
 .soundwave {
@@ -221,7 +222,7 @@
   width: 3px;
   border-radius: 2px;
   background-color: var(--color-primary);
-  animation: soundwave-bounce 0.8s ease-in-out infinite alternate;
+  animation: soundwave-pulse 0.8s ease-in-out infinite alternate;
 }
 
 .soundwave-bar:nth-child(1) { height: 6px;  animation-delay: 0s; }
@@ -230,7 +231,7 @@
 .soundwave-bar:nth-child(4) { height: 14px; animation-delay: 0.45s; }
 .soundwave-bar:nth-child(5) { height: 6px;  animation-delay: 0.6s; }
 
-@keyframes soundwave-bounce {
+@keyframes soundwave-pulse {
   from { transform: scaleY(0.25); }
   to   { transform: scaleY(1); }
 }
@@ -319,8 +320,15 @@
   box-shadow: 0 0.625rem 1.25rem rgba(var(--color-primary-rgb), 0.05);
 }
 
+/* Gezeichnete Note statt Emoji (DESIGN.md: Icons als SVG im gemeinsamen Strichstil). */
 .main-icon {
-  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .welcome-screen h2 {

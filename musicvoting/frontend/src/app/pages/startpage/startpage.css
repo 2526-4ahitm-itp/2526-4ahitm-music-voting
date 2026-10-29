@@ -210,6 +210,8 @@
 }
 
 .crown-icon {
+  font-size: 40px;
+  line-height: 1;
   margin-left: 20px;
   display: flex;
   align-items: center;

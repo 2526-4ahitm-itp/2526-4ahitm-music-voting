@@ -31,7 +31,7 @@
       <div class="track-list">
         @for (track of filteredTracks(); track track.id) {
           <div class="track-card" [class.now-playing]="track.isCurrentlyPlaying">
-            <img class="album-cover" [src]="track.album?.images[0]?.url" alt="">
+            <img class="album-cover" [src]="track.album?.images?.[0]?.url || 'assets/img/placeholder.png'" alt="">
             <div class="track-info">
               <span class="track-name">{{ track.name }}</span>
               <span class="artist-name">{{ track.artists[0]?.name }}</span>
@@ -65,7 +65,11 @@
           <div class="empty-state">
             <div class="welcome-screen">
               <div class="icon-circle">
-                <span class="main-icon">🎵</span>
+                <svg class="main-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 18V5l12-2v13"></path>
+                  <circle cx="6" cy="18" r="3"></circle>
+                  <circle cx="18" cy="16" r="3"></circle>
+                </svg>
               </div>
               <h2>Warteschlange ist leer</h2>
               <p>Füg unter „Hinzufügen“ den ersten Song hinzu.</p>

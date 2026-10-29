@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "musicvoting/frontend/src/app/pages/voting-comp/voting-comp.html"
+        ],
+        "createdAt": "2026-10-29T13:06:46.985Z",
+        "reason": "Claude: <img> sources are Angular [src] bindings; critique 2026-10-29 Assessment B verified broken-image here as false positive"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "musicvoting/frontend/src/app/pages/guest/guest.html"
+        ],
+        "createdAt": "2026-10-29T13:06:47.018Z",
+        "reason": "Claude: <img> sources are Angular [src] bindings; critique 2026-10-29 Assessment B verified broken-image here as false positive"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "musicvoting/frontend/src/app/pages/startpage/startpage.html"
+        ],
+        "createdAt": "2026-10-29T13:06:47.053Z",
+        "reason": "Claude: <img> sources are Angular [src] bindings; critique 2026-10-29 Assessment B verified broken-image here as false positive"
+      }
+    ]
+  }
+}

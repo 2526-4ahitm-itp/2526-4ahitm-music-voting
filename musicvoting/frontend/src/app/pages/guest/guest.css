@@ -249,8 +249,15 @@
   box-shadow: 0 0.625rem 1.25rem rgba(var(--color-primary-rgb), 0.05);
 }
 
+/* Gezeichnete Note statt Emoji (DESIGN.md: Icons als SVG im gemeinsamen Strichstil). */
 .main-icon {
-  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .welcome-screen h2 {

@@ -16,7 +16,6 @@ import { PartyService } from '../../services/party.service';
 })
 export class Startpage implements OnInit, OnDestroy {
   tracks: any[] = [];
-  menuOpen = false;
   currentTrack: any = null;
   private eventSource?: EventSource;
 
@@ -359,14 +358,6 @@ export class Startpage implements OnInit, OnDestroy {
     } catch (err) {
       console.error('Fehler beim Laden der Playlist:', err);
     }
-  }
-
-  trackById(index: number, track: any) {
-    return track.id || track.uri || index;
-  }
-
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
   }
 
   ngOnDestroy() {
