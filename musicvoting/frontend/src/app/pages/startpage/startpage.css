@@ -1,419 +1,318 @@
-.layout{
-  width: 100vw;
-  height: 100vh;
+/* TV-Player: wird aus 3–5 m Entfernung gelesen. Alle Größen hängen an der Bildschirmhöhe (vh),
+   damit ein Fernseher nicht Laptop-große Schrift bekommt; clamp() hält kleine Fenster lesbar.
+   Ein TV scrollt nicht, deshalb muss alles auf einen Bildschirm passen (100dvh, overflow hidden). */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(18rem, 30vw, 34rem);
+  gap: 3vh;
+  box-sizing: border-box;
+  height: 100dvh;
+  padding: 2.5vh;
+  overflow: hidden;
   font-family: var(--font), sans-serif;
+  color: var(--color-text);
   background: var(--gradient-brand);
 }
 
-.content-cards{
-  display: flex;
-  width: 100vw;
-}
-
-.left{
-  width: 80vw;
+.stage,
+.side {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  gap: 3vh;
+  min-height: 0;
 }
 
-.right{
-  width: 20vw;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-/* CURRENT SONG */
-
-.current-song{
-  display: flex;
-  gap: 2rem;
-  width: auto;
+/* Weiße Flächen bleiben (Entscheidung aus der Critique), sind aber nur so groß wie ihr Inhalt. */
+.panel {
   box-sizing: border-box;
-  padding: 2rem;
-
-  margin: 2rem;
-  background-color: white;
-
+  padding: 2.5vh 3vh;
   border-radius: var(--radius-pill);
-  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
+  background: var(--color-surface);
+  box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.12);
 }
 
-.song-info{
-  padding-left: 2rem;
+/* LÄUFT GERADE */
+
+.now-playing {
+  display: flex;
+  align-items: center;
+  gap: 3vh;
+  flex-shrink: 0;
+}
+
+.now-cover {
+  width: clamp(8rem, 22vh, 22rem);
+  height: clamp(8rem, 22vh, 22rem);
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.now-info {
   flex: 1;
   min-width: 0;
 }
 
-.song-info > h1 {
-  font-size: 2.5rem;
+.now-title {
+  margin: 0;
+  font-size: clamp(2rem, 5.6vh, 6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  /* Lange Titel brechen höchstens einmal um, statt das Panel zu sprengen. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.song-info > p {
-  font-size: 1.5rem;
+
+.now-artist {
+  margin: 0.8vh 0 0;
+  font-size: clamp(1.25rem, 3.4vh, 3.5rem);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.now-info.idle .now-artist {
+  white-space: normal;
 }
 
 .progress {
-  margin-top: 10rem;
-  width: 100%;
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 2vh;
+  margin-top: 3vh;
+}
+
+.progress-time {
+  font-size: clamp(1rem, 2.6vh, 2.75rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
 }
 
 .progress-bar {
   flex: 1;
   min-width: 0;
-  height: 6px;
+  height: max(6px, 1vh);
+  border-radius: var(--radius-sm);
   background-color: var(--color-divider);
-  border-radius: 10px;
+  overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background-color: var(--color-accent);
   width: 0;
+  background-color: var(--color-accent);
   transition: width 0.5s linear;
-  border-radius: 4px 0 0 4px;
 }
 
+/* ALS NÄCHSTES: eine Liste statt Kachel-Raster, damit Lese- und Spielreihenfolge gleich sind.
+   Zeilen sind durch Linien getrennt, nicht als Karten in der Karte. */
 
-/* WARTESCHLANGE */
-
-.queue{
-  gap: 2rem;
-  width: auto;
-  height: max-content;
-  box-sizing: border-box;
-  padding: 2rem 2rem 0 2rem;
-
-  flex-grow: 1;
-  overflow: auto;
-
-  margin: 0 2rem 2rem 2rem;
-  background-color: white;
-
-  border-radius: var(--radius-pill);
-  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
-}
-
-.queue > h2{
-  font-size: 2rem;
-  margin: 0 0 0 1.5rem;
-}
-
-.queue-info {
-  font-size: 1rem;
-  margin: 0.5rem 0 0 1.5rem;
-}
-
-.queue-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-flow: row;
-  gap: 1rem;
-  margin: 1.5rem;
-}
-
-.track {
+/* Nur so hoch wie der Inhalt (weniger weiße Fläche im dunklen Raum), darf aber schrumpfen. */
+.up-next {
   display: flex;
-  gap: 1rem;
-  font-weight: bold;
-  font-size: 1.2rem;
-  position: relative;
-  align-items: center;
-  box-shadow: 0 0 0.4rem 0.4rem rgba(0, 0, 0, 0.1);
-  margin: 0.75rem;
-}
-
-.track-info{
-  height: 60px;
-}
-
-.song-artist,
-.song-title{
-  margin-bottom: .5rem;
-}
-
-.song-title{
-  margin-top: .2rem;
-  font-size: 15px;
-}
-
-.song-artist{
-  font-size: 12px;
-}
-.cover-wrapper {
-  position: relative;
-  width: 5.2rem;
-  height: 5.2rem;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
   overflow: hidden;
 }
 
-.cover-wrapper img {
-  width: 100%;
-  height: 100%;
+.up-next-heading {
+  margin: 0 0 1vh;
+  font-size: clamp(1.25rem, 3.4vh, 3.5rem);
+  font-weight: 800;
+}
+
+.up-next-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.up-next-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2vh;
+  padding: 1vh 0;
+}
+
+.up-next-row + .up-next-row {
+  border-top: 1px solid var(--color-divider);
+}
+
+.row-position {
+  min-width: 1.5ch;
+  font-size: clamp(1.1rem, 3.4vh, 3.5rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--color-primary);
+}
+
+.row-cover {
+  display: block;
+  width: clamp(3rem, 6.5vh, 7rem);
+  height: clamp(3rem, 6.5vh, 7rem);
+  border-radius: var(--radius-sm);
   object-fit: cover;
 }
 
-.queue-number {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: rgba(255,255,255,0.85);
-  background: rgba(0,0,0,0.4);
+.row-cover-empty {
+  background: var(--color-primary-tint);
 }
 
-.queue-text-default {
-  margin: 1rem 2rem 3rem 1.5rem;
-}
-
-/* RIGHT SIDE */
-
-
-/* HOST PIN */
-.host-pin-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.2rem 1.8rem;
-  width: 80%;
-  /* Optik des Containers */
-  background-color: var(--color-divider);
-  border-radius: var(--radius-lg);
-  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-}
-
-.pin-content {
+.row-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
-.party-pin-label {
-  margin: 0;
-  color: var(--color-text-subtle);
-  font-size: 14px;
+.row-title,
+.row-artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-title {
+  font-size: clamp(1.1rem, 3.4vh, 3.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.row-artist {
+  font-size: clamp(1rem, 2.6vh, 2.75rem);
   font-weight: 500;
-  margin-bottom: 4px;
+  color: var(--color-text-muted);
 }
 
-.party-pin-value {
-  margin: 0;
-  color: var(--color-text);
-  font-size: 38px;
-  font-weight: 800;
-  letter-spacing: 20%;
-}
-
-.crown-icon {
-  margin-left: 20px;
-  display: flex;
+/* Likes in Velvet Plum: der Raum sieht, dass Voten die Reihenfolge bestimmt. */
+.row-likes {
+  display: inline-flex;
   align-items: center;
-  height: 2vh;
+  gap: 1vh;
+  font-size: clamp(1.1rem, 3.4vh, 3.5rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
 }
 
-/* QR-CODE */
+.row-heart {
+  width: 0.9em;
+  height: 0.9em;
+  fill: currentColor;
+}
 
-.qr-code{
+.up-next-more {
+  margin: 1vh 0 0;
+  font-size: clamp(0.9rem, 2.4vh, 2.5rem);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.up-next-empty {
+  margin: 0;
+  font-size: clamp(1.1rem, 3vh, 3rem);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+/* BEITRETEN: PIN und QR-Code sind das Größte in der rechten Spalte. */
+
+.join {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: start;
-
-  gap: 2rem;
-  width: auto;
-  box-sizing: border-box;
-  padding: 2rem;
-  align-content: start;
-
-  flex-grow: 1;
-  overflow: auto;
-
-  margin: 2rem 2rem 2rem 0;
-  background-color: white;
-
-  border-radius: var(--radius-pill);
-  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
+  gap: 2.5vh;
 }
 
-.qr-code > .cover {
+.pin-block {
+  box-sizing: border-box;
   width: 100%;
+  padding: 1.5vh 2vh;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-tint-soft);
+  text-align: center;
 }
 
-.qr-code-text{
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-top: 0;
-  /* farbverlauf*/
-  background: var(--gradient-brand-reverse);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.pin-label {
+  margin: 0;
+  font-size: clamp(0.9rem, 2.4vh, 2.5rem);
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
-.logo-box {
-  width: calc(20vw - 2rem);
-  height: auto;
-  box-sizing: border-box;
-  align-content: center;
+.pin-digits {
+  margin: 0.5vh 0 0;
+  font-size: clamp(2.5rem, 9vh, 9rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Das QR-PNG ist eine reine Schwarz-Weiß-Matrix; pixelated hält es beim Hochskalieren scharf. */
+.qr {
+  display: block;
+  height: clamp(12rem, 34vh, 40rem);
+  max-width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.join-cta {
+  margin: 0;
+  font-size: clamp(1rem, 2.8vh, 3rem);
+  font-weight: 800;
+  line-height: 1.25;
   text-align: center;
+}
+
+/* MARKE: „powered by HTL Leonding“ ist verbindlich. Text und Logo stehen auf einer weißen Plakette,
+   weil weißer Text auf dem Korallen-Ende des Verlaufs nur 3,3:1 erreicht. */
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1vh;
   margin-top: auto;
-  margin-bottom: 2rem;
 }
 
-span.logo {
-  font-size: calc((20vw - 2rem)/6.5);
-  font-weight: bold;
-  text-align: center;
+.brand-name {
+  font-size: clamp(1.5rem, 4.5vh, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-surface);
 }
 
 .powered-by {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.35rem;
+  gap: 1.2vh;
+  padding: 0.8vh 1.6vh;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
 }
 
 .powered-by-text {
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  opacity: 0.7;
+  font-size: clamp(0.9rem, 2.4vh, 2.5rem);
+  font-weight: 700;
+  color: var(--color-text-secondary);
 }
 
 .htl-logo {
-  height: 2.9rem;
+  display: block;
+  height: clamp(1.75rem, 4.5vh, 4.5rem);
   width: auto;
-  mix-blend-mode: multiply;
-}
-
-
-
-
-@media (min-width: 48rem) and (max-width: 87.5rem) {
-
-  .status-box h1 {
-    font-size: 1.8rem !important;
-    color: var(--color-text-secondary);
-    margin-bottom: 0.5rem;
-  }
-
-  .status-box p {
-    font-size: 1.1rem !important;
-    color: var(--color-text-muted);
-  }
-
-
-  .content-cards {
-    display: flex;
-    width: 100vw;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-
-  .left {
-    width: 75vw;
-  }
-
-  .right {
-    margin-left: 1.5rem;
-    width: 25vw;
-  }
-
-  .qr-code, .logo-box {
-    box-sizing: border-box;
-  }
-
-  .current-song .cover {
-    height: 250px;
-    width: 250px;
-  }
-
-  .current-song .song-info h1 {
-    font-size: 2rem;
-  }
-
-  .current-song .song-info p {
-    font-size: 1.4rem;
-  }
-
-  .queue{
-    height: auto;
-  }
-
-  .queue h2 {
-    font-size: 1.4rem;
-  }
-
-  .queue-text-default {
-    font-size: 1.1rem;
-  }
-
-  .queue-grid {
-    margin-left: 0.5rem;
-    gap: 0;
-    width: auto;
-  }
-
-  .track{
-    display: flex;
-    align-items: center;
-    position: relative;
-    padding-right: 4rem;
-    width: 20vw;
-    gap: 1rem;
-    box-sizing: border-box;
-  }
-
-  .track-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .cover-wrapper{
-    width: 10vw;
-    padding: 0;
-  }
-
-  .host-pin-box .crown-icon {
-    margin-top: 1rem;
-    font-size: 30px !important;
-  }
-
-  .right .qr-code .cover {
-    height: 230px;
-    width: 230px;
-  }
-
-
-  .qr-code {
-    position: static;
-    width: 85%;
-  }
-
-  .logo-box {
-    width: calc(25vw - 2rem);
-    height: auto;
-    margin-top: auto;
-    margin-bottom: 2rem;
-  }
-
-  .logo-box .logo {
-    font-size: calc((25vw - 2rem)/6.5);
-  }
-
-  .play-icon, .skip-icon {
-    margin-top: 1rem;
-  }
 }

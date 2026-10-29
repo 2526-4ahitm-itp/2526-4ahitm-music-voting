@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-29T12:29:57+00:00",
+  "generatedAt": "2026-10-29T12:44:51+00:00",
   "title": "Design System: MusicVoting",
   "extensions": {
     "colorMeta": {
@@ -534,9 +534,16 @@
     {
       "name": "PIN & QR Panel",
       "kind": "custom",
-      "description": "Signature join panel on the TV player and host view, with the binding „powered by HTL Leonding“ mark.",
-      "html": "<aside class=\"ds-join\"><div class=\"ds-join-pin\"><span>Voting-PIN</span><strong>61671</strong></div><div class=\"ds-join-qr\" aria-label=\"QR-Code\"></div><div class=\"ds-join-brand\"><b>MusicVoting</b><small>powered by HTL Leonding</small></div></aside>",
-      "css": ".ds-join { font-family: var(--font), sans-serif; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; width: 16rem; padding: 2rem 1.5rem; background: var(--color-surface); border-radius: var(--radius-pill); box-shadow: 0 0 0.9rem 0.9rem rgba(0,0,0,0.1); } .ds-join-pin { width: 100%; padding: 1rem 1.5rem; border-radius: var(--radius-lg); background: var(--color-divider); display: flex; flex-direction: column; } .ds-join-pin span { font-size: 14px; color: var(--color-text-subtle); } .ds-join-pin strong { font-size: 38px; font-weight: 800; letter-spacing: 20%; color: var(--color-text); } .ds-join-qr { width: 7rem; height: 7rem; background: repeating-conic-gradient(var(--color-text) 0 25%, var(--color-surface) 0 50%) 0 0 / 1.4rem 1.4rem; } .ds-join-brand { display: flex; flex-direction: column; align-items: center; } .ds-join-brand b { font-size: 1.6rem; color: var(--color-text); } .ds-join-brand small { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); }"
+      "description": "Signature join panel on the TV player: Party-PIN on Plum Whisper, large QR, solid call to action; brand block with the binding „powered by HTL Leonding“ plate.",
+      "html": "<div class=\"ds-tv-side\"><aside class=\"ds-join\"><div class=\"ds-join-pin\"><span>Party-PIN</span><strong>61671</strong></div><div class=\"ds-join-qr\" aria-label=\"QR-Code zum Beitreten\"></div><p class=\"ds-join-cta\">Scan den Code und bestimm die Musik mit!</p></aside><div class=\"ds-brand\"><b>MusicVoting</b><span class=\"ds-powered\">powered by <i>HTL Leonding</i></span></div></div>",
+      "css": ".ds-tv-side { font-family: var(--font), sans-serif; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 1.5rem; background: var(--gradient-brand); border-radius: var(--radius-md); } .ds-join { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; width: 17rem; padding: 1.25rem 1.5rem; background: var(--color-surface); border-radius: var(--radius-pill); box-shadow: 0 0.6rem 1.5rem rgba(0,0,0,0.12); } .ds-join-pin { box-sizing: border-box; width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-lg); background: var(--color-primary-tint-soft); text-align: center; display: flex; flex-direction: column; } .ds-join-pin span { font-size: 0.9rem; font-weight: 600; color: var(--color-text-muted); } .ds-join-pin strong { font-size: 2.75rem; font-weight: 800; line-height: 1; letter-spacing: 0.12em; font-variant-numeric: tabular-nums; color: var(--color-text); } .ds-join-qr { width: 9rem; height: 9rem; background: repeating-conic-gradient(var(--color-text) 0 25%, var(--color-surface) 0 50%) 0 0 / 1.5rem 1.5rem; } .ds-join-cta { margin: 0; font-weight: 800; text-align: center; color: var(--color-text); } .ds-brand { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; } .ds-brand b { font-size: 1.75rem; color: var(--color-surface); letter-spacing: -0.02em; } .ds-powered { padding: 0.35rem 0.75rem; border-radius: var(--radius-md); background: var(--color-surface); font-weight: 700; color: var(--color-text-secondary); } .ds-powered i { font-style: normal; color: var(--color-text); }"
+    },
+    {
+      "name": "Up-Next List (TV)",
+      "kind": "custom",
+      "description": "TV „Als Nächstes“: next five songs in play order with like counts, rows divided by hairlines inside one panel.",
+      "html": "<section class=\"ds-un\"><h2>Als Nächstes</h2><ol><li class=\"ds-un-row\"><span class=\"ds-un-pos\">1</span><span class=\"ds-un-cover\"></span><span class=\"ds-un-info\"><b>Dancing Queen</b><small>ABBA</small></span><span class=\"ds-un-likes\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z\"/></svg>5</span></li><li class=\"ds-un-row\"><span class=\"ds-un-pos\">2</span><span class=\"ds-un-cover\"></span><span class=\"ds-un-info\"><b>Blinding Lights</b><small>The Weeknd</small></span><span class=\"ds-un-likes\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z\"/></svg>4</span></li><li class=\"ds-un-row\"><span class=\"ds-un-pos\">3</span><span class=\"ds-un-cover\"></span><span class=\"ds-un-info\"><b>Levitating</b><small>Dua Lipa</small></span><span class=\"ds-un-likes\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z\"/></svg>3</span></li></ol><p class=\"ds-un-more\">+ 4 weitere</p></section>",
+      "css": ".ds-un { font-family: var(--font), sans-serif; padding: 1.25rem 1.5rem; background: var(--color-surface); border-radius: var(--radius-pill); color: var(--color-text); } .ds-un h2 { margin: 0 0 0.5rem; font-size: 1.5rem; font-weight: 800; } .ds-un ol { margin: 0; padding: 0; list-style: none; } .ds-un-row { display: grid; grid-template-columns: auto auto minmax(0,1fr) auto; align-items: center; gap: 0.9rem; padding: 0.5rem 0; } .ds-un-row + .ds-un-row { border-top: 1px solid var(--color-divider); } .ds-un-pos { min-width: 1.5ch; text-align: right; font-size: 1.4rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--color-primary); } .ds-un-cover { width: 2.75rem; height: 2.75rem; border-radius: var(--radius-sm); background: var(--gradient-brand); } .ds-un-info { display: flex; flex-direction: column; min-width: 0; } .ds-un-info b { font-size: 1.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-un-info small { font-size: 1rem; color: var(--color-text-muted); } .ds-un-likes { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 1.4rem; font-weight: 800; color: var(--color-primary); } .ds-un-likes svg { width: 0.9em; height: 0.9em; fill: currentColor; } .ds-un-more { margin: 0.5rem 0 0; font-weight: 700; color: var(--color-text-muted); }"
     }
   ],
   "narrative": {
@@ -585,6 +592,11 @@
         "name": "The Glass First Rule",
         "body": "A new surface on the gradient starts as glass (white at 15–25% opacity, 30–50% white border). Upgrade to solid white only when it holds text people must scan.",
         "section": "elevation"
+      },
+      {
+        "name": "The Sofa Rule",
+        "body": "On the TV, nothing is sized in px or rem alone: if it can't be read from the sofa at 1080p (≈ 2.2vh minimum), it doesn't belong on the TV.",
+        "section": "layout"
       }
     ],
     "dos": [

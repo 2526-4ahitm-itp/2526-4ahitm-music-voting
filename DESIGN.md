@@ -205,9 +205,13 @@ One saturated band (plum to coral) carries the identity; everything on top of it
 
 Screens are full-viewport columns (`100dvh`) on the gradient: a header with the page title, an optional sticky search area separated by a faint white hairline, a scrolling content area, and on guest screens a floating bottom tab bar. Page side padding is 2.5rem on desktop; lists use 0.5rem gaps; cards use 0.75rem × 1rem inner padding.
 
-Breakpoints are consistent across all pages: phones below 48rem, tablets and laptops from 48rem to 87.5rem, large screens above. Headline sizes step down at each breakpoint (e.g. 2.4rem → 1.8rem → 1.4rem). The host view and TV player use a two-column layout on large screens: song and queue cards on the left, a narrow column with PIN, QR code, actions and the „powered by“ mark on the right.
+Breakpoints are consistent across all pages: phones below 48rem, tablets and laptops from 48rem to 87.5rem, large screens above. Headline sizes step down at each breakpoint (e.g. 2.4rem → 1.8rem → 1.4rem). The host view uses a two-column layout on large screens: song and queue cards on the left, a narrow column with PIN, QR code, actions and the „powered by“ mark on the right.
+
+The **TV player** is sized from the screen height, because it is read from 3–5 m away and never scrolls: a grid of `minmax(0, 1fr)` and a right column of `clamp(18rem, 30vw, 34rem)`, `100dvh`, padding and gaps in `vh`. Every font size is `clamp(min, Xvh, max)`: now-playing title 5.6vh, artist, section heading, up-next titles and like counts 3.4vh, secondary lines 2.6vh, small labels 2.4vh (nothing below 2.2vh), PIN digits 9vh, QR code 34vh. White panels size to their content so the gradient, not white, fills the rest of the screen.
 
 ### Named Rules
+**The Sofa Rule.** On the TV, nothing is sized in px or rem alone: if it can't be read from the sofa at 1080p (≈ 2.2vh minimum), it doesn't belong on the TV.
+
 **The Thumb Zone Rule.** Primary guest actions live in the bottom third of the phone screen: the bottom tab bar and the like buttons on the right edge of each card.
 
 ## Elevation & Depth
@@ -264,6 +268,13 @@ Chunky and thumb-first.
 
 ### PIN & QR Panel (signature)
 The right column of the host view and TV player: the PIN in Numeral style on a pale panel, the QR code below it, then actions, and at the bottom „MusicVoting – powered by HTL Leonding“ with the school logo. This panel is how guests join, so it is always visible on the TV.
+- **On the TV:** the QR code is the largest element in the column (34vh, `image-rendering: pixelated`). The PIN sits on Plum Whisper with the label „Party-PIN“ in Ash and 9vh tabular digits; no emoji. Below the QR a solid Ink call to action („Scan den Code und bestimm die Musik mit!“), never gradient text.
+- **Brand block:** the „MusicVoting“ wordmark in white directly on the gradient, and „powered by“ together with the HTL Leonding logo on a small white plate (white text on the coral end only reaches 3.3:1).
+
+### Up-Next List (TV)
+- **Structure:** „Als Nächstes“ shows the next five songs as one vertical numbered list in play order, then „+ N weitere“. Rows are separated by hairline dividers inside one white panel, never cards in a card.
+- **Row:** plum position number (tabular), rounded cover (0.5rem), title in Ink and artist in Ash with ellipsis, and on the right a filled Velvet Plum heart with the like count, so the room sees that votes decide the order.
+- **Idle copy:** always addressed to the room („Gleich geht's los“, „Noch keine Musik“), never to the host.
 
 ## Do's and Don'ts
 

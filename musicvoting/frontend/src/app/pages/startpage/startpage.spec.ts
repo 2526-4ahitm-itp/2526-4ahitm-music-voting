@@ -29,6 +29,31 @@ describe('Startpage', () => {
 
   afterEach(() => comp.stopProgressTimer());
 
+  describe('upNext / moreCount', () => {
+    const queue = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `t${i + 1}`, name: `Song ${i + 1}` }));
+
+    it('lists all songs and no remainder when five or fewer wait', () => {
+      comp.tracks = queue(3);
+
+      expect(comp.upNext.map(t => t.id)).toEqual(['t1', 't2', 't3']);
+      expect(comp.moreCount).toBe(0);
+    });
+
+    it('shows the first five in queue order and counts the rest', () => {
+      comp.tracks = queue(8);
+
+      expect(comp.upNext.map(t => t.id)).toEqual(['t1', 't2', 't3', 't4', 't5']);
+      expect(comp.moreCount).toBe(3);
+    });
+
+    it('is empty for an empty queue', () => {
+      comp.tracks = [];
+
+      expect(comp.upNext).toEqual([]);
+      expect(comp.moreCount).toBe(0);
+    });
+  });
+
   describe('formatTime', () => {
     it('returns 0:00 for falsy or NaN values', () => {
       expect(comp.formatTime(0)).toBe('0:00');

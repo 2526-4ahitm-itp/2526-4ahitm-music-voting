@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "musicvoting/frontend/src/app/pages/startpage/startpage.html"
+        ],
+        "createdAt": "2026-10-29T12:40:45.325Z",
+        "reason": "Claude: images use Angular [src] bindings (currentTrack/track covers, qrUrl); critique 2026-10-29 Assessment B verified these as false positives"
+      }
+    ]
+  }
+}
