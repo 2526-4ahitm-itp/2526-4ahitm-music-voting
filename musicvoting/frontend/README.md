@@ -42,6 +42,17 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+## Design tokens
+
+Colors, brand gradients and border radii are defined once as CSS custom properties on `:root` in `src/styles.css` (e.g. `--color-primary`, `--gradient-brand`, `--radius-md`). Token names describe the role, not the hue, so a rebrand or a dark mode only changes that block.
+
+Rules for page stylesheets (`src/app/pages/*/*.css`):
+
+- No hex colors. Use `var(--color-…)` / `var(--gradient-…)`; for transparent brand colors use `rgba(var(--color-primary-rgb), 0.3)` or `rgba(var(--color-accent-rgb), …)`. Neutral `rgba(0, 0, 0, …)` / `rgba(255, 255, 255, …)` and `white`/`black` are fine.
+- No `html` or `body` rules. Angular scopes component CSS, so they never apply; document-wide rules go into `src/styles.css`.
+
+`src/app/design-tokens.spec.ts` checks both rules in `ng test`. Spec: `openspec/specs/web-design-system/spec.md`.
+
 ## Running unit tests
 
 To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:

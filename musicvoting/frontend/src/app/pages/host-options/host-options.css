@@ -2,7 +2,7 @@
   width: 100vw;
   min-height: 100vh;
   font-family: var(--font), sans-serif;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
+  background: var(--gradient-brand);
   color: white;
 }
 
@@ -59,7 +59,7 @@ header > h1 {
   gap: 1rem;
   width: 100%;
   padding: 1rem 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.15);
   color: white;
@@ -131,7 +131,7 @@ header > h1 {
 .pin-input {
   width: 100%;
   padding: 1rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.15);
   color: white;
@@ -153,7 +153,7 @@ header > h1 {
 }
 
 .error-message {
-  color: #FFD0CC;
+  color: var(--color-accent-tint);
   font-weight: bold;
   font-size: 0.95rem;
   animation: fadeIn 0.3s ease-in-out;
@@ -163,10 +163,10 @@ header > h1 {
 .confirm-btn {
   width: 100%;
   padding: 1rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: none;
   background: white;
-  color: #8403A6;
+  color: var(--color-primary);
   font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;

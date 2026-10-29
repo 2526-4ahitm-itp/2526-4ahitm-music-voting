@@ -1,7 +1,9 @@
-body {
+/* Page wrapper. Was a nested <body> element in the template; a div with a class
+   keeps the same look without invalid HTML or element selectors in component CSS. */
+.home {
   min-height: 100vh;
 
-  background: linear-gradient(135deg, #8403A6, #F2594B);
+  background: var(--gradient-brand);
 
   display: flex;
   flex-direction: column;
@@ -16,12 +18,12 @@ body {
 
 }
 
-body h1 {
+.home h1 {
   font-size: 10rem;
   margin-bottom: 0.5rem;
 }
 
-body p {
+.home p {
   font-size: 1.5rem;
   width: 50vw;
 }
@@ -38,7 +40,7 @@ body p {
   padding: 0.75rem 2rem;
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 2rem;
+  border-radius: var(--radius-xl);
   border: none;
   cursor: pointer;
   letter-spacing: 0.05em;
@@ -49,7 +51,7 @@ body p {
 .page-switch-btn:hover {
   transform: translateY(-0.2rem) scale(1.05);
   box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
-  color: #8403A6;
+  color: var(--color-primary);
   font-weight: 1000;
   background-color: white;
 }
@@ -62,18 +64,18 @@ body p {
 /* iPad - Querformat */
 @media (min-width: 48rem) and (max-width: 87.5rem) {
 
-  body{
+  .home{
     position: fixed;
     height: 100vh;
     width: 100vw;
     padding-top: 8rem;
   }
 
-  body h1 {
+  .home h1 {
     font-size: 6rem;
   }
 
-  body p {
+  .home p {
     width: 60vw;
     font-size: 1.5rem;
   }
@@ -87,17 +89,17 @@ body p {
 
 /** Handy - Format **/
 @media (max-width: 48rem) {
-  body {
+  .home {
     padding: 2rem;
     position: fixed;
   }
 
-  body h1 {
+  .home h1 {
     font-size: 3rem;
     margin-bottom: 1rem;
   }
 
-  body p {
+  .home p {
     margin-top: 2rem;
     width: 85vw;
     font-size: 1.1rem;

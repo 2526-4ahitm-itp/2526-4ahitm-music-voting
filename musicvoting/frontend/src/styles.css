@@ -1,9 +1,61 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles. Document-wide rules (html, body) belong here and nowhere else:
+   Angular scopes component stylesheets, so html/body rules there never apply. */
 html, body {
   margin: 0;
   padding: 0;
 }
 
+/* Design tokens: the single source of truth for colors, gradients and radii.
+   Page stylesheets reference these via var(--…) instead of hard-coded values,
+   so a rebrand or a later dark mode only has to change this block.
+   Names describe the role, not the hue. */
 :root {
   --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  /* Brand: primary purple and its states */
+  --color-primary: #8403a6;
+  --color-primary-rgb: 132, 3, 166; /* for rgba(var(--color-primary-rgb), alpha) */
+  --color-primary-hover: #c826b8;
+  --color-primary-pressed: #6a0089;
+  --color-primary-deep: #5c0070;
+  --color-primary-tint: #f3e8ff;
+  --color-primary-tint-soft: #fdfaff;
+
+  /* Brand: coral accent */
+  --color-accent: #f2594b;
+  --color-accent-rgb: 242, 89, 75; /* for rgba(var(--color-accent-rgb), alpha) */
+  --color-accent-pressed: #d8455f;
+  --color-accent-tint: #ffd0cc;
+
+  /* Brand gradients */
+  --gradient-brand: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  --gradient-brand-reverse: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  --gradient-tint: linear-gradient(135deg, var(--color-primary-tint) 0%, var(--color-surface) 100%);
+
+  /* Status */
+  --color-danger: #ff3b30;
+
+  /* Surfaces and borders (light to dark) */
+  --color-surface: #fff;
+  --color-surface-subtle: #f9f9f9;
+  --color-surface-muted: #f1f5f9;
+  --color-bg: #f0f2f5;
+  --color-divider: #eee;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  /* Text (dark to light) */
+  --color-text: #111;
+  --color-text-secondary: #333;
+  --color-text-muted: #666;
+  --color-text-subtle: #888;
+  --color-text-placeholder: #94a3b8;
+
+  /* Border radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 2rem;
+  --radius-pill: 30px;
+  --radius-round: 50%;
 }

@@ -6,7 +6,7 @@
   flex-direction: column;
   overflow: hidden;
   font-family: var(--font), sans-serif;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
+  background: var(--gradient-brand);
   color: white;
 }
 
@@ -54,7 +54,7 @@ header > h1 {
 }
 
 .error-message {
-  color: #FF3B30;
+  color: var(--color-danger);
   font-weight: bold;
   margin-bottom: 1rem;
   font-size: 1rem;
@@ -99,7 +99,7 @@ header > h1 {
 .playlist-cover {
   width: 3rem;
   height: 3rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-sm);
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -136,7 +136,7 @@ header > h1 {
   padding: 0.75rem 2rem;
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 2rem;
+  border-radius: var(--radius-xl);
   border: 1px solid rgba(255, 255, 255, 0.5);
   background: transparent;
   color: white;
@@ -147,7 +147,7 @@ header > h1 {
 
 .skip-btn:hover:not(:disabled) {
   background: white;
-  color: #8403A6;
+  color: var(--color-primary);
 }
 
 .skip-btn:disabled {

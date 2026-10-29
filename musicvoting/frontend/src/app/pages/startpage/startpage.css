@@ -1,13 +1,8 @@
-body{
-  font-family: var(--font), sans-serif;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
-}
-
 .layout{
   width: 100vw;
   height: 100vh;
   font-family: var(--font), sans-serif;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
+  background: var(--gradient-brand);
 }
 
 .content-cards{
@@ -41,7 +36,7 @@ body{
   margin: 2rem;
   background-color: white;
 
-  border-radius: 30px;
+  border-radius: var(--radius-pill);
   box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
 }
 
@@ -70,13 +65,13 @@ body{
   flex: 1;
   min-width: 0;
   height: 6px;
-  background-color: #eee;
+  background-color: var(--color-divider);
   border-radius: 10px;
 }
 
 .progress-fill {
   height: 100%;
-  background-color: #F2594B;
+  background-color: var(--color-accent);
   width: 0;
   transition: width 0.5s linear;
   border-radius: 4px 0 0 4px;
@@ -98,7 +93,7 @@ body{
   margin: 0 2rem 2rem 2rem;
   background-color: white;
 
-  border-radius: 30px;
+  border-radius: var(--radius-pill);
   box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
 }
 
@@ -188,8 +183,8 @@ body{
   padding: 1.2rem 1.8rem;
   width: 80%;
   /* Optik des Containers */
-  background-color: #efefef;
-  border-radius: 20px;
+  background-color: var(--color-divider);
+  border-radius: var(--radius-lg);
   font-family: 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
@@ -200,7 +195,7 @@ body{
 
 .party-pin-label {
   margin: 0;
-  color: #8e8e8e;
+  color: var(--color-text-subtle);
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 4px;
@@ -208,7 +203,7 @@ body{
 
 .party-pin-value {
   margin: 0;
-  color: #000000;
+  color: var(--color-text);
   font-size: 38px;
   font-weight: 800;
   letter-spacing: 20%;
@@ -241,7 +236,7 @@ body{
   margin: 2rem 2rem 2rem 0;
   background-color: white;
 
-  border-radius: 30px;
+  border-radius: var(--radius-pill);
   box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
 }
 
@@ -255,7 +250,7 @@ body{
   font-weight: bold;
   margin-top: 0;
   /* farbverlauf*/
-  background: linear-gradient(135deg, #F2594B, #8403A6);
+  background: var(--gradient-brand-reverse);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -307,13 +302,13 @@ span.logo {
 
   .status-box h1 {
     font-size: 1.8rem !important;
-    color: #333;
+    color: var(--color-text-secondary);
     margin-bottom: 0.5rem;
   }
 
   .status-box p {
     font-size: 1.1rem !important;
-    color: #666;
+    color: var(--color-text-muted);
   }
 
 
