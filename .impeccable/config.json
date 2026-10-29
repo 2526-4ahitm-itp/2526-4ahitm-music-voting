@@ -29,6 +29,15 @@
         ],
         "createdAt": "2026-10-29T13:06:47.053Z",
         "reason": "Claude: <img> sources are Angular [src] bindings; critique 2026-10-29 Assessment B verified broken-image here as false positive"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "musicvoting/frontend/src/app/pages/startpage/startpage.css"
+        ],
+        "createdAt": "2026-10-29T13:37:54.214Z",
+        "reason": "user confirmed: Miriam keeps the TV startpage unchanged for now (2026-10-29), redesign postponed; see ai/scratch/tv-player-on-the-gradient"
       }
     ]
   }
