@@ -6,6 +6,7 @@ import at.htl.domain.PartyRegistry;
 import at.htl.domain.ProviderKind;
 import at.htl.provider.MusicProvider;
 import at.htl.provider.MusicProviderFactory;
+import at.htl.service.GuestAddRateLimiter;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -33,6 +34,9 @@ public class TrackResource {
     @Inject
     LoginEventBus loginEventBus;
 
+    @Inject
+    GuestAddRateLimiter guestAddRateLimiter;
+
     private Party resolveParty() {
         return partyRegistry.findById(partyId)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
@@ -46,6 +50,11 @@ public class TrackResource {
     @Path("/search")
     public Map<String, Object> search(@QueryParam("q") String q) {
         Party party = resolveParty();
+        // An empty search box shows the top charts (search spec "Empty Search Shows Top Charts")
+        // instead of sending an empty query to the provider, which used to end in a 500.
+        if (q == null || q.isBlank()) {
+            return provider(party).topChartTracks(party);
+        }
         return provider(party).searchTracks(party, q);
     }
 
@@ -93,13 +102,21 @@ public class TrackResource {
 
     @POST
     @Path("/addToPlaylist")
-    public Response addToPlaylist(List<String> uris) {
+    public Response addToPlaylist(List<String> uris, @QueryParam("deviceId") String deviceId) {
         if (uris == null || uris.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\":\"No tracks provided\"}")
                     .build();
         }
         Party party = resolveParty();
+        // Guests send their anonymous deviceId and are limited to 10 songs per minute; the host
+        // search and older clients send none and stay unlimited (guest spec "Per-Guest Add Rate Limit").
+        if (deviceId != null && !deviceId.isBlank()
+                && !guestAddRateLimiter.tryAcquire(party.id().value(), deviceId, uris.size())) {
+            return Response.status(Response.Status.TOO_MANY_REQUESTS)
+                    .entity(Map.of("error", "Zu viele Anfragen — bitte kurz warten."))
+                    .build();
+        }
         Response response = provider(party).addTracksToPlaylist(party, uris);
         if (response.getStatus() >= 200 && response.getStatus() < 300) {
             loginEventBus.emit(new LoginEvent(

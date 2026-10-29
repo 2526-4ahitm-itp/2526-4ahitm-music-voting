@@ -28,10 +28,10 @@ Mit 🔒 markierte Endpunkte sind `@HostOnly` und erfordern den Header
 
 | Methode | Pfad | Beschreibung |
 |---|---|---|
-| `GET` | `/search?q=` | Suche beim Provider; leeres `q` → Top-Charts. |
+| `GET` | `/search?q=` | Suche beim Provider. Leeres oder fehlendes `q` → die ersten 10 Songs der Top-Charts-Playlist (`spotify.topcharts.playlist.id`) im selben Format (`tracks.items`); ohne konfigurierte Playlist eine leere Liste mit `200`. |
 | `GET` | `/{id}` | Einzelnen Track abrufen. |
 | `GET` | `/queue?deviceId=` | Sortierte Queue; mit `deviceId` zusätzlich `hasVoted` pro Eintrag. |
-| `POST` | `/addToPlaylist` | Song(s) zur Queue hinzufügen. Body: Liste von URIs. Ist der Song bereits **wartend** in der Queue → `409` „Song ist schon in der Warteschlange.“ (der gerade spielende Song darf erneut hinzugefügt werden). |
+| `POST` | `/addToPlaylist?deviceId=` | Song(s) zur Queue hinzufügen. Body: Liste von URIs. Ist der Song bereits **wartend** in der Queue → `409` „Song ist schon in der Warteschlange.“ (der gerade spielende Song darf erneut hinzugefügt werden). Mit `deviceId` (Gäste) gilt ein Limit von 10 Songs pro Gerät und Minute → sonst `429` „Zu viele Anfragen — bitte kurz warten.“; ohne `deviceId` (Host-Suche, ältere iOS-Builds) kein Limit. |
 | `DELETE` | `/remove` 🔒 | Song aus der Queue entfernen. |
 | `POST` | `/vote` | Like umschalten (Body mit `deviceId`). |
 | `POST` | `/start` 🔒 | Wiedergabe aus der Queue starten. |

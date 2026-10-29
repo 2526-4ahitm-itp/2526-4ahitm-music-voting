@@ -225,6 +225,10 @@ public class SpotifyMusicProvider implements MusicProvider {
 
     @Override
     public Map<String, Object> searchTracks(Party party, String query) {
+        // Defense in depth: an empty query would make Spotify (and URLEncoder for null) fail.
+        if (query == null || query.isBlank()) {
+            return topChartTracks(party);
+        }
         try {
             String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
             String url = "https://api.spotify.com/v1/search?q=" + encoded + "&type=track&limit=25";
@@ -1047,6 +1051,52 @@ public class SpotifyMusicProvider implements MusicProvider {
         } catch (Exception e) {
             if (e instanceof WebApplicationException wae) throw wae;
             throw new WebApplicationException(SpotifyApiErrors.unexpectedError("Das Laden der Playlists", e));
+        }
+    }
+
+    /**
+     * Top charts for an empty search: the first 10 tracks of the configured top-charts playlist
+     * ({@code spotify.topcharts.playlist.id}), shaped like a search result ({@code tracks.items}).
+     * Spotify no longer exposes its editorial chart playlists to newer apps, so the source is a
+     * configurable playlist. Best-effort: without a playlist or on any error the list is empty, so
+     * the guest sees the welcome text instead of an error.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> topChartTracks(Party party) {
+        Map<String, Object> empty = Map.of("tracks", Map.of("items", List.of()));
+        String playlistId = topChartsPlaylistId.orElse("");
+        if (playlistId.isBlank()) {
+            return empty;
+        }
+        try {
+            String fields = URLEncoder.encode(
+                    "items(track(id,uri,name,duration_ms,artists(name),album(images)))", StandardCharsets.UTF_8);
+            String url = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks?limit=10&fields=" + fields;
+            HttpResponse<String> res = executeSpotifyRequest(party, () ->
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(url))
+                            .header("Authorization", authHeader(party))
+                            .GET()
+                            .build());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return empty;
+            }
+            Map<String, Object> json = mapper.readValue(res.body(), Map.class);
+            List<Map<String, Object>> items = (List<Map<String, Object>>) json.get("items");
+            if (items == null) {
+                return empty;
+            }
+            List<Object> tracks = new ArrayList<>();
+            for (Map<String, Object> item : items) {
+                // Local files and removed tracks come back as null tracks or without an id.
+                if (item.get("track") instanceof Map<?, ?> track && track.get("id") != null) {
+                    tracks.add(track);
+                }
+            }
+            return Map.of("tracks", Map.of("items", tracks));
+        } catch (Exception e) {
+            return empty;
         }
     }
 

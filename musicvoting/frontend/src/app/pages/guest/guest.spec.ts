@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { Guest } from './guest';
 import { TrackService } from '../../services/spotify-tracks';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { QueueStateService } from '../../services/queue-state';
+import { PartyService } from '../../services/party.service';
 import { Router, provideRouter } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -16,6 +17,7 @@ describe('Guest', () => {
   let router: { navigate: jasmine.Spy };
   let ngZone: { run: jasmine.Spy };
   let feedback: { show: jasmine.Spy };
+  let partyService: { deviceId: string; currentPartyId: string };
   let comp: Guest;
 
   beforeEach(() => {
@@ -29,21 +31,65 @@ describe('Guest', () => {
     router = { navigate: jasmine.createSpy('navigate') };
     ngZone = { run: jasmine.createSpy('run').and.callFake((fn: () => void) => fn()) };
     feedback = { show: jasmine.createSpy('show') };
+    partyService = { deviceId: 'device-1', currentPartyId: 'party-1' };
 
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
 
     comp = TestBed.runInInjectionContext(
-      () => new Guest(trackApi as any, spotifyService as any, queueState as any, cdr as any, router as any, ngZone as any, feedback as any)
+      () => new Guest(trackApi as any, spotifyService as any, queueState as any, cdr as any, router as any, ngZone as any, feedback as any, partyService as any)
     );
   });
 
   afterEach(() => comp.ngOnDestroy());
 
-  it('search with an empty query clears the tracks', async () => {
+  it('search with an empty query loads the top charts and labels them', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [{ id: 'top1', name: 'Hit' }] } }));
+
+    await comp.search('');
+
+    expect(trackApi.searchTracks).toHaveBeenCalledWith('');
+    expect(comp.tracks().map(t => t.id)).toEqual(['top1']);
+    expect(comp.showingTopCharts()).toBe(true);
+    expect(comp.noResults()).toBe(false);
+  });
+
+  it('keeps the welcome state when there are no top charts', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] } }));
+
     await comp.search('');
 
     expect(comp.tracks()).toEqual([]);
-    expect(trackApi.searchTracks).not.toHaveBeenCalled();
+    expect(comp.showingTopCharts()).toBe(false);
+    expect(comp.noResults()).toBe(false);
+  });
+
+  it('does not label normal search results as top charts', async () => {
+    comp.searchQuery.set('abba');
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [{ id: 'a', name: 'Dancing Queen' }] } }));
+
+    await comp.search('abba');
+
+    expect(comp.showingTopCharts()).toBe(false);
+  });
+
+  it('ignores a late answer from an older search', async () => {
+    const slow = new Subject<any>();
+    trackApi.searchTracks.and.returnValues(slow, of({ tracks: { items: [{ id: 'new', name: 'Neu' }] } }));
+
+    const first = comp.search('');
+    await comp.search('abba');
+    slow.next({ tracks: { items: [{ id: 'top', name: 'Alt' }] } });
+    slow.complete();
+    await first;
+
+    expect(comp.tracks().map(t => t.id)).toEqual(['new']);
+    expect(comp.showingTopCharts()).toBe(false);
+  });
+
+  it('opens the live event stream with its party id', () => {
+    comp.ngOnInit();
+
+    expect((comp as any).eventSource.url).toContain('partyId=party-1');
   });
 
   it('search sets unique tracks limited to 25 from the response', async () => {
@@ -94,7 +140,7 @@ describe('Guest', () => {
 
     await promise;
 
-    expect(spotifyService.addToPlaylist).toHaveBeenCalledWith('spotify:track:t1');
+    expect(spotifyService.addToPlaylist).toHaveBeenCalledWith('spotify:track:t1', 'device-1');
     expect(queueState.refresh).toHaveBeenCalled();
     expect(comp.addingTrackId).toBeNull();
     expect(feedback.show).toHaveBeenCalledWith('„Song“ ist in der Warteschlange.');
@@ -183,6 +229,7 @@ describe('Guest template', () => {
         { provide: TrackService, useValue: { searchTracks: () => of({ tracks: { items: [] } }) } },
         { provide: SpotifyWebPlayerService, useValue: {} },
         { provide: QueueStateService, useValue: { inQueueUris$: new BehaviorSubject<Set<string>>(new Set()), refresh: () => {} } },
+        { provide: PartyService, useValue: { deviceId: 'device-1', currentPartyId: 'party-1' } },
       ],
     });
     spyOn(Guest.prototype, 'ngOnInit');

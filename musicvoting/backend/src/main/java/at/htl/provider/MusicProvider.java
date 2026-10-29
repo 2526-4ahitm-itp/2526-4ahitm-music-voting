@@ -10,6 +10,14 @@ public interface MusicProvider {
 
     Map<String, Object> searchTracks(Party party, String query);
 
+    /**
+     * Top tracks shown for an empty search, in the same shape as {@link #searchTracks}
+     * ({@code tracks.items}). Providers without a top-charts source return an empty list, never an error.
+     */
+    default Map<String, Object> topChartTracks(Party party) {
+        return Map.of("tracks", Map.of("items", List.of()));
+    }
+
     Response getTrack(Party party, String id);
 
     Response play(Party party, String uri);

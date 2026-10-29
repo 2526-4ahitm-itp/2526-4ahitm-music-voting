@@ -169,10 +169,16 @@ export class SpotifyWebPlayerService {
     window.location.href = `/api/party/${id}/spotify/login?source=web`;
   }
 
-  addToPlaylist(uri: string): Observable<any> {
+  /**
+   * Fügt einen Song zur Warteschlange hinzu. Gäste übergeben ihre deviceId, damit das Backend
+   * das Limit von 10 Songs pro Minute zählen kann; die Host-Suche ruft ohne deviceId auf und
+   * ist nicht limitiert.
+   */
+  addToPlaylist(uri: string, deviceId?: string): Observable<any> {
     const id = this.partyService.currentPartyId;
     if (!id) { console.warn('addToPlaylist: keine aktive Party'); return EMPTY; }
-    return this.http.post(`/api/party/${id}/track/addToPlaylist`, [uri]).pipe(
+    const query = deviceId ? `?deviceId=${encodeURIComponent(deviceId)}` : '';
+    return this.http.post(`/api/party/${id}/track/addToPlaylist${query}`, [uri]).pipe(
       tap(() => this.queueUpdatedSubject.next())
     );
   }

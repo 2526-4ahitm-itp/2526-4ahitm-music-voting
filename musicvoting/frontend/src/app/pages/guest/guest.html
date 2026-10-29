@@ -33,6 +33,9 @@
     </div>
 
     <main class="main-content">
+      @if (showingTopCharts()) {
+        <h2 class="list-heading">Top-Charts</h2>
+      }
       <div class="track-list">
         @for (track of tracks(); track track.id) {
           <div class="track-card">

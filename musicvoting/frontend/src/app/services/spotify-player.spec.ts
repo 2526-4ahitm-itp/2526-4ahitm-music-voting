@@ -46,6 +46,16 @@ describe('SpotifyWebPlayerService', () => {
     expect(console.warn).toHaveBeenCalled();
   });
 
+  it('addToPlaylist sends the guest deviceId as query parameter', () => {
+    partyService.currentPartyId = 'party-1';
+
+    service.addToPlaylist('spotify:track:abc', 'device 1').subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-1/track/addToPlaylist?deviceId=device%201');
+    expect(req.request.body).toEqual(['spotify:track:abc']);
+    req.flush({});
+  });
+
   it('addToPlaylist posts the uri and emits a queue update', () => {
     partyService.currentPartyId = 'party-1';
     const updates: void[] = [];

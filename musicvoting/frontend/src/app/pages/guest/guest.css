@@ -111,6 +111,14 @@
   outline-offset: -3px;
 }
 
+/* Überschrift über den Top-Charts bei leerem Suchfeld: nur Text auf dem Verlauf, kein Container. */
+.list-heading {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-surface);
+}
+
 /* MAIN CONTENT */
 .main-content {
   flex: 1;

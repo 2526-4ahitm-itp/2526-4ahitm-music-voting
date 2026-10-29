@@ -97,6 +97,34 @@ class TrackResourceTest {
                 .statusCode(500);
     }
 
+    @Test
+    void search_withEmptyQuery_returnsTopCharts() {
+        Party party = registerSpotifyParty("10040", "20040");
+        when(spotifyMusicProvider.topChartTracks(eq(party)))
+                .thenReturn(Map.of("tracks", Map.of("items", List.of(Map.of("uri", "spotify:track:top", "name", "Hit")))));
+
+        given()
+                .queryParam("q", "")
+                .when().get("/api/party/{partyId}/track/search", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("tracks.items[0].uri", equalTo("spotify:track:top"));
+        verify(spotifyMusicProvider, never()).searchTracks(any(), any());
+    }
+
+    @Test
+    void search_withoutQueryParam_returnsTopCharts() {
+        Party party = registerSpotifyParty("10041", "20041");
+        when(spotifyMusicProvider.topChartTracks(eq(party)))
+                .thenReturn(Map.of("tracks", Map.of("items", List.of())));
+
+        given()
+                .when().get("/api/party/{partyId}/track/search", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("tracks.items", hasSize(0));
+    }
+
     // ---------- getTrack ----------
 
     @Test
@@ -214,6 +242,47 @@ class TrackResourceTest {
                 .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
                 .then()
                 .statusCode(400);
+    }
+
+    @Test
+    void addToPlaylist_guestIsLimitedToTenSongsPerMinute() {
+        Party party = registerSpotifyParty("10042", "20042");
+        when(spotifyMusicProvider.addTracksToPlaylist(eq(party), anyList())).thenReturn(Response.ok().build());
+        String deviceId = "rate-limit-" + UUID.randomUUID();
+
+        for (int i = 0; i < 10; i++) {
+            given()
+                    .contentType(ContentType.JSON)
+                    .queryParam("deviceId", deviceId)
+                    .body(List.of("spotify:track:" + i))
+                    .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
+                    .then()
+                    .statusCode(200);
+        }
+        given()
+                .contentType(ContentType.JSON)
+                .queryParam("deviceId", deviceId)
+                .body(List.of("spotify:track:eleven"))
+                .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
+                .then()
+                .statusCode(429)
+                .body("error", equalTo("Zu viele Anfragen — bitte kurz warten."));
+        verify(spotifyMusicProvider, never()).addTracksToPlaylist(eq(party), eq(List.of("spotify:track:eleven")));
+    }
+
+    @Test
+    void addToPlaylist_withoutDeviceId_isNotLimited() {
+        Party party = registerSpotifyParty("10043", "20043");
+        when(spotifyMusicProvider.addTracksToPlaylist(eq(party), anyList())).thenReturn(Response.ok().build());
+
+        for (int i = 0; i < 12; i++) {
+            given()
+                    .contentType(ContentType.JSON)
+                    .body(List.of("spotify:track:host-" + i))
+                    .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
+                    .then()
+                    .statusCode(200);
+        }
     }
 
     @Test
