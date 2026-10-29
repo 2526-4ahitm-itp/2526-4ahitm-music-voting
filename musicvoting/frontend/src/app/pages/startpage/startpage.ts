@@ -43,19 +43,6 @@ export class Startpage implements OnInit, OnDestroy {
   pin: string | null = null;
   qrUrl: string | null = null;
 
-  /** How many queue entries the TV lists under „Als Nächstes“; read from a sofa, five is plenty. */
-  readonly upNextLimit = 5;
-
-  /** The next songs shown on the TV, in queue order (`tracks` already excludes the playing one). */
-  get upNext(): any[] {
-    return this.tracks.slice(0, this.upNextLimit);
-  }
-
-  /** Number of further waiting songs, shown as „+ N weitere“ below the list. */
-  get moreCount(): number {
-    return Math.max(0, this.tracks.length - this.upNextLimit);
-  }
-
   constructor(
     private spotifyService: SpotifyWebPlayerService,
     private ngZone: NgZone,

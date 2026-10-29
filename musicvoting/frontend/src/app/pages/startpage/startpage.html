@@ -1,107 +1,117 @@
 <div class="layout">
+  <div class="content-cards">
 
-  <main class="stage">
+    <div class="left">
 
-    <!-- Läuft gerade / Leerlauf: spricht immer die Gäste im Raum an, nie den Host -->
-    <section class="panel now-playing" aria-live="polite">
-      @if (currentTrack) {
-        <img class="now-cover" [src]="currentTrack.album.images[0]?.url" alt="Cover">
+      <section class="current-song">
+        @if (currentTrack) {
+          <img class="cover"
+              [src]="currentTrack.album.images[0]?.url"
+              height="300px" width="300px" alt="Cover">
 
-        <div class="now-info">
-          <h1 class="now-title">{{ currentTrack.name }}</h1>
-          <p class="now-artist">{{ currentTrack.artists[0]?.name }}</p>
+          <div class="song-info">
+            <h1>{{ currentTrack.name }}</h1>
+            <p>{{ currentTrack.artists[0]?.name }}</p>
 
-          <div class="progress">
-            <span class="progress-time">{{ formatTime(currentPosition) }}</span>
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="progressPercent"></div>
-            </div>
-            <span class="progress-time">{{ formatTime(currentDuration || currentTrack.duration_ms) }}</span>
-          </div>
-        </div>
-      } @else {
-        <div class="now-info idle">
-          @if (tracks.length > 0) {
-            <h1 class="now-title">Gleich geht's los</h1>
-            <p class="now-artist">Scan den QR-Code und vote schon mal für deine Favoriten.</p>
-          } @else {
-            <h1 class="now-title">Noch keine Musik</h1>
-            <p class="now-artist">Scan den QR-Code und wünsch dir den ersten Song!</p>
-          }
-        </div>
-      }
-    </section>
+            <div class="progress">
+              <span>{{ formatTime(currentPosition) }}</span>
 
-    <!-- Als Nächstes: eine Liste in Spielreihenfolge, mit Likes, damit der Raum sieht, dass Voten zählt -->
-    <section class="panel up-next">
-      <h2 class="up-next-heading">Als Nächstes</h2>
-
-      @if (upNext.length === 0) {
-        <p class="up-next-empty">Noch nichts in der Warteschlange – füg über den QR-Code den ersten Song hinzu.</p>
-      } @else {
-        <ol class="up-next-list">
-          @for (track of upNext; track track.id; let i = $index) {
-            <li class="up-next-row">
-              <span class="row-position">{{ i + 1 }}</span>
-
-              @if (track.album?.images?.length) {
-                <img class="row-cover" [src]="track.album.images[track.album.images.length - 1].url" alt="">
-              } @else {
-                <span class="row-cover row-cover-empty" aria-hidden="true"></span>
-              }
-
-              <div class="row-info">
-                <span class="row-title">{{ track.name || 'Unbekannter Titel' }}</span>
-                <span class="row-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</span>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="progressPercent"></div>
               </div>
 
-              <span class="row-likes" [attr.aria-label]="(track.likeCount ?? 0) + ' Likes'">
-                <svg class="row-heart" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-                {{ track.likeCount ?? 0 }}
-              </span>
-            </li>
-          }
-        </ol>
+              <span>{{ formatTime(currentDuration || currentTrack.duration_ms) }}</span>
+            </div>
 
-        @if (moreCount > 0) {
-          <p class="up-next-more">+ {{ moreCount }} weitere</p>
+          </div>
+        } @else {
+          <img class="cover" src="../../../assets/img/placeholder.png" height="300px" width="300px" alt="Kein Song">
+          <div class="song-info">
+            <div class="status-box">
+            @if (tracks.length > 0) {
+              <h1>Playlist nicht gestartet</h1>
+              <p>Der Host kann den ersten Song im Dashboard starten.</p>
+            } @else {
+              <h1>Kein Song aktiv</h1>
+              <p>Füge Songs hinzu oder starte die Playlist über die Steuerung.</p>
+            }
+            </div>
+          </div>
         }
-      }
-    </section>
+      </section>
 
-  </main>
 
-  <aside class="side">
 
-    <!-- Beitreten: PIN und QR-Code sind das Wichtigste für den Raum und daher das Größte rechts -->
-    <section class="panel join">
-      <div class="pin-block">
-        <p class="pin-label">Party-PIN</p>
-        <p class="pin-digits">{{ pin || 'nicht verfügbar' }}</p>
-      </div>
+      <section class="queue">
+        <h2>Warteschlange</h2>
 
-      @if (qrUrl) {
-        <img class="qr" [src]="qrUrl" alt="QR-Code zum Beitreten">
-      } @else {
-        <img class="qr" src="../../../assets/img/default-qr.png" alt="QR-Code zum Beitreten">
-      }
+        <div class="queue-info">
+          <span>Lieder in der Warteschlange: {{ tracks.length }}</span>
+        </div>
 
-      <p class="join-cta">Scan den Code und bestimm die Musik mit!</p>
-    </section>
+        @if (tracks.length === 0) {
+          <div class="queue-text-default">Keine Songs in der Warteschlange!</div>
+        } @else {
+          <div class="queue-grid">
+            @for (track of tracks; track track.id; let i = $index) {
+              <div class="track">
+                <div class="cover-wrapper">
+                  <span class="queue-number">{{ i + 1 }}</span>
 
-    <!-- „powered by HTL Leonding“ ist laut PRODUCT.md verbindlich -->
-    <div class="brand">
-      <span class="brand-name">MusicVoting</span>
-      <div class="powered-by">
-        <span class="powered-by-text">powered by</span>
-        <span class="htl-plate">
-          <img class="htl-logo" src="../../../assets/img/htl-leonding-logo.jpg" alt="HTL Leonding">
-        </span>
-      </div>
+                  @if (track.album?.images?.length) {
+                    <img [src]="track.album.images[track.album.images.length - 1].url"
+                        alt="Cover">
+                  }
+                </div>
+
+                <div class="track-info">
+                  <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
+                  <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+      </section>
+
     </div>
 
-  </aside>
+    <div class="right">
 
+      <div class="qr-code">
+
+        <div class="host-pin-box">
+          <div class="pin-content">
+            <p class="party-pin-label">Voting-PIN</p>
+            <p class="party-pin-value"><strong>{{ pin || 'nicht verfügbar' }}</strong></p>
+          </div>
+          <div class="crown-icon" style="font-size: 40px; line-height: 1;">
+            👑
+          </div>
+        </div>
+
+        @if (qrUrl) {
+          <img class="cover" [src]="qrUrl" alt="QR-Code">
+        } @else {
+          <img class="cover" src="../../../assets/img/default-qr.png" alt="QR-Code">
+        }
+        <p class="qr-code-text">
+          QR-Code scannen & mitmachen: Songs hinzufügen oder für deine Favoriten voten!
+        </p>
+
+
+      </div>
+
+      <div class="logo-box">
+        <span class="logo">MusicVoting</span>
+        <div class="powered-by">
+          <span class="powered-by-text">powered by</span>
+          <img class="htl-logo" src="../../../assets/img/htl-leonding-logo.jpg" alt="HTL Leonding">
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 </div>
