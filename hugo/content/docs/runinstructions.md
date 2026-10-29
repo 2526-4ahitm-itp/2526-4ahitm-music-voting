@@ -4,7 +4,7 @@ description: Die App ist bereits deployed – und so startet man sie lokal
 tags: [ Developer ]
 showDate: true
 date: 2026-06-23
-lastmod: 2026-09-28
+lastmod: 2026-10-29
 ---
 
 ## Live-Deployment (Kubernetes)
@@ -23,10 +23,12 @@ Man muss also nichts lokal starten, um die App zu benutzen – einfach die URL i
 
 ## Lokal starten
 
-Es gibt zwei Wege:
+Es gibt drei Wege:
 
 - **Variante A – Fertige Images aus GHCR (nur Docker):** am einfachsten, ohne Java/Node und ohne Bauen.
 - **Variante B – Aus dem Quellcode bauen:** für die aktive Entwicklung am Backend/Frontend.
+- **Variante C – In der Superbox/Devbox auf LeoCloud (ohne Docker):** Entwicklung im Cluster,
+  Zugriff vom Laptop per `kubectl port-forward`.
 
 Wer die App auf einem **eigenen Server mit HTTPS** betreiben will, nimmt den Stack unter `deployment/server/`
 (Caddy + Let's Encrypt) – siehe [CI/CD & Deployment](../../dev/ci-cd-deployment/#eigener-server-mit-https-deploy).
@@ -192,3 +194,158 @@ Das Schema wird beim ersten Start aus `musicvoting/backend/setup.sql` initialisi
    ```bash
    npm start
    ```
+
+---
+
+## Variante C: In der Superbox/Devbox (LeoCloud, ohne Docker)
+
+In der Superbox läuft der Code in einem Devbox-Pod (`devbox-<n>-0`, die Nummer steht in
+`/workspace/.sb/slots`). Gebaut und gestartet wird dort mit `dbx "<befehl>"`. Die Devbox hat Java,
+Maven und Node, aber **kein Docker** – die Datenbank läuft deshalb als eigenes PostgreSQL ohne Container,
+und die Konfiguration kommt aus Umgebungsvariablen statt aus `application.properties`.
+
+Alle Hilfsdateien liegen in `ai/scratch/` – der Ordner ist git-ignored, Zugangsdaten landen also nie im Repo.
+
+### 1. Datenbank einrichten (einmalig)
+
+Die Server-Binaries kommen von Maven Central (zonky), `psql` aus dem Debian-Paket. `nss_wrapper` ist nötig,
+weil der Devbox-User (UID 1000) nicht in `/etc/passwd` steht – ohne ihn bricht `initdb` ab.
+
+```bash
+mkdir -p ai/scratch/postgres && cd ai/scratch/postgres
+dbx 'V=16.15.0; curl -sfLo pg.jar https://repo1.maven.org/maven2/io/zonky/test/postgres/embedded-postgres-binaries-linux-amd64/$V/embedded-postgres-binaries-linux-amd64-$V.jar \
+  && unzip -oq pg.jar "*.txz" && python3 -c "import tarfile,glob; tarfile.open(glob.glob(\"*.txz\")[0]).extractall(\"dist\")" && rm pg.jar *.txz'
+dbx 'M=https://deb.debian.org/debian/pool/main; mkdir -p client nss \
+  && for f in p/postgresql-17/libpq5_17.11-0+deb13u1_amd64.deb p/postgresql-17/postgresql-client-17_17.11-0+deb13u1_amd64.deb; do curl -sfL $M/$f -o c.deb && dpkg-deb -x c.deb client/x; done \
+  && curl -sfL $M/n/nss-wrapper/libnss-wrapper_1.1.16-5+b2_amd64.deb -o n.deb && dpkg-deb -x n.deb nss/x && rm *.deb \
+  && echo "musicvoting:x:1000:1000::/tmp/home:/bin/bash" > nss/passwd && echo "musicvoting:x:1000:" > nss/group'
+```
+
+> [!NOTE]
+> Die Versionen in den Debian-URLs ändern sich mit Sicherheitsupdates. Liefert `curl` einen Fehler,
+> die aktuelle Datei unter `https://deb.debian.org/debian/pool/main/p/postgresql-17/` bzw. `…/n/nss-wrapper/` nachsehen.
+
+Dann das Steuerskript `ai/scratch/postgres/pg.sh` anlegen (`chmod +x`):
+
+```bash
+#!/bin/bash
+# Lokales PostgreSQL 16 für die Devbox: ./pg.sh init|start|stop|status|psql
+set -e
+D="$(cd "$(dirname "$0")" && pwd)"
+export LD_PRELOAD="$D/nss/x/usr/lib/x86_64-linux-gnu/libnss_wrapper.so"
+export NSS_WRAPPER_PASSWD="$D/nss/passwd" NSS_WRAPPER_GROUP="$D/nss/group"
+export LD_LIBRARY_PATH="$D/client/x/usr/lib/x86_64-linux-gnu" PGPASSWORD=musicvoting
+B="$D/dist/bin"; C="$D/client/x/usr/lib/postgresql/17/bin"
+case "$1" in
+  init)
+    printf musicvoting > "$D/pw"
+    "$B/initdb" -D "$D/data" -U musicvoting --pwfile="$D/pw" -A scram-sha-256 -E UTF8 --locale=C
+    rm -f "$D/pw"
+    # Nur TCP – Unix-Sockets auf dem NFS-Workspace sind unzuverlässig.
+    printf "listen_addresses = 'localhost'\nport = 5432\nunix_socket_directories = ''\n" >> "$D/data/postgresql.conf"
+    "$0" start
+    "$C/createdb" -h localhost -U musicvoting musicvoting
+    "$C/psql" -h localhost -U musicvoting -d musicvoting -q -f "$D/../../../musicvoting/backend/setup.sql" ;;
+  start)  "$B/pg_ctl" -D "$D/data" -l "$D/postgres.log" -w start ;;
+  stop)   "$B/pg_ctl" -D "$D/data" -w stop ;;
+  status) "$B/pg_ctl" -D "$D/data" status ;;
+  psql)   shift; "$C/psql" -h localhost -U musicvoting -d musicvoting "$@" ;;
+esac
+```
+
+Datenbank anlegen (legt DB `musicvoting` an und lädt `setup.sql`):
+
+```bash
+dbx "ai/scratch/postgres/pg.sh init"
+```
+
+Später reicht `dbx "ai/scratch/postgres/pg.sh start"` (z. B. nach einem Neustart der Devbox).
+
+### 2. Backend-Konfiguration
+
+`ai/scratch/backend.env` – entspricht den Standardwerten aus Variante B:
+
+```bash
+export QUARKUS_DATASOURCE_DB_KIND=postgresql
+export QUARKUS_DATASOURCE_USERNAME=musicvoting
+export QUARKUS_DATASOURCE_PASSWORD=musicvoting
+export QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://localhost:5432/musicvoting
+export QUARKUS_DATASOURCE_DEVSERVICES_ENABLED=false   # sonst sucht Quarkus nach Docker
+export QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION=none
+export QUARKUS_HTTP_HOST=0.0.0.0
+export QUARKUS_HTTP_PORT=8080
+export SPOTIFY_REDIRECT_URI=http://127.0.0.1:8080/api/spotify/callback
+export SPOTIFY_WEB_REDIRECT_URI=http://127.0.0.1:4200/select-playlist
+export MUSICVOTING_JOIN_BASE_URL=http://localhost:4200/join
+export SPOTIFY_TOPCHARTS_PLAYLIST_ID=
+export SPOTIFY_CLIENT_ID=dummy        # Platzhalter, reicht für die Tests
+export SPOTIFY_CLIENT_SECRET=dummy
+D="$(dirname "${BASH_SOURCE[0]}")"
+[ -f "$D/spotify.env" ] && . "$D/spotify.env"
+```
+
+Die echten Spotify-Zugangsdaten kommen in eine eigene Datei `ai/scratch/spotify.env`. Am einfachsten vom
+Laptop aus mit `nano` in der Devbox anlegen:
+
+```bash
+kubectl exec -it devbox-<n>-0 -- nano /workspace/<projekt>/ai/scratch/spotify.env
+```
+
+```bash
+export SPOTIFY_CLIENT_ID=deine_client_id
+export SPOTIFY_CLIENT_SECRET=dein_client_secret
+```
+
+Danach `chmod 600 ai/scratch/spotify.env`. Im Spotify-Dashboard müssen die beiden Redirect-URIs
+`http://127.0.0.1:8080/api/spotify/callback` und `http://127.0.0.1:4200/select-playlist` eingetragen sein.
+
+### 3. Backend und Frontend starten
+
+Jeder Server in einem **eigenen** `dbx`-Aufruf, der sofort zurückkehrt:
+
+```bash
+# Backend (Port 8080)
+cd musicvoting/backend
+dbx ". ../../ai/scratch/backend.env; nohup ./mvnw -B quarkus:dev -Dquarkus.console.enabled=false > target/app.log 2>&1 < /dev/null & echo \$! > target/app.pid"
+
+# Frontend (Port 4200) – beim ersten Mal vorher: dbx "npm ci"
+cd ../frontend
+dbx "mkdir -p .angular; nohup npx ng serve --host 0.0.0.0 --port 4200 > .angular/app.log 2>&1 < /dev/null & echo \$! > .angular/app.pid"
+```
+
+Das Backend ist nach ca. 15 s bereit (`started in …` in `target/app.log`).
+
+Backend-Tests laufen genauso gegen die lokale DB:
+
+```bash
+cd musicvoting/backend && dbx ". ../../ai/scratch/backend.env; ./mvnw -B test"
+```
+
+### 4. Vom Laptop aus öffnen
+
+Beide Ports weiterleiten – **4200** für das Frontend und **8080** für das Backend (Spotify-Callback):
+
+```bash
+kubectl port-forward pod/devbox-<n>-0 4200:4200 8080:8080
+```
+
+Dann im Browser **http://127.0.0.1:4200** öffnen.
+
+> [!IMPORTANT]
+> **`127.0.0.1` verwenden, nicht `localhost`.** Die Spotify-Redirect-URIs lauten auf `127.0.0.1`
+> (Spotify erlaubt `localhost` nicht). Über `localhost` geht der Login-Rücksprung ins Leere.
+
+> [!TIP]
+> Meldungen wie *„This page is in Quirks Mode“* oder *„Content-Security-Policy … blocked an inline script“*
+> in der Browser-Konsole beim Login kommen von **Spotifys** Anmeldeseite, nicht von MusicVoting – ignorieren.
+> Zeigt Spotify dagegen *„INVALID_CLIENT“*, fehlt `spotify.env` (Backend läuft mit `dummy`) oder
+> eine Redirect-URI im Dashboard.
+
+### 5. Beenden
+
+```bash
+cd musicvoting/backend  && dbx "kill \$(cat target/app.pid)"
+dbx 'pkill -f "ng serve"'
+dbx "/workspace/<projekt>/ai/scratch/postgres/pg.sh stop"
+dbx "ps -ef"   # kontrollieren, dass nichts mehr läuft
+```
