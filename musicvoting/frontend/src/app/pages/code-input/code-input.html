@@ -1,16 +1,23 @@
 <div class="code-page">
   <header>
-    <div class="back-to-home" (click)="goBack()" role="button" aria-label="Zurück">←</div>
+    <button type="button" class="back-to-home" (click)="goBack()" aria-label="Zurück">
+      <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
     <h1>MusicVoting</h1>
   </header>
 
   <div class="code-input-wrapper">
     <h2>Party beitreten!</h2>
-    <p class="subtitle">Geben Sie den Code ein, um einer Party beizutreten!</p>
+    <p class="subtitle">Gib die 5-stellige PIN ein. Du findest sie auf dem Fernseher.</p>
 
-    <div class="code-container" (paste)="handlePaste($event)">
+    <div class="code-container" role="group" aria-label="Party-PIN" (paste)="handlePaste($event)">
       <input #i1 type="text"
              maxlength="1"
+             aria-label="Ziffer 1 von 5"
+             autocomplete="one-time-code"
              inputmode="numeric"
              pattern="[0-9]*"
              (input)="moveFocus($event, i2)"
@@ -18,6 +25,7 @@
 
       <input #i2 type="text"
              maxlength="1"
+             aria-label="Ziffer 2 von 5"
              inputmode="numeric"
              pattern="[0-9]*"
              (input)="moveFocus($event, i3)"
@@ -25,6 +33,7 @@
 
       <input #i3 type="text"
              maxlength="1"
+             aria-label="Ziffer 3 von 5"
              inputmode="numeric"
              pattern="[0-9]*"
              (input)="moveFocus($event, i4)"
@@ -32,6 +41,7 @@
 
       <input #i4 type="text"
              maxlength="1"
+             aria-label="Ziffer 4 von 5"
              inputmode="numeric"
              pattern="[0-9]*"
              (input)="moveFocus($event, i5)"
@@ -39,6 +49,7 @@
 
       <input #i5 type="text"
              maxlength="1"
+             aria-label="Ziffer 5 von 5"
              inputmode="numeric"
              pattern="[0-9]*"
              (input)="checkCode($event)"
@@ -46,7 +57,7 @@
     </div>
 
     <button class="paste-button" (click)="pasteFromClipboard()">
-      Code aus Zwischenablage einfügen
+      PIN aus Zwischenablage einfügen
     </button>
 
     <div class="error-region" role="alert">

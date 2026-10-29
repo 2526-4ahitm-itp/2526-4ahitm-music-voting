@@ -135,12 +135,34 @@ describe('CodeInput', () => {
     comp.handlePaste(event);
 
     expect(comp.showError).toBe(true);
-    expect(comp.errorMessage).toBe('Nur Zahlen können eingegeben bzw. eingefügt werden!');
+    expect(comp.errorMessage).toBe('Die PIN besteht nur aus Zahlen.');
   });
 
   it('goBack navigates to home', () => {
     comp.goBack();
 
     expect(router.navigate).toHaveBeenCalledWith(['/']);
+  });
+
+  it('renders the back control as a labelled button', () => {
+    const back: HTMLElement = fixture.nativeElement.querySelector('.back-to-home');
+
+    expect(back.tagName).toBe('BUTTON');
+    expect(back.getAttribute('aria-label')).toBe('Zurück');
+  });
+
+  it('groups the PIN boxes as „Party-PIN“ and labels each digit', () => {
+    const group: HTMLElement = fixture.nativeElement.querySelector('.code-container');
+    const labels = Array.from(getInputs()).map(input => input.getAttribute('aria-label'));
+
+    expect(group.getAttribute('role')).toBe('group');
+    expect(group.getAttribute('aria-label')).toBe('Party-PIN');
+    expect(labels).toEqual(['Ziffer 1 von 5', 'Ziffer 2 von 5', 'Ziffer 3 von 5', 'Ziffer 4 von 5', 'Ziffer 5 von 5']);
+  });
+
+  it('tells the guest in du-form where to find the PIN', () => {
+    const subtitle: HTMLElement = fixture.nativeElement.querySelector('.subtitle');
+
+    expect(subtitle.textContent).toContain('Gib die 5-stellige PIN ein. Du findest sie auf dem Fernseher.');
   });
 });

@@ -1,11 +1,11 @@
 <div class="music-voting-container">
   <div class="main-wrapper">
     <div class="sticky-top">
-      <nav class="navbar">
+      <div class="navbar">
         <header class="header">
           <h1>Suche nach deinen Lieblingssongs!</h1>
         </header>
-      </nav>
+      </div>
 
       <div class="search-section">
         <div class="search-bar">
@@ -18,7 +18,8 @@
             <input
               #searchField
               type="search"
-              placeholder="Suchen..."
+              placeholder="Song oder Künstler suchen…"
+              aria-label="Song oder Künstler suchen"
               [ngModel]="searchQuery()"
               (input)="searchQuery.set(searchField.value)"
               name="search"
@@ -37,7 +38,7 @@
           <div class="track-card">
             <img class="album-cover"
                  [src]="track.album?.images?.[0]?.url || 'assets/placeholder.png'"
-                 alt="Cover">
+                 alt="">
 
             <div class="track-info">
               <span class="track-name">{{ track.name }}</span>
@@ -76,7 +77,7 @@
                   <span class="main-icon">🎵</span>
                 </div>
                 <h2>Bereit für Musik?</h2>
-                <p>Gib einen Song oder Künstler oben ein, um die Playlist zu füllen.</p>
+                <p>Gib oben einen Song oder Künstler ein und füg ihn zur Warteschlange hinzu.</p>
               </div>
             }
           </div>
@@ -87,8 +88,8 @@
 
   <app-guest-toast></app-guest-toast>
 
-  <nav class="bottom-nav">
+  <nav class="bottom-nav" aria-label="Gast-Navigation">
     <button class="bottom-nav-btn" routerLink="/voting">Voten</button>
-    <button class="bottom-nav-btn active" routerLink="/guest">Hinzufügen</button>
+    <button class="bottom-nav-btn active" routerLink="/guest" aria-current="page">Hinzufügen</button>
   </nav>
 </div>

@@ -95,6 +95,22 @@
   box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
 }
 
+/* Lesbarer Placeholder (vorher #94a3b8 auf #f9f9f9 ≈ 2,4:1, jetzt ≈ 5,4:1). */
+.search-bar input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Fokusrahmen nur bei Tastaturbedienung; die Eingabe hat sonst outline: none. */
+.search-bar input:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.bottom-nav-btn:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: -3px;
+}
+
 /* MAIN CONTENT */
 .main-content {
   flex: 1;

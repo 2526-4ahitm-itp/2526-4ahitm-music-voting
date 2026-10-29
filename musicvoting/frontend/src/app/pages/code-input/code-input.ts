@@ -104,7 +104,7 @@ export class CodeInput implements OnInit {
 
     if (!/^\d+$/.test(cleanCode)) {
       this.showError = true;
-      this.errorMessage = 'Nur Zahlen können eingegeben bzw. eingefügt werden!';
+      this.errorMessage = 'Die PIN besteht nur aus Zahlen.';
       return;
     }
 

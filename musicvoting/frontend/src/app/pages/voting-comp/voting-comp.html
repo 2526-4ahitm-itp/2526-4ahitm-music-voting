@@ -1,11 +1,12 @@
 <div class="music-voting-container">
   <div class="main-wrapper">
     <div class="sticky-top">
-      <nav class="navbar">
+      <div class="navbar">
         <header class="header">
           <h1>Vote für deine Lieblingssongs!</h1>
+          <p class="header-hint">Je mehr Likes, desto früher läuft ein Song.</p>
         </header>
-      </nav>
+      </div>
 
       <div class="search-section">
         <div class="search-bar">
@@ -16,7 +17,8 @@
             </svg>
             <input
               type="search"
-              placeholder="In Playlist suchen..."
+              placeholder="In der Warteschlange suchen…"
+              aria-label="In der Warteschlange suchen"
               [ngModel]="searchQuery()"
               (input)="onSearch($event)"
               name="search">
@@ -29,7 +31,7 @@
       <div class="track-list">
         @for (track of filteredTracks(); track track.id) {
           <div class="track-card" [class.now-playing]="track.isCurrentlyPlaying">
-            <img class="album-cover" [src]="track.album?.images[0]?.url" alt="Cover">
+            <img class="album-cover" [src]="track.album?.images[0]?.url" alt="">
             <div class="track-info">
               <span class="track-name">{{ track.name }}</span>
               <span class="artist-name">{{ track.artists[0]?.name }}</span>
@@ -65,8 +67,8 @@
               <div class="icon-circle">
                 <span class="main-icon">🎵</span>
               </div>
-              <h2>Die Playlist ist leer</h2>
-              <p>Es sind noch keine Songs zum Voten da.</p>
+              <h2>Warteschlange ist leer</h2>
+              <p>Füg unter „Hinzufügen“ den ersten Song hinzu.</p>
             </div>
           </div>
         }
@@ -76,8 +78,8 @@
 
   <app-guest-toast></app-guest-toast>
 
-  <nav class="bottom-nav">
-    <button class="bottom-nav-btn active" routerLink="/voting">Voten</button>
+  <nav class="bottom-nav" aria-label="Gast-Navigation">
+    <button class="bottom-nav-btn active" routerLink="/voting" aria-current="page">Voten</button>
     <button class="bottom-nav-btn" routerLink="/guest">Hinzufügen</button>
   </nav>
 </div>

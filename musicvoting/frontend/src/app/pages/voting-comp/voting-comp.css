@@ -20,7 +20,7 @@
 
 /* NAVBAR */
 .navbar {
-  height: 5rem;
+  min-height: 5rem;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -43,6 +43,15 @@
 
 .header {
   padding: 1.5rem 2.5rem;
+}
+
+/* Erklärt in einer Zeile, warum Voten zählt (Critique: Hilfe 0/4). Weiß auf dem
+   violetten Anfang des Verlaufs, im Stil der übrigen Untertitel. */
+.header-hint {
+  margin: 0.4rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--color-surface);
 }
 
 .header h1 {
@@ -93,6 +102,22 @@
 .search-bar input:focus {
   background: var(--color-surface);
   box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
+}
+
+/* Lesbarer Placeholder (vorher #94a3b8 auf #f9f9f9 ≈ 2,4:1, jetzt ≈ 5,4:1). */
+.search-bar input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Fokusrahmen nur bei Tastaturbedienung; die Eingabe hat sonst outline: none. */
+.search-bar input:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.bottom-nav-btn:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: -3px;
 }
 
 /* MAIN CONTENT */
@@ -428,6 +453,11 @@
   .header h1 {
     margin-top: .5rem;
     font-size: 1.4rem;
+  }
+
+  .header-hint {
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
   }
 
   .navbar {

@@ -5,7 +5,7 @@ import { Guest } from './guest';
 import { TrackService } from '../../services/spotify-tracks';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { QueueStateService } from '../../services/queue-state';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 describe('Guest', () => {
@@ -169,5 +169,45 @@ describe('Guest', () => {
     comp.ngOnDestroy();
 
     expect(eventSource.close).toHaveBeenCalled();
+  });
+});
+
+describe('Guest template', () => {
+  /** Rendert nur das Template; ngOnInit (SSE-Verbindung) wird übersprungen. */
+  async function render() {
+    TestBed.configureTestingModule({
+      imports: [Guest],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: TrackService, useValue: { searchTracks: () => of({ tracks: { items: [] } }) } },
+        { provide: SpotifyWebPlayerService, useValue: {} },
+        { provide: QueueStateService, useValue: { inQueueUris$: new BehaviorSubject<Set<string>>(new Set()), refresh: () => {} } },
+      ],
+    });
+    spyOn(Guest.prototype, 'ngOnInit');
+    const fixture = TestBed.createComponent(Guest);
+    await fixture.whenStable();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  it('marks the Hinzufügen tab as the current page', async () => {
+    const el = await render();
+    const active = el.querySelector('.bottom-nav-btn.active')!;
+
+    expect(active.textContent).toContain('Hinzufügen');
+    expect(active.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('names the search field independently of its placeholder', async () => {
+    const el = await render();
+
+    expect(el.querySelector('input[type="search"]')!.getAttribute('aria-label')).toBe('Song oder Künstler suchen');
+  });
+
+  it('uses „Warteschlange“ in the welcome text', async () => {
+    const el = await render();
+
+    expect(el.querySelector('.welcome-screen p')!.textContent).toContain('füg ihn zur Warteschlange hinzu');
   });
 });

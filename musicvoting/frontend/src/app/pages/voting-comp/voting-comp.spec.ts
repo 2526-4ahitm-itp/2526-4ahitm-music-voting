@@ -1,5 +1,10 @@
 import { of, throwError, Subject } from 'rxjs';
 import { VotingComp } from './voting-comp';
+import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { SpotifyWebPlayerService } from '../../services/spotify-player';
+import { PartyService } from '../../services/party.service';
 
 describe('VotingComp', () => {
   let spotifyService: { getQueue: jasmine.Spy; toggleVote: jasmine.Spy };
@@ -187,5 +192,52 @@ describe('VotingComp', () => {
     comp.ngOnDestroy();
 
     expect(eventSource.close).toHaveBeenCalled();
+  });
+});
+
+describe('VotingComp template', () => {
+  /** Rendert nur das Template; ngOnInit (SSE-Verbindung) wird übersprungen. */
+  async function render(tracks: any[]) {
+    TestBed.configureTestingModule({
+      imports: [VotingComp],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: SpotifyWebPlayerService, useValue: {} },
+        { provide: PartyService, useValue: { deviceId: 'device-1', currentPartyId: 'party-1' } },
+      ],
+    });
+    spyOn(VotingComp.prototype, 'ngOnInit');
+    const fixture = TestBed.createComponent(VotingComp);
+    fixture.componentInstance.tracks.set(tracks);
+    await fixture.whenStable();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  it('marks the Voten tab as the current page', async () => {
+    const el = await render([]);
+    const active = el.querySelector('.bottom-nav-btn.active')!;
+
+    expect(active.textContent).toContain('Voten');
+    expect(active.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('names the search field and explains what likes do', async () => {
+    const el = await render([]);
+
+    expect(el.querySelector('input[type="search"]')!.getAttribute('aria-label')).toBe('In der Warteschlange suchen');
+    expect(el.querySelector('.header-hint')!.textContent).toContain('Je mehr Likes, desto früher läuft ein Song.');
+  });
+
+  it('shows „Warteschlange ist leer“ for an empty queue', async () => {
+    const el = await render([]);
+
+    expect(el.querySelector('.welcome-screen h2')!.textContent).toContain('Warteschlange ist leer');
+  });
+
+  it('treats covers as decorative because the title is next to them', async () => {
+    const el = await render([{ id: '1', uri: 'u1', name: 'Song', artists: [{ name: 'A' }], album: { images: [{ url: 'x.png' }] }, likeCount: 0 }]);
+
+    expect(el.querySelector('.album-cover')!.getAttribute('alt')).toBe('');
   });
 });
