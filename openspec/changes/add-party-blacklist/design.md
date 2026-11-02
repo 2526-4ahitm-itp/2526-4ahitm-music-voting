@@ -87,11 +87,13 @@ Artist search goes through a new `MusicProvider.searchArtists(Party, String)` (d
 - **Song search** on the setup page reuses the existing `GET /track/search` — no new endpoint.
 - **"Song sperren"** reuses `POST /blacklist` (`kind: TRACK`) followed by the existing `DELETE /track/remove`, which already emits `queue-updated`. *Alternative*: a combined endpoint — rejected; two existing calls are enough, and if the remove fails the song is still blocked for future adds.
 
+- **Live update:** every successful add (`201`, not a duplicate `200`) and remove emits the SSE event `blacklist-updated` with payload `{partyId}` only — never the entry, so guests learn nothing about the blacklist. The web branch of `/api/spotify/events` forwards it to clients of that party (iOS: not forwarded, it has no greyed-out UI). `guest` and `search-host` re-run their current search on it. Both pages now pass `partyId` to the event stream; before, they connected without it and therefore never received party events (also no `queue-updated`). *Alternative*: send the blocked track URI and grey it out client-side — rejected, it would expose entries and does not cover words/artists.
+
 ### D7: Party end deletes entries
 `PartyService.endParty` calls `BlacklistEntry.delete("partyId", …)` next to the existing queue delete. `PartyExpiryScheduler` goes through `endParty`, so expiry is covered too. `ON DELETE CASCADE` remains for a hard delete of a party row.
 
 ### D8: Frontend
-- New standalone page `pages/select-blacklist/` (route `select-blacklist`, `canActivate: [hostGuard]`, reads `?partyId=` like `select-playlist`). Sections: word input with "Wort hinzufügen"; search with two tabs "Künstler" (uses `searchArtists`) and "Songs" (uses `TrackService` search); list of current entries with remove; buttons "Weiter" and "Ohne Blacklist fortfahren" → `/dashboard?partyId=…`. "Weiter" is disabled while there are no entries (with nothing blocked, "Ohne Blacklist fortfahren" is the way on). Subtitle: "Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen."; word placeholder: "Wort".
+- New standalone page `pages/select-blacklist/` (route `select-blacklist`, `canActivate: [hostGuard]`, reads `?partyId=` like `select-playlist`). Sections: word input with "Wort hinzufügen"; search with two tabs "Künstler" (uses `searchArtists`) and "Songs" (uses `TrackService` search); list of current entries with remove; buttons "Weiter" and "Ohne Blacklist fortfahren" → `/dashboard?partyId=…`. "Weiter" is disabled while there are no entries (with nothing blocked, "Ohne Blacklist fortfahren" is the way on). Subtitle: "Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen."; word placeholder: "Wort". The artist/song search runs while typing (debounced 400 ms like the guest search, outdated responses are dropped); there is no "Suchen" button and no "Suche läuft…" status, Enter still searches immediately. "Sperren" on a result is an outline pill that fills white on hover, like "Ohne Blacklist fortfahren".
 - `select-playlist.ts`: `choose()` and `skip()` navigate to `/select-blacklist` instead of `/dashboard`.
 - `party.service.ts`: `BlacklistEntry` interface + `getBlacklist`, `addBlacklistEntry`, `removeBlacklistEntry`, `searchArtists`.
 - `host-dashboard`: "Song sperren" button next to the delete button on waiting songs, with a confirmation "Diesen Song für die Party sperren?".
@@ -99,7 +101,8 @@ Artist search goes through a new `MusicProvider.searchArtists(Party, String)` (d
 
 ## Risks / Trade-offs
 
-- [Search results are a snapshot] A song blocked via "Song sperren" stays addable-looking in a guest's already open results until they search again → the backend still rejects the add with "Nicht erlaubt.", so nothing gets in.
+- [Search results are a snapshot] Open results are refreshed on `blacklist-updated`; if the event is missed (connection drop), a song may look addable until the next search → the backend still rejects the add with "Nicht erlaubt.", so nothing gets in.
+- [Re-search on every blacklist change] Each block triggers one Spotify search per guest with open results → blocks during a party are rare and manual, so the extra load is small.
 - [Refill limited to 10 fetches] A default playlist where the first 10 candidates are all blocked stops autoplay ("Warteschlange ist leer") although allowed songs exist further down → acceptable edge case; the limit can be raised later without spec changes.
 - [Word list on artist names] Blocking the word "the" blocks every artist with "The" in the name → this is what the host asked for; the setup page lists the entries so mistakes can be removed before the party starts.
 - [Metadata-based checks are not unit-testable] `SpotifyMusicProvider`'s `HttpClient` cannot be mocked, so word/artist matches on add and refill are covered by `BlacklistService` unit tests plus a manual end-to-end check. The DB-only part (TRACK filter in refill) is unit-tested.

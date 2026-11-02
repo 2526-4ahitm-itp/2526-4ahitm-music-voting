@@ -153,6 +153,99 @@ describe('SelectBlacklist', () => {
     expect(fixture.nativeElement.querySelector('.entry[data-kind="TRACK"]').textContent).toContain('Dancing Queen – ABBA');
   });
 
+  // Live search: jasmine.clock() drives the debounce, so no real waiting is needed. mockDate()
+  // is required because rxjs debounceTime measures elapsed time with Date.now().
+  describe('search while typing', () => {
+    beforeEach(() => {
+      jasmine.clock().install();
+      jasmine.clock().mockDate();
+    });
+    afterEach(() => jasmine.clock().uninstall());
+
+    it('has no "Suchen" button — typing alone starts the search', async () => {
+      const fixture = await createLoaded([]);
+
+      expect(fixture.nativeElement.querySelector('.search-btn')).toBeNull();
+      expect(fixture.nativeElement.textContent).not.toContain('Suchen');
+    });
+
+    it('shows no "Suche läuft…" while a search is pending', async () => {
+      const fixture = await createLoaded([]);
+
+      fixture.componentInstance.onSearchQueryChange('abba');
+      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      const pending = httpMock.expectOne('/api/party/party-x/blacklist/artists?q=abba');
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.textContent).not.toContain('Suche läuft');
+      pending.flush([]);
+    });
+
+    it('searches after the debounce without pressing a button', async () => {
+      const fixture = await createLoaded([]);
+      const comp = fixture.componentInstance;
+
+      comp.onSearchQueryChange('a');
+      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS - 1);
+      httpMock.expectNone('/api/party/party-x/blacklist/artists?q=a');
+
+      jasmine.clock().tick(1);
+      httpMock.expectOne('/api/party/party-x/blacklist/artists?q=a')
+        .flush([{ id: 'a1', name: 'ABBA', imageUrl: null }]);
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelector('.artist-result').textContent).toContain('ABBA');
+    });
+
+    it('sends only one request for several quick key presses', async () => {
+      const fixture = await createLoaded([]);
+      const comp = fixture.componentInstance;
+
+      comp.onSearchQueryChange('a');
+      jasmine.clock().tick(100);
+      comp.onSearchQueryChange('ab');
+      jasmine.clock().tick(100);
+      comp.onSearchQueryChange('abb');
+      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+
+      httpMock.expectOne('/api/party/party-x/blacklist/artists?q=abb').flush([]);
+      httpMock.expectNone('/api/party/party-x/blacklist/artists?q=a');
+      httpMock.expectNone('/api/party/party-x/blacklist/artists?q=ab');
+    });
+
+    it('clears the results when the field is emptied, without a request', async () => {
+      const fixture = await createLoaded([]);
+      const comp = fixture.componentInstance;
+      comp.artistResults = [{ id: 'a1', name: 'ABBA', imageUrl: null }];
+
+      comp.onSearchQueryChange('');
+      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      await fixture.whenStable();
+
+      expect(comp.artistResults).toEqual([]);
+      expect(fixture.nativeElement.querySelectorAll('.artist-result').length).toBe(0);
+    });
+
+    it('ignores a slower answer to an older query', async () => {
+      const fixture = await createLoaded([]);
+      const comp = fixture.componentInstance;
+
+      comp.onSearchQueryChange('ab');
+      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      const older = httpMock.expectOne('/api/party/party-x/blacklist/artists?q=ab');
+      comp.onSearchQueryChange('abba');
+      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      const newer = httpMock.expectOne('/api/party/party-x/blacklist/artists?q=abba');
+
+      newer.flush([{ id: 'a1', name: 'ABBA', imageUrl: null }]);
+      await fixture.whenStable();
+      older.flush([{ id: 'a2', name: 'Abbott', imageUrl: null }]);
+      await fixture.whenStable();
+
+      expect(comp.artistResults.map(a => a.name)).toEqual(['ABBA']);
+    });
+  });
+
   it('shows only the short subtitle and the placeholder "Wort"', async () => {
     const fixture = await createLoaded([]);
 

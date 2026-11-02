@@ -86,7 +86,6 @@ header > h1 {
 }
 
 .add-word-btn,
-.search-btn,
 .continue-btn {
   flex-shrink: 0;
   padding: 0.65rem 1.25rem;
@@ -100,7 +99,6 @@ header > h1 {
 }
 
 .add-word-btn:disabled,
-.search-btn:disabled,
 .continue-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -216,10 +214,28 @@ header > h1 {
   text-overflow: ellipsis;
 }
 
+/* "Sperren" looks like the "Ohne Blacklist fortfahren" button (outline pill that fills white
+   on hover), so the host sees what a click on the row will do. The whole row stays clickable. */
 .result-action {
   flex-shrink: 0;
+  padding: 0.3rem 0.9rem;
   font-size: 0.85rem;
   font-weight: 600;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.03em;
+  transition: all 0.3s ease;
+}
+
+.result-item:hover:not(:disabled) .result-action,
+.result-item:focus-visible .result-action {
+  background: white;
+  color: #8403A6;
+}
+
+/* Already blocked: "Gesperrt" without the outline, it is not an action anymore. */
+.result-item:disabled .result-action {
+  border-color: transparent;
 }
 
 .entry-list {

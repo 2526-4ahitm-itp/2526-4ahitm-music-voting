@@ -37,15 +37,12 @@
         type="search"
         name="query"
         [placeholder]="searchTab === 'artists' ? 'Künstler suchen' : 'Song suchen'"
-        [(ngModel)]="searchQuery"
+        [ngModel]="searchQuery"
+        (ngModelChange)="onSearchQueryChange($event)"
         autocomplete="off" />
-      <button class="search-btn" type="submit" [disabled]="isSearching || !searchQuery.trim()">Suchen</button>
     </form>
 
     <div class="scroll-area">
-      @if (isSearching) {
-        <p class="status">Suche läuft…</p>
-      }
 
       @if (searchTab === 'artists') {
         @for (artist of artistResults; track artist.id) {
