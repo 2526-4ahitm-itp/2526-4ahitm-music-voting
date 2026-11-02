@@ -1,8 +1,10 @@
 # Continuation: Party-Blacklist umgesetzt und nachgebessert, manuelle Tests offen (2026-11-02)
 
-Branch: `feature/blacklist` (lokal, **nicht gepusht**). Zwei aktive OpenSpec-Changes:
-- `openspec/changes/add-party-blacklist/`: alles erledigt bis auf **7.1** (manueller Ende-zu-Ende-Test mit echtem Spotify-Login)
-- `openspec/changes/fix-next-stale-queue-entry/`: alles erledigt bis auf **2.1** (manueller Test von „Next“)
+Branch: `feature/blacklist` (lokal, **nicht gepusht**). **Keine aktiven OpenSpec-Changes.** Beide sind fertig (auch die manuellen Tests 7.1 und 2.1) und archiviert:
+- `openspec/changes/archive/2026-11-02-add-party-blacklist/`
+- `openspec/changes/archive/2026-11-02-fix-next-stale-queue-entry/`
+
+Archiviert wurde mit `openspec archive`, aber die host-Spec weigert sich wegen der iOS-Duplikate. Deshalb wurden die host-Deltas **von Hand** in `openspec/specs/host/spec.md` übernommen (2× MODIFIED, 3× ADDED), die übrigen Specs (playback, queue, search) per CLI. Das host-Delta liegt trotzdem vollständig im Archivordner.
 
 ## Commits
 | Commit | Inhalt |
@@ -43,9 +45,9 @@ Tests zuletzt: **Backend 178/178 grün**, **Frontend 248/248 grün**, beide Chan
 - `SpotifyMusicProvider#deleteQueueEntryIfPresent`: Bulk-Delete statt `deleteById`. `deleteById` warf bei parallelen „Next“-Requests `StaleStateException` („expected row count 1 but was 0“) beim Commit, und Quarkus meldete das als `ArcUndeclaredThrowableException` in `TrackResource:184`.
 
 ## Offen
-1. **Task 7.1** (`add-party-blacklist/tasks.md`), zusätzlich prüfen: Gast hat Suche offen → Host sperrt Song → Treffer wird sofort grau.
-2. **Task 2.1** (`fix-next-stale-queue-entry`): Kurz vor Songende skippen; kein `StaleStateException` im Quarkus-Log.
-3. **Archivieren:** `openspec archive add-party-blacklist` wird sich bei der host-Spec weigern, weil `openspec/specs/host/spec.md` drei iOS-Requirements doppelt enthält (Zeilen 280–322 = 412–454). Marlies will diese Duplikate **nicht** anfassen. Die host-Deltas dann von Hand übernehmen oder mit dem Team klären. `fix-next-stale-queue-entry` (nur playback) sollte normal archivierbar sein.
+1. ~~Tasks 7.1 / 2.1~~ und ~~Archivieren~~ **erledigt**.
+2. **iOS-Duplikate in `openspec/specs/host/spec.md`** (drei Requirements doppelt, „iOS Host Controls Include Authorization Header“ u. a.): Marlies will sie **nicht** anfassen. Folge: Jeder künftige Change mit host-Delta scheitert beim Archivieren, und die Deltas müssen wieder von Hand übernommen werden, bis das Team die Duplikate bereinigt.
+3. playback/queue/search haben nur `--strict`-Warnungen („Requirement text is very long“), gleich viele wie vor dem Archivieren.
 4. **Push** von `feature/blacklist` und PR nach `main`, beides erst nach Rückfrage.
 5. CSS-Budget-Warnungen (`host-dashboard.css` 8,4 kB, `guest.css` 4,4 kB u. a.): nur Warnungen, schon länger vorhanden.
 6. Die Punkte aus `2026-10-29_docs-check-and-superbox-dev-setup.md` sind weiter offen: Impeccable, Maven-/Quarkus-Warnungen, Slides-Termine.

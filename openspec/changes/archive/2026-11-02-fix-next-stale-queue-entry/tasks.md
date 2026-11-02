@@ -8,4 +8,4 @@
 
 ## 2. Integration check
 
-- [ ] 2.1 Manual: play a party, press skip right when a song ends; verify no `StaleStateException` in the Quarkus log and the next song plays
+- [x] 2.1 Manual: play a party, press skip right when a song ends; verify no `StaleStateException` in the Quarkus log and the next song plays
