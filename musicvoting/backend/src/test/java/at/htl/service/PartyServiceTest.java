@@ -56,6 +56,32 @@ class PartyServiceTest {
 
     @Test
     @TestTransaction
+    void endParty_deletesBlacklistEntries() {
+        String partyId = UUID.randomUUID().toString();
+        partyRegistry.register(new Party(PartyId.of(partyId), ProviderKind.SPOTIFY, "17171", "91717"));
+
+        PartyEntity entity = new PartyEntity();
+        entity.id = partyId;
+        entity.providerKind = ProviderKind.SPOTIFY.name();
+        entity.createdAt = OffsetDateTime.now();
+        entity.pin = "17171";
+        entity.hostPin = "91717";
+        entity.persist();
+
+        BlacklistEntry word = new BlacklistEntry();
+        word.partyId = partyId;
+        word.kind = BlacklistKind.WORD;
+        word.value = "live";
+        word.createdAt = OffsetDateTime.now();
+        word.persist();
+
+        partyService.endParty(PartyId.of(partyId));
+
+        assertEquals(0, BlacklistEntry.count("partyId", partyId));
+    }
+
+    @Test
+    @TestTransaction
     void endParty_forYoutubeParty_doesNotTouchSpotifyCredentials() {
         String partyId = UUID.randomUUID().toString();
         Party party = new Party(PartyId.of(partyId), ProviderKind.YOUTUBE, "13131", "91313");
