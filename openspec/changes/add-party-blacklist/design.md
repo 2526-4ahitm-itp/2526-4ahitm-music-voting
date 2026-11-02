@@ -91,11 +91,11 @@ Artist search goes through a new `MusicProvider.searchArtists(Party, String)` (d
 `PartyService.endParty` calls `BlacklistEntry.delete("partyId", …)` next to the existing queue delete. `PartyExpiryScheduler` goes through `endParty`, so expiry is covered too. `ON DELETE CASCADE` remains for a hard delete of a party row.
 
 ### D8: Frontend
-- New standalone page `pages/select-blacklist/` (route `select-blacklist`, `canActivate: [hostGuard]`, reads `?partyId=` like `select-playlist`). Sections: word input with "Wort hinzufügen"; search with two tabs "Künstler" (uses `searchArtists`) and "Songs" (uses `TrackService` search); list of current entries with remove; buttons "Weiter" and "Ohne Blacklist fortfahren" → `/dashboard?partyId=…`.
+- New standalone page `pages/select-blacklist/` (route `select-blacklist`, `canActivate: [hostGuard]`, reads `?partyId=` like `select-playlist`). Sections: word input with "Wort hinzufügen"; search with two tabs "Künstler" (uses `searchArtists`) and "Songs" (uses `TrackService` search); list of current entries with remove; buttons "Weiter" and "Ohne Blacklist fortfahren" → `/dashboard?partyId=…`. "Weiter" is disabled while there are no entries (with nothing blocked, "Ohne Blacklist fortfahren" is the way on). Subtitle: "Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen."; word placeholder: "Wort".
 - `select-playlist.ts`: `choose()` and `skip()` navigate to `/select-blacklist` instead of `/dashboard`.
 - `party.service.ts`: `BlacklistEntry` interface + `getBlacklist`, `addBlacklistEntry`, `removeBlacklistEntry`, `searchArtists`.
 - `host-dashboard`: "Song sperren" button next to the delete button on waiting songs, with a confirmation "Diesen Song für die Party sperren?".
-- `guest` and `search-host`: `track.blocked` → result greyed out (CSS class), "+" disabled, hint "Nicht erlaubt."; `guest.ts` shows the add error message instead of only logging it.
+- `guest` and `search-host`: `track.blocked` → result greyed out (CSS class), "+" disabled; only `search-host` shows the hint "Nicht erlaubt." (the team wants guests to see just the greyed-out result, no text). `guest.ts` shows the add error message instead of only logging it.
 
 ## Risks / Trade-offs
 

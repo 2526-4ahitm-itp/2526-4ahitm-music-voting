@@ -153,8 +153,45 @@ describe('SelectBlacklist', () => {
     expect(fixture.nativeElement.querySelector('.entry[data-kind="TRACK"]').textContent).toContain('Dancing Queen – ABBA');
   });
 
-  it('"Weiter" navigates to the dashboard', async () => {
+  it('shows only the short subtitle and the placeholder "Wort"', async () => {
     const fixture = await createLoaded([]);
+
+    expect(fixture.nativeElement.querySelector('.subtitle').textContent.trim())
+      .toBe('Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen.');
+    expect(fixture.nativeElement.querySelector('input[name="word"]').placeholder).toBe('Wort');
+  });
+
+  it('"Weiter" is disabled while nothing is blocked', async () => {
+    const fixture = await createLoaded([]);
+
+    const continueBtn = fixture.nativeElement.querySelector('.continue-btn') as HTMLButtonElement;
+    expect(continueBtn.disabled).toBe(true);
+    continueBtn.click();
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('"Weiter" becomes enabled after adding a word and is disabled again after removing it', async () => {
+    const fixture = await createLoaded([]);
+    const continueBtn = () => fixture.nativeElement.querySelector('.continue-btn') as HTMLButtonElement;
+
+    fixture.componentInstance.wordInput = 'live';
+    const adding = fixture.componentInstance.addWord();
+    httpMock.expectOne('/api/party/party-x/blacklist')
+      .flush({ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null });
+    await adding;
+    await fixture.whenStable();
+    expect(continueBtn().disabled).toBe(false);
+
+    click(fixture, '.remove-btn');
+    httpMock.expectOne('/api/party/party-x/blacklist/e1').flush(null);
+    await fixture.whenStable();
+    expect(continueBtn().disabled).toBe(true);
+  });
+
+  it('"Weiter" navigates to the dashboard when entries exist', async () => {
+    const fixture = await createLoaded([
+      { id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null },
+    ]);
 
     click(fixture, '.continue-btn');
 
