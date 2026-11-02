@@ -1,8 +1,9 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import {
   ArtistSearchResult,
   BlacklistEntry,
@@ -34,7 +35,10 @@ export interface SongSearchResult {
   templateUrl: './select-blacklist.html',
   styleUrl: './select-blacklist.css',
 })
-export class SelectBlacklist implements OnInit {
+export class SelectBlacklist implements OnInit, OnDestroy {
+  /** Same delay as the guest search: searches while typing without one Spotify call per key. */
+  static readonly SEARCH_DEBOUNCE_MS = 400;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private partyService = inject(PartyService);
@@ -50,9 +54,31 @@ export class SelectBlacklist implements OnInit {
 
   searchTab: 'artists' | 'songs' = 'artists';
   searchQuery = '';
-  isSearching = false;
   artistResults: ArtistSearchResult[] = [];
   songResults: SongSearchResult[] = [];
+
+  /** Counts started searches; a response is only shown if no newer search started meanwhile. */
+  private searchSeq = 0;
+  private queryChanges = new Subject<void>();
+  private queryChangesSub = this.queryChanges
+    .pipe(debounceTime(SelectBlacklist.SEARCH_DEBOUNCE_MS))
+    .subscribe(() => this.search());
+
+  ngOnDestroy() {
+    this.queryChangesSub.unsubscribe();
+  }
+
+  /** Search starts as soon as the host types: debounced, and an emptied field clears the results. */
+  onSearchQueryChange(query: string) {
+    this.searchQuery = query;
+    if (!query.trim()) {
+      this.searchSeq++; // drop a response that is still on its way
+      this.artistResults = [];
+      this.songResults = [];
+      this.cd.detectChanges();
+    }
+    this.queryChanges.next();
+  }
 
   async ngOnInit() {
     const partyIdFromUrl = this.route.snapshot.queryParamMap.get('partyId');
@@ -136,21 +162,28 @@ export class SelectBlacklist implements OnInit {
   async search() {
     const query = this.searchQuery.trim();
     if (!this.partyId || !query) return;
-    this.isSearching = true;
+    const seq = ++this.searchSeq;
+    const tab = this.searchTab;
+    // No "Suche läuft…" indicator on purpose: with search-while-typing it would flicker on every pause.
     this.error = null;
     this.cd.detectChanges();
     try {
-      if (this.searchTab === 'artists') {
-        this.artistResults = await lastValueFrom(this.partyService.searchArtists(this.partyId, query));
+      if (tab === 'artists') {
+        const artists = await lastValueFrom(this.partyService.searchArtists(this.partyId, query));
+        if (seq !== this.searchSeq) return; // typing went on — a newer search owns the list
+        this.artistResults = artists;
       } else {
         const res = await lastValueFrom(this.trackService.searchTracks(query));
+        if (seq !== this.searchSeq) return;
         this.songResults = toSongResults(res);
       }
     } catch {
+      if (seq !== this.searchSeq) return;
       this.error = 'Suche fehlgeschlagen. Bitte erneut versuchen.';
     } finally {
-      this.isSearching = false;
-      this.cd.detectChanges();
+      if (seq === this.searchSeq) {
+        this.cd.detectChanges();
+      }
     }
   }
 
