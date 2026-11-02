@@ -13,7 +13,7 @@ The existing spec also leaves the matching rule open (CLAUDE.md "Blacklist: case
 - **"Song sperren" button** on waiting songs in the host-dashboard queue: blocks exactly that track for the party and removes it from the queue.
 - **Enforcement on add**: a guest (or host) add of a blocked song is rejected with "Nicht erlaubt." This applies to every client, including the iOS app, because it is enforced by the backend.
 - **Enforcement on auto-refill**: the refill skips blocked candidates, so a blocked song never plays automatically.
-- **Search results are marked**: blocked tracks in search results are greyed out with a disabled "+" and the hint "Nicht erlaubt." Guests never see the blacklist itself or why a song is blocked.
+- **Search results are marked**: blocked tracks in search results are greyed out with a disabled "+" (the host search also shows the hint "Nicht erlaubt.", the guest search shows no text). Open results update as soon as the host blocks a song. Guests never see the blacklist itself or why a song is blocked.
 - **Host-only**: reading and editing the blacklist and the artist search are host-only endpoints.
 - Blacklist entries are stored in the database per party and are deleted when the party ends.
 - **Changed matching rule**: the existing substring rule becomes whole-word matching ("live" blocks "Song X (Live)" but not "Oliver").

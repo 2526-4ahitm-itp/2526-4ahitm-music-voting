@@ -15,11 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -32,6 +34,9 @@ class BlacklistResourceTest {
 
     @Inject
     PartyRegistry partyRegistry;
+
+    @Inject
+    LoginEventBus loginEventBus;
 
     @InjectMock
     SpotifyMusicProvider spotifyMusicProvider;
@@ -248,5 +253,64 @@ class BlacklistResourceTest {
                 .then().statusCode(200)
                 .body("[0].id", equalTo("artist-1"))
                 .body("[0].name", equalTo("ABBA"));
+    }
+
+    // --- live update: guests re-run their search when the blacklist changes ---
+
+    @Test
+    void addAndRemove_emitBlacklistUpdated_withOnlyThePartyId() {
+        String[] p = newParty();
+        List<LoginEvent> events = new CopyOnWriteArrayList<>();
+        var subscription = loginEventBus.stream().subscribe().with(events::add);
+        try {
+            String id = given().header("Authorization", "Bearer " + p[1])
+                    .contentType(ContentType.JSON).body(Map.of("kind", "TRACK", "value", "spotify:track:x"))
+                    .when().post("/api/party/{id}/blacklist", p[0])
+                    .then().statusCode(201).extract().path("id");
+            assertEquals(1, countUpdated(events, p[0]));
+            // Guests must not learn the entry: the payload is the party ID and nothing else.
+            assertEquals(Map.of("partyId", p[0]), events.stream()
+                    .filter(e -> e.type().equals("blacklist-updated")).findFirst().orElseThrow().payload());
+
+            // A duplicate add changes nothing, so no event.
+            given().header("Authorization", "Bearer " + p[1])
+                    .contentType(ContentType.JSON).body(Map.of("kind", "TRACK", "value", "spotify:track:x"))
+                    .when().post("/api/party/{id}/blacklist", p[0])
+                    .then().statusCode(200);
+            assertEquals(1, countUpdated(events, p[0]));
+
+            given().header("Authorization", "Bearer " + p[1])
+                    .when().delete("/api/party/{id}/blacklist/{entryId}", p[0], id)
+                    .then().statusCode(204);
+            assertEquals(2, countUpdated(events, p[0]));
+        } finally {
+            subscription.cancel();
+        }
+    }
+
+    @Test
+    void failedAddOrRemove_doesNotEmitBlacklistUpdated() {
+        String[] p = newParty();
+        List<LoginEvent> events = new CopyOnWriteArrayList<>();
+        var subscription = loginEventBus.stream().subscribe().with(events::add);
+        try {
+            given().header("Authorization", "Bearer " + p[1])
+                    .contentType(ContentType.JSON).body(Map.of("kind", "WORD", "value", "  "))
+                    .when().post("/api/party/{id}/blacklist", p[0])
+                    .then().statusCode(400);
+            given().header("Authorization", "Bearer " + p[1])
+                    .when().delete("/api/party/{id}/blacklist/{entryId}", p[0], UUID.randomUUID().toString())
+                    .then().statusCode(404);
+
+            assertTrue(events.stream().noneMatch(e -> e.type().equals("blacklist-updated")));
+        } finally {
+            subscription.cancel();
+        }
+    }
+
+    private static long countUpdated(List<LoginEvent> events, String partyId) {
+        return events.stream()
+                .filter(e -> e.type().equals("blacklist-updated") && partyId.equals(e.payload().get("partyId")))
+                .count();
     }
 }

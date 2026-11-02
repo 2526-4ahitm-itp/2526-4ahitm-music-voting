@@ -28,3 +28,10 @@ Search results MUST indicate whether each track matches the party's blacklist. I
 - GIVEN the host blocked song X via "Song sperren"
 - WHEN a guest searches and song X appears in the results
 - THEN song X is shown greyed out with a disabled "+"
+
+#### Scenario: Open search results update as soon as the host blocks a song
+- GIVEN a guest has search results open in the web app and song X is shown addable
+- WHEN the host blocks song X via "Song sperren"
+- THEN the guest's results update without the guest searching again
+- AND song X is shown greyed out with a disabled "+"
+- AND the update does not tell the guest which entry was added

@@ -1,8 +1,9 @@
-import {Component, OnInit, ChangeDetectorRef, signal, OnDestroy} from '@angular/core';
+import {Component, OnInit, ChangeDetectorRef, signal, OnDestroy, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { QueueStateService } from '../../services/queue-state';
+import { PartyService } from '../../services/party.service';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
@@ -27,6 +28,7 @@ export class SearchHost implements OnInit, OnDestroy{
   inQueueUris = new Set<string>();
   private eventSource?: EventSource;
   private queueStateSubscription?: Subscription;
+  private partyService = inject(PartyService);
 
   private searchAutoTrigger = toObservable(this.searchQuery).pipe(
     debounceTime(400),
@@ -53,12 +55,18 @@ export class SearchHost implements OnInit, OnDestroy{
       this.cdr.detectChanges();
     });
 
-    this.eventSource = new EventSource('/api/spotify/events?source=web');
+    // The backend only forwards party events to subscribers that name their party.
+    const partyId = this.partyService.currentPartyId;
+    const partyQuery = partyId ? `&partyId=${encodeURIComponent(partyId)}` : '';
+    this.eventSource = new EventSource(`/api/spotify/events?source=web${partyQuery}`);
     this.eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data?.type === 'queue-updated') {
           this.queueState.refresh();
+        } else if (data?.type === 'blacklist-updated' && this.searchQuery().trim()) {
+          // Search again so newly blocked songs are greyed out without a manual new search.
+          this.search(this.searchQuery());
         }
       } catch { /* ignore malformed events */ }
     };

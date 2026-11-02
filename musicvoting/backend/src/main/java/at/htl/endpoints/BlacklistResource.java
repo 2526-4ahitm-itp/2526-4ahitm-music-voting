@@ -11,6 +11,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,9 @@ public class BlacklistResource {
 
     @Inject
     BlacklistService blacklistService;
+
+    @Inject
+    LoginEventBus loginEventBus;
 
     private Party resolveParty() {
         return partyRegistry.findById(partyId)
@@ -71,6 +75,9 @@ public class BlacklistResource {
         try {
             BlacklistService.AddResult result = blacklistService.add(party.id().value(), kind,
                     body.get("value"), body.get("label"), body.get("imageUrl"));
+            if (result.created()) {
+                emitBlacklistUpdated(party);
+            }
             return Response.status(result.created() ? Response.Status.CREATED : Response.Status.OK)
                     .entity(toJson(result.entry()))
                     .build();
@@ -91,9 +98,24 @@ public class BlacklistResource {
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return blacklistService.remove(party.id().value(), id)
-                ? Response.noContent().build()
-                : Response.status(Response.Status.NOT_FOUND).build();
+        if (!blacklistService.remove(party.id().value(), id)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        emitBlacklistUpdated(party);
+        return Response.noContent().build();
+    }
+
+    /**
+     * Tells open web clients of this party that the blacklist changed, so guests re-run their
+     * search and see the new greyed-out state right away. The payload carries only the party
+     * ID — never the entry — because guests must not learn what is on the blacklist.
+     */
+    private void emitBlacklistUpdated(Party party) {
+        loginEventBus.emit(new LoginEvent(
+                "blacklist-updated",
+                Instant.now(),
+                Map.of("partyId", party.id().value())
+        ));
     }
 
     /** Artist search for the setup page. A blank query returns an empty list without calling Spotify. */
