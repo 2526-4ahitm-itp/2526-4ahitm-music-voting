@@ -183,7 +183,7 @@ describe('Guest', () => {
 });
 
 // Renders the real template: a blacklisted search result must be greyed out with a disabled "+"
-// and the hint "Nicht erlaubt.", while other results stay addable.
+// but without any text hint, while other results stay addable.
 describe('Guest search results (DOM)', () => {
   it('greys out blacklisted results and disables their "+"', async () => {
     TestBed.configureTestingModule({
@@ -209,7 +209,7 @@ describe('Guest search results (DOM)', () => {
     const cards: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.track-card'));
     expect(cards.length).toBe(2);
     expect(cards[0].classList).toContain('blocked');
-    expect(cards[0].textContent).toContain('Nicht erlaubt.');
+    expect(cards[0].textContent).not.toContain('Nicht erlaubt.');
     expect((cards[0].querySelector('.add-button') as HTMLButtonElement).disabled).toBe(true);
     expect(cards[1].classList).not.toContain('blocked');
     expect(cards[1].textContent).not.toContain('Nicht erlaubt.');

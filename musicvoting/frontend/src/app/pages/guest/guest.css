@@ -350,19 +350,14 @@ html, body {
   }
 }
 
-/* Song is on the party blacklist: shown but greyed out and not addable. */
+/* Song is on the party blacklist: shown but greyed out and not addable.
+   Guests get no text hint on purpose — the grey card alone signals it. */
 .track-card.blocked {
   opacity: 0.5;
 }
 
 .track-card.blocked:hover {
   background-color: #fff;
-}
-
-.blocked-hint {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #C0392B;
 }
 
 .add-error {

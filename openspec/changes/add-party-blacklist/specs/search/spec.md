@@ -3,14 +3,20 @@
 ## ADDED Requirements
 
 ### Requirement: Blacklisted Search Results Cannot Be Added
-Search results MUST indicate whether each track matches the party's blacklist. In the web guest and host search, a blocked result MUST still be shown but greyed out, with a disabled "+" and the hint "Nicht erlaubt." The result MUST NOT reveal which blacklist entry caused the block.
+Search results MUST indicate whether each track matches the party's blacklist. In the web guest and host search, a blocked result MUST still be shown but greyed out, with a disabled "+". The host search additionally shows the hint "Nicht erlaubt."; the guest search MUST NOT show any text hint, only the greyed-out result. The result MUST NOT reveal which blacklist entry caused the block.
 
 #### Scenario: Guest sees a blocked song in search
 - GIVEN the blacklist contains the word "live"
 - WHEN a guest searches and "Song X (Live)" appears in the results
 - THEN "Song X (Live)" is shown greyed out with a disabled "+"
-- AND the hint "Nicht erlaubt." is shown
+- AND no hint text such as "Nicht erlaubt." is shown next to it
 - AND other results remain addable
+
+#### Scenario: Host sees a blocked song in search
+- GIVEN the blacklist contains the word "live"
+- WHEN the host searches and "Song X (Live)" appears in the results
+- THEN "Song X (Live)" is shown greyed out with a disabled "+"
+- AND the hint "Nicht erlaubt." is shown
 
 #### Scenario: Blocked result does not reveal the reason
 - GIVEN the blacklist contains artist A
