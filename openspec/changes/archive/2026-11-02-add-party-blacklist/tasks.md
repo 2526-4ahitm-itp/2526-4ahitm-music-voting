@@ -49,7 +49,7 @@ Frontend tests: `cd musicvoting/frontend && npx ng test --watch=false --browsers
 
 ## 7. Integration check
 
-- [ ] 7.1 Manual end-to-end with a real Spotify login: create party → pick playlist → blacklist page appears → block word "live", an artist and a song → guest search shows "(Live)" songs, the artist's songs and the song greyed out, "Oliver …" addable; direct add returns 403 "Nicht erlaubt."; drain the queue and confirm the refill plays no blocked song; "Song sperren" on a waiting song removes it and greys it out in search; end the party and confirm no `blacklist_entry` rows remain
+- [x] 7.1 Manual end-to-end with a real Spotify login: create party → pick playlist → blacklist page appears → block word "live", an artist and a song → guest search shows "(Live)" songs, the artist's songs and the song greyed out, "Oliver …" addable; direct add returns 403 "Nicht erlaubt."; drain the queue and confirm the refill plays no blocked song; "Song sperren" on a waiting song removes it and greys it out in search; end the party and confirm no `blacklist_entry` rows remain
 - [x] 7.2 Run the full backend and frontend test suites; verify both are green
 - [x] 7.3 Move the blacklist question in `CLAUDE.md` to "Resolved" (whole word, case-insensitive; words, artists, songs); verify `openspec validate add-party-blacklist --strict` passes
 

@@ -3,7 +3,9 @@
 ## Purpose
 
 Defines how music actually plays: where it plays, how songs advance, and what happens when the queue empties. Playback decisions are driven by the queue and by host controls.
+
 ## Requirements
+
 ### Requirement: Playback Device Availability Exposed to Clients
 `GET /party/{id}/track/current` MUST include a `deviceActive` boolean field. For Spotify parties, `deviceActive` MUST be `true` if and only if a non-blank Spotify playback device ID is currently registered for the party (`SpotifyCredentials.getDeviceId()`). For parties using a provider without a device concept, `deviceActive` MUST be `true`.
 
@@ -355,3 +357,33 @@ The advance/play path MUST emit, via the existing `io.quarkus.logging.Log` diagn
 - **AND** it lists the devices Spotify currently reports, each with its `id`, `is_active`, and `name`
 - **AND** a failure to read the device list still lets the advance complete normally
 
+### Requirement: Advance Tolerates an Already Removed Finished Entry
+When the system advances to the next song, removing the finished queue entry MUST NOT fail if that entry was already removed by a parallel request. The advance MUST complete normally in that case.
+
+#### Scenario: Two advances for the same finished song overlap
+- GIVEN song A is playing and song B is next in the queue
+- AND a parallel request has already removed song A's queue entry
+- WHEN the system advances to the next song
+- THEN the advance does not fail with an error
+- AND song B becomes the current song
+
+### Requirement: Auto-Refill Skips Blacklisted Songs
+When the system refills the queue automatically (see "Empty Queue Behavior"), it MUST NOT add a song that matches the party's blacklist. Blocked candidates MUST be skipped in the usual source order (default playlist, then similar songs, Top-Charts and search). If no allowed candidate is found, refill behaves as when it yields nothing.
+
+#### Scenario: Blocked playlist song is skipped
+- GIVEN the party's default playlist starts with song X by artist A, followed by song Y
+- AND the blacklist contains artist A
+- WHEN the queue is refilled
+- THEN song Y is added to the queue
+- AND song X is not added
+
+#### Scenario: Party without blacklist refills as before
+- GIVEN the party's blacklist is empty
+- WHEN the queue is refilled
+- THEN the first eligible song from the refill sources is added, exactly as without a blacklist
+
+#### Scenario: Every candidate is blocked
+- GIVEN every refill candidate matches the blacklist
+- WHEN the playing song ends with no other songs queued
+- THEN no blocked song is added
+- AND the dashboard displays "Warteschlange ist leer"
