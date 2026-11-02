@@ -247,7 +247,9 @@ public class SpotifyCallbackResource {
                     || (("queue-updated".equals(event.type())
                         || "track-changed".equals(event.type())
                         || "vote-updated".equals(event.type())
-                        || "progress".equals(event.type()))
+                        || "progress".equals(event.type())
+                        // web only: iOS has no greyed-out search results to refresh
+                        || "blacklist-updated".equals(event.type()))
                         && !webPartyId.isBlank()
                         && webPartyId.equals(event.payload().get("partyId"))));
         }

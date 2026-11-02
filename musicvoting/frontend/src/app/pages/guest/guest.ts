@@ -1,8 +1,9 @@
-import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, effect} from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, effect, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { QueueStateService } from '../../services/queue-state';
+import { PartyService } from '../../services/party.service';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -27,6 +28,7 @@ export class Guest implements OnInit, OnDestroy {
   inQueueUris = new Set<string>();
   private eventSource?: EventSource;
   private queueStateSubscription?: Subscription;
+  private partyService = inject(PartyService);
 
   private searchAutoTrigger = toObservable(this.searchQuery).pipe(
     debounceTime(400),
@@ -48,7 +50,11 @@ export class Guest implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     });
 
-    this.eventSource = new EventSource('/api/spotify/events?source=web');
+    // The backend only forwards party events (queue-updated, blacklist-updated, …) to
+    // subscribers that name their party, so the party ID must be part of the URL.
+    const partyId = this.partyService.currentPartyId;
+    const partyQuery = partyId ? `&partyId=${encodeURIComponent(partyId)}` : '';
+    this.eventSource = new EventSource(`/api/spotify/events?source=web${partyQuery}`);
     this.eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -56,6 +62,9 @@ export class Guest implements OnInit, OnDestroy {
           this.ngZone.run(() => this.router.navigate(['/']));
         } else if (data?.type === 'queue-updated') {
           this.queueState.refresh();
+        } else if (data?.type === 'blacklist-updated' && this.searchQuery().trim()) {
+          // The host blocked or unblocked something: search again so the greyed-out state is current.
+          this.search(this.searchQuery());
         }
       } catch { /* ignore malformed events */ }
     };

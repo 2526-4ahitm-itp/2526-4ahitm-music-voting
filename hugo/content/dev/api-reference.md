@@ -46,7 +46,7 @@ Mit 🔒 markierte Endpunkte sind `@HostOnly` und erfordern den Header
 
 ## Blacklist — `/api/party/{partyId}/blacklist`
 
-Alle Endpunkte sind 🔒. Einträge: `{id, kind, value, label, imageUrl}` mit `kind` = `WORD` (ganzes Wort, Groß-/Kleinschreibung egal), `ARTIST` (Spotify-Artist-ID) oder `TRACK` (Spotify-Track-URI). Gespeichert in `blacklist_entry`, gelöscht beim Party-Ende.
+Alle Endpunkte sind 🔒. Einträge: `{id, kind, value, label, imageUrl}` mit `kind` = `WORD` (ganzes Wort, Groß-/Kleinschreibung egal), `ARTIST` (Spotify-Artist-ID) oder `TRACK` (Spotify-Track-URI). Gespeichert in `blacklist_entry`, gelöscht beim Party-Ende. Jedes erfolgreiche Hinzufügen (`201`) und Entfernen sendet das SSE-Event `blacklist-updated` (siehe [Realtime / SSE](../realtime-sse/)).
 
 | Methode | Pfad | Beschreibung |
 |---|---|---|

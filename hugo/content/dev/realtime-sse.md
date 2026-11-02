@@ -22,13 +22,16 @@ Der Stream ist `GET /api/spotify/events?source={web|ios}&partyId={id}`
 | `track-changed` | `/track/next`, `/track/start` oder Geräte-Registrierung | aktuellen Track **und** Queue neu laden |
 | `progress` | TV-Player sendet Position | Fortschrittsbalken aktualisieren |
 | `party-ended` | Party beendet (manuell/Auto-Expiry) | zur Startseite, Session löschen |
+| `blacklist-updated` | Blacklist-Eintrag hinzugefügt/entfernt (nur **Web**) | offene Suche neu ausführen, damit gesperrte Songs sofort ausgegraut sind. Payload nur `partyId`, nie der Eintrag |
 | `login-success` | Provider-Login abgeschlossen | Player initialisieren (siehe Hinweis) |
 
 ## Party-Scoping
 
 Jedes Event mit `partyId` wird **nur** an Clients mit passendem `partyId`-Query ausgeliefert
-(`progress`, `queue-updated`, `track-changed`, `vote-updated`, `party-ended`). Ein Client ohne
-`partyId`-Query kann als Fallback alle Events dieses Typs erhalten.
+(`progress`, `queue-updated`, `track-changed`, `vote-updated`, `blacklist-updated`, `party-ended`).
+Ein Client ohne `partyId`-Query bekommt davon nur `party-ended` (und `login-success`), deshalb
+müssen alle Web-Seiten mit Live-Updates `partyId` mitschicken (`guest` und `search-host` seit
+`add-party-blacklist`).
 
 - Der **Web**-Zweig liefert party-scoped Events an passende `partyId`.
 - Der **iOS**-Zweig liefert dieselben party-scoped Events plus `party-ended` und per
