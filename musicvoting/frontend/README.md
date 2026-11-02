@@ -18,6 +18,17 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Host flow
+
+Creating a party walks the host through these routes (all after `create-party` are guarded by `hostGuard`):
+
+1. `/create-party` → Spotify login
+2. `/select-playlist` — optional default playlist for the auto-refill
+3. `/select-blacklist` — optional party blacklist: words (whole-word, case-insensitive), artists and songs via search; "Ohne Blacklist fortfahren" skips it
+4. `/dashboard` — host dashboard; waiting songs in the queue have a "Song sperren" button that blocks the song for the party and removes it from the queue
+
+Blacklisted songs appear greyed out with a disabled "+" and "Nicht erlaubt." in the guest (`/guest`) and host (`/search-host`) search.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
