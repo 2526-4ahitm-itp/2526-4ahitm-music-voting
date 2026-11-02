@@ -452,6 +452,41 @@ class SpotifyMusicProviderTest {
         assertEquals(2, QueueEntry.count("partyId", party.id().value()));
     }
 
+    // --- finished entry already deleted by a parallel request ("next" twice) ---
+
+    @Test
+    @TestTransaction
+    void deleteQueueEntryIfPresent_whenRowAlreadyGone_doesNotFailOnFlush() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        persistPartyEntity(party);
+        QueueEntry entry = persistQueueEntry(partyId, "spotify:track:done", "Done", OffsetDateTime.now());
+        QueueEntry.flush();
+
+        // Another request deleted the row; this session still holds the loaded entity. The old
+        // deleteById would remove that stale entity and fail at flush with StaleStateException
+        // ("expected row count 1 but was 0"), rolling back the whole advance.
+        QueueEntry.delete("id", entry.id);
+
+        assertFalse(provider.deleteQueueEntryIfPresent(entry.id));
+        assertDoesNotThrow(() -> QueueEntry.flush());
+        assertEquals(0, QueueEntry.count("partyId", partyId));
+    }
+
+    @Test
+    @TestTransaction
+    void deleteQueueEntryIfPresent_removesExistingEntry() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        persistPartyEntity(party);
+        QueueEntry entry = persistQueueEntry(partyId, "spotify:track:done", "Done", OffsetDateTime.now());
+        persistQueueEntry(partyId, "spotify:track:next", "Next", OffsetDateTime.now().plusSeconds(1));
+        QueueEntry.flush();
+
+        assertTrue(provider.deleteQueueEntryIfPresent(entry.id));
+        assertEquals(1, QueueEntry.count("partyId", partyId));
+    }
+
     // --- blacklist (add-party-blacklist) ---
 
     private static BlacklistService.Blacklist blacklistOf(BlacklistKind kind, String value) {

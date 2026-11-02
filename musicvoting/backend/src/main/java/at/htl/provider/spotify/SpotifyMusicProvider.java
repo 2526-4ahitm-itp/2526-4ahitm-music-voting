@@ -717,7 +717,7 @@ public class SpotifyMusicProvider implements MusicProvider {
                     // Still nothing (no default playlist / refill yielded nothing) — remove the
                     // finished song and report empty.
                     if (partyEntity.currentlyPlayingEntryId != null) {
-                        QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
+                        deleteQueueEntryIfPresent(partyEntity.currentlyPlayingEntryId);
                         partyEntity.currentlyPlayingEntryId = null;
                     }
                     return Response.ok(Map.of("status", "empty", "message", "Warteschlange ist leer")).build();
@@ -738,7 +738,7 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
 
             if (partyEntity.currentlyPlayingEntryId != null) {
-                QueueEntry.deleteById(partyEntity.currentlyPlayingEntryId);
+                deleteQueueEntryIfPresent(partyEntity.currentlyPlayingEntryId);
             }
 
             partyEntity.currentlyPlayingEntryId = UUID.fromString((String) nextTrack.get("id"));
@@ -747,6 +747,19 @@ public class SpotifyMusicProvider implements MusicProvider {
         } catch (Exception e) {
             return propagateOrUnexpected("Das Wechseln zum naechsten Song", e);
         }
+    }
+
+    /**
+     * Deletes the finished queue entry with a bulk delete instead of {@code deleteById}.
+     * {@code deleteById} loads the entity and removes it at commit, expecting exactly one row;
+     * if a parallel request (e.g. a second "next" from song end + skip) already deleted it, the
+     * commit fails with {@code StaleStateException} and the whole advance is rolled back. The
+     * bulk delete simply removes 0 or 1 rows. Votes go with it via ON DELETE CASCADE in the DB.
+     *
+     * @return true if this call removed the entry
+     */
+    boolean deleteQueueEntryIfPresent(UUID entryId) {
+        return QueueEntry.delete("id", entryId) > 0;
     }
 
     @Override
