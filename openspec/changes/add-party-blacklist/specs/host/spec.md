@@ -8,7 +8,7 @@ The host MUST be able to keep a blacklist scoped to the current party. A blackli
 - **Artist**: identified by the provider's artist ID; blocks every song the artist takes part in, including features.
 - **Song**: identified by the provider's track URI; blocks exactly that track.
 
-The web host flow MUST offer a blacklist setup page directly after the default-playlist picker. On this page the host MUST be able to add words, search for artists and add one, search for songs and add one, and remove entries again. The page MUST be skippable via "Ohne Blacklist fortfahren"; "Weiter" continues with the current entries. Both continue to the host dashboard. Adding the same entry twice MUST NOT create a duplicate. Words, artists and songs can only be added during this setup step; later in the party the host blocks songs via "Song sperren" (see "Host Blocks a Queued Song").
+The web host flow MUST offer a blacklist setup page directly after the default-playlist picker. On this page the host MUST be able to add words, search for artists and add one, search for songs and add one, and remove entries again. The page MUST show the subtitle "Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen." and the word input MUST have the placeholder "Wort". The page MUST be skippable via "Ohne Blacklist fortfahren"; "Weiter" continues with the current entries and MUST be disabled (greyed out) while the blacklist has no entries. Both continue to the host dashboard. Adding the same entry twice MUST NOT create a duplicate. Words, artists and songs can only be added during this setup step; later in the party the host blocks songs via "Song sperren" (see "Host Blocks a Queued Song").
 
 When a guest attempts to add a blocked song, the add MUST be rejected with "Nicht erlaubt." Blocked songs MUST NOT be added by the automatic queue refill either (see `playback/spec.md`).
 
@@ -47,6 +47,14 @@ When a guest attempts to add a blocked song, the add MUST be rejected with "Nich
 - THEN the host can add the word "explicit", search for and add an artist, and search for and add a song
 - AND the entries are listed on the page and can be removed again
 - AND "Weiter" continues to the host dashboard
+
+#### Scenario: "Weiter" is disabled until something is blocked
+- GIVEN the host is on the blacklist setup page and the blacklist has no entries
+- THEN "Weiter" is greyed out and cannot be clicked
+- WHEN the host adds the word "explicit"
+- THEN "Weiter" is enabled
+- WHEN the host removes the last entry again
+- THEN "Weiter" is greyed out again
 
 #### Scenario: Host skips the blacklist
 - GIVEN the host is on the blacklist setup page

@@ -6,7 +6,7 @@
   <div class="select-blacklist-wrapper">
     <h2>Blacklist festlegen</h2>
     <p class="subtitle">
-      Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen, und sie werden auch nicht automatisch gespielt.
+      Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen.
     </p>
 
     @if (error) {
@@ -18,7 +18,7 @@
         class="text-input"
         type="text"
         name="word"
-        placeholder="Wort, z. B. live"
+        placeholder="Wort"
         [(ngModel)]="wordInput"
         autocomplete="off" />
       <button class="add-word-btn" type="submit" [disabled]="!wordInput.trim()">Wort hinzufügen</button>
@@ -99,7 +99,8 @@
     </div>
 
     <div class="actions">
-      <button class="continue-btn" type="button" (click)="continue()">Weiter</button>
+      <!-- "Weiter" only makes sense once something is blocked; with nothing, use the skip button. -->
+      <button class="continue-btn" type="button" [disabled]="entries.length === 0" (click)="continue()">Weiter</button>
       <button class="skip-btn" type="button" (click)="skip()">Ohne Blacklist fortfahren</button>
     </div>
   </div>

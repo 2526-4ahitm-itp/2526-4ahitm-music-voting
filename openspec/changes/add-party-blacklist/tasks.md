@@ -41,6 +41,8 @@ Frontend tests: `cd musicvoting/frontend && npx ng test --watch=false --browsers
 - [x] 6.1 Add "Song sperren" with confirmation "Diesen Song für die Party sperren?" to waiting songs in `host-dashboard` (not the current song): `addBlacklistEntry(TRACK)` then `removeTrack`; extend `host-dashboard.spec.ts` (button absent on the current song, confirm calls both in order, cancel calls neither); verify the spec passes
 - [x] 6.2 In `guest` and `search-host`, render `track.blocked` results greyed out with a disabled "+" and "Nicht erlaubt."; show the add error message in `guest.ts`; extend `guest.spec.ts` and `search-host.spec.ts` (blocked result disabled with hint, unblocked result unchanged, 403 shows "Nicht erlaubt."); verify the specs pass
 - [x] 6.3 Update `musicvoting/frontend/README.md` (new page and flow); verify the described route exists in `app.routes.ts`
+- [x] 6.4 Guest search: drop the "Nicht erlaubt." hint on blocked results (greyed out + disabled "+" only, host search unchanged); remove the unused `.blocked-hint` style from `guest.css`; adjust the DOM test in `guest.spec.ts`; verify the specs pass
+- [x] 6.5 Blacklist page texts and "Weiter": subtitle only "Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen.", word placeholder "Wort", "Weiter" disabled (greyed out) while there are no entries; extend `select-blacklist.spec.ts` (texts, disabled with no entries, enabled after add, disabled again after removing the last entry); verify the spec passes
 
 ## 7. Integration check
 
