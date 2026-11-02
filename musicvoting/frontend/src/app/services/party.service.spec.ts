@@ -138,6 +138,46 @@ describe('PartyService', () => {
     req.flush({ defaultPlaylistId: '' });
   });
 
+  it('getBlacklist GETs the party blacklist', () => {
+    let result: any;
+    service.getBlacklist('party-1').subscribe(res => result = res);
+
+    const req = httpMock.expectOne('/api/party/party-1/blacklist');
+    expect(req.request.method).toBe('GET');
+    req.flush([{ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null }]);
+
+    expect(result.length).toBe(1);
+    expect(result[0].kind).toBe('WORD');
+  });
+
+  it('addBlacklistEntry POSTs the entry', () => {
+    service.addBlacklistEntry('party-1', { kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'img' }).subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-1/blacklist');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'img' });
+    req.flush({ id: 'e2', kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'img' });
+  });
+
+  it('removeBlacklistEntry DELETEs the entry', () => {
+    service.removeBlacklistEntry('party-1', 'e1').subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-1/blacklist/e1');
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
+
+  it('searchArtists GETs the artist search with an encoded query', () => {
+    let result: any;
+    service.searchArtists('party-1', 'AC/DC').subscribe(res => result = res);
+
+    const req = httpMock.expectOne('/api/party/party-1/blacklist/artists?q=AC%2FDC');
+    expect(req.request.method).toBe('GET');
+    req.flush([{ id: 'a1', name: 'AC/DC', imageUrl: null }]);
+
+    expect(result[0].name).toBe('AC/DC');
+  });
+
   describe('deviceId', () => {
     const COOKIE_KEY = 'mv_device_id';
     const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

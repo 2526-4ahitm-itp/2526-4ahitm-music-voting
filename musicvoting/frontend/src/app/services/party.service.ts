@@ -28,6 +28,30 @@ export interface HostPlaylist {
   imageUrl: string | null;
 }
 
+/** Kind of a party blacklist entry: a word (whole-word match), an artist (Spotify ID) or a song (track URI). */
+export type BlacklistKind = 'WORD' | 'ARTIST' | 'TRACK';
+
+export interface BlacklistEntry {
+  id: string;
+  kind: BlacklistKind;
+  value: string;
+  label: string | null;
+  imageUrl: string | null;
+}
+
+export interface NewBlacklistEntry {
+  kind: BlacklistKind;
+  value: string;
+  label?: string | null;
+  imageUrl?: string | null;
+}
+
+export interface ArtistSearchResult {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PartyService {
   private readonly ID_KEY        = 'mv_party_id';
@@ -119,6 +143,27 @@ export class PartyService {
 
   setDefaultPlaylist(id: string, playlistId: string | null): Observable<{ defaultPlaylistId: string }> {
     return this.http.put<{ defaultPlaylistId: string }>(`/api/party/${id}/default-playlist`, { playlistId });
+  }
+
+  // --- Party blacklist (host-only; the Authorization header comes from hostAuthInterceptor) ---
+
+  getBlacklist(id: string): Observable<BlacklistEntry[]> {
+    return this.http.get<BlacklistEntry[]>(`/api/party/${id}/blacklist`);
+  }
+
+  /** Adding an entry that already exists returns the existing one (HTTP 200), so callers need no pre-check. */
+  addBlacklistEntry(id: string, entry: NewBlacklistEntry): Observable<BlacklistEntry> {
+    return this.http.post<BlacklistEntry>(`/api/party/${id}/blacklist`, entry);
+  }
+
+  removeBlacklistEntry(id: string, entryId: string): Observable<void> {
+    return this.http.delete<void>(`/api/party/${id}/blacklist/${entryId}`);
+  }
+
+  searchArtists(id: string, query: string): Observable<ArtistSearchResult[]> {
+    return this.http.get<ArtistSearchResult[]>(
+      `/api/party/${id}/blacklist/artists?q=${encodeURIComponent(query)}`
+    );
   }
 
   endParty(id: string): Observable<void> {

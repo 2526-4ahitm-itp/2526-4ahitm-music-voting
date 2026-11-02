@@ -293,6 +293,62 @@ body{
   padding: 0;
 }
 
+/* "Song sperren" sits left of the delete icon; padding-right on .track-info makes room for both. */
+.track-info:has(.block-icon) {
+  padding-right: 8rem;
+}
+
+.track-info .block-icon {
+  position: absolute;
+  right: 4.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  padding: 0.5rem;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+/* Confirmation overlays the queue row it belongs to. */
+.block-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  background: rgb(60 0 80 / 0.92);
+  color: white;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.block-confirm p {
+  flex: 1;
+  margin: 0;
+}
+
+.block-confirm-btn,
+.block-cancel-btn {
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid rgb(242 89 75);
+  color: white;
+}
+
+.block-confirm-btn {
+  background-color: rgb(242 89 75 / 0.8);
+}
+
+.block-cancel-btn {
+  background: transparent;
+}
+
 .track-info .delete-icon img {
   width: 1.6rem;
   height: auto;

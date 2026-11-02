@@ -297,6 +297,47 @@ export class HostDashboard implements OnInit, OnDestroy {
     await this.playNextTrack();
   }
 
+  /** URI of the queued song whose "Song sperren" confirmation is open, or null. */
+  confirmBlockUri: string | null = null;
+
+  /**
+   * Opens the "Song sperren" confirmation for a waiting song. The currently playing song
+   * cannot be blocked (it is already playing; the spec only allows blocking waiting songs).
+   */
+  requestBlock(track: any) {
+    if (!track?.uri || track.isCurrentlyPlaying) return;
+    this.confirmBlockUri = track.uri;
+    this.cd.detectChanges();
+  }
+
+  cancelBlock() {
+    this.confirmBlockUri = null;
+    this.cd.detectChanges();
+  }
+
+  /**
+   * Blocks the song for this party, then removes it from the queue. Blacklisting comes
+   * first: if the removal fails, the song is at least blocked for all future adds.
+   */
+  async confirmBlock(track: any) {
+    if (!track?.uri || !this.partyId || track.isCurrentlyPlaying) return;
+    const artists = (track.artists ?? []).map((a: any) => a?.name).filter(Boolean).join(', ');
+    const images = track.album?.images ?? [];
+    try {
+      await lastValueFrom(this.partyService.addBlacklistEntry(this.partyId, {
+        kind: 'TRACK',
+        value: track.uri,
+        label: artists ? `${track.name} – ${artists}` : track.name,
+        imageUrl: images.length ? images[images.length - 1].url : null,
+      }));
+      this.confirmBlockUri = null;
+      await this.onDeleteTrack(track);
+    } catch (err) {
+      console.error('Fehler beim Sperren des Songs:', err);
+    }
+    this.cd.detectChanges();
+  }
+
   async onDeleteTrack(track: any) {
     if (!track?.uri || !this.partyId) return;
     try {

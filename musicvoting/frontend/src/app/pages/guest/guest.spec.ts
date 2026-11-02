@@ -5,7 +5,7 @@ import { Guest } from './guest';
 import { TrackService } from '../../services/spotify-tracks';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { QueueStateService } from '../../services/queue-state';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 
 describe('Guest', () => {
   let trackApi: { searchTracks: jasmine.Spy };
@@ -88,6 +88,35 @@ describe('Guest', () => {
     expect(comp.addingTrackId).toBeNull();
   });
 
+  it('addToPlaylist does nothing for a blacklisted track', async () => {
+    const track = { id: 't1', uri: 'spotify:track:t1', name: 'Song (Live)', blocked: true };
+
+    await comp.addToPlaylist(track);
+
+    expect(spotifyService.addToPlaylist).not.toHaveBeenCalled();
+  });
+
+  it('addToPlaylist shows the backend message "Nicht erlaubt." on a 403', async () => {
+    spyOn(console, 'error');
+    spotifyService.addToPlaylist.and.returnValue(
+      throwError(() => ({ status: 403, error: { error: 'Nicht erlaubt.' } }))
+    );
+
+    await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+
+    expect(comp.addError).toBe('Nicht erlaubt.');
+    expect(comp.addingTrackId).toBeNull();
+  });
+
+  it('addToPlaylist clears a previous error on the next add', async () => {
+    comp.addError = 'Nicht erlaubt.';
+    spotifyService.addToPlaylist.and.returnValue(of({}));
+
+    await comp.addToPlaylist({ id: 't2', uri: 'spotify:track:t2', name: 'Other' });
+
+    expect(comp.addError).toBeNull();
+  });
+
   it('toggleMenu toggles menuOpen', () => {
     expect(comp.menuOpen).toBe(false);
 
@@ -150,5 +179,42 @@ describe('Guest', () => {
     comp.ngOnDestroy();
 
     expect(eventSource.close).toHaveBeenCalled();
+  });
+});
+
+// Renders the real template: a blacklisted search result must be greyed out with a disabled "+"
+// and the hint "Nicht erlaubt.", while other results stay addable.
+describe('Guest search results (DOM)', () => {
+  it('greys out blacklisted results and disables their "+"', async () => {
+    TestBed.configureTestingModule({
+      imports: [Guest],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: TrackService, useValue: { searchTracks: () => of({}) } },
+        { provide: SpotifyWebPlayerService, useValue: { addToPlaylist: () => of({}) } },
+        { provide: QueueStateService, useValue: { inQueueUris$: new BehaviorSubject<Set<string>>(new Set()), refresh: () => {} } },
+      ],
+    });
+    const fixture = TestBed.createComponent(Guest);
+    fixture.detectChanges();
+
+    fixture.componentInstance.tracks.set([
+      { id: 't1', uri: 'spotify:track:t1', name: 'Song X (Live)', artists: [{ name: 'A' }], blocked: true },
+      { id: 't2', uri: 'spotify:track:t2', name: 'Delivery', artists: [{ name: 'B' }], blocked: false },
+    ]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const cards: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.track-card'));
+    expect(cards.length).toBe(2);
+    expect(cards[0].classList).toContain('blocked');
+    expect(cards[0].textContent).toContain('Nicht erlaubt.');
+    expect((cards[0].querySelector('.add-button') as HTMLButtonElement).disabled).toBe(true);
+    expect(cards[1].classList).not.toContain('blocked');
+    expect(cards[1].textContent).not.toContain('Nicht erlaubt.');
+    expect((cards[1].querySelector('.add-button') as HTMLButtonElement).disabled).toBe(false);
+
+    fixture.destroy();
   });
 });

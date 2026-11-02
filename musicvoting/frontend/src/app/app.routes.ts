@@ -10,6 +10,7 @@ import { SearchHost } from './pages/search-host/search-host';
 import { CodeInput } from './pages/code-input/code-input';
 import { CreateParty } from './pages/create-party/create-party';
 import { SelectPlaylist } from './pages/select-playlist/select-playlist';
+import { SelectBlacklist } from './pages/select-blacklist/select-blacklist';
 import { hostGuard } from './host.guard';
 
 export const routes: Routes = [
@@ -48,6 +49,14 @@ export const routes: Routes = [
     component: SelectPlaylist,
     canActivate: [hostGuard],
     title: 'Standard-Playlist - MusicVoting'
+  },
+
+  {
+    // Host setup step right after the default-playlist picker.
+    path: 'select-blacklist',
+    component: SelectBlacklist,
+    canActivate: [hostGuard],
+    title: 'Blacklist - MusicVoting'
   },
 
   {

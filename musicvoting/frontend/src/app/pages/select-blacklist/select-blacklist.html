@@ -1,0 +1,106 @@
+<div class="select-blacklist-page">
+  <header>
+    <h1>MusicVoting</h1>
+  </header>
+
+  <div class="select-blacklist-wrapper">
+    <h2>Blacklist festlegen</h2>
+    <p class="subtitle">
+      Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen, und sie werden auch nicht automatisch gespielt.
+    </p>
+
+    @if (error) {
+      <p class="error-message">{{ error }}</p>
+    }
+
+    <form class="word-form" (ngSubmit)="addWord()">
+      <input
+        class="text-input"
+        type="text"
+        name="word"
+        placeholder="Wort, z. B. live"
+        [(ngModel)]="wordInput"
+        autocomplete="off" />
+      <button class="add-word-btn" type="submit" [disabled]="!wordInput.trim()">Wort hinzufügen</button>
+    </form>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" type="button" role="tab"
+              [class.active]="searchTab === 'artists'" (click)="selectTab('artists')">Künstler</button>
+      <button class="tab" type="button" role="tab"
+              [class.active]="searchTab === 'songs'" (click)="selectTab('songs')">Songs</button>
+    </div>
+
+    <form class="search-form" (ngSubmit)="search()">
+      <input
+        class="text-input"
+        type="search"
+        name="query"
+        [placeholder]="searchTab === 'artists' ? 'Künstler suchen' : 'Song suchen'"
+        [(ngModel)]="searchQuery"
+        autocomplete="off" />
+      <button class="search-btn" type="submit" [disabled]="isSearching || !searchQuery.trim()">Suchen</button>
+    </form>
+
+    <div class="scroll-area">
+      @if (isSearching) {
+        <p class="status">Suche läuft…</p>
+      }
+
+      @if (searchTab === 'artists') {
+        @for (artist of artistResults; track artist.id) {
+          <button class="result-item artist-result" type="button"
+                  [disabled]="isBlocked('ARTIST', artist.id)" (click)="addArtist(artist)">
+            @if (artist.imageUrl) {
+              <img class="cover round" [src]="artist.imageUrl" alt="" />
+            } @else {
+              <div class="cover round placeholder">♪</div>
+            }
+            <span class="result-name">{{ artist.name }}</span>
+            <span class="result-action">{{ isBlocked('ARTIST', artist.id) ? 'Gesperrt' : 'Sperren' }}</span>
+          </button>
+        }
+      } @else {
+        @for (song of songResults; track song.uri) {
+          <button class="result-item song-result" type="button"
+                  [disabled]="isBlocked('TRACK', song.uri)" (click)="addSong(song)">
+            @if (song.imageUrl) {
+              <img class="cover" [src]="song.imageUrl" alt="" />
+            } @else {
+              <div class="cover placeholder">♪</div>
+            }
+            <span class="result-info">
+              <span class="result-name">{{ song.name }}</span>
+              <span class="result-sub">{{ song.artists }}</span>
+            </span>
+            <span class="result-action">{{ isBlocked('TRACK', song.uri) ? 'Gesperrt' : 'Sperren' }}</span>
+          </button>
+        }
+      }
+
+      <h3>Gesperrt</h3>
+      @if (isLoading) {
+        <p class="status">Blacklist wird geladen…</p>
+      } @else if (entries.length === 0) {
+        <p class="status empty-list">Noch nichts gesperrt.</p>
+      } @else {
+        <ul class="entry-list">
+          @for (entry of entries; track entry.id) {
+            <li class="entry" [attr.data-kind]="entry.kind">
+              <span class="entry-kind">
+                {{ entry.kind === 'WORD' ? 'Wort' : entry.kind === 'ARTIST' ? 'Künstler' : 'Song' }}
+              </span>
+              <span class="entry-label">{{ entry.label || entry.value }}</span>
+              <button class="remove-btn" type="button" (click)="remove(entry)">Entfernen</button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="actions">
+      <button class="continue-btn" type="button" (click)="continue()">Weiter</button>
+      <button class="skip-btn" type="button" (click)="skip()">Ohne Blacklist fortfahren</button>
+    </div>
+  </div>
+</div>

@@ -52,7 +52,7 @@ export class SelectPlaylist implements OnInit {
     this.cd.detectChanges();
     try {
       await lastValueFrom(this.partyService.setDefaultPlaylist(this.partyId, playlist.id));
-      this.goToDashboard();
+      this.goToBlacklist();
     } catch {
       this.error = 'Playlist konnte nicht gespeichert werden. Bitte versuche es erneut.';
       this.isSaving = false;
@@ -61,10 +61,11 @@ export class SelectPlaylist implements OnInit {
   }
 
   skip() {
-    this.goToDashboard();
+    this.goToBlacklist();
   }
 
-  private goToDashboard() {
-    this.router.navigate(['/dashboard'], { queryParams: { partyId: this.partyId } });
+  /** Next setup step: the host can block words, artists and songs before the party starts. */
+  private goToBlacklist() {
+    this.router.navigate(['/select-blacklist'], { queryParams: { partyId: this.partyId } });
   }
 }

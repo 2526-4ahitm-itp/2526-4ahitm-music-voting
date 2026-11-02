@@ -22,6 +22,8 @@ export class SearchHost implements OnInit, OnDestroy{
   searchQuery = signal<string>('');
   isSearching = signal<boolean>(false);
   addingTrackId: string | null = null;
+  /** Last add rejection from the backend, shown verbatim above the results. */
+  addError: string | null = null;
   inQueueUris = new Set<string>();
   private eventSource?: EventSource;
   private queueStateSubscription?: Subscription;
@@ -100,14 +102,20 @@ export class SearchHost implements OnInit, OnDestroy{
 
   /** Track zur Playlist hinzufügen */
   async addToPlaylist(track: any) {
+    if (track?.blocked) return; // on the party blacklist — the backend would reject it anyway
     this.addingTrackId = track.id;
+    this.addError = null;
     this.cdr.detectChanges();
 
     try {
       await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
       this.queueState.refresh();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Fehler beim Hinzufügen:', err);
+      // The backend sends German messages meant to be shown verbatim, e.g. "Nicht erlaubt."
+      // (blacklist, 403) or "Song ist schon in der Warteschlange." (409).
+      const message = err?.error?.error;
+      this.addError = typeof message === 'string' ? message : null;
     } finally {
       this.addingTrackId = null;
       this.cdr.detectChanges();

@@ -96,6 +96,35 @@ describe('SearchHost', () => {
     expect(comp.addingTrackId).toBeNull();
   });
 
+  it('addToPlaylist does nothing for a blacklisted track', async () => {
+    const track = { id: 't1', uri: 'spotify:track:t1', name: 'Song (Live)', blocked: true };
+
+    await comp.addToPlaylist(track);
+
+    expect(spotifyService.addToPlaylist).not.toHaveBeenCalled();
+  });
+
+  it('addToPlaylist shows the backend message "Nicht erlaubt." on a 403', async () => {
+    spyOn(console, 'error');
+    spotifyService.addToPlaylist.and.returnValue(
+      throwError(() => ({ status: 403, error: { error: 'Nicht erlaubt.' } }))
+    );
+
+    await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+
+    expect(comp.addError).toBe('Nicht erlaubt.');
+    expect(comp.addingTrackId).toBeNull();
+  });
+
+  it('addToPlaylist clears a previous error on the next add', async () => {
+    comp.addError = 'Nicht erlaubt.';
+    spotifyService.addToPlaylist.and.returnValue(of({}));
+
+    await comp.addToPlaylist({ id: 't2', uri: 'spotify:track:t2', name: 'Other' });
+
+    expect(comp.addError).toBeNull();
+  });
+
   it('toggleMenu toggles menuOpen', () => {
     expect(comp.menuOpen).toBe(false);
 
