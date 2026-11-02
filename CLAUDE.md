@@ -79,9 +79,10 @@ Schema is initialized from `musicvoting/backend/setup.sql` on first start.
 ## Open questions (unresolved, do not assume)
 
 - Empty queue: web spec says stop/pause; Swift spec says play random Top-Charts. Which is canonical?
-- Blacklist: case-insensitive substring matching? Partial word matching?
 
 ### Resolved (kept for history)
+
+- ~~Blacklist: case-insensitive substring matching? Partial word matching?~~ **Whole word, case-insensitive** ("live" blocks "(Live)" but not "Oliver"). Entries are words, artists (Spotify artist ID) and songs (track URI), stored in `blacklist_entry`. See `host/spec.md` "Host Manages Party Blacklist" and change `add-party-blacklist`.
 
 - ~~Web-app join via 5-digit code — supported or QR only?~~ **Both.** The `code-input` page accepts a typed 5-digit code (digit boxes) and there is a `join/:pin` route; QR scanning opens that same route. See `guest/spec.md` "Join via QR Code".
 - ~~Guest identity persistence mechanism (localStorage, cookie, or DeviceId)?~~ **DeviceId.** A persistent `deviceId` UUID stored in localStorage + a 1-year cookie (web) and UserDefaults (iOS). See `voting/spec.md` "Persistent Device Identity".
