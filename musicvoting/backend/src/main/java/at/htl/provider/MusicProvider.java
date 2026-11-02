@@ -40,6 +40,14 @@ public interface MusicProvider {
      */
     default void refillQueue(Party party) { }
 
+    /**
+     * Artist search for the host's blacklist setup page. Each result is
+     * {@code {id, name, imageUrl}}. Empty for providers without artist search.
+     */
+    default List<Map<String, Object>> searchArtists(Party party, String query) {
+        return List.of();
+    }
+
     default List<Map<String, Object>> getQueueForDevice(Party party, String deviceId) {
         return getQueue(party).stream().map(entry -> {
             java.util.Map<String, Object> copy = new java.util.HashMap<>(entry);

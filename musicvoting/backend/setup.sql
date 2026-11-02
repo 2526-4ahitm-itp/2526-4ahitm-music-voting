@@ -35,6 +35,20 @@ CREATE TABLE vote (
     UNIQUE (queue_entry_id, device_id)
 );
 
+-- Per-party blacklist (words, artists, songs). Artists and songs are matched by their
+-- Spotify ID/URI, not by name, so namesakes are not blocked and features are caught.
+-- The UNIQUE constraint makes adding the same entry twice a no-op.
+CREATE TABLE blacklist_entry (
+    id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    party_id    VARCHAR     NOT NULL REFERENCES party(id) ON DELETE CASCADE,
+    kind        VARCHAR     NOT NULL,   -- 'WORD' | 'ARTIST' | 'TRACK'
+    value       VARCHAR     NOT NULL,   -- WORD: lower-case word; ARTIST: Spotify artist ID; TRACK: spotify:track:… URI
+    label       VARCHAR,                -- display name only (artist name, "Title – Artist", or the word)
+    image_url   TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (party_id, kind, value)
+);
+
 -- Resolve circular reference: party → queue_entry (added after queue_entry exists)
 ALTER TABLE party
     ADD COLUMN currently_playing_entry_id UUID REFERENCES queue_entry(id) ON DELETE SET NULL;
