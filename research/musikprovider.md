@@ -20,6 +20,8 @@ Damit die Anbieter vergleichbar sind, hier kurz, was wir von Spotify tatsächlic
 
 Für einen anderen Anbieter brauchen wir also mindestens: **Suche**, **Song-Metadaten (Titel, Cover,
 Dauer)**, **Abspielen auf der Player-Seite mit Pause/Resume/Position** und ein **Signal am Songende**.
+Für die **Party-Blacklist** (Pflicht, seit 02.11.2026 umgesetzt) außerdem pro Song **Künstlernamen
+und Künstler-IDs inkl. Features** und eine **Künstler-Suche**.
 Login und Auto-Refill sind je nach Anbieter optional.
 
 **Wichtigster Architektur-Unterschied:** Spotify ist der einzige Anbieter, bei dem das **Backend**
@@ -76,6 +78,11 @@ wandert aber vom Backend in den Browser (siehe oben).
 - Die Nutzungsbedingungen verbieten, Ton und Video zu trennen: **nur mit sichtbarem Video**,
   kein reiner Audio-Player und keine Hintergrund-Wiedergabe in der iOS-App
 - Suchergebnisse sind „unsauber" (Lyric-Videos, Reaktionen, …), wir bräuchten Filter
+- **Blacklist:** YouTube kennt keine Künstler, nur Kanäle. Ein Künstler hat oft mehrere Kanäle
+  (Topic, VEVO, offizieller Kanal), Features stehen nur im Titel oder bei Topic-Uploads in der
+  Beschreibung („Song · Künstler · Feature"). „Künstler sperren" geht nur kombiniert über Kanal-IDs
+  + Name als ganzes Wort + Topic-Beschreibung (siehe Machbarkeitsstudie, Kap. 4.5). Die
+  Künstler-Suche (`search.list` mit `type=channel`) kostet wie jede Suche 100 Einheiten.
 
 **Was bringt YouTube Premium des Hosts?**
 - **Keine Werbung: wahrscheinlich ja.** Laut YouTube-Hilfe gilt Premium auch für eingebettete
