@@ -23,7 +23,7 @@ interface MenuEntry {
  * during the party (host spec "Host Manages Party Blacklist").
  *
  * The burger sits in the sticky top bar of each host page (.host-top in
- * shared/host-stage.css), so it is always reachable while scrolling.
+ * shared/stage.css), so it is always reachable while scrolling.
  */
 @Component({
   selector: 'mv-host-menu',

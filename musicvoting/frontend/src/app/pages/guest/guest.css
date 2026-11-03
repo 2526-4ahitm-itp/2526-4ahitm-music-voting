@@ -1,389 +1,75 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent;
-  font-family: var(--font), sans-serif;
+/*
+ * Guest add/search layout. The stage look (background, top bar, rows,
+ * search field, status texts) comes from shared/stage.css; colours come from
+ * the --mv-stage-* tokens, so dark and light mode need no extra CSS here.
+ */
+
+.guest-content {
+  max-width: 760px;
+  margin: 0 auto;
+  /* Room for the floating tab bar. */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8rem);
 }
 
-html, body {
-  height: 100%;
-  overflow: hidden;
-  background-color: #f0f2f5;
+.host-search {
+  margin-bottom: var(--mv-space-4);
 }
 
-.music-voting-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
-  overflow: hidden;
-}
-
-/* NAVBAR */
-.navbar {
-  height: 5rem;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 0 20px;
-}
-
-.main-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.sticky-top {
-  flex-shrink: 0;
-  z-index: 100;
-  border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.15);
-}
-
-.header {
-  padding: 1.5rem 2.5rem;
-}
-
-.header h1 {
-  font-size: 2.4rem;
-  font-weight: 800;
-  margin: 0;
-  font-family: var(--font), sans-serif;
-  letter-spacing: -0.03rem;
-  display: inline-block;
-  color: white;
-}
-
-/* SEARCH */
-.search-section {
-  padding: 1.25rem 2.5rem;
-}
-
-.search-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  width: 1.125rem;
-  height: 1.125rem;
-  color: #94a3b8;
-  pointer-events: none;
-  z-index: 2;
-  transition: all 0.2s ease;
-}
-
-.search-bar input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 3rem;
-  font-size: 1rem;
-  border: 0.0625rem solid #e5e5e5;
-  border-radius: 0.75rem;
-  outline: none;
-  background: #f9f9f9;
-  transition: all 0.3s ease;
-  font-family: var(--font), sans-serif;
-}
-
-.search-bar input:focus {
-  background: #fff;
-  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
-}
-
-/* MAIN CONTENT */
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding: 1rem 2.5rem 2rem 2.5rem;
-}
-
-.main-content::-webkit-scrollbar {
-  display: none;
-}
-
-/* Track List */
-.track-list {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 0.5rem;
-}
-
-.track-card {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  background-color: #fff;
-  border-bottom: 0.0625rem solid #f9f9f9;
-  transition: all 0.2s ease;
-  font-family: var(--font), sans-serif;
-}
-
-.track-card:hover {
-  background-color: #fdfaff;
-}
-
-.album-cover {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 0.5rem;
-  margin-right: 0.875rem;
-  flex-shrink: 0;
-  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-}
-
-.track-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.track-name {
-  font-size: 1.06rem;
-  font-weight: 700;
-  color: #111;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.artist-name {
-  font-size: 0.875rem;
-  color: #666;
-}
-
-.add-button {
-  background-color: #f3e8ff;
-  border: none;
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 50%;
-  font-size: 1.9rem;
-  color: #8b00a5;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-.add-button:active:not(:disabled) {
-  background-color: #8b00a5;
-  color: #ffffff;
-  transform: scale(0.9);
-}
-
-.add-button:disabled {
-  background-color: #f1f5f9;
-  color: #cbd5e1;
-  cursor: not-allowed;
-}
-
-.empty-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
-  text-align: center;
-  padding: 2.5rem 1.25rem;
-}
-
-.welcome-screen {
-  max-width: 30rem;
-}
-
-.icon-circle {
-  color: var(--mv-purple);
-  width: 6.25rem;
-  height: 6.25rem;
-  background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-  box-shadow: 0 0.625rem 1.25rem rgba(139, 0, 165, 0.05);
-}
-
-.main-icon {
-  font-size: 3rem;
-}
-
-.welcome-screen h2 {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 0.75rem;
-}
-
-.welcome-screen p {
-  font-size: 1.1rem;
-  color: white;
-}
-
-/* BOTTOM NAV */
-.bottom-nav {
-  position: fixed;
-  bottom: 2vh;          /* Schwebt exakt 25vh über dem Bildschirmende */
-  left: 5vw;             /* 5% Abstand vom linken Rand */
-  right: 5vw;            /* 5% Abstand vom rechten Rand */
-  width: 90vw;           /* Nutzt 90% der Bildschirmbreite (geht nicht bis zum Rand) */
-  max-width: 450px;      /* Verhindert, dass die Bar auf iPads/Tablets zu breit gezogen wird */
-  margin: 0 auto;        /* Zentriert die Bar, wenn max-width greift */
-
-  display: flex;
-  height: 4rem;
-  border-radius: 1.25rem; /* Sorgt für den modernen, abgerundeten Look */
-  overflow: hidden;      /* Schneidet die inneren Buttons an den Ecken sauber ab */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); /* Schatten, der den "Schwebe-Effekt" verstärkt */
-  z-index: 1000;         /* Liegt immer über dem Content */
-}
-
-.bottom-nav-btn {
-  flex: 1;
-  border: none;
-  background: white;
-  color: black;
-  font-size: 1.15rem;
-  font-weight: 600;
-  font-family: var(--font), sans-serif;
-  cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
-  letter-spacing: 0.03em;
-}
-
-/* Trennlinie zwischen den Buttons */
-.bottom-nav-btn + .bottom-nav-btn {
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.bottom-nav-btn.active {
-  color: white;
-  background: #8403A6;
-}
-
-.bottom-nav-btn:active {
-  background: #6a0089;
-  color: white;
-}
-
-/* iPad - Querformat */
-@media (min-width: 48rem) and (max-width: 87.5rem) {
-  .music-voting-container {
-    position: fixed;
-  }
-
-  .header h1 {
-    font-size: 1.8rem;
-  }
-}
-
-/* Handy - Format */
-@media (max-width: 48rem) {
-  .music-voting-container {
-    position: fixed;
-  }
-
-  .header {
-    padding: 0;
-    text-align: left;
-  }
-
-  .header h1 {
-    margin-top: .5rem;
-    font-size: 1.4rem;
-  }
-
-  .navbar {
-    gap: 10px;
-  }
-
-  .search-section {
-    padding: 0.75rem 1.25rem;
-  }
-
-  .main-content {
-    padding: 0.625rem 0.75rem 1rem 0.75rem;
-  }
-
-  .welcome-screen {
-    margin-top: 5rem;
-  }
-
-  .welcome-screen h2 {
-    font-size: 1.4rem;
-  }
-
-  .welcome-screen p {
-    font-size: 1rem;
-  }
-
-  .track-name {
-    font-size: 1rem;
-  }
-
-  .artist-name {
-    font-size: 0.8rem;
-  }
-
-  .add-button {
-    width: 3.75rem;
-    height: 3.75rem;
-    font-size: 2.2rem;
-  }
-
-  .bottom-nav-btn {
-    font-size: 1.1rem;
-  }
-}
-
-/* Song is on the party blacklist: shown but greyed out and not addable.
-   Guests get no text hint on purpose — the grey card alone signals it. */
-.track-card.blocked {
-  opacity: 0.5;
-}
-
-.track-card.blocked:hover {
-  background-color: #fff;
-}
-
-/* Search status above the results. It sits on the page gradient, so it is
-   white and semibold; errors use a solid dark-red pill (>= 4.5:1), because
-   red text on the pink gradient was not readable. */
 .search-status:empty {
   display: none;
 }
 
-.status-line {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  margin: 0 0 0.75rem;
-  color: white;
-  font-weight: 600;
-  text-align: center;
-}
-
-.status-line mv-spinner {
+.host-status mv-spinner {
   transform: scale(0.7);
 }
 
-.status-line.error {
-  padding: 0.6rem 1rem;
-  border-radius: var(--mv-radius-card);
-  background: var(--mv-danger);
+.track-list {
+  display: grid;
+  gap: var(--mv-space-2);
+}
+
+.track-card {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+/* Blocked: greyed out via .host-row.blocked in stage.css, no text hint. */
+
+.add-button {
+  appearance: none;
+  border: 0;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--mv-purple);
+  color: var(--mv-on-accent);
+  cursor: pointer;
+  transition: transform var(--mv-duration-fast) var(--mv-ease-out);
+}
+
+.add-button:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.add-button:disabled {
+  background: var(--mv-stage-tint-3);
+  color: var(--mv-on-stage-muted);
+  cursor: default;
+}
+
+.add-button:focus-visible {
+  border-radius: 50%;
+}
+
+.host-empty mv-icon {
+  color: var(--mv-stage-accent);
+}
+
+@media (max-width: 560px) {
+  .host-title {
+    font-size: 1.125rem;
+  }
 }

@@ -1,82 +1,69 @@
-<div class="music-voting-container">
-  <div class="main-wrapper">
-    <div class="sticky-top">
-      <nav class="navbar">
-        <header class="header">
-          <h1>Vote für deine Lieblingssongs!</h1>
-        </header>
-      </nav>
+<!--
+  Guest voting view in the stage look (shared/stage.css), dark or light by
+  the guest's own choice (switch in the top bar).
+-->
+<div class="host-stage guest">
+  <header class="host-top">
+    <h1 class="host-title">Vote für deine Lieblingssongs!</h1>
+    <mv-theme-toggle />
+  </header>
 
-      <div class="search-section">
-        <div class="search-bar">
-          <form class="search-wrapper" (submit)="$event.preventDefault()">
-            <mv-icon class="search-icon" name="search" [size]="18" />
-            <input
-              type="search"
-              placeholder="In der Warteschlange suchen …"
-              aria-label="In der Warteschlange suchen"
-              [ngModel]="searchQuery()"
-              (input)="onSearch($event)"
-              name="search">
-          </form>
-        </div>
-      </div>
-    </div>
+  <main class="host-content guest-content">
+    <form class="host-search" role="search" (submit)="$event.preventDefault()">
+      <mv-icon name="search" [size]="18" />
+      <input
+        type="search"
+        placeholder="In der Warteschlange suchen …"
+        aria-label="In der Warteschlange suchen"
+        [ngModel]="searchQuery()"
+        (input)="onSearch($event)"
+        name="search">
+    </form>
 
-    <div class="main-content">
-      <div class="track-list">
-        @for (track of filteredTracks(); track track.id) {
-          <div class="track-card" [class.voted]="track.hasVoted" [class.now-playing]="track.isCurrentlyPlaying">
-            <mv-cover class="album-cover" [images]="track.album?.images" />
-            <div class="track-info">
-              <span class="track-name">{{ track.name }}</span>
-              <span class="artist-name">{{ track.artists?.[0]?.name }}</span>
-            </div>
-            <div class="vote-section">
-              @if (track.isCurrentlyPlaying) {
-                <div class="soundwave" role="img" aria-label="Läuft gerade">
-                  <span class="soundwave-bar"></span>
-                  <span class="soundwave-bar"></span>
-                  <span class="soundwave-bar"></span>
-                  <span class="soundwave-bar"></span>
-                  <span class="soundwave-bar"></span>
-                </div>
-              } @else {
-                <!-- The count is always shown, also 0, so every card looks alike. -->
-                <span class="like-count">{{ track.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
-                <button
-                  type="button"
-                  class="vote-button"
-                  [class.pop]="track.hasVoted && poppedUri() === track.uri"
-                  [attr.aria-pressed]="!!track.hasVoted"
-                  [attr.aria-label]="voteLabel(track)"
-                  (click)="toggleVote(track)">
-                  <mv-icon name="heart" [size]="26" [filled]="!!track.hasVoted" />
-                </button>
-              }
-            </div>
-          </div>
-        } @empty {
-          <div class="empty-state">
-            <div class="welcome-screen">
-              <div class="icon-circle">
-                <mv-icon name="music" [size]="44" />
+    <div class="track-list">
+      @for (track of filteredTracks(); track track.id) {
+        <div class="host-row track-card" [class.voted]="track.hasVoted" [class.now-playing]="track.isCurrentlyPlaying">
+          <mv-cover class="host-row-cover album-cover" [images]="track.album?.images" />
+          <span class="host-row-text">
+            <span class="host-row-title track-name">{{ track.name }}</span>
+            <span class="host-row-artist artist-name">{{ track.artists?.[0]?.name }}</span>
+          </span>
+          <div class="vote-section">
+            @if (track.isCurrentlyPlaying) {
+              <div class="soundwave" role="img" aria-label="Läuft gerade">
+                <span class="soundwave-bar"></span>
+                <span class="soundwave-bar"></span>
+                <span class="soundwave-bar"></span>
+                <span class="soundwave-bar"></span>
+                <span class="soundwave-bar"></span>
               </div>
-              <h2>Die Playlist ist leer</h2>
-              <p>Es sind noch keine Songs zum Voten da.</p>
-            </div>
+            } @else {
+              <!-- The count is always shown, also 0, so every card looks alike. -->
+              <span class="like-count">{{ track.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
+              <button
+                type="button"
+                class="vote-button"
+                [class.pop]="track.hasVoted && poppedUri() === track.uri"
+                [attr.aria-pressed]="!!track.hasVoted"
+                [attr.aria-label]="voteLabel(track)"
+                (click)="toggleVote(track)">
+                <mv-icon name="heart" [size]="26" [filled]="!!track.hasVoted" />
+              </button>
+            }
           </div>
-        }
-      </div>
+        </div>
+      } @empty {
+        <div class="host-empty">
+          <mv-icon name="music" [size]="40" />
+          <h2>Die Warteschlange ist leer</h2>
+          <p>Es sind noch keine Songs zum Voten da. Füg den ersten hinzu!</p>
+        </div>
+      }
     </div>
-  </div>
+  </main>
 
   <mv-toast />
-
-  <nav class="bottom-nav">
-    <button class="bottom-nav-btn active" routerLink="/voting">Voten</button>
-    <button class="bottom-nav-btn" routerLink="/guest">Hinzufügen</button>
-  </nav>
+  <mv-guest-tabs active="voting" />
 </div>
 
 @if (showWelcome()) {

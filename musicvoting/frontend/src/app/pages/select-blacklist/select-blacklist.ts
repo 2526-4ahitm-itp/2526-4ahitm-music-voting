@@ -33,7 +33,7 @@ export interface SongSearchResult {
  * - edit (`?mode=edit`, opened from the host navigation during the party): the same
  *   editing, with the host navigation and a single "Fertig" back to the dashboard.
  *
- * Both modes use the host stage look (shared/host-stage.css).
+ * Both modes use the host stage look (shared/stage.css).
  *
  * The app is zoneless, so every state change after an `await` is followed by
  * `detectChanges()` — otherwise the view would not re-render.
@@ -43,7 +43,7 @@ export interface SongSearchResult {
   standalone: true,
   imports: [CommonModule, FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './select-blacklist.html',
-  styleUrls: ['../../shared/host-stage.css', './select-blacklist.css'],
+  styleUrls: ['../../shared/stage.css', './select-blacklist.css'],
 })
 export class SelectBlacklist implements OnInit, OnDestroy {
   /** Same delay as the guest search: searches while typing without one Spotify call per key. */

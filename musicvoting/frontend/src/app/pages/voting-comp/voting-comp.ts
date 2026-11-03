@@ -2,13 +2,15 @@ import { Component, OnInit, OnDestroy, NgZone, signal, computed, ChangeDetectorR
 import { FormsModule } from "@angular/forms";
 import { lastValueFrom } from 'rxjs';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { PartyService } from '../../services/party.service';
 import { MvCover } from '../../shared/mv-cover';
 import { MvIcon } from '../../shared/mv-icon';
 import { MvToast } from '../../shared/mv-toast';
 import { ToastService } from '../../shared/toast.service';
 import { MvPartyEnded } from '../../shared/mv-party-ended';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
+import { MvGuestTabs } from '../../shared/mv-guest-tabs';
 
 /** localStorage key prefix for "welcome already seen" per party. */
 export const WELCOME_KEY_PREFIX = 'mv-welcome-';
@@ -16,9 +18,10 @@ export const WELCOME_KEY_PREFIX = 'mv-welcome-';
 @Component({
   selector: 'app-voting-comp',
   standalone: true,
-  imports: [FormsModule, RouterLink, MvCover, MvIcon, MvToast, MvPartyEnded],
+  imports: [FormsModule, MvCover, MvIcon, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs],
   templateUrl: './voting-comp.html',
-  styleUrl: './voting-comp.css',
+  // Shared stage look first, page layout second (design D1/D2).
+  styleUrls: ['../../shared/stage.css', './voting-comp.css'],
 })
 /**
  * Guest voting view: the queue sorted by likes, with a heart per song.
