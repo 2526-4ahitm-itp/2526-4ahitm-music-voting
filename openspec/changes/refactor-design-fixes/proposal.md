@@ -51,7 +51,7 @@ The team decided (2026-11-03): address **all 5 problems** on the branch `refacto
   - consistent code names "Voting-PIN" and "Gastgeber-PIN" with different icons
   - Spotify selectable, YouTube shown as "bald verfügbar", Amazon removed
   - the blacklist setup step stays, and the full blacklist can also be edited during the party from the dashboard
-  - a final "Party ist live" step with "Player auf dem TV öffnen" and "Link kopieren" for a separate device
+  - a final "Party ist live" step with "Player auf dem TV öffnen" and instructions for opening the player on a separate device
   - deleting from the queue can be undone
 - **Visual evolution (design only, no new requirements):** see `design.md` D1, with icon set, font and the "stage" for the TV.
 

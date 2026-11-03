@@ -138,7 +138,6 @@ html, body {
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 0.5rem;
-  object-fit: cover;
   margin-right: 0.875rem;
   flex-shrink: 0;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
@@ -172,16 +171,18 @@ html, body {
 }
 
 .like-count {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #8b00a5;
-  min-width: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--mv-purple-deep);
+  min-width: 1.25rem;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
+/* The playing song is marked by the soundwave and a soft tint, not by an
+   accent stripe on the card edge. */
 .track-card.now-playing {
-  background-color: rgba(255, 255, 255, 0.5);
-  border-left: 3px solid #8b00a5;
+  background-color: var(--mv-purple-tint);
 }
 
 .soundwave {
@@ -197,8 +198,8 @@ html, body {
 .soundwave-bar {
   width: 3px;
   border-radius: 2px;
-  background-color: #8b00a5;
-  animation: soundwave-bounce 0.8s ease-in-out infinite alternate;
+  background-color: var(--mv-purple);
+  animation: soundwave-pulse 0.8s ease-in-out infinite alternate;
 }
 
 .soundwave-bar:nth-child(1) { height: 6px;  animation-delay: 0s; }
@@ -207,35 +208,67 @@ html, body {
 .soundwave-bar:nth-child(4) { height: 14px; animation-delay: 0.45s; }
 .soundwave-bar:nth-child(5) { height: 6px;  animation-delay: 0.6s; }
 
-@keyframes soundwave-bounce {
+@keyframes soundwave-pulse {
   from { transform: scaleY(0.25); }
   to   { transform: scaleY(1); }
 }
 
 .vote-button {
-  background-color: #f3e8ff;
+  background-color: var(--mv-purple-tint);
   border: none;
   width: 3.25rem;
   height: 3.25rem;
   border-radius: 50%;
-  font-size: 1.9rem;
-  color: #8b00a5;
+  color: var(--mv-purple);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition:
+    transform var(--mv-duration-fast) var(--mv-ease-out),
+    background-color var(--mv-duration-base) var(--mv-ease-out),
+    color var(--mv-duration-base) var(--mv-ease-out);
 }
 
 .vote-button:active {
   transform: scale(0.9);
 }
 
+.vote-button:focus-visible {
+  border-radius: 50%;
+}
+
+/*
+ * Liked song: highlighted, never disabled (voting spec "Voted State Is
+ * Highlighted, Not Disabled"). The card stays tappable so the like can be
+ * removed again; the heart turns filled coral and the card gets a coral tint
+ * and outline, which also works without colour (filled vs. outline heart).
+ */
 .track-card.voted {
-  opacity: 0.5;
-  pointer-events: none;
-  filter: grayscale(1);
+  background-color: var(--mv-coral-tint);
+  box-shadow: inset 0 0 0 2px rgba(200, 57, 44, 0.35);
+}
+
+.track-card.voted .vote-button {
+  background-color: var(--mv-coral-deep);
+  color: var(--mv-on-accent);
+}
+
+.track-card.voted .like-count {
+  color: var(--mv-coral-deep);
+}
+
+/* One short "pop" on the tap that adds a like. Disabled automatically under
+   prefers-reduced-motion by the global rule in styles.css. */
+.vote-button.pop {
+  animation: mv-heart-pop 280ms var(--mv-ease-out);
+}
+
+@keyframes mv-heart-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.22); }
+  100% { transform: scale(1); }
 }
 
 .empty-state {
@@ -252,6 +285,7 @@ html, body {
 }
 
 .icon-circle {
+  color: var(--mv-purple);
   width: 6.25rem;
   height: 6.25rem;
   background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 100%);
@@ -434,7 +468,6 @@ html, body {
   .vote-button {
     width: 3.75rem;
     height: 3.75rem;
-    font-size: 2.2rem;
   }
 
   .like-count {
@@ -443,5 +476,54 @@ html, body {
 
   .bottom-nav-btn {
     font-size: 1.1rem;
+  }
+}
+
+/* One-time welcome after joining: a sheet above the tab bar, in the thumb
+   zone. Deliberately not a modal; the queue behind it stays usable. */
+.welcome-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 6.5rem);
+  transform: translateX(-50%);
+  width: min(92vw, 420px);
+  box-sizing: border-box;
+  padding: var(--mv-space-5);
+  border-radius: 1.25rem;
+  background: var(--mv-surface);
+  color: var(--mv-ink);
+  box-shadow: 0 12px 40px rgba(29, 10, 36, 0.3);
+  z-index: 1001;
+  animation: mv-sheet-in var(--mv-duration-slow) var(--mv-ease-out);
+}
+
+.welcome-sheet h2 {
+  font-size: 1.375rem;
+  font-weight: 750;
+  margin-bottom: var(--mv-space-2);
+}
+
+.welcome-sheet p {
+  font-size: 1rem;
+  color: var(--mv-ink-muted);
+  margin-bottom: var(--mv-space-4);
+}
+
+.welcome-ok {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: var(--mv-radius-pill);
+  background: var(--mv-purple);
+  color: var(--mv-on-accent);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  cursor: pointer;
+}
+
+@keyframes mv-sheet-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
   }
 }

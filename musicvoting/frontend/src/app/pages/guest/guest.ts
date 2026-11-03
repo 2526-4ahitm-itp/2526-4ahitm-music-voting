@@ -9,19 +9,37 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
+import { MvCover } from '../../shared/mv-cover';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvSpinner } from '../../shared/mv-spinner';
+import { MvToast } from '../../shared/mv-toast';
+import { MvPartyEnded } from '../../shared/mv-party-ended';
+import { ToastService } from '../../shared/toast.service';
 
 @Component({
   selector: 'app-guest',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, MvCover, MvIcon, MvSpinner, MvToast, MvPartyEnded],
   templateUrl: './guest.html',
   styleUrls: ['./guest.css'],
 })
+/**
+ * Guest add/search view. Every step gives feedback (guest spec "Guest Search
+ * and Add Give Feedback"): a spinner while searching, "Keine Treffer" for an
+ * empty result, a connection message on errors, and a toast after adding.
+ */
 export class Guest implements OnInit, OnDestroy {
   searchQuery = signal<string>('');
   tracks = signal<any[]>([]);
   isSearching = signal<boolean>(false);
-  menuOpen = false;
+  /** The term of the last finished search; drives the "Keine Treffer" text. */
+  lastSearchedTerm = signal<string>('');
+  /** Set when the last search failed (network or server error). */
+  searchFailed = signal<boolean>(false);
+  /** Set when the host ended the party; shows the goodbye screen. */
+  partyEnded = signal<boolean>(false);
+  /** Shown for search and connection problems. */
+  readonly connectionLostText = 'Verbindung verloren – versuch es gleich nochmal.';
   addingTrackId: string | null = null;
   /** Last add rejection from the backend, shown verbatim above the results. */
   addError: string | null = null;
@@ -29,6 +47,7 @@ export class Guest implements OnInit, OnDestroy {
   private eventSource?: EventSource;
   private queueStateSubscription?: Subscription;
   private partyService = inject(PartyService);
+  private toast = inject(ToastService);
 
   private searchAutoTrigger = toObservable(this.searchQuery).pipe(
     debounceTime(400),
@@ -59,7 +78,13 @@ export class Guest implements OnInit, OnDestroy {
       try {
         const data = JSON.parse(event.data);
         if (data?.type === 'party-ended') {
-          this.ngZone.run(() => this.router.navigate(['/']));
+          // Show the goodbye screen, forget the session and stop talking to this party.
+          this.ngZone.run(() => {
+            this.eventSource?.close();
+            this.partyService.clearParty?.();
+            this.partyEnded.set(true);
+            this.cdr.detectChanges();
+          });
         } else if (data?.type === 'queue-updated') {
           this.queueState.refresh();
         } else if (data?.type === 'blacklist-updated' && this.searchQuery().trim()) {
@@ -81,10 +106,13 @@ export class Guest implements OnInit, OnDestroy {
     const searchTerm = (query ?? this.searchQuery()).trim();
     if (searchTerm.length < 1) {
       this.tracks.set([]);
+      this.lastSearchedTerm.set('');
+      this.searchFailed.set(false);
       return;
     }
 
     this.isSearching.set(true);
+    this.searchFailed.set(false);
 
     try {
       const res: any = await lastValueFrom(this.trackApi.searchTracks(searchTerm));
@@ -100,9 +128,13 @@ export class Guest implements OnInit, OnDestroy {
             })
             .slice(0, 25)
         );
+      } else {
+        this.tracks.set([]);
       }
+      this.lastSearchedTerm.set(searchTerm);
     } catch (err) {
       console.error('Fehler bei der Suche:', err);
+      this.searchFailed.set(true);
     } finally {
       this.isSearching.set(false);
     }
@@ -118,32 +150,29 @@ export class Guest implements OnInit, OnDestroy {
     try {
       await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
       this.queueState.refresh();
+      this.toast.show('Song hinzugefügt');
     } catch (err: any) {
       console.error('Fehler beim Hinzufügen:', err);
       // The backend sends German messages meant to be shown verbatim, e.g. "Nicht erlaubt."
       // (blacklist, 403) or "Song ist schon in der Warteschlange." (409).
       const message = err?.error?.error;
       this.addError = typeof message === 'string' ? message : null;
+      this.toast.error(this.addError ?? this.connectionLostText);
     } finally {
       this.addingTrackId = null;
       this.cdr.detectChanges();
     }
   }
 
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
-  }
-
   trackById(index: number, track: any): string {
     return track.id + '-' + index;
   }
 
-  goToVoting() {
-    this.router.navigate(['/vote']);
-  }
-
-  goToAddSongs() {
-    this.router.navigate(['/guest']);
+  /** Accessible name of the add button for a result. */
+  addLabel(track: any): string {
+    if (track?.blocked) return 'Nicht verfügbar';
+    if (this.inQueueUris.has(track?.uri)) return 'Schon in der Warteschlange';
+    return 'Song hinzufügen';
   }
 
 }

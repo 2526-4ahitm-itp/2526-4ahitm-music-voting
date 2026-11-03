@@ -22,7 +22,7 @@ See `proposal.md` and [`openspec/analyse/impeccable/ui-ux-critique.md`](../../an
 **Goals:**
 - Fix all five priority issues of the critique without changing backend behaviour.
 - Replace the duplicated building blocks with shared components, so the fixes (fallbacks, labels, focus) are made once.
-- Evolve the look with the same colours: TV as a "stage", phones calm and readable.
+- Evolve the look with the same colours: TV as a dark "stage", phones calm and readable.
 - Leave the app in a state where `/impeccable critique` scores clearly higher (target ≥ 28/40).
 
 **Non-Goals:**
@@ -43,7 +43,7 @@ Introduce CSS custom properties in `styles.css` and use them in every component 
 - **Motion**: `--mv-ease-out` and `--mv-duration-*`, set to 0 under `prefers-reduced-motion`.
 
 How each surface uses them:
-- **TV (`startpage`)**: dark stage background (`#14061a`-ish). The purple/coral gradient becomes a soft glow behind the now-playing cover, not a full-page fill.
+- **TV (`startpage`)**: dark stage background (`--mv-stage`, #12061A). The purple/coral gradient becomes a soft glow behind the now-playing cover, not a full-page fill. On 2026-11-03 the team also tried a light background, the full brand gradient and a muted gradient, and went back to this dark stage.
 - **Phone views**: stay light. The gradient is limited to the header area, and cards sit on a calm background so text contrast is reliable.
 - **Icons**: Lucide (MIT) as inline SVG components via a small `<mv-icon name="…">` wrapper, so the bundle only contains used icons. Emoji are removed from controls; they may stay in celebratory copy ("🎉").
 - **Fonts**: one display font for headings/TV titles and one text font, both self-hosted (`src/assets/fonts`, OFL). The concrete fonts are picked during implementation with the Impeccable typeset step and recorded in `DESIGN.md`.
@@ -59,7 +59,7 @@ New standalone components under `src/app/shared/`:
 - `mv-toast`: a single live region (`aria-live="polite"`, or `role="alert"` for errors) provided by a `ToastService`. It is used for "Song hinzugefügt", backend errors and "Song entfernt · Rückgängig" (with an action).
 
 ### D3: Optimistic, toggleable vote
-`toggleVote` flips `hasVoted` and adjusts `likes` locally, re-sorts, calls `detectChanges()`, then sends the request. On error it restores the snapshot and shows the error toast. A `pendingVotes` set ignores a second tap on the same entry until the first request settles; this prevents double requests while staying tappable. Incoming `vote-updated` SSE reloads are merged so that a still-pending local toggle is not overwritten.
+`toggleVote` flips `hasVoted` and adjusts `likeCount` locally, calls `detectChanges()`, then sends the request. The list order is not changed locally; the next `vote-updated` reload brings the server-sorted order. On error it restores the snapshot and shows the error toast. A `pendingVotes` set ignores a second tap on the same entry until the first request settles; this prevents double requests while staying tappable. Incoming `vote-updated` SSE reloads are merged so that a still-pending local toggle is not overwritten.
 
 The `.voted` CSS gets:
 - an accent tint/outline
@@ -88,7 +88,7 @@ The dashboard hides the entry locally and starts a 5 s timer with the undo toast
 ### D8: Host flow routing
 - Setup: `select-playlist` → `select-blacklist` (unchanged, still with "Weiter" / "Ohne Blacklist fortfahren") → new route `/party-ready?partyId=…` (component `party-ready`, `hostGuard`) → `/dashboard`.
 - During the party: the dashboard menu entry "Blacklist" opens `select-blacklist?partyId=…&mode=edit`. In edit mode the page shows the same word/artist/song editing plus a single "Fertig" back to `/dashboard`.
-- `party-ready` offers "Player auf dem TV öffnen" (`window.open`, same device) and "Link kopieren" (Clipboard API, separate device), because the player usually runs on the same laptop but must also work on a separate TV device.
+- `party-ready` offers "Player auf dem TV öffnen" (`window.open`, same device) and short instructions for a separate TV device (MusicVoting → Gastgeber → Gastgeber-PIN → Player öffnen). A copy-link button was dropped (2026-11-03, option A): `/startpage` is behind `hostGuard`, so a copied link opened on another device without the stored host PIN would just land on the start page.
 - The `party-ready` page listens to the existing playback-device availability (see `playback/spec.md` "Playback Device Availability Exposed to Clients") to switch to "Party ist live 🎉".
 
 ### D9: Testing approach

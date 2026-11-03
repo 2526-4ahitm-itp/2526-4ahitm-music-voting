@@ -10,13 +10,11 @@
       <div class="search-section">
         <div class="search-bar">
           <form class="search-wrapper" (submit)="$event.preventDefault()">
-            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
+            <mv-icon class="search-icon" name="search" [size]="18" />
             <input
               type="search"
-              placeholder="In Playlist suchen..."
+              placeholder="In der Warteschlange suchen …"
+              aria-label="In der Warteschlange suchen"
               [ngModel]="searchQuery()"
               (input)="onSearch($event)"
               name="search">
@@ -29,14 +27,14 @@
       <div class="track-list">
         @for (track of filteredTracks(); track track.id) {
           <div class="track-card" [class.voted]="track.hasVoted" [class.now-playing]="track.isCurrentlyPlaying">
-            <img class="album-cover" [src]="track.album?.images[0]?.url" alt="Cover">
+            <mv-cover class="album-cover" [images]="track.album?.images" />
             <div class="track-info">
               <span class="track-name">{{ track.name }}</span>
-              <span class="artist-name">{{ track.artists[0]?.name }}</span>
+              <span class="artist-name">{{ track.artists?.[0]?.name }}</span>
             </div>
             <div class="vote-section">
               @if (track.isCurrentlyPlaying) {
-                <div class="soundwave">
+                <div class="soundwave" role="img" aria-label="Läuft gerade">
                   <span class="soundwave-bar"></span>
                   <span class="soundwave-bar"></span>
                   <span class="soundwave-bar"></span>
@@ -44,11 +42,16 @@
                   <span class="soundwave-bar"></span>
                 </div>
               } @else {
-                @if (track.likeCount > 0) {
-                  <span class="like-count">{{ track.likeCount }}</span>
-                }
-                <button class="vote-button" (click)="toggleVote(track)">
-                  {{ track.hasVoted ? '♥' : '♡' }}
+                <!-- The count is always shown, also 0, so every card looks alike. -->
+                <span class="like-count">{{ track.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
+                <button
+                  type="button"
+                  class="vote-button"
+                  [class.pop]="track.hasVoted && poppedUri() === track.uri"
+                  [attr.aria-pressed]="!!track.hasVoted"
+                  [attr.aria-label]="voteLabel(track)"
+                  (click)="toggleVote(track)">
+                  <mv-icon name="heart" [size]="26" [filled]="!!track.hasVoted" />
                 </button>
               }
             </div>
@@ -57,7 +60,7 @@
           <div class="empty-state">
             <div class="welcome-screen">
               <div class="icon-circle">
-                <span class="main-icon">🎵</span>
+                <mv-icon name="music" [size]="44" />
               </div>
               <h2>Die Playlist ist leer</h2>
               <p>Es sind noch keine Songs zum Voten da.</p>
@@ -68,8 +71,23 @@
     </div>
   </div>
 
+  <mv-toast />
+
   <nav class="bottom-nav">
     <button class="bottom-nav-btn active" routerLink="/voting">Voten</button>
     <button class="bottom-nav-btn" routerLink="/guest">Hinzufügen</button>
   </nav>
 </div>
+
+@if (showWelcome()) {
+  <!-- One-time welcome per party and device. Not a modal: the queue stays usable. -->
+  <section class="welcome-sheet" aria-labelledby="welcome-title">
+    <h2 id="welcome-title">Du bist dabei! 🎉</h2>
+    <p>Like Songs, die du hören willst, oder füg eigene hinzu.</p>
+    <button type="button" class="welcome-ok" (click)="dismissWelcome()">Los geht's</button>
+  </section>
+}
+
+@if (partyEnded()) {
+  <mv-party-ended />
+}

@@ -16,10 +16,14 @@ header {
 }
 
 .back-to-home {
-  padding: 1rem;
+  width: 48px;
+  height: 48px;
   margin: 1rem;
-  cursor: pointer;
-  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
 }
 
 header > h1 {
@@ -46,7 +50,6 @@ header > h1 {
 
 .subtitle {
   font-size: 1rem;
-  opacity: 0.85;
   margin-bottom: 2rem;
 }
 
@@ -66,23 +69,51 @@ header > h1 {
   color: white;
   text-align: center;
   font-size: 24px;
-  outline: none;
   caret-color: transparent;
 }
 
+/* Visible focus for every way of reaching a box (tap or keyboard): a
+   thicker white border plus the global focus ring. */
 .code-container input:focus {
   border: 2px solid white;
+  outline: none;
+  box-shadow: var(--mv-focus-ring);
 }
 
 /* Error Message */
 
+/* Errors sit on a solid dark-red pill: red text directly on the pink
+   gradient was below 4.5:1. White on --mv-danger is about 6.5:1. */
 .error-message {
-  color: #FF3B30; /* Ein kräftiges Rot, passend zum Screenshot */
-  font-weight: bold;
-  margin-top: 15px;
-  font-size: 1.1rem;
-  /* Optional: Eine kleine Animation, damit die Nachricht "aufpoppt" */
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 15px auto 0;
+  padding: 10px 16px;
+  border-radius: var(--mv-radius-card);
+  background: var(--mv-danger);
+  color: white;
+  font-weight: 700;
+  font-size: 1.05rem;
   animation: fadeIn 0.3s ease-in-out;
+}
+
+.error-hint {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.searching {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px auto 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.searching mv-spinner {
+  transform: scale(0.75);
 }
 
 /* paste button */
