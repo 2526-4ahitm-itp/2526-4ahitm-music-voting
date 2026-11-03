@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef, ElementRef, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
@@ -6,11 +6,17 @@ import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { PartyService } from '../../services/party.service';
+import { MvCover } from '../../shared/mv-cover';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvCreditFooter } from '../../shared/mv-credit-footer';
+
+/** How many queue entries the TV shows; the rest is summarised as "+ N weitere". */
+export const TV_QUEUE_LIMIT = 5;
 
 @Component({
   selector: 'app-startpage',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MvCover, MvIcon, MvCreditFooter],
   templateUrl: './startpage.html',
   styleUrls: ['./startpage.css'],
 })
@@ -50,8 +56,20 @@ export class Startpage implements OnInit, OnDestroy {
     private cd: ChangeDetectorRef,
     private partyService: PartyService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    // Optional so the existing unit tests can construct the class without a DOM host.
+    @Optional() private host?: ElementRef<HTMLElement>,
   ) {}
+
+  /** The top entries shown on the TV (dashboard spec: top 5). */
+  get visibleTracks(): any[] {
+    return this.tracks.slice(0, TV_QUEUE_LIMIT);
+  }
+
+  /** Number of waiting songs that do not fit on the screen. */
+  get moreCount(): number {
+    return Math.max(0, this.tracks.length - TV_QUEUE_LIMIT);
+  }
 
   async ngOnInit() {
     const partyIdFromUrl = this.route.snapshot.queryParamMap.get('partyId');
@@ -346,12 +364,15 @@ export class Startpage implements OnInit, OnDestroy {
         if (Array.isArray(res.queue)) {
           const currentUri = this.currentTrack?.uri;
           const currentId = this.currentTrack?.id;
+          const before = this.measureRows();
           this.tracks = res.queue.filter((track: any) => {
             if (track?.isCurrentlyPlaying) return false;
             if (currentUri && track?.uri === currentUri) return false;
             if (currentId && track?.id === currentId) return false;
             return true;
           });
+          this.cd.detectChanges();
+          this.animateRows(before);
           // Reset prepareNext flag when queue changes so autoplay can trigger again
           this.preparedNextForUri = null;
         }
@@ -359,6 +380,48 @@ export class Startpage implements OnInit, OnDestroy {
     } catch (err) {
       console.error('Fehler beim Laden der Playlist:', err);
     }
+  }
+
+  /**
+   * FLIP step 1: remember where each visible queue row is before the data
+   * changes. Rows are keyed by their track id (data-flip-id).
+   */
+  private measureRows(): Map<string, DOMRect> {
+    const rects = new Map<string, DOMRect>();
+    const root = this.host?.nativeElement;
+    if (!root?.querySelectorAll) return rects;
+    root.querySelectorAll<HTMLElement>('[data-flip-id]').forEach((el) => {
+      rects.set(el.dataset['flipId']!, el.getBoundingClientRect());
+    });
+    return rects;
+  }
+
+  /**
+   * FLIP step 2: after re-rendering, move each row from its old position to
+   * the new one so rank changes are visible from across the room instead of
+   * jumping (dashboard spec "Dashboard Animates Rank Changes"). New rows fade
+   * in. Skipped entirely under prefers-reduced-motion and in environments
+   * without the Web Animations API.
+   */
+  private animateRows(before: Map<string, DOMRect>): void {
+    const root = this.host?.nativeElement;
+    if (!root?.querySelectorAll || typeof window === 'undefined') return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+    root.querySelectorAll<HTMLElement>('[data-flip-id]').forEach((el) => {
+      if (typeof el.animate !== 'function') return;
+      const old = before.get(el.dataset['flipId']!);
+      const now = el.getBoundingClientRect();
+      const easing = 'cubic-bezier(0.16, 1, 0.3, 1)';
+      if (!old) {
+        el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing });
+      } else if (Math.abs(old.top - now.top) > 1) {
+        el.animate(
+          [{ transform: `translateY(${old.top - now.top}px)` }, { transform: 'none' }],
+          { duration: 400, easing },
+        );
+      }
+    });
   }
 
   trackById(index: number, track: any) {

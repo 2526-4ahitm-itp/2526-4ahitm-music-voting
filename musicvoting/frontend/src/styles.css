@@ -1,9 +1,168 @@
-/* You can add global styles to this file, and also import other style files */
-html, body {
+/*
+ * Global design tokens and base styles for MusicVoting.
+ *
+ * Every component reads colours, type, radii, spacing and motion from these
+ * custom properties instead of hard-coding values, so contrast, focus and
+ * reduced-motion fixes are made once here (see openspec change
+ * refactor-design-fixes, design D1).
+ *
+ * Brand colours purple #8403A6 → coral #F2594B are binding (PRODUCT.md).
+ * White text on plain coral only reaches ~3.6:1, so gradients that carry
+ * normal-size text use --mv-gradient-ink, which ends in the deeper coral and
+ * keeps white text at ≥ 4.5:1 across the whole gradient.
+ */
+
+:root {
+  /* Brand */
+  --mv-purple: #8403A6;
+  --mv-purple-deep: #5A0272;
+  --mv-purple-tint: #F4E6FA;
+  --mv-coral: #F2594B;
+  --mv-coral-deep: #C8392C;
+  /* Coral for text on dark/purple surfaces: plain coral is only ~2.3:1 on
+     the purple glow, this lighter tone reaches >= 3:1 for large text. */
+  --mv-coral-light: #FF9A8F;
+  --mv-coral-tint: #FDE9E6;
+
+  /* Brand gradient: decoration (glows, large areas without small text). */
+  --mv-gradient: linear-gradient(135deg, var(--mv-purple), var(--mv-coral));
+  /* Brand gradient that is safe for white text of any size (≥ 4.5:1). */
+  --mv-gradient-ink: linear-gradient(135deg, var(--mv-purple), var(--mv-coral-deep));
+
+  /* Light surfaces (phone views) */
+  --mv-bg: #FAF6FC;
+  --mv-surface: #FFFFFF;
+  --mv-surface-sunken: #F3ECF6;
+  --mv-line: #E7DCEC;
+  --mv-ink: #1D0A24;
+  --mv-ink-muted: #5B4A63;
+  --mv-on-accent: #FFFFFF;
+
+  /* Dark stage (TV / player) */
+  --mv-stage: #12061A;
+  --mv-stage-raised: #1F0D2A;
+  --mv-on-stage: #FBF4FF;
+  --mv-on-stage-muted: #C9B6D4;
+
+  /* Status */
+  --mv-danger: #B3261E;
+  --mv-danger-tint: #FCE8E6;
+  --mv-success: #1E7B4A;
+
+  /* Focus ring: purple with a white halo so it stays visible on light,
+     dark and gradient backgrounds alike (≥ 3:1 against all of them). */
+  --mv-focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 5px var(--mv-purple);
+
+  /* Type: one variable family with optical sizing does display and text. */
+  --mv-font-display: 'Bricolage Grotesque Variable', 'Segoe UI', system-ui, sans-serif;
+  --mv-font-text: 'Bricolage Grotesque Variable', 'Segoe UI', system-ui, sans-serif;
+  /* Legacy alias: older component CSS still uses var(--font). */
+  --font: var(--mv-font-text);
+
+  /* Shape and spacing */
+  --mv-radius-sm: 10px;
+  --mv-radius-card: 16px;
+  --mv-radius-pill: 999px;
+  --mv-space-1: 4px;
+  --mv-space-2: 8px;
+  --mv-space-3: 12px;
+  --mv-space-4: 16px;
+  --mv-space-5: 24px;
+  --mv-space-6: 32px;
+  --mv-space-7: 48px;
+  --mv-shadow-card: 0 2px 8px rgba(29, 10, 36, 0.06), 0 8px 24px rgba(29, 10, 36, 0.06);
+
+  /* Motion */
+  --mv-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --mv-duration-fast: 150ms;
+  --mv-duration-base: 250ms;
+  --mv-duration-slow: 400ms;
+}
+
+/* Users who ask for reduced motion get state changes without movement. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mv-duration-fast: 0ms;
+    --mv-duration-base: 0ms;
+    --mv-duration-slow: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
 }
 
+body {
+  font-family: var(--mv-font-text);
+  color: var(--mv-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--mv-font-display);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Browser surfaces carry the palette too. */
+::selection {
+  background: var(--mv-purple);
+  color: var(--mv-on-accent);
+}
+
 :root {
-  --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  accent-color: var(--mv-purple);
+  caret-color: var(--mv-purple);
+}
+
+/* Keyboard focus is always visible (web-ui spec "Focus Is Always Visible").
+   Mouse and touch clicks do not show the ring because :focus-visible only
+   matches keyboard-style focus. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--mv-focus-ring);
+  border-radius: var(--mv-radius-sm);
+}
+
+/* Reset for buttons that look like plain icons or links but must stay real
+   <button> elements for keyboard and screen-reader users. */
+.mv-plain-button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Text that only screen readers should read. */
+.mv-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

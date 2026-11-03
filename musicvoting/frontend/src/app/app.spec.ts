@@ -22,4 +22,11 @@ describe('App', () => {
 
     expect(fixture.nativeElement.querySelector('router-outlet')).toBeTruthy();
   });
+
+  it('declares German as the document language', () => {
+    document.documentElement.lang = 'en';
+    TestBed.createComponent(App);
+
+    expect(document.documentElement.lang).toBe('de');
+  });
 });
