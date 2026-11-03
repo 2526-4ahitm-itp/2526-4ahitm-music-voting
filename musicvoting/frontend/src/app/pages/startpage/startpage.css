@@ -163,6 +163,32 @@
   font-size: 2.6vh;
 }
 
+/* ---------- Empty party: the join block takes the whole side column ---------- */
+
+/* Nothing plays and nothing waits: an empty "Als Nächstes" would only be dead
+   space, and scanning is the one thing the room should do. The QR grows to
+   52vh (column budget: 52 + 3 + 8 + 5 + padding ≈ 74vh of 90vh). */
+.party-empty .side {
+  grid-template-rows: 1fr;
+  align-items: center;
+}
+
+.party-empty .join {
+  flex-direction: column;
+  gap: 3vh;
+  padding: 4vh 2vw;
+  text-align: center;
+}
+
+.party-empty .qr {
+  width: 52vh;
+  height: 52vh;
+}
+
+.party-empty .pin-label {
+  justify-content: center;
+}
+
 /* ---------- Side column: join + queue ---------- */
 
 .side {

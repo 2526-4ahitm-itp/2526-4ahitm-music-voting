@@ -83,6 +83,15 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [x] 6.6 Fix the typo "befor" and the English `alt="delete"`; remove the commented-out block and the invalid `height="300px"`
 - [x] 6.7 (2026-11-03: mostly covered by earlier specs — `host-stage-pages`, `entry-pages`, `party-ready`, `select-blacklist`; added: TV never shows Gastgeber-PIN/Host-PIN in `startpage.layout.spec.ts`, edit mode loads entries and saves add/remove in `select-blacklist.edit.spec.ts`) Specs: code labels and no "Voting-PIN"/"Host-PIN" text; no "Amazon Music", YouTube disabled; `select-blacklist` setup → `/party-ready`; `party-ready` button, separate-device instructions, code and live state; blacklist edit mode loads entries, adds/removes, "Fertig" → `/dashboard`
 
+## 8. Critique follow-up (added 2026-11-03, critique 27/40, team chose "everything incl. P3")
+
+- [x] 8.1 [P1] Guest voting view: compact now-playing bar on top, rank number per waiting song, row highlighted briefly after a like; add toast "Song hinzugefügt – Platz N" with action "Zum Voten" (guest spec "Guest Voting View Shows What Plays and the Ranking", "Guest Search and Add Give Feedback")
+- [x] 8.2 [P1] Cover placeholder as a dark brand tile with a line icon instead of the light clip-art PNG; TV empty states: no "Als Nächstes" over an empty area, larger join block while nothing plays (web-ui "Cover Images Have a Working Fallback", dashboard "Dashboard Shows a Guest-Facing Empty State")
+- [ ] 8.3 [P2] Blacklist page: one search field for word, artist and song (results: "Wort „x“ sperren", then artists, then songs); "Weiter" logic unchanged
+- [ ] 8.4 [P2] Host navigation as a fixed rail from 1024 px; Gastgeber-PIN on the dashboard masked "•••••" with "Anzeigen" (host spec change)
+- [ ] 8.5 [P3] Logo on the landing page and the TV; guests see "Party 12345" in the top bar with "Party verlassen"; HTL logo resized for its footer use; unhandled queue-load error on `/voting` handled
+- [ ] 8.6 Re-run the critique and save the score (target ≥ 28/40)
+
 ## 7. Verify and document
 
 - [x] 7.1 (2026-11-03: frontend 396/396, backend 192/192) Full frontend test suite passes; backend suite passes (regression)

@@ -184,4 +184,64 @@ describe('VotingComp voting (DOM)', () => {
 
     expect(fixture.nativeElement.querySelector('mv-party-ended')?.textContent).toContain('Danke fürs Mitfeiern!');
   });
+
+  describe('now playing and ranking (guest spec "Guest Voting View Shows What Plays and the Ranking")', () => {
+    const playing = { ...song('now', 0), isCurrentlyPlaying: true };
+
+    it('shows the playing song in the bar on top, not in the list', () => {
+      show(playing, song('b', 3), song('c', 1));
+
+      const bar = fixture.nativeElement.querySelector('.now-bar') as HTMLElement;
+      expect(bar.textContent).toContain('Läuft gerade');
+      expect(bar.textContent).toContain('Song now');
+      const rows = fixture.nativeElement.querySelectorAll('.track-list .track-card');
+      expect(rows.length).toBe(2);
+      expect(fixture.nativeElement.querySelector('.track-list')!.textContent).not.toContain('Song now');
+    });
+
+    it('numbers the waiting songs from 1 in queue order, rank 1 marked as next', () => {
+      show(playing, song('b', 3), song('c', 1));
+
+      const ranks = [...fixture.nativeElement.querySelectorAll('.track-card .rank')].map((r: any) => r.textContent.replace('Platz', '').trim());
+      expect(ranks).toEqual(['1', '2']);
+      expect(fixture.nativeElement.querySelector('.track-card .rank')!.classList).toContain('next');
+      // Screen readers hear "Platz 1", not a bare number.
+      expect(fixture.nativeElement.querySelector('.track-card .rank')!.textContent).toContain('Platz');
+    });
+
+    it('keeps the ranks when the list is filtered', () => {
+      show(playing, song('b', 3), song('c', 1));
+      comp.searchQuery.set('Song c');
+      fixture.detectChanges();
+
+      const rows = fixture.nativeElement.querySelectorAll('.track-card');
+      expect(rows.length).toBe(1);
+      expect(rows[0].querySelector('.rank').textContent).toContain('2');
+    });
+
+    it('says no song matches instead of "empty queue" when a filter finds nothing', () => {
+      show(song('b', 3));
+      comp.searchQuery.set('zzz');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Kein Song passt zu „zzz“');
+      expect(fixture.nativeElement.textContent).not.toContain('Die Warteschlange ist leer');
+    });
+
+    it('highlights a liked row for a moment, then clears it', () => {
+      jasmine.clock().install();
+      try {
+        show(song('b', 3), song('c', 1));
+        (fixture.nativeElement.querySelectorAll('.vote-button')[1] as HTMLButtonElement).click();
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelectorAll('.track-card')[1].classList).toContain('just-liked');
+
+        jasmine.clock().tick(VotingComp.HIGHLIGHT_MS + 10);
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('.just-liked')).toBeNull();
+      } finally {
+        jasmine.clock().uninstall();
+      }
+    });
+  });
 });

@@ -177,7 +177,14 @@ export class Guest implements OnInit, OnDestroy {
     try {
       await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
       this.queueState.refresh();
-      this.toast.show('Song hinzugefügt');
+      const rank = await this.rankOf(track.uri);
+      // Name the rank so the guest sees the room decides, and offer the way to vote
+      // (guest spec "Guest Search and Add Give Feedback").
+      this.toast.show(rank ? `Song hinzugefügt – Platz ${rank}` : 'Song hinzugefügt', {
+        durationMs: 4000,
+        actionLabel: 'Zum Voten',
+        onAction: () => this.ngZone.run(() => this.router.navigate(['/voting'])),
+      });
     } catch (err: any) {
       console.error('Fehler beim Hinzufügen:', err);
       // The backend sends German messages meant to be shown verbatim, e.g. "Nicht erlaubt."
@@ -188,6 +195,21 @@ export class Guest implements OnInit, OnDestroy {
     } finally {
       this.addingTrackId = null;
       this.cdr.detectChanges();
+    }
+  }
+
+  /**
+   * Position of a song among the waiting songs (1 = plays next), or null when
+   * the queue cannot be loaded. The playing song is not counted.
+   */
+  private async rankOf(uri: string): Promise<number | null> {
+    try {
+      const res: any = await lastValueFrom(this.spotifyService.getQueue(this.partyService.deviceId), { defaultValue: null });
+      const waiting = (Array.isArray(res?.queue) ? res.queue : []).filter((t: any) => !t?.isCurrentlyPlaying);
+      const index = waiting.findIndex((t: any) => t?.uri === uri);
+      return index >= 0 ? index + 1 : null;
+    } catch {
+      return null;
     }
   }
 

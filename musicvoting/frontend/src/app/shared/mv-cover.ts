@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 
-/** Bundled image shown whenever a cover is missing or fails to load. */
-export const COVER_PLACEHOLDER = 'assets/img/placeholder.png';
+/** Bundled image shown whenever a cover is missing or fails to load: a dark brand tile with a line note, so it sits calmly on the stage in both modes (the old light clip-art PNG broke the dark stage). */
+export const COVER_PLACEHOLDER = 'assets/img/cover-placeholder.svg';
 
 /** Minimal shape of a provider image (Spotify returns them largest first). */
 export interface CoverImage {

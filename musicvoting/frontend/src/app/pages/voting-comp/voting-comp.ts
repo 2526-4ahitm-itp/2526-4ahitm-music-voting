@@ -56,14 +56,35 @@ export class VotingComp implements OnInit, OnDestroy {
   /** Set when the host ended the party; shows the goodbye screen. */
   readonly partyEnded = signal(false);
 
+  /** The song that is playing right now; shown in the bar on top, not in the list. */
+  nowPlaying = computed(() => this.tracks().find((t) => t.isCurrentlyPlaying) ?? null);
+
+  /** Waiting songs in queue order (the server already sorts by likes). */
+  private waiting = computed(() => this.tracks().filter((t) => !t.isCurrentlyPlaying));
+
+  /**
+   * Rank per song URI, counted from 1 in queue order. Computed from the
+   * unfiltered list so filtering never renumbers (guest spec "Guest Voting
+   * View Shows What Plays and the Ranking").
+   */
+  rankOf = computed(() => new Map(this.waiting().map((t, i) => [t.uri, i + 1] as const)));
+
   filteredTracks = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.tracks();
-    return this.tracks().filter(t =>
+    if (!query) return this.waiting();
+    return this.waiting().filter(t =>
       t.name.toLowerCase().includes(query) ||
       t.artists[0]?.name.toLowerCase().includes(query)
     );
   });
+
+  /**
+   * Song the guest just liked. Its row is highlighted for a moment so the
+   * guest can follow it when the next queue reload moves it up.
+   */
+  readonly highlightedUri = signal<string | null>(null);
+  private highlightTimer: ReturnType<typeof setTimeout> | null = null;
+  static readonly HIGHLIGHT_MS = 2000;
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
@@ -102,6 +123,7 @@ export class VotingComp implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.eventSource?.close();
+    if (this.highlightTimer) clearTimeout(this.highlightTimer);
   }
 
   async loadPlaylist() {
@@ -143,6 +165,7 @@ export class VotingComp implements OnInit, OnDestroy {
     this.pendingVotes.set(track.uri, optimistic);
     this.applyVote(track.uri, optimistic);
     this.poppedUri.set(optimistic.hasVoted ? track.uri : null);
+    if (optimistic.hasVoted) this.highlight(track.uri);
 
     try {
       const res: any = await lastValueFrom(
@@ -166,6 +189,17 @@ export class VotingComp implements OnInit, OnDestroy {
       this.tracks.update((list) => list.map((t) => (t.uri === uri ? { ...t, ...state } : t)));
       this.cdr?.detectChanges();
     });
+  }
+
+  /** Marks a row for HIGHLIGHT_MS; a newer like replaces the older highlight. */
+  private highlight(uri: string) {
+    if (this.highlightTimer) clearTimeout(this.highlightTimer);
+    this.highlightedUri.set(uri);
+    this.highlightTimer = setTimeout(() => {
+      this.highlightTimer = null;
+      this.highlightedUri.set(null);
+      this.cdr?.detectChanges();
+    }, VotingComp.HIGHLIGHT_MS);
   }
 
   /** Closes the welcome sheet and remembers it for this party on this device. */

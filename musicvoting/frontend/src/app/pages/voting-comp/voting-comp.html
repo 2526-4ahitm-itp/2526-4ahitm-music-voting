@@ -9,6 +9,25 @@
   </header>
 
   <main class="host-content guest-content">
+    <!-- What plays now sits above the list, so the list is only what the room still decides on. -->
+    @if (nowPlaying(); as playing) {
+      <section class="now-bar" aria-label="Läuft gerade">
+        <mv-cover class="now-bar-cover" [images]="playing.album?.images" />
+        <span class="now-bar-text">
+          <span class="now-bar-label">Läuft gerade</span>
+          <span class="now-bar-title">{{ playing.name }}</span>
+          <span class="now-bar-artist">{{ playing.artists?.[0]?.name }}</span>
+        </span>
+        <div class="soundwave" aria-hidden="true">
+          <span class="soundwave-bar"></span>
+          <span class="soundwave-bar"></span>
+          <span class="soundwave-bar"></span>
+          <span class="soundwave-bar"></span>
+          <span class="soundwave-bar"></span>
+        </div>
+      </section>
+    }
+
     <form class="host-search" role="search" (submit)="$event.preventDefault()">
       <mv-icon name="search" [size]="18" />
       <input
@@ -20,46 +39,46 @@
         name="search">
     </form>
 
-    <div class="track-list">
+    <ol class="track-list" aria-label="Warteschlange, sortiert nach Likes">
       @for (track of filteredTracks(); track track.id) {
-        <div class="host-row track-card" [class.voted]="track.hasVoted" [class.now-playing]="track.isCurrentlyPlaying">
+        <li
+          class="host-row track-card"
+          [class.voted]="track.hasVoted"
+          [class.just-liked]="highlightedUri() === track.uri">
+          <span class="rank" [class.next]="rankOf().get(track.uri) === 1">
+            <span class="mv-visually-hidden">Platz </span>{{ rankOf().get(track.uri) }}
+          </span>
           <mv-cover class="host-row-cover album-cover" [images]="track.album?.images" />
           <span class="host-row-text">
             <span class="host-row-title track-name">{{ track.name }}</span>
             <span class="host-row-artist artist-name">{{ track.artists?.[0]?.name }}</span>
           </span>
           <div class="vote-section">
-            @if (track.isCurrentlyPlaying) {
-              <div class="soundwave" role="img" aria-label="Läuft gerade">
-                <span class="soundwave-bar"></span>
-                <span class="soundwave-bar"></span>
-                <span class="soundwave-bar"></span>
-                <span class="soundwave-bar"></span>
-                <span class="soundwave-bar"></span>
-              </div>
-            } @else {
-              <!-- The count is always shown, also 0, so every card looks alike. -->
-              <span class="like-count">{{ track.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
-              <button
-                type="button"
-                class="vote-button"
-                [class.pop]="track.hasVoted && poppedUri() === track.uri"
-                [attr.aria-pressed]="!!track.hasVoted"
-                [attr.aria-label]="voteLabel(track)"
-                (click)="toggleVote(track)">
-                <mv-icon name="heart" [size]="26" [filled]="!!track.hasVoted" />
-              </button>
-            }
+            <!-- The count is always shown, also 0, so every card looks alike. -->
+            <span class="like-count">{{ track.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
+            <button
+              type="button"
+              class="vote-button"
+              [class.pop]="track.hasVoted && poppedUri() === track.uri"
+              [attr.aria-pressed]="!!track.hasVoted"
+              [attr.aria-label]="voteLabel(track)"
+              (click)="toggleVote(track)">
+              <mv-icon name="heart" [size]="26" [filled]="!!track.hasVoted" />
+            </button>
           </div>
-        </div>
+        </li>
       } @empty {
-        <div class="host-empty">
+        <li class="host-empty">
           <mv-icon name="music" [size]="40" />
-          <h2>Die Warteschlange ist leer</h2>
-          <p>Es sind noch keine Songs zum Voten da. Füg den ersten hinzu!</p>
-        </div>
+          @if (searchQuery().trim()) {
+            <h2>Kein Song passt zu „{{ searchQuery().trim() }}“</h2>
+          } @else {
+            <h2>Die Warteschlange ist leer</h2>
+            <p>Es sind noch keine Songs zum Voten da. Füg den ersten hinzu!</p>
+          }
+        </li>
       }
-    </div>
+    </ol>
   </main>
 
   <mv-toast />

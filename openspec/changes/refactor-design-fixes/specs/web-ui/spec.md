@@ -67,7 +67,7 @@ All non-essential animations (vote pop, rank movement, soundwave, page transitio
 - AND the liked state is still shown immediately
 
 ### Requirement: Cover Images Have a Working Fallback
-Every album cover in the web app MUST be rendered through one shared cover component. It MUST show the bundled placeholder image when the track has no image URL, the `images` array is empty or missing, or the image fails to load. Covers are decorative next to the song title, so they MUST use `alt=""`. Pages MUST NOT index into an images array without a guard.
+Every album cover in the web app MUST be rendered through one shared cover component. It MUST show the bundled placeholder image when the track has no image URL, the `images` array is empty or missing, or the image fails to load. The placeholder MUST fit the stage in both modes: a dark brand-coloured tile with a line-drawn note, not a light image that glares on the dark stage. Covers are decorative next to the song title, so they MUST use `alt=""`. Pages MUST NOT index into an images array without a guard.
 
 #### Scenario: Search result without cover
 - GIVEN a search result whose `album.images` is empty
