@@ -1,6 +1,7 @@
 import { Component, DOCUMENT, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { ThemeService } from './shared/theme.service';
+import { ResolveEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
+import { ThemeService, themeScopeForUrl } from './shared/theme.service';
 
 /**
  * Root component. Besides hosting the router outlet it pins the document
@@ -18,6 +19,12 @@ export class App {
   constructor() {
     inject(DOCUMENT).documentElement.lang = 'de';
     // Instantiating the service applies the stored stage theme right away.
-    inject(ThemeService);
+    const theme = inject(ThemeService);
+    // Guest pages keep their own light/dark choice, apart from host and TV
+    // (web-ui spec "Host Can Switch Between Dark and Light Mode"). ResolveEnd
+    // fires before the new page is created, so it never flashes in the wrong mode.
+    inject(Router).events
+      .pipe(filter((e): e is ResolveEnd => e instanceof ResolveEnd))
+      .subscribe((e) => theme.useScope(themeScopeForUrl(e.urlAfterRedirects)));
   }
 }

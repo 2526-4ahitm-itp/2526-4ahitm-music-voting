@@ -84,7 +84,10 @@ describe('Entry and setup pages in stage look (DOM)', () => {
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('MusicVoting');
     expect(text).toContain('Gast auf einer Party');
     expect(text).toContain('Gastgeber einer Party');
-    expect(fixture.nativeElement.querySelector('footer mv-credit-footer')?.textContent).toContain('powered by');
+    const credit = fixture.nativeElement.querySelector('footer mv-credit-footer') as HTMLElement;
+    expect(credit?.textContent).toContain('powered by');
+    // Large enough to notice (was 14px), still a footer line.
+    expect(parseFloat(getComputedStyle(credit).fontSize)).toBeGreaterThanOrEqual(20);
     fixture.destroy();
   });
 

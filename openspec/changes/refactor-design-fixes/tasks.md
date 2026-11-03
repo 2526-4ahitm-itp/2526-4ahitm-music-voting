@@ -60,6 +60,8 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 
 - [x] 5b.1 Theme tokens `--mv-stage-*` for dark and `[data-theme='light']` in `styles.css`; stage CSS uses only tokens; `ThemeService` (localStorage, `storage` sync) and `mv-theme-toggle` in every host top bar
 - [x] 5b.2 Specs: default dark, toggle + persistence, cross-tab sync, light tokens applied, switch present with `role="switch"` on every host page, light background on the dashboard
+- [x] 5b.3 (added 2026-11-03) Guest pages (`/code`, `/join/:pin`, `/voting`, `/guest`) keep their own light/dark choice (`mv-guest-theme`), separate from host/TV (`mv-theme`); scope switches on router `ResolveEnd`; a guest without a choice starts from the entry-page choice. Specs: `theme.service.spec.ts` (separation both ways, fallback, storage event, URL mapping), `app.spec.ts` (navigation applies the right choice)
+- [x] 5b.4 (added 2026-11-03) Landing page: "powered by HTL Leonding" larger (1.25rem instead of 0.875rem); `entry-pages.dom.spec.ts` asserts ≥ 20px
 
 ## 5c. Stage look for the remaining pages (added 2026-11-03)
 
