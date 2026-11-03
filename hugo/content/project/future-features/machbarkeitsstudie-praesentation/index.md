@@ -6,7 +6,7 @@ date: 2026-11-03
 weight: 30
 ---
 
-{{< slide class="title-slide" notes="Inhalt basiert vollständig auf der Machbarkeitsstudie vom 13.10.2026. Sprintabgabe: Folien 1–2, 9–14 reichen für die Kurzfassung. Team-Besprechung: alle Folien, am Ende die offenen Fragen entscheiden." >}}
+{{< slide class="title-slide" notes="Inhalt basiert vollständig auf der Machbarkeitsstudie (13.10.2026, aktualisiert 03.11.2026). Sprintabgabe: Folien 1–2, 9–15 reichen für die Kurzfassung. Team-Besprechung: alle Folien, am Ende die offenen Fragen entscheiden." >}}
 <p class="kicker">MusicVoting · Machbarkeitsstudie</p>
 <h1 style="font-size: 2.4em">🎧 Wechselnder Musikanbieter</h1>
 <h3>Spotify, YouTube &amp; Co. – pro Party wählbar?</h3>
@@ -28,20 +28,20 @@ weight: 30
 <div class="card"><div class="icon">🏷️</div><h4>ProviderKind</h4><p><code>SPOTIFY</code> und <code>YOUTUBE</code> existieren; YouTube wirft noch <code>UnsupportedOperationException</code>.</p></div>
 <div class="card"><div class="icon">🎉</div><h4>Party mit Anbieter</h4><p><code>POST /api/party</code> nimmt <code>provider</code> entgegen, Spalte <code>party.provider_kind</code> wird gespeichert.</p></div>
 <div class="card"><div class="icon">💿</div><h4>Eigene Song-Daten</h4><p><code>queue_entry</code> speichert Titel, Künstler, Cover und Dauer selbst; <code>track_uri</code> ist einfacher Text.</p></div>
-<div class="card accent"><div class="icon">🐘</div><h4>Queue in unserer DB</h4><p>Die Warteschlange ist Quelle der Wahrheit bei uns, nicht beim Anbieter.</p></div>
+<div class="card accent"><div class="icon">🐘</div><h4>Queue + Blacklist bei uns</h4><p>Warteschlange und Blacklist liegen in unserer DB; die Blacklist-Regel ist schon anbieterneutral.</p></div>
 <div class="card"><div class="icon">📱</div><h4>iOS steuert nur</h4><p>Die App spielt keine Musik selbst – betroffen ist nur der Host-Login.</p></div>
 </div>
 {{< /slide >}}
 
-{{< slide kicker="Kapitel 2 · Ausgangslage" title="Was fest an Spotify hängt" notes="Der größte Brocken ist die erste Zeile: Queue- und Vote-Logik stecken im SpotifyMusicProvider (1.681 Zeilen). Ein zweiter Anbieter müsste das sonst komplett kopieren. Außerdem: Das Dropdown 'Amazon Music' in create-party wird ignoriert und ist laut Recherche gar nicht nutzbar." >}}
+{{< slide kicker="Kapitel 2 · Ausgangslage" title="Was fest an Spotify hängt" notes="Der größte Brocken ist die erste Zeile: Queue-, Vote- und Blacklist-Prüflogik stecken im SpotifyMusicProvider (1.840 Zeilen). Ein zweiter Anbieter müsste das sonst komplett kopieren. Außerdem: Das Dropdown 'Amazon Music' in create-party wird ignoriert und ist laut Recherche gar nicht nutzbar." >}}
 <table class="plan compact">
 <thead><tr><th>Bereich</th><th>Fundstelle</th><th>Problem</th></tr></thead>
 <tbody>
-<tr><td><strong>Queue- &amp; Vote-Logik</strong></td><td><code>SpotifyMusicProvider</code></td><td>1.681 Zeilen – Queue, Votes, Refill liegen <strong>im Spotify-Provider</strong></td></tr>
+<tr><td><strong>Queue- &amp; Vote-Logik</strong></td><td><code>SpotifyMusicProvider</code></td><td>1.840 Zeilen – Queue, Votes, Refill liegen <strong>im Spotify-Provider</strong></td></tr>
 <tr><td><strong>Wiedergabe</strong></td><td><code>play/pause/resume</code>, <code>reassertPlay</code></td><td>Backend steuert Spotify per Web API – andere Anbieter nur im Browser steuerbar</td></tr>
-<tr><td>Login &amp; Tokens</td><td><code>SpotifyCallbackResource</code>, <code>SpotifyTokenResource</code></td><td>Pfade <code>/spotify/…</code>, <code>Party</code> hat festes <code>spotifyCredentials</code></td></tr>
+<tr><td>Login, Tokens, DB</td><td><code>SpotifyCallbackResource</code>, <code>spotify_refresh_token</code></td><td>Pfade <code>/spotify/…</code>, festes <code>spotifyCredentials</code>, Spalte anbieterspezifisch</td></tr>
 <tr><td>Live-Events</td><td><code>/api/spotify/events</code></td><td>SSE-Kanal heißt „spotify", wird aber für alles genutzt</td></tr>
-<tr><td>Datenbank</td><td><code>party.spotify_refresh_token</code></td><td>Spaltenname anbieterspezifisch</td></tr>
+<tr><td><strong>Blacklist</strong></td><td><code>isBlockedTrack</code>, <code>searchArtists</code></td><td>Prüfungen beim Hinzufügen, Refill und Suche <strong>im Spotify-Provider</strong>; Künstler = Spotify-ID</td></tr>
 <tr><td>Player-Seite</td><td><code>spotify-player.ts</code>, <code>startpage.ts</code></td><td>Lädt Spotify SDK direkt, Songende-Erkennung auf Spotify zugeschnitten</td></tr>
 <tr><td>Gast/Host-Suche</td><td><code>guest.ts</code>, <code>search-host.ts</code></td><td>Nutzen Spotify-Service und Spotify-Event-Pfad</td></tr>
 <tr><td>Party erstellen</td><td><code>create-party.ts</code></td><td>Dropdown zeigt „Amazon Music", ruft aber immer <code>createParty('spotify')</code></td></tr>
@@ -62,6 +62,7 @@ weight: 30
 <tr><td>Steuerung durchs Backend</td><td class="c">–</td><td class="c">✅</td><td class="c">❌</td><td class="c">❌</td><td class="c">❌</td></tr>
 <tr><td>Host-Login</td><td class="c">–</td><td class="c">✅ OAuth</td><td class="c">nicht nötig</td><td class="c">✅ MusicKit</td><td class="c">✅ OAuth (PKCE)</td></tr>
 <tr><td>Auto-Refill-Quellen</td><td class="c">–</td><td class="c">⚠️ Top-Tracks entfernt</td><td class="c">✅</td><td class="c">✅</td><td class="c">✅</td></tr>
+<tr><td><strong>Blacklist:</strong> Künstler pro Song + Künstler-Suche</td><td class="c">✅</td><td class="c">✅</td><td class="c">⚠️ nur Kanäle</td><td class="c">✅</td><td class="c">✅</td></tr>
 </tbody>
 </table>
 {{< /slide >}}
@@ -159,18 +160,27 @@ weight: 30
 <div class="limits"><strong>Warum wir uns daran halten müssen:</strong> Mehr als ~100 Suchen/Tag gibt es nur nach einem <strong>Compliance-Audit</strong> durch Google – ein versteckter Player fällt durch, der API-Key kann gesperrt werden.</div>
 {{< /slide >}}
 
+{{< slide kicker="Kapitel 4 · Lösungsvorschlag · Blacklist" title="Blacklist bei jedem Anbieter" notes="Die Party-Blacklist ist Pflicht für jeden Anbieter. Die Regel (BlacklistService.isBlocked) ist schon anbieterneutral, nur die drei Prüfstellen liegen noch im SpotifyMusicProvider und ziehen mit AP1 in den QueueService. Einträge mit Spotify-IDs sind kein Problem, weil die Blacklist pro Party gilt und der Anbieter pro Party fest ist. YouTube kennt keine Künstler, nur Kanäle – deshalb die kombinierte Prüfung. Fehltreffer wie Queen → Dancing Queen nehmen wir bewusst in Kauf. Der Such-Button bei YouTube spart Quota und braucht eine Delta-Spec. Risiko: Nach dem Umbau greift die Blacklist nicht mehr überall – deshalb bestehende Blacklist-Tests vorher grün und danach mit beiden Anbietern laufen lassen." >}}
+<div class="cards">
+<div class="card"><div class="icon">⚙️</div><h4>Backend für alle</h4><p>Regel im <code>BlacklistService</code> ist schon anbieterneutral<br>Prüfstellen (Hinzufügen, Auto-Refill, Suchtreffer) ziehen in den <code>QueueService</code><br>Jeder Anbieter liefert Titel, Künstler + IDs inkl. Features und eine Künstler-Suche</p></div>
+<div class="card accent"><div class="icon">🎤</div><h4>YouTube: Künstler „kombiniert"</h4><p>Gesperrt, wenn <strong>eines</strong> zutrifft:<br>① Kanal-ID gehört zum Künstler (Topic, offiziell)<br>② Name als ganzes Wort in Titel oder Kanalname<br>③ Name in der Künstlerzeile der Topic-Beschreibung</p></div>
+<div class="card accent"><div class="icon">🔎</div><h4>YouTube: Such-Button</h4><p>Blacklist-Seite sucht bei YouTube erst auf Knopfdruck – jede Suche kostet 100 Quota-Einheiten<br>Spotify bleibt bei „Suche beim Tippen"<br>Braucht eine <strong>Delta-Spec</strong></p></div>
+</div>
+<div class="limits"><strong>Bewusst akzeptiert:</strong> seltene Fehltreffer bei YouTube („Queen" sperrt auch „Dancing Queen") – lieber ein Song zu viel gesperrt als ein gesperrter Künstler auf der Party.</div>
+{{< /slide >}}
+
 {{< slide kicker="Kapitel 5 · Machbarkeit nach Dimensionen" title="Wie machbar ist es?" notes="Technisch nichts grundlegend Neues, vor allem Refactoring. Kosten: YouTube und TIDAL gratis, Apple braucht das Developer Program (99 USD/Jahr). Rechtlich: Bei YouTube muss der Player sichtbar und unverdeckt sein (siehe vorige Folie). Test: 180 Backend-Tests, viele gegen SpotifyMusicProvider – die müssen auf den QueueService umziehen." >}}
 <table class="plan compact" style="font-size: 0.52em">
 <thead><tr><th>Dimension</th><th>Bewertung</th><th>Begründung</th></tr></thead>
 <tbody>
-<tr><td><strong>Technisch</strong></td><td><span class="tag green">machbar</span></td><td>Interface, Factory und DB-Queue existieren – Hauptarbeit ist Refactoring. Risiko: Verhalten fremder Player-SDKs</td></tr>
+<tr><td><strong>Technisch</strong></td><td><span class="tag green">machbar</span></td><td>Interface, Factory, DB-Queue und neutrale Blacklist-Regel existieren – Hauptarbeit ist Refactoring. Risiko: fremde Player-SDKs</td></tr>
 <tr><td><strong>Wirtschaftlich</strong></td><td><span class="tag green">YouTube gratis</span> <span class="tag yellow">Apple 99 USD/J.</span></td><td>YouTube und TIDAL kosten nichts, Apple braucht das Developer Program</td></tr>
 <tr><td><strong>Rechtlich</strong></td><td><span class="tag yellow">lösbar</span></td><td>YouTube: Player sichtbar und unverdeckt, kein reiner Ton; „nur Cover“ über Topic-Uploads. Deezer nur „private use"</td></tr>
 <tr><td><strong>Organisatorisch</strong></td><td><span class="tag yellow">knapp</span></td><td>Umbau quer durch Backend und Frontend, 2–3 Sprints parallel zu anderen Features</td></tr>
 <tr><td><strong>Test / Qualität</strong></td><td><span class="tag yellow">Aufwand</span></td><td>180 Backend-Tests, viele gegen <code>SpotifyMusicProvider</code>; fremde SDKs nur manuell bzw. gemockt testbar</td></tr>
 </tbody>
 </table>
-<div class="verdict"><strong>Gesamturteil: machbar</strong> – wenn wir <em>zuerst</em> die Queue-Logik aus dem Spotify-Provider herauslösen. Sonst wäre jeder neue Anbieter eine Kopie von ~1.700 Zeilen.</div>
+<div class="verdict"><strong>Gesamturteil: machbar</strong> – wenn wir <em>zuerst</em> Queue- und Blacklist-Prüflogik aus dem Spotify-Provider herauslösen. Sonst wäre jeder neue Anbieter eine Kopie von ~1.800 Zeilen.</div>
 {{< /slide >}}
 
 {{< slide kicker="Kapitel 6" title="Welcher Anbieter zuerst?" notes="Gewichtung: Zugang 25 %, volle Wiedergabe 25 %, Kosten/Konto 15 %, Katalog 15 %, Aufwand/Doku 10 %, rechtliche Klarheit 10 %. Die Punkte sind Einschätzungen aus der Recherche, keine Messwerte. YouTube gleicht die größte Schwäche von Spotify aus: Premium-Pflicht und max. 5 Hosts im Development Mode. Deezer scheitert vor allem am Zugang." >}}
@@ -184,19 +194,20 @@ weight: 30
 <div class="verdict"><strong>YouTube zuerst:</strong> kein Abo nötig, <code>ProviderKind.YOUTUBE</code> existiert schon, kein Premium-Zwang und kein 5-Host-Limit wie bei Spotify. <strong>Apple Music</strong> als dritter Anbieter, falls ein Developer-Account verfügbar ist.</div>
 {{< /slide >}}
 
-{{< slide kicker="Kapitel 7" title="Aufwandsschätzung" notes="PT = Personentag (ca. 6 h), Spannweite statt Fixwert. AP0 ist unabhängig und sollte zuerst passieren, weil Spotify-Endpunkte 2026 geändert wurden. AP1 ist die Voraussetzung für AP4–AP6; AP3 kann parallel zu AP1/AP2 laufen." >}}
+{{< slide kicker="Kapitel 7" title="Aufwandsschätzung" notes="PT = Personentag (ca. 6 h), Spannweite statt Fixwert. AP0 ist unabhängig und sollte zuerst passieren, weil Spotify-Endpunkte 2026 geändert wurden. AP1 ist die Voraussetzung für AP4–AP6 und AP8; AP3 kann parallel zu AP1/AP2 laufen." >}}
 <table class="plan compact">
 <thead><tr><th>#</th><th>Arbeitspaket</th><th class="c">Aufwand</th></tr></thead>
 <tbody>
 <tr><td>AP0</td><td><strong>Vorab:</strong> Spotify-Endpunkte an Änderungen 2026 anpassen</td><td class="c">1–2 PT</td></tr>
-<tr><td>AP1</td><td><code>QueueService</code> herauslösen, Tests umziehen</td><td class="c">4–6 PT</td></tr>
+<tr><td>AP1</td><td><code>QueueService</code> herauslösen inkl. Blacklist-Prüfungen, Tests umziehen</td><td class="c">5–7 PT</td></tr>
 <tr><td>AP2</td><td>Neutrale Auth-/Event-Endpunkte, DB-Migration, <code>Party</code> ohne <code>spotifyCredentials</code></td><td class="c">2–3 PT</td></tr>
 <tr><td>AP3</td><td>Frontend: <code>MusicPlayerAdapter</code>, <code>startpage</code> + SSE-Kommandos</td><td class="c">3–4 PT</td></tr>
 <tr><td>AP4</td><td>YouTube-Katalog im Backend (Filter, Embedding-Check, Quota-Caching)</td><td class="c">2–3 PT</td></tr>
 <tr><td>AP5</td><td><code>YouTubePlayerAdapter</code> (IFrame Player, Songende, Position)</td><td class="c">2–3 PT</td></tr>
 <tr><td>AP6</td><td><code>create-party</code>-Auswahl, Anzeige je Anbieter, iOS-Login</td><td class="c">1–2 PT</td></tr>
 <tr><td>AP7</td><td>OpenSpec, Hugo-Doku, README, Präsentation</td><td class="c">2–3 PT</td></tr>
-<tr class="sum"><td></td><td>Summe ≈ <span style="color: #6ee7b7">2–3 Sprints</span> bei drei Personen und Schulbetrieb</td><td class="c">17–26 PT</td></tr>
+<tr><td>AP8</td><td>YouTube-Blacklist: Künstler „kombiniert", Such-Button</td><td class="c">1–2 PT</td></tr>
+<tr class="sum"><td></td><td>Summe ≈ <span style="color: #6ee7b7">2–3 Sprints, eher 3</span> bei drei Personen und Schulbetrieb</td><td class="c">19–29 PT</td></tr>
 </tbody>
 </table>
 {{< /slide >}}
@@ -223,9 +234,9 @@ weight: 30
 <div class="arrow">→</div>
 <div class="step"><span class="num">2</span><br><code style="font-size: 0.85em">fix-spotify-2026-endpoints</code><br>AP0, unabhängig</div>
 <div class="arrow">→</div>
-<div class="step"><span class="num">3</span><br><code style="font-size: 0.85em">extract-queue-service</code><br>AP1 + AP2, reines Refactoring</div>
+<div class="step"><span class="num">3</span><br><code style="font-size: 0.85em">extract-queue-service</code><br>AP1 + AP2, reines Refactoring inkl. Blacklist</div>
 <div class="arrow">→</div>
-<div class="step"><span class="num">4</span><br><code style="font-size: 0.85em">add-youtube-provider</code><br>AP3–AP6</div>
+<div class="step"><span class="num">4</span><br><code style="font-size: 0.85em">add-youtube-provider</code><br>AP3–AP6, AP8 (Blacklist)</div>
 <div class="arrow">→</div>
 <div class="step"><span class="num">5</span><br><strong>Danach</strong><br>Apple Music oder TIDAL entscheiden</div>
 </div>

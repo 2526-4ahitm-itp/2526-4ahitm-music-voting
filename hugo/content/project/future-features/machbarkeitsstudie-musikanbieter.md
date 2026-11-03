@@ -9,7 +9,7 @@ showDate: true
 weight: 20
 ---
 
-> Stand: 13.10.2026 · Autorin: Simone (mit Claude)
+> Stand: 13.10.2026, aktualisiert 03.11.2026 (Party-Blacklist, YouTube „nur Cover") · Autorin: Simone (mit Claude)
 > Grundlage: Code-Analyse von Backend, Frontend und iOS-App sowie die Anbieter-Recherche in
 > [Recherche: Musikanbieter](../musikprovider/).
 > Zweck: Entscheidungsgrundlage fürs Team. Es ist noch nichts umgesetzt und kein OpenSpec-Change
@@ -47,12 +47,13 @@ funktionieren gleich.
 | `queue_entry` | speichert Titel, Künstler, Cover, Dauer selbst, nicht nur die Spotify-ID; `track_uri` ist ein einfacher Text |
 | Queue als Quelle der Wahrheit | liegt in unserer DB, nicht beim Anbieter; das ist die wichtigste Voraussetzung |
 | iOS-App | spielt **keine** Musik selbst, sondern steuert nur über das Backend; betroffen ist nur der Login |
+| **Blacklist-Regel** | `BlacklistService.Blacklist.isBlocked(uri, title, artistIds, artistNames)` ist schon anbieterneutral: braucht pro Song nur URI, Titel, Künstler-IDs und Künstlernamen. Einträge liegen in unserer DB (`blacklist_entry`), pro Party |
 
 ### Was fest an Spotify hängt ❌
 
 | Bereich | Fundstelle | Problem |
 |---|---|---|
-| **Queue- und Vote-Logik** | `SpotifyMusicProvider` (1.681 Zeilen) | `getQueue`, `toggleVote`, `addTracksToPlaylist`, `refillQueue` usw. liegen **im Spotify-Provider**. Ein zweiter Anbieter müsste das alles kopieren. |
+| **Queue- und Vote-Logik** | `SpotifyMusicProvider` (1.840 Zeilen) | `getQueue`, `toggleVote`, `addTracksToPlaylist`, `refillQueue` usw. liegen **im Spotify-Provider**. Ein zweiter Anbieter müsste das alles kopieren. |
 | **Wiedergabe-Steuerung** | `SpotifyMusicProvider.play/pause/resume`, `reassertPlay` | Das **Backend** steuert Spotify per Web API. Andere Anbieter können nur im Browser gesteuert werden (siehe Kap. 4). |
 | **Login und Tokens** | `SpotifyCallbackResource`, `SpotifyTokenResource`, `SpotifyCredentials` | Endpunkte heißen `/spotify/...`; `Party` hat ein festes Feld `spotifyCredentials` |
 | **Live-Events** | `/api/spotify/events` | Der SSE-Kanal für alle Clients (Web und iOS) heißt „spotify", wird aber für alles genutzt |
@@ -61,10 +62,13 @@ funktionieren gleich.
 | **Gast/Host-Suche** | `guest.ts`, `search-host.ts` | nutzen `SpotifyWebPlayerService` und `/api/spotify/events` |
 | **Party erstellen** | `create-party.ts` / `.html` | Dropdown zeigt „Spotify" und **„Amazon Music"**, der Wert wird aber ignoriert: es wird immer `createParty('spotify')` aufgerufen. Amazon Music ist laut Recherche nicht nutzbar. |
 | **iOS** | `SpotifyAuthView.swift`, `PlaylistPickerView.swift` | Login-Ansicht nur für Spotify |
+| **Blacklist-Prüfungen** | `SpotifyMusicProvider.addTracksToPlaylist`, `refillQueue`, `searchTracks` (`isBlockedTrack`, `markBlockedSearchResults`), `searchArtists` | Alle drei Prüfstellen (Hinzufügen, Auto-Refill, Suchtreffer ausgrauen) liegen **im Spotify-Provider** und lesen Titel und Künstler aus Spotify-JSON. |
+| **Blacklist-Einträge** | `BlacklistKind` | `ARTIST` = Spotify-Artist-ID, `TRACK` = `spotify:track:`-URI |
+| **Blacklist-Seite** | `select-blacklist.ts` | Wertet die rohe Spotify-Suchantwort (`tracks.items`) aus |
 
-**Bewertung:** Die Grundstruktur (Interface, Factory, Queue in der DB) passt. Der größte Brocken
-ist, dass Queue- und Vote-Logik im Spotify-Provider stecken und das Backend die Wiedergabe
-direkt steuert.
+**Bewertung:** Die Grundstruktur (Interface, Factory, Queue und Blacklist in der DB) passt. Der
+größte Brocken ist, dass Queue-, Vote- und Blacklist-Prüflogik im Spotify-Provider stecken und das
+Backend die Wiedergabe direkt steuert.
 
 ## 3. Was ein Anbieter können muss
 
@@ -78,6 +82,8 @@ direkt steuert.
 | Steuerung durchs Backend | ❌ optional | ✅ | ❌ | ❌ | ❌ |
 | Host-Login | ❌ optional | ✅ OAuth | nicht nötig | ✅ MusicKit | ✅ OAuth (PKCE) |
 | Auto-Refill-Quellen | ❌ optional | ⚠️ Top-Tracks entfernt | ✅ Suche/Playlists | ✅ Charts/Playlists | ✅ Empfehlungen |
+| **Blacklist: Titel + Künstler pro Song** (Namen und IDs, inkl. Features) | ✅ Pflicht | ✅ | ⚠️ nur Kanal, Features nur im Titel/in der Beschreibung | ✅ | ✅ |
+| **Blacklist: Künstler-Suche** | ✅ Pflicht | ✅ | ⚠️ nur Kanal-Suche, 100 Quota-Einheiten | ✅ | ✅ |
 
 ## 4. Lösungsvorschlag (Zielbild)
 
@@ -144,19 +150,68 @@ Position, so wie heute.
 - `PlaylistPickerView` nur für Anbieter mit Playlists anzeigen.
 - Sonst keine Änderungen, weil die App nur übers Backend steuert.
 
+### 4.5 Blacklist: Pflicht für jeden Anbieter
+
+Die Party-Blacklist (Wörter, Künstler, Songs) ist ein Kernfeature und **darf bei keinem Anbieter
+fehlen**. Ein Anbieter, der sie nicht unterstützen kann, kommt nicht in Frage.
+
+**Backend (in AP1 enthalten)**
+- Die drei Prüfstellen ziehen aus dem `SpotifyMusicProvider` in den `QueueService`:
+  Song hinzufügen („Nicht erlaubt."), Auto-Refill überspringt gesperrte Songs, Suchtreffer bekommen
+  `blocked`. Die Regel selbst bleibt im `BlacklistService`.
+- `isBlockedTrack` prüft künftig das gemeinsame `Track`-Modell statt Spotify-JSON. Dafür muss
+  `MusicCatalog` pro Song **Titel, Künstlernamen und Künstler-IDs inkl. Features** liefern.
+- `searchArtists` wandert in den `MusicCatalog` und wird für jeden Anbieter Pflicht.
+- „Song sperren" im Host-Dashboard funktioniert unverändert: Es sperrt die `track_uri`
+  (bei YouTube `youtube:VIDEO_ID`).
+
+**Kein Migrationsproblem:** Künstler- und Song-Einträge enthalten anbieterspezifische IDs. Das ist
+in Ordnung, weil die Blacklist pro Party gilt, beim Party-Ende gelöscht wird und der Anbieter pro
+Party fest ist. Würde man später den Anbieter **während** der Party wechseln, blieben nur die
+Wort-Einträge gültig.
+
+**YouTube: Künstler sperren „kombiniert"** (Entscheidung 03.11.2026)
+
+YouTube kennt keine Künstler, nur Kanäle. Ein Künstler hat oft mehrere (Topic-Kanal, VEVO,
+offizieller Kanal), und Features stehen nur im Titel oder in der Beschreibung. Damit die Regel
+„sperrt jeden Song, an dem der Künstler beteiligt ist, auch als Feature" trotzdem gilt, sperrt ein
+Künstler-Eintrag bei YouTube einen Song, wenn **eines** davon zutrifft:
+1. Die Kanal-ID des Videos ist einer der gespeicherten Kanäle des Künstlers (Topic + offizieller Kanal).
+2. Der Künstlername steht als **ganzes Wort** im Titel oder im Kanalnamen (ohne „ - Topic", „VEVO").
+   Gleiche Wortgrenzen-Regel wie bei Wort-Einträgen.
+3. Bei Topic-Uploads: Der Name steht in der Künstlerzeile der Beschreibung
+   („Song · Künstler · Feature", direkt nach „Provided to YouTube by …").
+
+- **Bewusst in Kauf genommen:** seltene Fehltreffer, z. B. sperrt der Künstler „Queen" auch
+  „Dancing Queen" von ABBA. Lieber ein Song zu viel gesperrt als ein gesperrter Künstler auf der Party.
+- **DB:** Ein YouTube-Künstler-Eintrag braucht mehrere Kanal-IDs und den Namen als Suchbegriff.
+  `blacklist_entry` hat nur ein `value`; ob eine Zusatzspalte oder mehrere Zeilen pro Künstler,
+  wird im Design-Dokument entschieden.
+- **Quota:** Die Beschreibung kommt über `videos.list` (1 Einheit für bis zu 50 Videos), das
+  brauchen wir für die Dauer sowieso. Teuer ist nur die Suche.
+
+**YouTube: Such-Button auf der Blacklist-Seite** (Entscheidung 03.11.2026)
+
+Bei Spotify sucht die Blacklist-Seite schon beim Tippen. Bei YouTube kostet jede Suche 100 von
+10.000 Einheiten pro Tag, deshalb sucht die Blacklist-Seite bei YouTube **erst auf Knopfdruck**
+(„Suchen"). Das weicht von der heutigen Spec ab („no Suchen button") und braucht eine
+**Delta-Spec** im Change `add-youtube-provider`. Für Spotify bleibt alles wie heute.
+
+**iOS:** Die App hat keine Blacklist-Ansicht, hier ändert sich nichts.
+
 ## 5. Machbarkeit nach Dimensionen
 
 | Dimension | Bewertung | Begründung |
 |---|---|---|
-| **Technisch** | 🟢 machbar | Interface, Factory und DB-Queue existieren schon. Hauptarbeit ist Refactoring, nichts grundlegend Neues. Einziges echtes Risiko: Verhalten der fremden Player-SDKs. |
+| **Technisch** | 🟢 machbar | Interface, Factory und DB-Queue existieren schon. Hauptarbeit ist Refactoring, nichts grundlegend Neues. Die Blacklist-Regel ist schon anbieterneutral; bei YouTube braucht „Künstler sperren" eine eigene Lösung (Kap. 4.5). Risiko: Verhalten der fremden Player-SDKs. |
 | **Wirtschaftlich** | 🟢 mit YouTube kostenlos · 🟡 mit Apple 99 USD/Jahr | YouTube und TIDAL kosten uns nichts; Apple braucht das Developer Program. |
 | **Rechtlich** | 🟡 lösbar | YouTube: Player muss sichtbar und unverdeckt sein (mind. 200 × 200 px), keine reine Audio-Wiedergabe; „nur Cover" geht über Topic-Uploads. Deezer nur „private use". Alles in der Recherche dokumentiert. |
 | **Organisatorisch** | 🟡 knapp | Größerer Umbau quer durch Backend und Frontend, braucht 2–3 Sprints parallel zu anderen Features (siehe Kap. 7). |
-| **Test/Qualität** | 🟡 Aufwand | 180 Backend-Tests, viele davon gegen `SpotifyMusicProvider`; Tests müssen auf `QueueService` umziehen. Fremde SDKs lassen sich nur manuell bzw. gemockt testen. |
+| **Test/Qualität** | 🟡 Aufwand | 180 Backend-Tests, viele davon gegen `SpotifyMusicProvider`; Tests müssen auf `QueueService` umziehen, auch die Blacklist-Tests für Hinzufügen, Refill und Suche. Fremde SDKs lassen sich nur manuell bzw. gemockt testen. |
 
-**Gesamturteil: machbar.** Voraussetzung ist, dass wir zuerst die Queue-Logik aus dem
-Spotify-Provider herauslösen. Ohne diesen Schritt wäre jeder neue Anbieter eine Kopie von
-~1.700 Zeilen.
+**Gesamturteil: machbar.** Voraussetzung ist, dass wir zuerst die Queue- und Blacklist-Prüflogik aus
+dem Spotify-Provider herauslösen. Ohne diesen Schritt wäre jeder neue Anbieter eine Kopie von
+~1.800 Zeilen. Die Blacklist ist bei YouTube mit der kombinierten Künstler-Prüfung umsetzbar.
 
 ## 6. Welcher Anbieter zuerst?
 
@@ -185,17 +240,18 @@ PT = Personentag (ca. 6 h). Grobe Schätzung für unser Team, Spannweite statt F
 | # | Arbeitspaket | Aufwand |
 |---|---|---|
 | AP0 | **Unabhängig vorab:** Spotify-Endpunkte an Änderungen 2026 anpassen (`/items`, `/me/playlists`, Top-Tracks-Ersatz) | 1–2 PT |
-| AP1 | `QueueService` aus `SpotifyMusicProvider` herauslösen, Tests umziehen | 4–6 PT |
+| AP1 | `QueueService` aus `SpotifyMusicProvider` herauslösen inkl. Blacklist-Prüfungen, Tests umziehen | 5–7 PT |
 | AP2 | Anbieterneutrale Auth-/Event-Endpunkte, DB-Migration, `Party` ohne festes `spotifyCredentials` | 2–3 PT |
 | AP3 | Frontend: `MusicPlayerAdapter`, `startpage` auf Adapter + SSE-Kommandos umbauen | 3–4 PT |
 | AP4 | YouTube-Katalog im Backend (Suche mit Filtern, Embedding-Check, Topic-Uploads bevorzugen, Quota-Caching) | 2–3 PT |
 | AP5 | `YouTubePlayerAdapter` (IFrame Player, Songende, Position) | 2–3 PT |
 | AP6 | `create-party`-Auswahl, Anzeige je Anbieter, iOS-Login je Anbieter | 1–2 PT |
 | AP7 | OpenSpec (Proposal, Delta-Specs, Design), Hugo-Doku, README, Präsentation | 2–3 PT |
-| | **Summe** | **17–26 PT** |
+| AP8 | YouTube-Blacklist: Künstler „kombiniert" (Kanäle, Name, Topic-Beschreibung), Such-Button, `select-blacklist` ohne Spotify-JSON | 1–2 PT |
+| | **Summe** | **19–29 PT** |
 
-Bei drei Personen und Schulbetrieb entspricht das grob **2–3 Sprints** (je 2 Wochen).
-AP1 ist die Voraussetzung für AP4–AP6; AP3 kann parallel zu AP1/AP2 laufen.
+Bei drei Personen und Schulbetrieb entspricht das grob **2–3 Sprints** (je 2 Wochen), eher 3.
+AP1 ist die Voraussetzung für AP4–AP6 und AP8; AP3 kann parallel zu AP1/AP2 laufen.
 
 ## 8. Risiken und Gegenmaßnahmen
 
@@ -208,6 +264,9 @@ AP1 ist die Voraussetzung für AP4–AP6; AP3 kann parallel zu AP1/AP2 laufen.
 | Werbung bei YouTube auf der Party | hoch | niedrig | Host-Hinweis: mit Premium im TV-Browser angemeldet sein (siehe Recherche) |
 | Fremdes Player-SDK verhält sich anders als erwartet | mittel | mittel | Vor AP5 einen kleinen Spike (1 PT) mit dem IFrame Player bauen |
 | Spotify-Endpunkte fallen weg (Änderungen 2026) | mittel | hoch | AP0 unabhängig und zuerst erledigen |
+| Blacklist greift nach dem Umbau nicht mehr überall (Hinzufügen, Refill, Suche) | mittel | hoch | Bestehende Blacklist-Tests vor dem Umzug grün, danach gegen `QueueService` mit beiden Anbietern laufen lassen |
+| YouTube: gesperrter Künstler rutscht durch (Fremd-Upload ohne Namen im Titel) | mittel | mittel | Kombinierte Prüfung (Kap. 4.5), Topic-Uploads bevorzugen; Host kann einzelne Songs zusätzlich per „Song sperren" sperren |
+| YouTube: Künstlername sperrt fremde Songs („Queen" → „Dancing Queen") | niedrig | niedrig | Bewusst akzeptiert; Host sieht gesperrte Treffer ausgegraut |
 | Umbau dauert länger als ein Sprint | mittel | mittel | Pakete einzeln als eigene OpenSpec-Changes ausliefern; jeder Schritt ist für sich lauffähig |
 
 ## 9. Empfehlung und nächste Schritte
@@ -216,12 +275,14 @@ AP1 ist die Voraussetzung für AP4–AP6; AP3 kann parallel zu AP1/AP2 laufen.
 
 1. **Spike YouTube (1–2 PT):** Test-Key anlegen, Suche + IFrame Player in einer Testseite,
    Quota-Verbrauch messen, Werbung mit/ohne Premium prüfen, Trefferquote von Topic-Uploads bei
-   Mainstream-Hits messen.
+   Mainstream-Hits messen, Künstlerzeile aus Topic-Beschreibungen testweise auslesen
+   (Blacklist mit Features).
 2. **OpenSpec-Change `fix-spotify-2026-endpoints`** (AP0), unabhängig vom Rest.
 3. **OpenSpec-Change `extract-queue-service`** (AP1 + AP2): reines Refactoring ohne neues
-   Verhalten, danach muss alles wie vorher funktionieren.
-4. **OpenSpec-Change `add-youtube-provider`** (AP3–AP6): Diesen Namen erwartet die
-   `MusicProviderFactory` bereits in ihrer Fehlermeldung.
+   Verhalten, danach muss alles wie vorher funktionieren, **inkl. Blacklist**.
+4. **OpenSpec-Change `add-youtube-provider`** (AP3–AP6, AP8): inkl. Blacklist für YouTube und
+   Delta-Spec für den Such-Button. Diesen Namen erwartet die `MusicProviderFactory` bereits in
+   ihrer Fehlermeldung.
 5. Danach entscheiden: Apple Music oder TIDAL (nach TIDAL-Spike, siehe Recherche).
 
 ## 10. Offene Fragen fürs Team
@@ -231,6 +292,8 @@ AP1 ist die Voraussetzung für AP4–AP6; AP3 kann parallel zu AP1/AP2 laufen.
 - ~~Soll die Player-Seite bei YouTube das Video groß zeigen oder eher klein mit Cover/Titel daneben?~~
   **Geklärt (03.11.2026):** Gewünscht ist nur das Cover. Video verstecken ist nicht erlaubt, deshalb
   kleiner, sichtbarer Player + großes Cover daneben; die Suche bevorzugt Topic-Uploads (siehe Kap. 4.3).
+- ~~Muss die Blacklist bei jedem Anbieter funktionieren?~~ **Geklärt (03.11.2026):** Ja, Pflicht.
+  Bei YouTube „kombinierte" Künstler-Prüfung und Such-Button auf der Blacklist-Seite (Kap. 4.5).
 - Wird die iOS-App weiter aktiv entwickelt (wichtig für Apple Music)?
 - `CLAUDE.md` beschreibt den Host-Login als „Spotify oder YouTube OAuth". Für YouTube ist laut
   Recherche **kein OAuth nötig** (API-Key reicht). Soll das in Doku/Specs angepasst werden?
