@@ -39,6 +39,12 @@ export class Guest implements OnInit, OnDestroy {
   lastSearchedTerm = signal<string>('');
   /** Set when the last search failed (network or server error). */
   searchFailed = signal<boolean>(false);
+  /**
+   * Why songs are missing from the last result: songs by banned artists are removed by the
+   * backend (search spec "Blacklisted Search Results Cannot Be Added"), and without this hint
+   * the list would just look incomplete. 'ARTIST' = the guest typed a banned artist's name.
+   */
+  hiddenHint = signal<'ARTIST' | 'SOME' | null>(null);
   /** Set when the host ended the party; shows the goodbye screen. */
   partyEnded = signal<boolean>(false);
   /** Shown for search and connection problems. */
@@ -91,7 +97,8 @@ export class Guest implements OnInit, OnDestroy {
         } else if (data?.type === 'queue-updated') {
           this.queueState.refresh();
         } else if (data?.type === 'blacklist-updated' && this.searchQuery().trim()) {
-          // The host blocked or unblocked something: search again so the greyed-out state is current.
+          // The host blocked or unblocked something: search again so greyed-out songs, removed
+          // banned-artist songs and the hint below the search field are current.
           this.search(this.searchQuery());
         }
       } catch { /* ignore malformed events */ }
@@ -111,6 +118,7 @@ export class Guest implements OnInit, OnDestroy {
       this.tracks.set([]);
       this.lastSearchedTerm.set('');
       this.searchFailed.set(false);
+      this.hiddenHint.set(null);
       return;
     }
 
@@ -118,7 +126,8 @@ export class Guest implements OnInit, OnDestroy {
     this.searchFailed.set(false);
 
     try {
-      const res: any = await lastValueFrom(this.trackApi.searchTracks(searchTerm));
+      const res: any = await lastValueFrom(this.trackApi.searchTracks(searchTerm, { guest: true }));
+      this.hiddenHint.set(res?.hiddenHint === 'ARTIST' || res?.hiddenHint === 'SOME' ? res.hiddenHint : null);
 
       if (res?.tracks?.items) {
         const seen = new Set<string>();
@@ -138,9 +147,24 @@ export class Guest implements OnInit, OnDestroy {
     } catch (err) {
       console.error('Fehler bei der Suche:', err);
       this.searchFailed.set(true);
+      this.hiddenHint.set(null);
     } finally {
       this.isSearching.set(false);
     }
+  }
+
+  /**
+   * Hint below the search field; null when no result was removed or greyed out. Greyed-out
+   * results (blocked by a word or song entry) count too, so guests know why a song cannot be
+   * added — derived from the `blocked` flags, so the backend needs no extra field. The artist
+   * hint wins because it is the more specific answer to what the guest typed.
+   */
+  hiddenHintText(): string | null {
+    if (this.hiddenHint() === 'ARTIST') return 'Dieser Artist ist nicht zulässig.';
+    if (this.hiddenHint() === 'SOME' || this.tracks().some(track => track?.blocked)) {
+      return 'Einige Ergebnisse sind auf dieser Party nicht zulässig.';
+    }
+    return null;
   }
 
   /** Track zur Playlist hinzufügen */

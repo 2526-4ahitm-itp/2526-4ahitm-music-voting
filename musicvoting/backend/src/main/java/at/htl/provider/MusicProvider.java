@@ -8,7 +8,14 @@ import java.util.Map;
 
 public interface MusicProvider {
 
-    Map<String, Object> searchTracks(Party party, String query);
+    /**
+     * Searches tracks for a party.
+     *
+     * @param guest true for the web guest search: songs by a banned artist are removed and a
+     *              {@code hiddenHint} is added (see search spec "Blacklisted Search Results
+     *              Cannot Be Added"). False keeps every result, blocked ones only flagged.
+     */
+    Map<String, Object> searchTracks(Party party, String query, boolean guest);
 
     Response getTrack(Party party, String id);
 

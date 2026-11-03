@@ -12,9 +12,15 @@ export class TrackService {
     return this.partyService.currentPartyId;
   }
 
-  searchTracks(query: string): Observable<any> {
+  /**
+   * Searches the party's provider. `guest: true` asks for the guest view: the backend then
+   * drops songs by banned artists and adds `hiddenHint` ('ARTIST' | 'SOME' | null). The host
+   * search leaves it off so the host still sees every blocked song greyed out.
+   */
+  searchTracks(query: string, options?: { guest?: boolean }): Observable<any> {
     if (!this.partyId) { console.warn('searchTracks: keine aktive Party'); return EMPTY; }
-    return this.http.get<any>(`/api/party/${this.partyId}/track/search?q=${encodeURIComponent(query)}`);
+    const audience = options?.guest ? '&audience=guest' : '';
+    return this.http.get<any>(`/api/party/${this.partyId}/track/search?q=${encodeURIComponent(query)}${audience}`);
   }
 
   startParty(): Observable<any> {

@@ -558,4 +558,123 @@ class SpotifyMusicProviderTest {
         assertEquals(false, allowed.get("blocked"));
         assertNull(items.get(1));
     }
+
+    // --- guest search: hide songs by a banned artist ---
+
+    private static BlacklistService.Blacklist bannedArtistAndWord() {
+        BlacklistEntry artist = new BlacklistEntry();
+        artist.kind = BlacklistKind.ARTIST;
+        artist.value = "drakeId";
+        artist.label = "Drake";
+        BlacklistEntry word = new BlacklistEntry();
+        word.kind = BlacklistKind.WORD;
+        word.value = "live";
+        return BlacklistService.Blacklist.of(List.of(artist, word));
+    }
+
+    private static Map<String, Object> track(String uri, String title, String artistId, String artistName) {
+        return new java.util.HashMap<>(Map.of("id", uri, "uri", uri, "name", title,
+                "artists", List.of(Map.of("id", artistId, "name", artistName))));
+    }
+
+    /** Runs the same two steps as the guest search: flag blocked results, then hide banned artists. */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> guestSearch(BlacklistService.Blacklist bl, String query, Map<String, Object>... tracks) {
+        Map<String, Object> json = new java.util.HashMap<>();
+        json.put("tracks", new java.util.HashMap<>(Map.of("items", new java.util.ArrayList<>(List.of(tracks)))));
+        SpotifyMusicProvider.markBlockedSearchResults(bl, json);
+        SpotifyMusicProvider.hideBannedArtistResults(bl, query, json);
+        return json;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> items(Map<String, Object> json) {
+        return (List<Map<String, Object>>) ((Map<String, Object>) json.get("tracks")).get("items");
+    }
+
+    @Test
+    void hideBannedArtistResults_searchForTheArtist_removesSongsAndGivesArtistHint() {
+        Map<String, Object> json = guestSearch(bannedArtistAndWord(), "  drake ",
+                track("spotify:track:1", "Hotline Bling", "drakeId", "Drake"),
+                track("spotify:track:2", "Other Song", "otherId", "Someone"));
+
+        assertEquals(List.of("spotify:track:2"), items(json).stream().map(t -> t.get("uri")).toList());
+        assertEquals("ARTIST", json.get("hiddenHint"));
+    }
+
+    @Test
+    void hideBannedArtistResults_featureOfBannedArtist_isRemovedToo() {
+        Map<String, Object> feature = new java.util.HashMap<>(Map.of("id", "f", "uri", "spotify:track:f", "name", "Duet",
+                "artists", List.of(Map.of("id", "otherId", "name", "Someone"), Map.of("id", "drakeId", "name", "Drake"))));
+
+        Map<String, Object> json = guestSearch(bannedArtistAndWord(), "duet", feature);
+
+        assertTrue(items(json).isEmpty());
+        assertEquals("SOME", json.get("hiddenHint"));
+    }
+
+    @Test
+    void hideBannedArtistResults_unrelatedOrPartialTerm_givesGeneralHint() {
+        for (String query : List.of("hotline", "drake remix")) {
+            Map<String, Object> json = guestSearch(bannedArtistAndWord(), query,
+                    track("spotify:track:1", "Hotline Bling", "drakeId", "Drake"));
+            assertTrue(items(json).isEmpty(), query);
+            assertEquals("SOME", json.get("hiddenHint"), query);
+        }
+    }
+
+    @Test
+    void hideBannedArtistResults_matchesSpotifyNameWhenLabelDiffers() {
+        BlacklistEntry artist = new BlacklistEntry();
+        artist.kind = BlacklistKind.ARTIST;
+        artist.value = "drakeId";
+        artist.label = "Drake (old spelling)";
+
+        Map<String, Object> json = guestSearch(BlacklistService.Blacklist.of(List.of(artist)), "drake",
+                track("spotify:track:1", "Hotline Bling", "drakeId", "Drake"));
+
+        assertEquals("ARTIST", json.get("hiddenHint"));
+    }
+
+    @Test
+    void hideBannedArtistResults_wordBlockedSongStaysFlagged() {
+        Map<String, Object> json = guestSearch(bannedArtistAndWord(), "song",
+                track("spotify:track:1", "Song (Live)", "otherId", "Someone"));
+
+        assertEquals(1, items(json).size());
+        assertEquals(true, items(json).get(0).get("blocked"));
+        assertNull(json.get("hiddenHint"));
+        assertTrue(json.containsKey("hiddenHint"));
+    }
+
+    @Test
+    void hideBannedArtistResults_nothingRemoved_hasNoHint() {
+        Map<String, Object> json = guestSearch(bannedArtistAndWord(), "drake",
+                track("spotify:track:2", "Other Song", "otherId", "Someone"));
+
+        assertEquals(1, items(json).size());
+        assertNull(json.get("hiddenHint"));
+    }
+
+    @Test
+    void hideBannedArtistResults_revealsNoNameOrCount() {
+        Map<String, Object> json = guestSearch(bannedArtistAndWord(), "drake",
+                track("spotify:track:1", "Hotline Bling", "drakeId", "Drake"));
+
+        assertEquals(java.util.Set.of("tracks", "hiddenHint"), json.keySet());
+        assertFalse(json.toString().contains("Drake"));
+        assertFalse(json.toString().contains("drakeId"));
+    }
+
+    @Test
+    void hostSearch_keepsBannedArtistSongsGreyedOut() {
+        Map<String, Object> json = new java.util.HashMap<>();
+        json.put("tracks", Map.of("items", List.of(track("spotify:track:1", "Hotline Bling", "drakeId", "Drake"))));
+
+        SpotifyMusicProvider.markBlockedSearchResults(bannedArtistAndWord(), json);
+
+        assertEquals(1, items(json).size());
+        assertEquals(true, items(json).get(0).get("blocked"));
+        assertFalse(json.containsKey("hiddenHint"));
+    }
 }

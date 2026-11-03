@@ -231,7 +231,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     @Override
-    public Map<String, Object> searchTracks(Party party, String query) {
+    public Map<String, Object> searchTracks(Party party, String query, boolean guest) {
         try {
             String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
             String url = "https://api.spotify.com/v1/search?q=" + encoded + "&type=track&limit=25";
@@ -255,7 +255,11 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
 
             // One blacklist snapshot for all results instead of one query per item.
-            markBlockedSearchResults(blacklistService.load(party.id().value()), json);
+            BlacklistService.Blacklist blacklist = blacklistService.load(party.id().value());
+            markBlockedSearchResults(blacklist, json);
+            if (guest) {
+                hideBannedArtistResults(blacklist, query, json);
+            }
 
             return json;
         } catch (Exception e) {
@@ -1730,6 +1734,58 @@ public class SpotifyMusicProvider implements MusicProvider {
                 track.put("blocked", isBlockedTrack(blacklist, uri, track));
             }
         }
+    }
+
+    /** Value of {@code hiddenHint}: the search term is the name of a banned artist. */
+    static final String HIDDEN_HINT_ARTIST = "ARTIST";
+    /** Value of {@code hiddenHint}: songs were removed, but the guest did not search for the artist. */
+    static final String HIDDEN_HINT_SOME = "SOME";
+
+    /**
+     * Guest search only: removes every song by a banned artist from the results and sets
+     * {@code hiddenHint} to {@link #HIDDEN_HINT_ARTIST}, {@link #HIDDEN_HINT_SOME} or null.
+     * Only that code is added — no count and no names — so the guest learns nothing beyond
+     * "the artist you typed is banned". Songs blocked by a word or track entry are kept
+     * (still flagged {@code blocked}), because only banned artists are hidden.
+     */
+    @SuppressWarnings("unchecked")
+    static void hideBannedArtistResults(BlacklistService.Blacklist blacklist, String query, Map<String, Object> searchJson) {
+        boolean removedAny = false;
+        boolean queryIsBannedArtist = blacklist != null && blacklist.isBannedArtistName(query);
+        if (blacklist != null && searchJson.get("tracks") instanceof Map<?, ?> tracks
+                && tracks.get("items") instanceof List<?> items) {
+            List<Object> kept = new ArrayList<>();
+            for (Object item : items) {
+                List<Map<String, Object>> artists = item instanceof Map<?, ?> track
+                        && track.get("artists") instanceof List<?> list
+                        ? list.stream().filter(Map.class::isInstance).map(a -> (Map<String, Object>) a).toList()
+                        : List.of();
+                List<String> artistIds = artists.stream()
+                        .map(a -> a.get("id")).filter(String.class::isInstance).map(String.class::cast).toList();
+                if (blacklist.isArtistBlocked(artistIds)) {
+                    removedAny = true;
+                    // The stored label may be spelled differently from Spotify's current name,
+                    // so also accept the name of a banned artist on the removed song itself.
+                    String normalizedQuery = BlacklistService.Blacklist.normalizeName(query);
+                    for (Map<String, Object> a : artists) {
+                        if (a.get("id") instanceof String id && blacklist.isArtistBlocked(List.of(id))
+                                && a.get("name") instanceof String name
+                                && BlacklistService.Blacklist.normalizeName(name).equals(normalizedQuery)) {
+                            queryIsBannedArtist = true;
+                        }
+                    }
+                } else {
+                    kept.add(item);
+                }
+            }
+            if (removedAny) {
+                Map<String, Object> newTracks = new HashMap<>((Map<String, Object>) tracks);
+                newTracks.put("items", kept);
+                searchJson.put("tracks", newTracks);
+            }
+        }
+        String hint = !removedAny ? null : queryIsBannedArtist ? HIDDEN_HINT_ARTIST : HIDDEN_HINT_SOME;
+        searchJson.put("hiddenHint", hint);
     }
 
     @SuppressWarnings("unchecked")

@@ -99,15 +99,23 @@ public class BlacklistService {
     /** Immutable view of one party's blacklist with the matching rule. */
     public static final class Blacklist {
 
-        private static final Blacklist EMPTY = new Blacklist(Set.of(), Set.of(), List.of());
+        private static final Blacklist EMPTY = new Blacklist(Set.of(), Set.of(), Set.of(), List.of());
 
         private final Set<String> trackUris;
         private final Set<String> artistIds;
+        /**
+         * Lower-cased display names of the banned artists. Only used to tell a guest
+         * "Dieser Artist ist nicht zulässig." when they search for exactly that name —
+         * never for deciding whether a song is blocked (that goes by artist ID).
+         */
+        private final Set<String> artistNames;
         private final List<Pattern> wordPatterns;
 
-        private Blacklist(Set<String> trackUris, Set<String> artistIds, List<Pattern> wordPatterns) {
+        private Blacklist(Set<String> trackUris, Set<String> artistIds, Set<String> artistNames,
+                          List<Pattern> wordPatterns) {
             this.trackUris = trackUris;
             this.artistIds = artistIds;
+            this.artistNames = artistNames;
             this.wordPatterns = wordPatterns;
         }
 
@@ -118,15 +126,22 @@ public class BlacklistService {
             }
             Set<String> tracks = new HashSet<>();
             Set<String> artists = new HashSet<>();
+            Set<String> artistNames = new HashSet<>();
             List<Pattern> words = new ArrayList<>();
             for (BlacklistEntry e : entries) {
                 switch (e.kind) {
                     case TRACK -> tracks.add(e.value);
-                    case ARTIST -> artists.add(e.value);
+                    case ARTIST -> {
+                        artists.add(e.value);
+                        String name = normalizeName(e.label);
+                        if (!name.isEmpty()) {
+                            artistNames.add(name);
+                        }
+                    }
                     case WORD -> words.add(wordPattern(e.value));
                 }
             }
-            return new Blacklist(Set.copyOf(tracks), Set.copyOf(artists), List.copyOf(words));
+            return new Blacklist(Set.copyOf(tracks), Set.copyOf(artists), Set.copyOf(artistNames), List.copyOf(words));
         }
 
         /**
@@ -141,6 +156,41 @@ public class BlacklistService {
 
         public boolean isEmpty() {
             return trackUris.isEmpty() && artistIds.isEmpty() && wordPatterns.isEmpty();
+        }
+
+        /**
+         * Artist names are compared trimmed, with collapsed whitespace and lower-cased, so
+         * "  drake " matches the entry labelled "Drake".
+         */
+        public static String normalizeName(String name) {
+            return name == null ? "" : name.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+        }
+
+        /**
+         * True if any of the given artist IDs is banned. The guest search hides such songs
+         * completely, while songs blocked only by a word or track entry stay greyed out —
+         * so this check is separate from {@link #isBlocked}.
+         */
+        public boolean isArtistBlocked(Collection<String> artistIds) {
+            if (artistIds == null || this.artistIds.isEmpty()) {
+                return false;
+            }
+            for (String id : artistIds) {
+                if (id != null && this.artistIds.contains(id)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * True if {@code name} is exactly (case-insensitive, whitespace-normalized) the stored
+         * name of a banned artist. Whole-name match on purpose: "drake remix" is not a search
+         * for the artist, so the guest gets the general hint instead.
+         */
+        public boolean isBannedArtistName(String name) {
+            String normalized = normalizeName(name);
+            return !normalized.isEmpty() && artistNames.contains(normalized);
         }
 
         /** True if the track URI itself is blacklisted — cheap, needs no metadata. */

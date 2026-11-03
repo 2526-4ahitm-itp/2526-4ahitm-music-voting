@@ -65,7 +65,7 @@ class TrackResourceTest {
     @Test
     void search_returnsProviderResult() {
         Party party = registerSpotifyParty("10001", "20001");
-        when(spotifyMusicProvider.searchTracks(eq(party), eq("queen")))
+        when(spotifyMusicProvider.searchTracks(eq(party), eq("queen"), eq(false)))
                 .thenReturn(Map.of("tracks", List.of(Map.of("uri", "spotify:track:abc", "name", "Bohemian Rhapsody"))));
 
         given()
@@ -75,6 +75,21 @@ class TrackResourceTest {
                 .statusCode(200)
                 .body("tracks[0].uri", equalTo("spotify:track:abc"))
                 .body("tracks[0].name", equalTo("Bohemian Rhapsody"));
+    }
+
+    @Test
+    void search_withAudienceGuest_requestsGuestMode() {
+        Party party = registerSpotifyParty("10002", "20002");
+        when(spotifyMusicProvider.searchTracks(eq(party), eq("drake"), eq(true)))
+                .thenReturn(Map.of("tracks", Map.of("items", List.of()), "hiddenHint", "ARTIST"));
+
+        given()
+                .queryParam("q", "drake")
+                .queryParam("audience", "guest")
+                .when().get("/api/party/{partyId}/track/search", party.id().value())
+                .then()
+                .statusCode(200)
+                .body("hiddenHint", equalTo("ARTIST"));
     }
 
     @Test

@@ -42,11 +42,17 @@ public class TrackResource {
         return providerFactory.forParty(party);
     }
 
+    /**
+     * Track search. {@code audience=guest} is an explicit opt-in from the web guest page, not
+     * derived from the host header: the frontend sends the host PIN from every page on the
+     * host's device, so the header cannot tell the guest view from the host search. Without
+     * the parameter the response is unchanged (host search, iOS app).
+     */
     @GET
     @Path("/search")
-    public Map<String, Object> search(@QueryParam("q") String q) {
+    public Map<String, Object> search(@QueryParam("q") String q, @QueryParam("audience") String audience) {
         Party party = resolveParty();
-        return provider(party).searchTracks(party, q);
+        return provider(party).searchTracks(party, q, "guest".equalsIgnoreCase(audience));
     }
 
     @GET

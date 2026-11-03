@@ -37,6 +37,16 @@ describe('TrackService', () => {
     req.flush({ tracks: [] });
   });
 
+  it('searchTracks in guest mode asks for the guest view', () => {
+    partyService.currentPartyId = 'party-1';
+
+    service.searchTracks('drake', { guest: true }).subscribe();
+
+    const req = httpMock.expectOne('/api/party/party-1/track/search?q=drake&audience=guest');
+    expect(req.request.method).toBe('GET');
+    req.flush({ tracks: { items: [] }, hiddenHint: null });
+  });
+
   it('searchTracks returns EMPTY when there is no active party', (done) => {
     spyOn(console, 'warn');
 
