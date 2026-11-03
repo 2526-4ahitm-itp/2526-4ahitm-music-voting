@@ -40,3 +40,10 @@
   justify-content: center;
   padding: var(--mv-space-4) var(--mv-space-4) var(--mv-space-5);
 }
+
+/* The credit's own 0.875rem was too small to notice on the landing page.
+   1.25rem keeps it a footer line, still well below the role buttons;
+   the logo is 1.5em, so it grows along. */
+.home-footer mv-credit-footer {
+  font-size: 1.25rem;
+}

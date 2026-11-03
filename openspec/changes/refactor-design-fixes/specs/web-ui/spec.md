@@ -81,7 +81,7 @@ Every album cover in the web app MUST be rendered through one shared cover compo
 - THEN the placeholder image replaces the broken image
 
 ### Requirement: HTL Credit Appears as a Footer on TV and Landing Page
-The "powered by HTL Leonding" credit MUST appear as a single, unobtrusive footer line on the TV dashboard (`/startpage`) and on the landing page (`/`). It MUST NOT appear as a separate content block on any page, and MUST NOT appear on the guest or host views.
+The "powered by HTL Leonding" credit MUST appear as a single, unobtrusive footer line on the TV dashboard (`/startpage`) and on the landing page (`/`). On the landing page the line MUST be at least 20px high so it is noticed, while staying smaller than the role buttons. It MUST NOT appear as a separate content block on any page, and MUST NOT appear on the guest or host views.
 
 #### Scenario: Credit on landing page and TV only
 - GIVEN the web app is running
@@ -99,7 +99,7 @@ All user-facing text in the web app MUST address the user with the informal "du"
 - AND it contains no "Sie"-forms
 
 ### Requirement: Host Can Switch Between Dark and Light Mode
-The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host search and the blacklist page) MUST offer a dark mode and a light mode. Dark mode is the default. The host pages MUST show a switch "Heller Modus" in the always-visible top bar; it MUST be a real control with `role="switch"` and `aria-checked`. The choice MUST be stored on the device and MUST be applied on the next visit and in other open tabs of the same browser, including the TV page, without a reload. The TV page itself MUST NOT show the switch (see dashboard spec "No Host Controls on Dashboard"). Both modes MUST meet the contrast rule "Text Meets WCAG AA Contrast". The guest views (voting, add songs) and the entry and setup pages (landing page, join page, host options, "Party erstellen", playlist choice) use the same stage look and MUST offer the same switch in their top bar; everyone decides on their own device.
+The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host search and the blacklist page) MUST offer a dark mode and a light mode. Dark mode is the default. The host pages MUST show a switch "Heller Modus" in the always-visible top bar; it MUST be a real control with `role="switch"` and `aria-checked`. The choice MUST be stored on the device and MUST be applied on the next visit and in other open tabs of the same browser, including the TV page, without a reload. The TV page itself MUST NOT show the switch (see dashboard spec "No Host Controls on Dashboard"). Both modes MUST meet the contrast rule "Text Meets WCAG AA Contrast". The guest views (voting, add songs) and the entry and setup pages (landing page, join page, host options, "Party erstellen", playlist choice) use the same stage look and MUST offer the same switch in their top bar; everyone decides on their own device. The guest pages (join page `/code` and `/join/:pin`, voting, add songs) MUST keep their own choice, separate from the host pages, the TV page and the other entry pages: switching on a guest page MUST NOT change the host pages or the TV, and switching on a host page MUST NOT change a guest page whose mode was already chosen. Until a guest chooses, the guest pages start with the mode chosen on the entry pages of that device.
 
 #### Scenario: Host switches to light mode
 - GIVEN the host is on the host dashboard in dark mode
@@ -121,6 +121,17 @@ The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host se
 - GIVEN a device that never chose a mode
 - WHEN the host opens the dashboard
 - THEN dark mode is shown
+
+#### Scenario: Guest choice is separate from the host choice
+- GIVEN a phone on which the host dashboard is in dark mode
+- WHEN a guest page on the same phone is switched to light mode
+- THEN the guest pages are shown in light mode
+- AND the host dashboard and the TV page stay in dark mode
+
+#### Scenario: Guest starts from the landing page choice
+- GIVEN a guest switched the landing page to light mode and never used the switch on a guest page
+- WHEN the guest joins a party
+- THEN the join and voting pages are shown in light mode
 
 #### Scenario: Switch on the entry pages
 - GIVEN a visitor opens the landing page or the join page
