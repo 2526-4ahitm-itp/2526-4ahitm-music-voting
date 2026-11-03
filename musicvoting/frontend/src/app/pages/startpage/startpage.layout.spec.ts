@@ -166,6 +166,28 @@ describe('Startpage layout (TV)', () => {
     expect(q('.now-title')?.textContent?.trim()).toBe('Song 0');
   });
 
+  it('empty party: no "Als Nächstes" over an empty area, the QR code grows instead', () => {
+    comp.currentTrack = null;
+    comp.tracks = [];
+    fixture.detectChanges();
+
+    expect(q('main.stage')?.classList).toContain('party-empty');
+    expect(q('.queue')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Als Nächstes');
+    // The QR is 52vh in the empty state instead of 32vh; the stage is 100vh tall.
+    const qr = q('img.qr') as HTMLElement;
+    expect(qr.getBoundingClientRect().height).toBeGreaterThan(q('main.stage')!.getBoundingClientRect().height * 0.45);
+  });
+
+  it('playing song but empty queue: "Als Nächstes" asks for wishes', () => {
+    comp.currentTrack = track(0);
+    comp.tracks = [];
+    fixture.detectChanges();
+
+    expect(q('main.stage')?.classList).not.toContain('party-empty');
+    expect(q('.queue-empty')?.textContent).toContain('Noch nichts in der Warteschlange – wünsch dir was!');
+  });
+
   it('uses no gradient-filled text', () => {
     comp.currentTrack = track(0);
     comp.tracks = [track(1)];

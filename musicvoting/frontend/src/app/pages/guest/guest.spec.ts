@@ -399,6 +399,7 @@ describe('Guest hidden-results hint (DOM)', () => {
 // Feedback states of the real template (guest spec "Guest Search and Add Give Feedback").
 describe('Guest feedback (DOM)', () => {
   let addResult: () => any;
+  let queueResult: () => any = () => of({ queue: [] });
 
   function setup() {
     TestBed.configureTestingModule({
@@ -408,7 +409,7 @@ describe('Guest feedback (DOM)', () => {
         provideRouter([]),
         { provide: PartyService, useValue: { currentPartyId: 'party-1', clearParty: () => {} } },
         { provide: TrackService, useValue: { searchTracks: () => of({}) } },
-        { provide: SpotifyWebPlayerService, useValue: { addToPlaylist: () => addResult() } },
+        { provide: SpotifyWebPlayerService, useValue: { addToPlaylist: () => addResult(), getQueue: () => queueResult() } },
         { provide: QueueStateService, useValue: { inQueueUris$: new BehaviorSubject<Set<string>>(new Set()), refresh: () => {} } },
       ],
     });
@@ -450,6 +451,34 @@ describe('Guest feedback (DOM)', () => {
 
     expect(fixture.nativeElement.querySelector('mv-toast [aria-live="polite"]').textContent).toContain('Song hinzugefügt');
     fixture.destroy();
+  });
+
+  it('names the rank of the added song and offers "Zum Voten" (playing song not counted)', async () => {
+    addResult = () => of({});
+    queueResult = () => of({ queue: [
+      { uri: 'spotify:track:now', isCurrentlyPlaying: true },
+      { uri: 'spotify:track:a' },
+      { uri: 'spotify:track:b' },
+      { uri: 'spotify:track:t1' },
+    ] });
+    const fixture = setup();
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.resolveTo(true);
+    fixture.componentInstance.tracks.set([songX]);
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('.add-button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const toast = fixture.nativeElement.querySelector('mv-toast') as HTMLElement;
+    expect(toast.textContent).toContain('Song hinzugefügt – Platz 3');
+    const action = [...toast.querySelectorAll('button')].find((b) => b.textContent?.includes('Zum Voten')) as HTMLButtonElement;
+    expect(action).toBeDefined();
+    action.click();
+    expect(router.navigate).toHaveBeenCalledWith(['/voting']);
+    fixture.destroy();
+    queueResult = () => of({ queue: [] });
   });
 
   it('announces a backend rejection in the alert region', async () => {

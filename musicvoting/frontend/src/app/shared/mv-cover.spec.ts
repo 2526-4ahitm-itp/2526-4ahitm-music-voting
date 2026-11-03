@@ -58,6 +58,10 @@ describe('MvCover', () => {
     expect(img().getAttribute('src')).toBe(COVER_PLACEHOLDER);
   });
 
+  it('uses the dark brand tile as placeholder, not the old light clip-art PNG', () => {
+    expect(COVER_PLACEHOLDER).toBe('assets/img/cover-placeholder.svg');
+  });
+
   it('is decorative (empty alt)', () => {
     fixture.detectChanges();
     expect(img().getAttribute('alt')).toBe('');

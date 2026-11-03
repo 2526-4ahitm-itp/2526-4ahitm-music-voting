@@ -5,7 +5,9 @@
   right, and only the top 5 queue entries are shown in large type.
   No host controls live here (dashboard spec "No Host Controls on Dashboard").
 -->
-<main class="stage">
+<!-- party-empty: nothing plays and nothing waits. Then joining is the only thing that
+     matters, so the queue column gives way to a large QR code. -->
+<main class="stage" [class.party-empty]="!currentTrack && tracks.length === 0">
   <div class="glow" aria-hidden="true"></div>
 
   <section class="now" aria-label="Läuft gerade">
@@ -53,15 +55,12 @@
       </div>
     </section>
 
+    @if (currentTrack || tracks.length > 0) {
     <section class="queue" aria-label="Als Nächstes">
       <h2 class="queue-title">Als Nächstes</h2>
 
       @if (tracks.length === 0) {
-        <p class="queue-empty">
-          @if (currentTrack) {
-            Noch nichts in der Warteschlange – wünsch dir was!
-          }
-        </p>
+        <p class="queue-empty">Noch nichts in der Warteschlange – wünsch dir was!</p>
       } @else {
         <ol class="queue-list">
           @for (track of visibleTracks; track trackById($index, track); let i = $index) {
@@ -84,5 +83,6 @@
         }
       }
     </section>
+    }
   </aside>
 </main>

@@ -43,7 +43,7 @@ The web add/search view MUST tell the guest what is happening at every step:
 - While a search request is running, a loading indicator MUST be shown.
 - A search that returns no results MUST show "Keine Treffer für „<Suchbegriff>“".
 - A failed search or a failed queue load (network or server error) MUST show "Verbindung verloren – versuch es gleich nochmal." instead of leaving stale content without a message.
-- After a successful add, a short confirmation "Song hinzugefügt" MUST appear above the bottom tab bar for about 2 seconds, in addition to the checkmark on the result.
+- After a successful add, a short confirmation MUST appear above the bottom tab bar for about 4 seconds, in addition to the checkmark on the result. It MUST say where the song now ranks among the waiting songs, "Song hinzugefügt – Platz <N>", and offer the action "Zum Voten", which opens the voting view. If the rank cannot be determined, it says "Song hinzugefügt".
 - Errors returned by the backend (for example "Song ist schon in der Warteschlange.", "Zu viele Anfragen — bitte kurz warten.") MUST be shown in the same confirmation area, in a colour with at least 4.5:1 contrast to its background.
 - A blocked search result keeps the behaviour of `search/spec.md` (greyed out, no visible text). Its disabled "+" MUST have the `aria-label` and tooltip "Nicht verfügbar", without revealing the reason.
 - Status messages MUST be announced to screen readers (see `web-ui/spec.md`).
@@ -69,6 +69,34 @@ The web add/search view MUST tell the guest what is happening at every step:
 - GIVEN the backend is unreachable
 - WHEN the guest searches
 - THEN "Verbindung verloren – versuch es gleich nochmal." is shown
+
+### Requirement: Guest Voting View Shows What Plays and the Ranking
+The web voting view MUST make visible that the room decides the order:
+- The currently playing song MUST be shown in a compact bar at the top of the view (cover, title, artist, a "Läuft gerade" indicator), not as an entry inside the list.
+- Every waiting song MUST show its rank as a number, counted from 1 in the order of the queue (see `queue/spec.md`), so a guest sees which song plays next.
+- After the guest likes a song, its row MUST be highlighted for about 2 seconds, so the guest can follow it to its new position. Under reduced motion the highlight appears without animation.
+- Filtering the list with the search field MUST NOT change the rank numbers.
+
+#### Scenario: Guest sees the playing song and the ranks
+- GIVEN song A is playing and songs B (3 likes) and C (1 like) are waiting
+- WHEN a guest opens the voting view
+- THEN A is shown in the bar at the top with "Läuft gerade"
+- AND B is shown with rank 1 and C with rank 2
+
+#### Scenario: Liked song is highlighted
+- GIVEN a guest is on the voting view
+- WHEN the guest likes song C
+- THEN the row of C is highlighted for about 2 seconds
+
+#### Scenario: Filter keeps the ranks
+- GIVEN B has rank 1 and C has rank 2
+- WHEN the guest filters the list for C
+- THEN only C is shown, still with rank 2
+
+#### Scenario: Add confirmation names the rank
+- GIVEN three songs are waiting
+- WHEN a guest adds a new song that ends up fourth
+- THEN "Song hinzugefügt – Platz 4" is shown with the action "Zum Voten"
 
 ### Requirement: Guest Sees a Clear End of the Party
 When the `party-ended` event arrives in the web guest views, the app MUST show a dedicated screen with "Die Party ist beendet." and "Danke fürs Mitfeiern!" and a button "Zur Startseite", instead of redirecting silently. This refines "Party-Ended Redirect for Guests": the session is still cleared and no further API calls are made.

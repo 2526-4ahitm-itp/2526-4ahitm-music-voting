@@ -42,7 +42,7 @@ The dashboard is viewed from across a room, so it MUST be laid out for viewing d
 ## ADDED Requirements
 
 ### Requirement: Dashboard Shows a Guest-Facing Empty State
-When nothing is playing and the queue is empty, the dashboard MUST address the guests in the room, not the host. It MUST show the text "Scan den Code und wünsch dir den ersten Song!" next to the QR code and Voting-PIN. The dashboard MUST NOT refer to the host dashboard or to host actions.
+When nothing is playing and the queue is empty, the dashboard MUST address the guests in the room, not the host. It MUST show the text "Scan den Code und wünsch dir den ersten Song!" next to the QR code and Voting-PIN. The dashboard MUST NOT refer to the host dashboard or to host actions. In this state the "Als Nächstes" section MUST NOT be shown (it would be an empty area); instead the join block (QR code, Voting-PIN, hint) MUST take the whole side column with a larger QR code. When a song plays but nothing is waiting, "Als Nächstes" MUST show "Noch nichts in der Warteschlange – wünsch dir was!".
 
 #### Scenario: Empty party on the TV
 - GIVEN a party has just been created and no song has been added
@@ -50,6 +50,12 @@ When nothing is playing and the queue is empty, the dashboard MUST address the g
 - THEN the text "Scan den Code und wünsch dir den ersten Song!" is shown
 - AND the QR code and Voting-PIN are visible
 - AND no text mentions the "Dashboard" or the host
+- AND "Als Nächstes" is not shown and the QR code is larger than while songs are queued
+
+#### Scenario: Song plays, queue empty
+- GIVEN a song is playing and no other song is queued
+- WHEN the dashboard shows the queue column
+- THEN "Als Nächstes" shows "Noch nichts in der Warteschlange – wünsch dir was!"
 
 ### Requirement: Dashboard Animates Rank Changes
 When a `vote-updated` or `queue-updated` event changes the order of the visible queue, entries MUST move to their new positions with a transition of at most 400 ms instead of jumping. Newly added entries MUST fade in. If the viewer's system requests reduced motion (`prefers-reduced-motion: reduce`), the reorder MUST happen without movement.
