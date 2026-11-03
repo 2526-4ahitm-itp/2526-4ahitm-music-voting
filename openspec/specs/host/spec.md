@@ -3,7 +3,9 @@
 ## Purpose
 
 Defines the host role: the party creator who has exclusive permission to control playback, curate the queue manually, and manage a party-scoped blacklist. Host controls run on the host's own device (typically a phone); the dashboard never exposes host controls.
+
 ## Requirements
+
 ### Requirement: Play Controls Locked Without Active Playback Device
 The web host-dashboard and the iOS admin dashboard MUST disable Play/Pause/Skip controls while `deviceActive` (from `GET /party/{id}/track/current`) is `false`, and MUST show a short hint explaining that the dashboard/startpage needs to be opened first. Controls MUST become interactive again as soon as `deviceActive` becomes `true`, without requiring a page reload or app restart.
 
@@ -548,7 +550,7 @@ The web host dashboard MUST show a "Song sperren" button on every waiting song i
 - AND the blacklist is unchanged
 
 ### Requirement: Blacklist Is Visible Only to the Host
-Reading the blacklist, editing it and searching for artists to block MUST require the host credential. Requests without it MUST be rejected as unauthorized. Guests MUST NOT be shown the blacklist entries or the reason why a song is blocked.
+Reading the blacklist, editing it and searching for artists to block MUST require the host credential. Requests without it MUST be rejected as unauthorized. Guests MUST NOT be shown the blacklist entries or the reason why a song is blocked. The only exception: when a guest searches for a banned artist by name, the guest search MAY say "Dieser Artist ist nicht zulässig." (see `search/spec.md`).
 
 #### Scenario: Guest requests the blacklist
 - GIVEN a party with blacklist entries
@@ -561,6 +563,12 @@ Reading the blacklist, editing it and searching for artists to block MUST requir
 - WHEN the guest sends a request to add a blacklist word
 - THEN the request is rejected as unauthorized
 - AND the blacklist is unchanged
+
+#### Scenario: Guest search hint does not list other entries
+- GIVEN the blacklist contains artist A, artist B and the word "live"
+- WHEN a guest searches for "A"
+- THEN the guest is told "Dieser Artist ist nicht zulässig."
+- AND artist B and the word "live" are not revealed
 
 ### Requirement: Blacklist Is Removed When the Party Ends
 When a party ends (by the host or by automatic expiry), all of its blacklist entries MUST be deleted. A blacklist MUST NOT carry over to another party.
