@@ -77,4 +77,36 @@ describe('SelectBlacklist edit mode (DOM)', () => {
     expect(Array.from(root.querySelectorAll('.tab')).map((t) => t.textContent?.trim())).toEqual(['Künstler', 'Songs']);
     expect(root.querySelector('.remove-btn')?.getAttribute('aria-label')).toBe('live entfernen');
   });
+
+  it('loads the existing entries and saves adds and removes right away', async () => {
+    const fixture = await createLoaded([{ id: 'e1', kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: null }]);
+    const comp = fixture.componentInstance;
+    const entries = () => fixture.nativeElement.querySelectorAll('.entry');
+
+    // The entries from setup are there when the host opens the page mid-party.
+    expect(entries().length).toBe(1);
+    expect(entries()[0].textContent).toContain('ABBA');
+
+    // Adding saves immediately: there is no separate save button in edit mode.
+    comp.wordInput = 'explicit';
+    const adding = comp.addWord();
+    const post = httpMock.expectOne('/api/party/party-x/blacklist');
+    expect(post.request.method).toBe('POST');
+    expect(post.request.body).toEqual({ kind: 'WORD', value: 'explicit' });
+    post.flush({ id: 'e2', kind: 'WORD', value: 'explicit', label: 'explicit', imageUrl: null });
+    await adding;
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(entries().length).toBe(2);
+
+    // Removing the artist from setup also saves immediately.
+    (fixture.nativeElement.querySelector('.remove-btn[aria-label="ABBA entfernen"]') as HTMLButtonElement).click();
+    const del = httpMock.expectOne('/api/party/party-x/blacklist/e1');
+    expect(del.request.method).toBe('DELETE');
+    del.flush(null);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(entries().length).toBe(1);
+    expect(entries()[0].textContent).toContain('explicit');
+  });
 });
