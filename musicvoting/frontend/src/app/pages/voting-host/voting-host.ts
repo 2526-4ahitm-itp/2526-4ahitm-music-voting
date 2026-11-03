@@ -13,7 +13,7 @@ import { MvThemeToggle } from '../../shared/mv-theme-toggle';
   imports: [FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './voting-host.html',
   // Shared stage look first, page layout second (design D1/D2).
-  styleUrls: ['../../shared/host-stage.css', './voting-host.css'],
+  styleUrls: ['../../shared/stage.css', './voting-host.css'],
 })
 export class VotingHost implements OnInit {
   menuOpen = false;

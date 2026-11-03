@@ -8,20 +8,23 @@ import { lastValueFrom, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import {Router, RouterLink} from '@angular/router';
+import { Router } from '@angular/router';
 import { MvCover } from '../../shared/mv-cover';
 import { MvIcon } from '../../shared/mv-icon';
 import { MvSpinner } from '../../shared/mv-spinner';
 import { MvToast } from '../../shared/mv-toast';
 import { MvPartyEnded } from '../../shared/mv-party-ended';
 import { ToastService } from '../../shared/toast.service';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
+import { MvGuestTabs } from '../../shared/mv-guest-tabs';
 
 @Component({
   selector: 'app-guest',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MvCover, MvIcon, MvSpinner, MvToast, MvPartyEnded],
+  imports: [CommonModule, FormsModule, MvCover, MvIcon, MvSpinner, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs],
   templateUrl: './guest.html',
-  styleUrls: ['./guest.css'],
+  // Shared stage look first, page layout second (design D1/D2).
+  styleUrls: ['../../shared/stage.css', './guest.css'],
 })
 /**
  * Guest add/search view. Every step gives feedback (guest spec "Guest Search

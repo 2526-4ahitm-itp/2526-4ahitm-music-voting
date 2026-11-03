@@ -62,6 +62,9 @@
   /* Strength of the brand glow behind the stage. */
   --mv-stage-glow: 1;
   --mv-stage-shadow: rgba(0, 0, 0, 0.5);
+  /* Card of a song the guest liked (coral wash). */
+  --mv-stage-liked: rgba(242, 89, 75, 0.22);
+  --mv-stage-liked-edge: rgba(255, 154, 143, 0.55);
 
   /* Status */
   --mv-danger: #B3261E;
@@ -120,6 +123,8 @@
   --mv-stage-highlight: rgba(132, 3, 166, 0.12);
   --mv-stage-glow: 0.35;
   --mv-stage-shadow: rgba(29, 10, 36, 0.18);
+  --mv-stage-liked: #FDE9E6;
+  --mv-stage-liked-edge: rgba(200, 57, 44, 0.35);
 }
 
 /* Users who ask for reduced motion get state changes without movement. */

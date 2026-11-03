@@ -1,91 +1,76 @@
-<div class="music-voting-container">
-  <div class="main-wrapper">
-    <div class="sticky-top">
-      <nav class="navbar">
-        <header class="header">
-          <h1>Suche nach deinen Lieblingssongs!</h1>
-        </header>
-      </nav>
+<!--
+  Guest add/search view in the stage look (shared/stage.css), dark or light
+  by the guest's own choice (switch in the top bar).
+-->
+<div class="host-stage guest">
+  <header class="host-top">
+    <h1 class="host-title">Suche nach deinen Lieblingssongs!</h1>
+    <mv-theme-toggle />
+  </header>
 
-      <div class="search-section">
-        <div class="search-bar">
-          <form (submit)="search(); $event.preventDefault()" class="search-wrapper">
-            <mv-icon class="search-icon" name="search" [size]="18" />
-            <input
-              #searchField
-              type="search"
-              placeholder="Song oder Künstler suchen …"
-              aria-label="Song oder Künstler suchen"
-              [ngModel]="searchQuery()"
-              (input)="searchQuery.set(searchField.value)"
-              name="search"
-              enterkeyhint="search"
-              autocomplete="off"
-            >
-            <button type="submit" style="display: none;"></button>
-          </form>
-        </div>
-      </div>
+  <main class="host-content guest-content">
+    <form class="host-search" role="search" (submit)="search(); $event.preventDefault()">
+      <mv-icon name="search" [size]="18" />
+      <input
+        #searchField
+        type="search"
+        placeholder="Song oder Künstler suchen …"
+        aria-label="Song oder Künstler suchen"
+        [ngModel]="searchQuery()"
+        (input)="searchQuery.set(searchField.value)"
+        name="search"
+        enterkeyhint="search"
+        autocomplete="off"
+      >
+    </form>
+
+    <!-- Search status; add confirmations and errors go to the shared toast. -->
+    <div class="search-status" aria-live="polite">
+      @if (isSearching()) {
+        <p class="host-status"><mv-spinner label="" /><span>Suche läuft …</span></p>
+      } @else if (searchFailed()) {
+        <p class="host-status error">{{ connectionLostText }}</p>
+      } @else if (lastSearchedTerm() && tracks().length === 0) {
+        <p class="host-status">Keine Treffer für „{{ lastSearchedTerm() }}“</p>
+      }
     </div>
 
-    <main class="main-content">
-      <!-- Search status; add confirmations and errors go to the shared toast. -->
-      <div class="search-status" aria-live="polite">
-        @if (isSearching()) {
-          <p class="status-line"><mv-spinner label="" /><span>Suche läuft …</span></p>
-        } @else if (searchFailed()) {
-          <p class="status-line error">{{ connectionLostText }}</p>
-        } @else if (lastSearchedTerm() && tracks().length === 0) {
-          <p class="status-line">Keine Treffer für „{{ lastSearchedTerm() }}“</p>
-        }
-      </div>
-      <div class="track-list">
-        @for (track of tracks(); track track.id) {
-          <div class="track-card" [class.blocked]="track.blocked">
-            <mv-cover class="album-cover" [images]="track.album?.images" />
-
-            <div class="track-info">
-              <span class="track-name">{{ track.name }}</span>
-              <span class="artist-name">{{ track.artists?.[0]?.name }}</span>
-            </div>
-
-            <!-- Blocked songs stay greyed out without visible text (search spec); the
-                 label and tooltip say "Nicht verfügbar" but never why. -->
-            <button type="button" class="add-button"
-                    (click)="addToPlaylist(track)"
-                    [disabled]="track.blocked || addingTrackId === track.id || inQueueUris.has(track.uri)"
-                    [attr.aria-label]="addLabel(track)"
-                    [attr.title]="track.blocked ? 'Nicht verfügbar' : null">
-              @if (addingTrackId === track.id || inQueueUris.has(track.uri)) {
-                <mv-icon name="check" [size]="24" [strokeWidth]="3" />
-              } @else {
-                <mv-icon name="plus" [size]="24" [strokeWidth]="3" />
-              }
-            </button>
-          </div>
-        } @empty {
-          <div class="empty-state">
-            @if (!isSearching() && searchQuery().length === 0) {
-              <div class="welcome-screen">
-                <div class="icon-circle">
-                  <mv-icon name="music" [size]="44" />
-                </div>
-                <h2>Bereit für Musik?</h2>
-                <p>Gib oben einen Song oder Künstler ein und wünsch dir was für die Warteschlange.</p>
-              </div>
+    <div class="track-list">
+      @for (track of tracks(); track track.id) {
+        <div class="host-row track-card" [class.blocked]="track.blocked">
+          <mv-cover class="host-row-cover album-cover" [images]="track.album?.images" />
+          <span class="host-row-text">
+            <span class="host-row-title track-name">{{ track.name }}</span>
+            <span class="host-row-artist artist-name">{{ track.artists?.[0]?.name }}</span>
+          </span>
+          <!-- Blocked songs stay greyed out without visible text (search spec); the
+               label and tooltip say "Nicht verfügbar" but never why. -->
+          <button type="button" class="add-button"
+                  (click)="addToPlaylist(track)"
+                  [disabled]="track.blocked || addingTrackId === track.id || inQueueUris.has(track.uri)"
+                  [attr.aria-label]="addLabel(track)"
+                  [attr.title]="track.blocked ? 'Nicht verfügbar' : null">
+            @if (addingTrackId === track.id || inQueueUris.has(track.uri)) {
+              <mv-icon name="check" [size]="24" [strokeWidth]="3" />
+            } @else {
+              <mv-icon name="plus" [size]="24" [strokeWidth]="3" />
             }
+          </button>
+        </div>
+      } @empty {
+        @if (!isSearching() && searchQuery().length === 0) {
+          <div class="host-empty">
+            <mv-icon name="music" [size]="40" />
+            <h2>Bereit für Musik?</h2>
+            <p>Gib oben einen Song oder Künstler ein und wünsch dir was für die Warteschlange.</p>
           </div>
         }
-      </div>
-    </main>
-  </div>
+      }
+    </div>
+  </main>
 
   <mv-toast />
-
-  <nav class="bottom-nav">
-    <button class="bottom-nav-btn" routerLink="/voting">Voten</button>
-    <button class="bottom-nav-btn active" routerLink="/guest">Hinzufügen</button>
-  </nav>
+  <mv-guest-tabs active="add" />
 </div>
 
 @if (partyEnded()) {

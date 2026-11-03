@@ -1,10 +1,11 @@
 /*
- * Shared "stage" look for the host pages (dashboard, voting, search).
+ * Shared "stage" look for the host pages (dashboard, voting, search,
+ * blacklist) and the guest views (voting, add songs).
  *
  * The host pages use the same visual language as the TV/player page: a dark
  * stage with the brand colours as light, translucent dark cards and white
- * text (team decision 2026-11-03). Each host component lists this file in
- * styleUrls before its own CSS, so the look is defined once instead of being
+ * text (team decision 2026-11-03), switchable to light per device. Each stage
+ * component lists this file in styleUrls before its own CSS, so the look is defined once instead of being
  * copied into every page (design D1/D2).
  *
  * Contrast: --mv-on-stage (#FBF4FF) and --mv-on-stage-muted (#C9B6D4) stay

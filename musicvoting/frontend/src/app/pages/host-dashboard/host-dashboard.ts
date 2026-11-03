@@ -17,7 +17,7 @@ import { SpotifyWebPlayerService } from '../../services/spotify-player';
   imports: [CommonModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './host-dashboard.html',
   // Shared stage look first, page layout second (design D1/D2).
-  styleUrls: ['../../shared/host-stage.css', './host-dashboard.css'],
+  styleUrls: ['../../shared/stage.css', './host-dashboard.css'],
 })
 export class HostDashboard implements OnInit, OnDestroy {
   tracks: any[] = [];

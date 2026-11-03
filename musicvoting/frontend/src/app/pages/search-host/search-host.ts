@@ -21,7 +21,7 @@ import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
   imports: [CommonModule, FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle, MvSpinner],
   templateUrl: './search-host.html',
   // Shared stage look first, page layout second (design D1/D2).
-  styleUrls: ['../../shared/host-stage.css', './search-host.css'],
+  styleUrls: ['../../shared/stage.css', './search-host.css'],
 })
 export class SearchHost implements OnInit, OnDestroy{
   menuOpen = false;
