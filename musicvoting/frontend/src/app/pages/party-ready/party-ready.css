@@ -1,0 +1,98 @@
+/*
+ * Go-live step layout. Background, top bar, buttons and texts come from
+ * shared/stage.css (web-ui spec "Every Web Page Uses the Stage Look").
+ */
+
+.ready-content {
+  padding-top: clamp(24px, 8vh, 80px);
+}
+
+.ready-content .stage-column {
+  display: grid;
+  gap: var(--mv-space-5);
+}
+
+.ready-content .stage-lead {
+  margin: 0;
+}
+
+/* Status chip: waiting is quiet, going live is the one moment that may shine. */
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mv-space-2);
+  justify-self: start;
+  margin: 0;
+  padding: var(--mv-space-2) var(--mv-space-4);
+  border-radius: 999px;
+  background: var(--mv-stage-tint-2);
+  color: var(--mv-on-stage-muted);
+  font-weight: 600;
+  transition: background-color var(--mv-duration-base) var(--mv-ease-out),
+    color var(--mv-duration-base) var(--mv-ease-out);
+}
+
+.live-status.is-live {
+  background: var(--mv-purple);
+  color: var(--mv-on-accent);
+}
+
+/* Pulsing dot says "still listening" without a spinner that suggests a long load. */
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: live-pulse 1.4s var(--mv-ease-out) infinite;
+}
+
+@keyframes live-pulse {
+  0%   { opacity: 1; transform: scale(1); }
+  70%  { opacity: 0.25; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
+}
+
+.ready-actions {
+  display: grid;
+  gap: var(--mv-space-2);
+}
+
+.other-device {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Same PIN typography as the dashboard, so the host recognises the code. */
+.pin-block {
+  padding: var(--mv-space-4);
+  border-radius: var(--mv-radius-card);
+  background: var(--mv-stage-card);
+  box-shadow: inset 0 0 0 1px var(--mv-stage-tint-2);
+}
+
+.pin-block p {
+  margin: 0;
+}
+
+.pin-label {
+  display: flex;
+  align-items: center;
+  gap: var(--mv-space-2);
+  font-weight: 600;
+  color: var(--mv-on-stage-muted);
+}
+
+.pin-block .pin-value {
+  margin: 4px 0;
+  font-family: var(--mv-font-display);
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}

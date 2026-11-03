@@ -4,6 +4,7 @@ import { Home } from './pages/home/home';
 import { CodeInput } from './pages/code-input/code-input';
 import { Startpage } from './pages/startpage/startpage';
 import { HostDashboard } from './pages/host-dashboard/host-dashboard';
+import { PartyReady } from './pages/party-ready/party-ready';
 
 describe('app.routes', () => {
   it('routes the empty path to the Home component', () => {
@@ -20,6 +21,13 @@ describe('app.routes', () => {
     expect(startpage?.canActivate).toEqual([hostGuard]);
     expect(dashboard?.component).toBe(HostDashboard);
     expect(dashboard?.canActivate).toEqual([hostGuard]);
+  });
+
+  it('routes party-ready to the go-live step behind the host guard', () => {
+    const route = routes.find((r) => r.path === 'party-ready');
+
+    expect(route?.component).toBe(PartyReady);
+    expect(route?.canActivate).toEqual([hostGuard]);
   });
 
   it('routes join/:pin to the CodeInput component', () => {

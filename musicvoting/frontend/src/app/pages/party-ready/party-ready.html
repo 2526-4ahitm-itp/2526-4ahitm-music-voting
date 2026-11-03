@@ -1,0 +1,59 @@
+<!--
+  Go-live step after the blacklist setup (host spec "Host Setup Ends with a
+  Go-Live Step"). Stage look from shared/stage.css. No back button: the setup
+  only moves forward, and the blacklist can still be edited from the dashboard.
+-->
+<div class="host-stage">
+  <header class="host-top">
+    <span class="host-title">MusicVoting</span>
+    <mv-theme-toggle />
+  </header>
+
+  <main class="host-content ready-content">
+    <div class="stage-column">
+      <h1 class="stage-heading">Deine Party ist bereit</h1>
+      <p class="stage-lead">
+        Der Player spielt die Musik ab – öffne ihn auf dem Gerät, das am TV hängt.
+      </p>
+
+      <!-- Polite live region: screen readers hear the switch to "live" without losing focus. -->
+      <p class="live-status" [class.is-live]="live" role="status" aria-live="polite">
+        @if (live) {
+          <mv-icon name="check" [size]="20" /> Party ist live 🎉
+        } @else {
+          <span class="live-dot" aria-hidden="true"></span> Warte auf den Player …
+        }
+      </p>
+
+      <div class="ready-actions">
+        <!-- Before the player runs, opening it is the next step; afterwards the dashboard is. -->
+        <button
+          class="open-player-btn host-btn large"
+          [class.primary]="!live"
+          type="button"
+          (click)="openPlayer()"
+        >
+          <mv-icon name="tv" [size]="22" /> Player auf dem TV öffnen
+        </button>
+        <p class="other-device host-muted">
+          Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen.
+        </p>
+      </div>
+
+      <section class="pin-block" aria-label="Voting-PIN">
+        <p class="pin-label"><mv-icon name="users" [size]="20" /> Voting-PIN</p>
+        <p class="pin-value">{{ pin || '–––––' }}</p>
+        <p class="host-muted">Gäste geben diese PIN ein oder scannen den QR-Code am TV.</p>
+      </section>
+
+      <button
+        class="dashboard-btn host-btn large"
+        [class.primary]="live"
+        type="button"
+        (click)="goToDashboard()"
+      >
+        Zum Dashboard
+      </button>
+    </div>
+  </main>
+</div>

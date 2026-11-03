@@ -11,6 +11,7 @@ import { CodeInput } from './pages/code-input/code-input';
 import { CreateParty } from './pages/create-party/create-party';
 import { SelectPlaylist } from './pages/select-playlist/select-playlist';
 import { SelectBlacklist } from './pages/select-blacklist/select-blacklist';
+import { PartyReady } from './pages/party-ready/party-ready';
 import { hostGuard } from './host.guard';
 
 export const routes: Routes = [
@@ -57,6 +58,14 @@ export const routes: Routes = [
     component: SelectBlacklist,
     canActivate: [hostGuard],
     title: 'Blacklist - MusicVoting'
+  },
+
+  {
+    // Last setup step: explains the player and goes live (design D8).
+    path: 'party-ready',
+    component: PartyReady,
+    canActivate: [hostGuard],
+    title: 'Party bereit - MusicVoting'
   },
 
   {

@@ -200,13 +200,14 @@ export class SelectBlacklist implements OnInit, OnDestroy {
     }
   }
 
+  /** Setup mode: the go-live step comes next, where the host opens the player (design D8). */
   continue() {
-    this.router.navigate(['/dashboard'], { queryParams: { partyId: this.partyId } });
+    this.router.navigate(['/party-ready'], { queryParams: { partyId: this.partyId } });
   }
 
   /** Edit mode: changes are already saved, so "Fertig" just returns to the dashboard. */
   done() {
-    this.continue();
+    this.router.navigate(['/dashboard'], { queryParams: { partyId: this.partyId } });
   }
 
   /** Same destination as "Weiter" — skipping just means not adding anything. */
