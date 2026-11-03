@@ -162,7 +162,7 @@ fehlen**. Ein Anbieter, der sie nicht unterstützen kann, kommt nicht in Frage.
 - `isBlockedTrack` prüft künftig das gemeinsame `Track`-Modell statt Spotify-JSON. Dafür muss
   `MusicCatalog` pro Song **Titel, Künstlernamen und Künstler-IDs inkl. Features** liefern.
 - `searchArtists` wandert in den `MusicCatalog` und wird für jeden Anbieter Pflicht.
-- „Song sperren" im Host-Dashboard funktioniert unverändert: Es sperrt die `track_uri`
+- „Song entfernen" → „Auch sperren" im Host-Dashboard funktioniert unverändert: Es sperrt die `track_uri`
   (bei YouTube `youtube:VIDEO_ID`).
 
 **Kein Migrationsproblem:** Künstler- und Song-Einträge enthalten anbieterspezifische IDs. Das ist
@@ -265,7 +265,7 @@ AP1 ist die Voraussetzung für AP4–AP6 und AP8; AP3 kann parallel zu AP1/AP2 l
 | Fremdes Player-SDK verhält sich anders als erwartet | mittel | mittel | Vor AP5 einen kleinen Spike (1 PT) mit dem IFrame Player bauen |
 | Spotify-Endpunkte fallen weg (Änderungen 2026) | mittel | hoch | AP0 unabhängig und zuerst erledigen |
 | Blacklist greift nach dem Umbau nicht mehr überall (Hinzufügen, Refill, Suche) | mittel | hoch | Bestehende Blacklist-Tests vor dem Umzug grün, danach gegen `QueueService` mit beiden Anbietern laufen lassen |
-| YouTube: gesperrter Künstler rutscht durch (Fremd-Upload ohne Namen im Titel) | mittel | mittel | Kombinierte Prüfung (Kap. 4.5), Topic-Uploads bevorzugen; Host kann einzelne Songs zusätzlich per „Song sperren" sperren |
+| YouTube: gesperrter Künstler rutscht durch (Fremd-Upload ohne Namen im Titel) | mittel | mittel | Kombinierte Prüfung (Kap. 4.5), Topic-Uploads bevorzugen; Host kann einzelne Songs zusätzlich per „Song entfernen" → „Auch sperren" sperren |
 | YouTube: Künstlername sperrt fremde Songs („Queen" → „Dancing Queen") | niedrig | niedrig | Bewusst akzeptiert; Host sieht gesperrte Treffer ausgegraut |
 | Umbau dauert länger als ein Sprint | mittel | mittel | Pakete einzeln als eigene OpenSpec-Changes ausliefern; jeder Schritt ist für sich lauffähig |
 

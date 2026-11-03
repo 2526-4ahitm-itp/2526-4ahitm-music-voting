@@ -52,7 +52,7 @@ The team decided (2026-11-03): address **all 5 problems** on the branch `refacto
   - Spotify selectable, YouTube shown as "bald verfügbar", Amazon removed
   - the blacklist setup step stays, and the full blacklist can also be edited during the party from the dashboard
   - a final "Party ist live" step with "Player auf dem TV öffnen" and instructions for opening the player on a separate device
-  - deleting from the queue can be undone
+  - deleting from the queue first asks "Auch sperren" / "Nur entfernen" / "Abbrechen"; the separate "Song sperren" button is gone
 - **Visual evolution (design only, no new requirements):** see `design.md` D1, with icon set, font and the "stage" for the TV.
 
 ## Capabilities
@@ -66,7 +66,7 @@ The team decided (2026-11-03): address **all 5 problems** on the branch `refacto
 - `dashboard`: "Persistent Dashboard Elements" gets a room-scale layout. New requirements cover rank animation and the empty state.
 - `voting`: new requirement "Voted State Is Highlighted, Not Disabled" (web).
 - `guest`: "Join via QR Code" gets a loading state and error hint. New requirements: welcome after joining, search/add feedback.
-- `host`: "Host Sees PIN and QR Code After Creation" (code names), "Host Manages Party Blacklist" (also editable during the party), "Host Removes Songs from Queue" (undo). New requirements: go-live step, only supported providers selectable.
+- `host`: "Host Sees PIN and QR Code After Creation" (code names), "Host Manages Party Blacklist" (also editable during the party), "Host Removes Songs from Queue" (removal question), "Host Blocks a Queued Song" (blocking only via the removal question). New requirements: go-live step, only supported providers selectable.
 
 ## Impact
 

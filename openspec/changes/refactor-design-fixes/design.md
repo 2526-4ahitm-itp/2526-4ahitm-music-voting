@@ -58,7 +58,7 @@ New standalone components under `src/app/shared/`:
 - `mv-icon`: Lucide SVGs, with `aria-hidden="true"`. The label lives on the button.
 - `mv-host-menu`: burger button + slide-in navigation used by `host-dashboard`, `search-host`, `voting-host` and the blacklist page in edit mode, replacing the copied side menu. The burger sits in the sticky top bar (`.host-top`), which stays visible while scrolling (team decision 2026-11-03). It has the new "Blacklist" entry; the off-context "Startseite" entry is removed.
 - `mv-spinner`: one spinner with `role="status"` and a visually hidden label.
-- `mv-toast`: a single live region (`aria-live="polite"`, or `role="alert"` for errors) provided by a `ToastService`. It is used for "Song hinzugefügt", backend errors and "Song entfernt · Rückgängig" (with an action).
+- `mv-toast`: a single live region (`aria-live="polite"`, or `role="alert"` for errors) provided by a `ToastService`. It is used for "Song hinzugefügt", backend errors (no undo action; see D7).
 
 ### D3: Optimistic, toggleable vote
 `toggleVote` flips `hasVoted` and adjusts `likeCount` locally, calls `detectChanges()`, then sends the request. The list order is not changed locally; the next `vote-updated` reload brings the server-sorted order. On error it restores the snapshot and shows the error toast. A `pendingVotes` set ignores a second tap on the same entry until the first request settles; this prevents double requests while staying tappable. Incoming `vote-updated` SSE reloads are merged so that a still-pending local toggle is not overwritten.
@@ -84,8 +84,11 @@ The `musicvotingapp://` attempt and the 1.5 s `document.hidden` check in `code-i
 ### D6: One-time welcome
 A `localStorage` key `mv-welcome-<partyId>` is set when "Los geht's" is tapped. It is keyed by party, so a new party shows it again. The device identity itself is unchanged (`deviceId` stays as specified in `voting/spec.md`).
 
-### D7: Undo removal in the frontend
-The dashboard hides the entry locally and starts a 5 s timer with the undo toast. When the timer expires, or on `ngOnDestroy`/`beforeunload`, it sends the existing remove request. Undo cancels the timer. A `queue-updated` SSE arriving meanwhile keeps the pending entry hidden. No backend change is needed.
+### D7: Removal question instead of undo (changed 2026-11-03)
+Tapping "Song entfernen" opens an inline `role="alertdialog"` below the row, the same pattern as the former "Song sperren" confirmation: "„<Titel>“ aus der Warteschlange entfernen?" with "Auch sperren" (danger), "Nur entfernen" and "Abbrechen". "Auch sperren" reuses the existing block flow (blacklist entry first, then remove); "Nur entfernen" sends the existing remove request. The currently playing song gets the question without "Auch sperren". The separate ban button per row is removed, so every row has one action.
+
+- *Alternative: undo toast (the original D7).* Dropped by the team: with the question in front, an undo on top would be a second safeguard for the same action, and the question is also where the host decides about blocking.
+- No backend change is needed.
 
 ### D8: Host flow routing
 - Setup: `select-playlist` → `select-blacklist` (unchanged, still with "Weiter" / "Ohne Blacklist fortfahren") → new route `/party-ready?partyId=…` (component `party-ready`, `hostGuard`) → `/dashboard`.
@@ -97,14 +100,13 @@ The dashboard hides the entry locally and starts a 5 s timer with the undo toast
 All behaviour is asserted with DOM-based component specs (Karma/Jasmine, the existing setup):
 - aria attributes, text content, classes, and computed font sizes for the TV spec
 - `HttpTestingController` for optimistic/rollback ordering
-- `jasmine.clock()` for the undo timer
 
 Contrast is verified by a small unit test over the token pairs in `styles.css`, plus a manual check with the Impeccable `audit` step.
 
 ## Risks / Trade-offs
 
 - **[Optimistic vote vs. SSE reload race]**: a reload could flip the state back while the request is in flight. → Mitigated by the `pendingVotes` merge (D3).
-- **[Undo delays the removal for other clients by 5 s]**: guests may still see and like the song briefly. → Acceptable, and it matches common undo patterns.
+- **[One more tap to remove a song]** → Acceptable: removal and blocking cannot be undone, so the host should confirm.
 - **[New font/icon dependencies]**: rule 8 says always use the latest stable versions. → The versions are pinned at implementation time, and the bundle size is checked in `ng build` output.
 - **[Large change]**: touches 12+ components. → Implemented section by section in `tasks.md`, with one commit per section.
 - **[Spec drift with iOS]**: the code names and the welcome only apply to web. → The iOS specs are unchanged; a later iOS change can adopt the names.

@@ -67,9 +67,9 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [ ] 6.2 `create-party`: Spotify selectable + "Du brauchst Spotify Premium.", "YouTube (bald verfügbar)" disabled, remove "Amazon Music" and the inline `!important` styles
 - [ ] 6.3 New `party-ready` page + route with `hostGuard`; `select-blacklist` ("Weiter" / "Ohne Blacklist fortfahren") navigates there; "Player auf dem TV öffnen" + instructions for a separate device; "Party ist live 🎉" on device registration (design D8)
 - [x] 6.4 `select-blacklist`: keep the setup mode unchanged; add `mode=edit` opened from the dashboard menu with the full editing and a single "Fertig" button back to `/dashboard`
-- [ ] 6.5 Undo removal toast in `host-dashboard` (design D7)
+- [x] 6.5 Removal question in `host-dashboard` (design D7): "Song entfernen" asks "„<Titel>“ aus der Warteschlange entfernen?" with "Auch sperren" / "Nur entfernen" / "Abbrechen" (no "Auch sperren" for the playing song); remove the separate "Song sperren" button; verify in `host-dashboard.spec.ts`: each choice sends the right requests (block + remove / remove only / none), playing song has no "Auch sperren", no ban button in rows
 - [x] 6.6 Fix the typo "befor" and the English `alt="delete"`; remove the commented-out block and the invalid `height="300px"`
-- [ ] 6.7 Specs: code labels and no "Voting-PIN"/"Host-PIN" text; no "Amazon Music", YouTube disabled; `select-blacklist` setup → `/party-ready`; `party-ready` button, separate-device instructions, code and live state; blacklist edit mode loads entries, adds/removes, "Fertig" → `/dashboard`; undo restores and sends no request, expiry sends the request
+- [ ] 6.7 Specs: code labels and no "Voting-PIN"/"Host-PIN" text; no "Amazon Music", YouTube disabled; `select-blacklist` setup → `/party-ready`; `party-ready` button, separate-device instructions, code and live state; blacklist edit mode loads entries, adds/removes, "Fertig" → `/dashboard`
 
 ## 7. Verify and document
 

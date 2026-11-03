@@ -1,6 +1,6 @@
 <!--
   Host dashboard in the stage look of the TV page (shared/stage.css).
-  Left: now playing with controls, then the queue with block/remove.
+  Left: now playing with controls, then the queue with remove (asks whether to also block).
   Right: how guests join (QR + Voting-PIN), the secret Gastgeber-PIN, and
   the party actions.
 -->
@@ -91,24 +91,24 @@
                     <span class="host-likes-count">{{ track.likeCount ?? 0 }}</span>
                   </span>
                   <span class="row-actions">
-                    @if (!track.isCurrentlyPlaying) {
-                      <button type="button" class="host-icon-btn danger" aria-label="Song sperren" title="Song sperren"
-                              (click)="requestBlock(track)">
-                        <mv-icon name="ban" [size]="20" />
-                      </button>
-                    }
                     <button type="button" class="host-icon-btn" aria-label="Song entfernen" title="Song entfernen"
-                            (click)="onDeleteTrack(track)">
+                            [attr.aria-expanded]="confirmRemoveUri === track.uri"
+                            (click)="requestRemove(track)">
                       <mv-icon name="trash" [size]="20" />
                     </button>
                   </span>
                 </div>
-                @if (confirmBlockUri === track.uri) {
-                  <div class="confirm" role="alertdialog" aria-label="Song sperren bestätigen">
-                    <p>Diesen Song für die Party sperren?</p>
+                <!-- Removal question (design D7): blocking happens here; the playing song
+                     can only be removed, not blocked. -->
+                @if (confirmRemoveUri === track.uri) {
+                  <div class="confirm" role="alertdialog" aria-label="Song entfernen bestätigen">
+                    <p>„{{ track.name || 'Unbekannter Titel' }}“ aus der Warteschlange entfernen?</p>
                     <div class="confirm-buttons">
-                      <button type="button" class="host-btn danger" (click)="confirmBlock(track)">Ja, sperren</button>
-                      <button type="button" class="host-btn" (click)="cancelBlock()">Abbrechen</button>
+                      @if (!track.isCurrentlyPlaying) {
+                        <button type="button" class="host-btn danger" (click)="confirmBlock(track)">Auch sperren</button>
+                      }
+                      <button type="button" class="host-btn" (click)="confirmRemoveOnly(track)">Nur entfernen</button>
+                      <button type="button" class="host-btn" (click)="cancelRemove()">Abbrechen</button>
                     </div>
                   </div>
                 }
