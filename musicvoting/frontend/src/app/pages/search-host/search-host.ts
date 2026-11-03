@@ -6,16 +6,22 @@ import { QueueStateService } from '../../services/queue-state';
 import { PartyService } from '../../services/party.service';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import {Router, RouterLink} from '@angular/router';
+import { Router } from '@angular/router';
+import { MvHostMenu } from '../../shared/mv-host-menu';
+import { MvCover } from '../../shared/mv-cover';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
+import { MvSpinner } from '../../shared/mv-spinner';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 
 @Component({
   selector: 'app-search-host',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle, MvSpinner],
   templateUrl: './search-host.html',
-  styleUrls: ['./search-host.css'],
+  // Shared stage look first, page layout second (design D1/D2).
+  styleUrls: ['../../shared/host-stage.css', './search-host.css'],
 })
 export class SearchHost implements OnInit, OnDestroy{
   menuOpen = false;

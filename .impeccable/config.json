@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-11-03T09:54:13.252Z",
         "reason": "Claude triage: Angular [src] property binding with bundled fallback assets/img/default-qr.png; detector cannot evaluate bindings (critique Assessment B false positive)"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "musicvoting/frontend/src/app/pages/host-dashboard/host-dashboard.html"
+        ],
+        "createdAt": "2026-11-03T10:37:12.227Z",
+        "reason": "Claude triage: QR [src] property binding with bundled fallback assets/img/default-qr.png, same false positive as startpage.html"
       }
     ]
   }

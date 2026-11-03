@@ -11,6 +11,10 @@ import {
   PartyService,
 } from '../../services/party.service';
 import { TrackService } from '../../services/spotify-tracks';
+import { MvHostMenu } from '../../shared/mv-host-menu';
+import { MvCover } from '../../shared/mv-cover';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 
 /** A song search result reduced to what the blacklist page shows and stores. */
 export interface SongSearchResult {
@@ -21,9 +25,15 @@ export interface SongSearchResult {
 }
 
 /**
- * Host setup step after the default-playlist picker: the host blocks words, artists and
- * songs for this party. This is the only place to add words and artists; later in the party
- * the host can only block single songs from the dashboard queue ("Song sperren").
+ * Blacklist page: the host blocks words, artists and songs for this party.
+ *
+ * Two modes (host spec "Host Manages Party Blacklist"):
+ * - setup (default): step after the default-playlist picker, with "Weiter" and
+ *   "Ohne Blacklist fortfahren"; no navigation so the setup flow stays focused.
+ * - edit (`?mode=edit`, opened from the host navigation during the party): the same
+ *   editing, with the host navigation and a single "Fertig" back to the dashboard.
+ *
+ * Both modes use the host stage look (shared/host-stage.css).
  *
  * The app is zoneless, so every state change after an `await` is followed by
  * `detectChanges()` — otherwise the view would not re-render.
@@ -31,9 +41,9 @@ export interface SongSearchResult {
 @Component({
   selector: 'app-select-blacklist',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './select-blacklist.html',
-  styleUrl: './select-blacklist.css',
+  styleUrls: ['../../shared/host-stage.css', './select-blacklist.css'],
 })
 export class SelectBlacklist implements OnInit, OnDestroy {
   /** Same delay as the guest search: searches while typing without one Spotify call per key. */
@@ -46,6 +56,8 @@ export class SelectBlacklist implements OnInit, OnDestroy {
   private cd = inject(ChangeDetectorRef);
 
   partyId: string | null = null;
+  /** True when opened from the host navigation during the party (?mode=edit). */
+  editMode = false;
   entries: BlacklistEntry[] = [];
   isLoading = true;
   error: string | null = null;
@@ -81,6 +93,7 @@ export class SelectBlacklist implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.editMode = this.route.snapshot.queryParamMap.get('mode') === 'edit';
     const partyIdFromUrl = this.route.snapshot.queryParamMap.get('partyId');
     if (partyIdFromUrl) {
       this.partyService.setCurrentPartyId(partyIdFromUrl);
@@ -189,6 +202,11 @@ export class SelectBlacklist implements OnInit, OnDestroy {
 
   continue() {
     this.router.navigate(['/dashboard'], { queryParams: { partyId: this.partyId } });
+  }
+
+  /** Edit mode: changes are already saved, so "Fertig" just returns to the dashboard. */
+  done() {
+    this.continue();
   }
 
   /** Same destination as "Weiter" — skipping just means not adding anything. */

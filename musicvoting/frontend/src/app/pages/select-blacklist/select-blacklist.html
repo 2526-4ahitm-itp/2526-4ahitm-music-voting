@@ -1,104 +1,135 @@
-<div class="select-blacklist-page">
-  <header>
-    <h1>MusicVoting</h1>
-  </header>
-
-  <div class="select-blacklist-wrapper">
-    <h2>Blacklist festlegen</h2>
-    <p class="subtitle">
-      Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen.
-    </p>
-
-    @if (error) {
-      <p class="error-message">{{ error }}</p>
-    }
-
-    <form class="word-form" (ngSubmit)="addWord()">
-      <input
-        class="text-input"
-        type="text"
-        name="word"
-        placeholder="Wort"
-        [(ngModel)]="wordInput"
-        autocomplete="off" />
-      <button class="add-word-btn" type="submit" [disabled]="!wordInput.trim()">Wort hinzufügen</button>
-    </form>
-
-    <div class="tabs" role="tablist">
-      <button class="tab" type="button" role="tab"
-              [class.active]="searchTab === 'artists'" (click)="selectTab('artists')">Künstler</button>
-      <button class="tab" type="button" role="tab"
-              [class.active]="searchTab === 'songs'" (click)="selectTab('songs')">Songs</button>
-    </div>
-
-    <form class="search-form" (ngSubmit)="search()">
-      <input
-        class="text-input"
-        type="search"
-        name="query"
-        [placeholder]="searchTab === 'artists' ? 'Künstler suchen' : 'Song suchen'"
-        [ngModel]="searchQuery"
-        (ngModelChange)="onSearchQueryChange($event)"
-        autocomplete="off" />
-    </form>
-
-    <div class="scroll-area">
-
-      @if (searchTab === 'artists') {
-        @for (artist of artistResults; track artist.id) {
-          <button class="result-item artist-result" type="button"
-                  [disabled]="isBlocked('ARTIST', artist.id)" (click)="addArtist(artist)">
-            @if (artist.imageUrl) {
-              <img class="cover round" [src]="artist.imageUrl" alt="" />
-            } @else {
-              <div class="cover round placeholder">♪</div>
-            }
-            <span class="result-name">{{ artist.name }}</span>
-            <span class="result-action">{{ isBlocked('ARTIST', artist.id) ? 'Gesperrt' : 'Sperren' }}</span>
-          </button>
-        }
-      } @else {
-        @for (song of songResults; track song.uri) {
-          <button class="result-item song-result" type="button"
-                  [disabled]="isBlocked('TRACK', song.uri)" (click)="addSong(song)">
-            @if (song.imageUrl) {
-              <img class="cover" [src]="song.imageUrl" alt="" />
-            } @else {
-              <div class="cover placeholder">♪</div>
-            }
-            <span class="result-info">
-              <span class="result-name">{{ song.name }}</span>
-              <span class="result-sub">{{ song.artists }}</span>
-            </span>
-            <span class="result-action">{{ isBlocked('TRACK', song.uri) ? 'Gesperrt' : 'Sperren' }}</span>
-          </button>
-        }
+<!--
+  Blacklist page in the host stage look (shared/host-stage.css).
+  Setup mode: no navigation, "Weiter" / "Ohne Blacklist fortfahren".
+  Edit mode (?mode=edit, from the host navigation): navigation + "Fertig".
+-->
+<div class="host-stage">
+  <div class="host-main">
+    <header class="host-top">
+      @if (editMode) {
+        <mv-host-menu active="blacklist" />
       }
+      <h1 class="host-title">{{ editMode ? 'Blacklist' : 'Blacklist festlegen' }}</h1>
+    <mv-theme-toggle />
+    </header>
 
-      <h3>Gesperrt</h3>
-      @if (isLoading) {
-        <p class="status">Blacklist wird geladen…</p>
-      } @else if (entries.length === 0) {
-        <p class="status empty-list">Noch nichts gesperrt.</p>
-      } @else {
-        <ul class="entry-list">
-          @for (entry of entries; track entry.id) {
-            <li class="entry" [attr.data-kind]="entry.kind">
-              <span class="entry-kind">
-                {{ entry.kind === 'WORD' ? 'Wort' : entry.kind === 'ARTIST' ? 'Künstler' : 'Song' }}
-              </span>
-              <span class="entry-label">{{ entry.label || entry.value }}</span>
-              <button class="remove-btn" type="button" (click)="remove(entry)">Entfernen</button>
-            </li>
+    <main class="host-content blacklist">
+      <p class="subtitle host-muted">Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen.</p>
+
+      <div role="alert">
+        @if (error) {
+          <p class="host-status error">{{ error }}</p>
+        }
+      </div>
+
+      <div class="columns">
+        <section class="host-card" aria-labelledby="add-title">
+          <h2 class="host-card-title" id="add-title">Hinzufügen</h2>
+
+          <form class="word-form" (ngSubmit)="addWord()">
+            <input
+              class="text-input"
+              type="text"
+              name="word"
+              placeholder="Wort"
+              aria-label="Wort sperren"
+              [(ngModel)]="wordInput"
+              autocomplete="off" />
+            <button class="add-word-btn host-btn primary" type="submit" [disabled]="!wordInput.trim()">Wort hinzufügen</button>
+          </form>
+
+          <div class="tabs" role="tablist" aria-label="Was sperren?">
+            <button class="tab" type="button" role="tab"
+                    [attr.aria-selected]="searchTab === 'artists'"
+                    [class.active]="searchTab === 'artists'" (click)="selectTab('artists')">Künstler</button>
+            <button class="tab" type="button" role="tab"
+                    [attr.aria-selected]="searchTab === 'songs'"
+                    [class.active]="searchTab === 'songs'" (click)="selectTab('songs')">Songs</button>
+          </div>
+
+          <form class="host-search search-form" role="search" (ngSubmit)="search()">
+            <mv-icon name="search" [size]="18" />
+            <input
+              type="search"
+              name="query"
+              [placeholder]="searchTab === 'artists' ? 'Künstler suchen' : 'Song suchen'"
+              [attr.aria-label]="searchTab === 'artists' ? 'Künstler suchen' : 'Song suchen'"
+              [ngModel]="searchQuery"
+              (ngModelChange)="onSearchQueryChange($event)"
+              autocomplete="off" />
+          </form>
+
+          <div class="results">
+            @if (searchTab === 'artists') {
+              @for (artist of artistResults; track artist.id) {
+                <button class="result-item artist-result" type="button"
+                        [disabled]="isBlocked('ARTIST', artist.id)" (click)="addArtist(artist)">
+                  <mv-cover class="result-cover round" shape="round" [url]="artist.imageUrl" />
+                  <span class="result-info">
+                    <span class="result-name">{{ artist.name }}</span>
+                  </span>
+                  <span class="result-action">
+                    <mv-icon [name]="isBlocked('ARTIST', artist.id) ? 'check' : 'ban'" [size]="16" />
+                    {{ isBlocked('ARTIST', artist.id) ? 'Gesperrt' : 'Sperren' }}
+                  </span>
+                </button>
+              }
+            } @else {
+              @for (song of songResults; track song.uri) {
+                <button class="result-item song-result" type="button"
+                        [disabled]="isBlocked('TRACK', song.uri)" (click)="addSong(song)">
+                  <mv-cover class="result-cover" [url]="song.imageUrl" />
+                  <span class="result-info">
+                    <span class="result-name">{{ song.name }}</span>
+                    <span class="result-sub">{{ song.artists }}</span>
+                  </span>
+                  <span class="result-action">
+                    <mv-icon [name]="isBlocked('TRACK', song.uri) ? 'check' : 'ban'" [size]="16" />
+                    {{ isBlocked('TRACK', song.uri) ? 'Gesperrt' : 'Sperren' }}
+                  </span>
+                </button>
+              }
+            }
+          </div>
+        </section>
+
+        <section class="host-card" aria-labelledby="blocked-title">
+          <h2 class="host-card-title" id="blocked-title">
+            Gesperrt <span class="host-muted count">{{ entries.length }}</span>
+          </h2>
+          @if (isLoading) {
+            <p class="status host-muted">Blacklist wird geladen…</p>
+          } @else if (entries.length === 0) {
+            <p class="status empty-list host-muted">Noch nichts gesperrt.</p>
+          } @else {
+            <ul class="entry-list">
+              @for (entry of entries; track entry.id) {
+                <li class="entry" [attr.data-kind]="entry.kind">
+                  <span class="entry-kind">
+                    {{ entry.kind === 'WORD' ? 'Wort' : entry.kind === 'ARTIST' ? 'Künstler' : 'Song' }}
+                  </span>
+                  <span class="entry-label">{{ entry.label || entry.value }}</span>
+                  <button class="remove-btn host-icon-btn" type="button"
+                          [attr.aria-label]="(entry.label || entry.value) + ' entfernen'"
+                          title="Entfernen" (click)="remove(entry)">
+                    <mv-icon name="x" [size]="18" />
+                  </button>
+                </li>
+              }
+            </ul>
           }
-        </ul>
-      }
-    </div>
+        </section>
+      </div>
 
-    <div class="actions">
-      <!-- "Weiter" only makes sense once something is blocked; with nothing, use the skip button. -->
-      <button class="continue-btn" type="button" [disabled]="entries.length === 0" (click)="continue()">Weiter</button>
-      <button class="skip-btn" type="button" (click)="skip()">Ohne Blacklist fortfahren</button>
-    </div>
+      <div class="actions">
+        @if (editMode) {
+          <button class="done-btn host-btn primary" type="button" (click)="done()">Fertig</button>
+        } @else {
+          <!-- "Weiter" only makes sense once something is blocked; with nothing, use the skip button. -->
+          <button class="continue-btn host-btn primary" type="button" [disabled]="entries.length === 0" (click)="continue()">Weiter</button>
+          <button class="skip-btn host-btn" type="button" (click)="skip()">Ohne Blacklist fortfahren</button>
+        }
+      </div>
+    </main>
   </div>
 </div>

@@ -2,14 +2,18 @@ import { Component, OnInit, NgZone, signal, computed, ChangeDetectorRef } from '
 import { FormsModule } from "@angular/forms";
 import { lastValueFrom } from 'rxjs';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
-import { RouterLink } from '@angular/router';
+import { MvHostMenu } from '../../shared/mv-host-menu';
+import { MvCover } from '../../shared/mv-cover';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 
 @Component({
   selector: 'app-voting-comp',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './voting-host.html',
-  styleUrl: './voting-host.css',
+  // Shared stage look first, page layout second (design D1/D2).
+  styleUrls: ['../../shared/host-stage.css', './voting-host.css'],
 })
 export class VotingHost implements OnInit {
   menuOpen = false;

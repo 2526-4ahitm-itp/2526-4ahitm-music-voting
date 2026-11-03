@@ -1,75 +1,53 @@
-<div class="music-voting-container">
+<!--
+  Host view of the vote ranking, in the stage look (shared/host-stage.css).
+  The host does not vote here; the page shows the current likes per song.
+  The old heart button had no function and was removed.
+-->
+<div class="host-stage">
+  <header class="host-top">
+    <mv-host-menu active="voting" />
+    <h1 class="host-title">Voting</h1>
+    <mv-theme-toggle />
+  </header>
 
+  <main class="host-content narrow">
+    <form class="host-search" role="search" (submit)="$event.preventDefault()">
+      <mv-icon name="search" [size]="18" />
+      <input
+        type="search"
+        placeholder="In der Warteschlange suchen …"
+        aria-label="In der Warteschlange suchen"
+        [ngModel]="searchQuery()"
+        (input)="onSearch($event)"
+        name="search">
+    </form>
 
-  <div class="side-menu" [class.open]="menuOpen">
-    <h2>MusicVoting</h2>
-    <ul>
-      <li><a routerLink="/" (click)="toggleMenu()">Startseite</a></li>
-      <li><a routerLink="/dashboard" (click)="toggleMenu()">Dashboard</a></li>
-      <li class="active"><a routerLink="/voting-host" (click)="toggleMenu()">Voting</a></li>
-      <li><a routerLink="/search-host" (click)="toggleMenu()">Suchen</a></li>
-    </ul>
-  </div>
-
-  @if (menuOpen) {
-    <div class="overlay" (click)="toggleMenu()"></div>
-  }
-
-
-  <div class="main-wrapper">
-
-    <div class="sticky-top">
-      <nav class="navbar">
-        <button class="burger" type="button" (click)="toggleMenu()"><p>☰</p></button>
-        <header class="header">
-          <h1>Vote für deine Lieblingssongs!</h1>
-        </header>
-      </nav>
-
-
-      <div class="search-section">
-        <div class="search-bar">
-          <form class="search-wrapper" (submit)="$event.preventDefault()">
-            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input
-              type="search"
-              placeholder="In Playlist suchen..."
-              [ngModel]="searchQuery()"
-              (input)="onSearch($event)"
-              name="search">
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <div class="main-content">
-      <div class="track-list">
-        @for (track of filteredTracks(); track track.id) {
-          <div class="track-card">
-            <img class="album-cover" [src]="track.album?.images[0]?.url" alt="Cover">
-            <div class="track-info">
-              <span class="track-name">{{ track.name }}</span>
-              <span class="artist-name">{{ track.artists[0]?.name }}</span>
-            </div>
-            <button class="vote-button">♡</button>
-          </div>
-        } @empty {
-          <div class="empty-state">
-            <div class="welcome-screen">
-              <div class="icon-circle">
-                <span class="main-icon">🎵</span>
-              </div>
-              <h2>Die Playlist ist leer</h2>
-              <p>Es sind noch keine Songs zum Voten da.</p>
-
-            </div>
-          </div>
+    @if (filteredTracks().length > 0) {
+      <ol class="host-list">
+        @for (track of filteredTracks(); track track.id; let i = $index) {
+          <li class="host-row vote-row" [class.now-playing]="track.isCurrentlyPlaying">
+            <mv-cover class="host-row-cover" [images]="track.album?.images" />
+            <span class="host-row-text">
+              <span class="host-row-title">{{ track.name }}</span>
+              <span class="host-row-artist">{{ track.artists?.[0]?.name }}</span>
+            </span>
+            @if (track.isCurrentlyPlaying) {
+              <span class="playing">Läuft gerade</span>
+            } @else {
+              <span class="host-likes" [attr.aria-label]="(track.likeCount ?? 0) + ' Likes'">
+                <mv-icon name="heart" [size]="20" [filled]="true" />
+                <span class="host-likes-count">{{ track.likeCount ?? 0 }}</span>
+              </span>
+            }
+          </li>
         }
+      </ol>
+    } @else {
+      <div class="host-empty">
+        <mv-icon name="music" [size]="40" />
+        <h2>Die Warteschlange ist leer</h2>
+        <p>Es sind noch keine Songs zum Voten da.</p>
       </div>
-    </div>
-
-  </div>
+    }
+  </main>
 </div>

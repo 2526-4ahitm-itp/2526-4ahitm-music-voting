@@ -21,6 +21,9 @@ interface MenuEntry {
  * and voting-host. The old "Startseite" entry is gone because it left the
  * host context; "Blacklist" is new so the host can edit the full blacklist
  * during the party (host spec "Host Manages Party Blacklist").
+ *
+ * The burger sits in the sticky top bar of each host page (.host-top in
+ * shared/host-stage.css), so it is always reachable while scrolling.
  */
 @Component({
   selector: 'mv-host-menu',
@@ -90,9 +93,10 @@ interface MenuEntry {
       position: fixed;
       inset: 0 auto 0 0;
       width: min(280px, 80vw);
-      background: var(--mv-surface);
-      color: var(--mv-ink);
-      box-shadow: 4px 0 24px rgba(29, 10, 36, 0.18);
+      /* Dark panel matching the host stage. */
+      background: var(--mv-stage-raised);
+      color: var(--mv-on-stage);
+      box-shadow: 4px 0 32px rgba(0, 0, 0, 0.5);
       transform: translateX(-105%);
       transition: transform var(--mv-duration-base) var(--mv-ease-out);
       z-index: 1100;
@@ -112,7 +116,7 @@ interface MenuEntry {
       font-family: var(--mv-font-display);
       font-size: 1.375rem;
       font-weight: 750;
-      color: var(--mv-purple);
+      color: var(--mv-on-stage);
     }
     ul {
       list-style: none;
@@ -128,22 +132,22 @@ interface MenuEntry {
       min-height: 48px;
       padding: 0 var(--mv-space-3);
       border-radius: var(--mv-radius-sm);
-      color: var(--mv-ink);
+      color: var(--mv-on-stage);
       text-decoration: none;
       font-weight: 600;
       font-size: 1.0625rem;
     }
     a:hover {
-      background: var(--mv-surface-sunken);
+      background: var(--mv-stage-tint-1);
     }
     a.active {
-      background: var(--mv-purple-tint);
-      color: var(--mv-purple-deep);
+      background: var(--mv-stage-highlight);
+      color: var(--mv-on-stage);
     }
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(29, 10, 36, 0.4);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 1050;
     }
   `,
