@@ -33,6 +33,11 @@ main:
     pageRef: status
     weight: 20
 
+  - name: Machbarkeitsstudie Musikanbieter
+    parent: presentations
+    pageRef: project/future-features/machbarkeitsstudie-praesentation
+    weight: 30
+
   - name: Project
     pageRef: project
     weight: 30
