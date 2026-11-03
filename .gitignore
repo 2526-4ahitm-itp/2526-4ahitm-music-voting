@@ -197,3 +197,9 @@ xcuserdata/
 
 .codex 
 
+
+# Impeccable: platform-specific engine binary (the launcher downloads it on first use) and ephemeral state
+.claude/skills/impeccable/scripts/bin/
+**/.impeccable/config.local.json
+**/.impeccable/hook.cache.json
+**/.impeccable/live/server.json
