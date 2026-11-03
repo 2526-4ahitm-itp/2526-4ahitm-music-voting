@@ -25,7 +25,7 @@ Creating a party walks the host through these routes (all after `create-party` a
 1. `/create-party` → Spotify login
 2. `/select-playlist` — optional default playlist for the auto-refill
 3. `/select-blacklist` — optional party blacklist: words (whole-word, case-insensitive), artists and songs via search; "Ohne Blacklist fortfahren" skips it
-4. `/dashboard` — host dashboard; waiting songs in the queue have a "Song sperren" button that blocks the song for the party and removes it from the queue
+4. `/dashboard` — host dashboard; "Song entfernen" on a queued song asks "Auch sperren" (block for the party and remove), "Nur entfernen" or "Abbrechen" — the playing song can only be removed
 
 Blacklisted songs appear greyed out with a disabled "+" and "Nicht erlaubt." in the guest (`/guest`) and host (`/search-host`) search.
 

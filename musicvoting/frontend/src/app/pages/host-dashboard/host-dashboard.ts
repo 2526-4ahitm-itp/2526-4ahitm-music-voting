@@ -302,27 +302,42 @@ export class HostDashboard implements OnInit, OnDestroy {
     await this.playNextTrack();
   }
 
-  /** URI of the queued song whose "Song sperren" confirmation is open, or null. */
-  confirmBlockUri: string | null = null;
-
   /**
-   * Opens the "Song sperren" confirmation for a waiting song. The currently playing song
-   * cannot be blocked (it is already playing; the spec only allows blocking waiting songs).
+   * URI of the queued song whose removal question is open, or null. One string instead of a
+   * flag per row, so only one question can be open at a time (host spec "Host Removes Songs
+   * from Queue").
    */
-  requestBlock(track: any) {
-    if (!track?.uri || track.isCurrentlyPlaying) return;
-    this.confirmBlockUri = track.uri;
+  confirmRemoveUri: string | null = null;
+
+  /**
+   * Opens the removal question ("Auch sperren" / "Nur entfernen" / "Abbrechen") instead of
+   * removing right away: removing and blocking cannot be undone, and this is the one place
+   * where the host decides whether the song may come back (design D7).
+   */
+  requestRemove(track: any) {
+    if (!track?.uri) return;
+    this.confirmRemoveUri = track.uri;
     this.cd.detectChanges();
   }
 
-  cancelBlock() {
-    this.confirmBlockUri = null;
+  /** "Abbrechen": closes the question; nothing is sent. */
+  cancelRemove() {
+    this.confirmRemoveUri = null;
+    this.cd.detectChanges();
+  }
+
+  /** "Nur entfernen": removes the song from the queue, the blacklist stays unchanged. */
+  async confirmRemoveOnly(track: any) {
+    this.confirmRemoveUri = null;
+    await this.onDeleteTrack(track);
     this.cd.detectChanges();
   }
 
   /**
-   * Blocks the song for this party, then removes it from the queue. Blacklisting comes
-   * first: if the removal fails, the song is at least blocked for all future adds.
+   * "Auch sperren": blocks the song for this party, then removes it from the queue.
+   * Blacklisting comes first: if the removal fails, the song is at least blocked for all
+   * future adds. Not offered for the currently playing song (the spec only allows blocking
+   * waiting songs).
    */
   async confirmBlock(track: any) {
     if (!track?.uri || !this.partyId || track.isCurrentlyPlaying) return;
@@ -335,7 +350,7 @@ export class HostDashboard implements OnInit, OnDestroy {
         label: artists ? `${track.name} – ${artists}` : track.name,
         imageUrl: images.length ? images[images.length - 1].url : null,
       }));
-      this.confirmBlockUri = null;
+      this.confirmRemoveUri = null;
       await this.onDeleteTrack(track);
     } catch (err) {
       console.error('Fehler beim Sperren des Songs:', err);
@@ -343,6 +358,7 @@ export class HostDashboard implements OnInit, OnDestroy {
     this.cd.detectChanges();
   }
 
+  /** Sends the remove request and reloads the queue. Only called after the host confirmed. */
   async onDeleteTrack(track: any) {
     if (!track?.uri || !this.partyId) return;
     try {

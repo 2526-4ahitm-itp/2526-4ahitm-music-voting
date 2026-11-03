@@ -140,11 +140,36 @@ describe('Host pages in stage look (DOM)', () => {
 
     expect(labels).toContain('Song neu starten');
     expect(labels).toContain('Nächster Song');
-    expect(labels.filter((l) => l === 'Song sperren').length).toBe(2);
+    // Blocking moved into the removal question (design D7): no separate ban button per row.
+    expect(labels).not.toContain('Song sperren');
     expect(labels.filter((l) => l === 'Song entfernen').length).toBe(2);
     expect(root.textContent).toContain('Party wirklich beenden?');
     expectAccessibleControls(root);
     fixture.destroy();
+  });
+
+  it('dashboard: the removal question offers "Auch sperren" only for waiting songs', () => {
+    const playing = { ...song('now'), isCurrentlyPlaying: true };
+    const waiting = song('a', 2);
+    const buttonsOf = (root: HTMLElement) =>
+      Array.from(root.querySelectorAll('[role="alertdialog"] button')).map((b) => (b.textContent ?? '').trim());
+
+    const waitingFixture = render(HostDashboard, (c) => {
+      c.tracks = [playing, waiting];
+      c.confirmRemoveUri = waiting.uri;
+    });
+    const dialog = waitingFixture.nativeElement.querySelector('[role="alertdialog"]') as HTMLElement;
+    expect(dialog.getAttribute('aria-label')).toBe('Song entfernen bestätigen');
+    expect(dialog.textContent).toContain('aus der Warteschlange entfernen?');
+    expect(buttonsOf(waitingFixture.nativeElement)).toEqual(['Auch sperren', 'Nur entfernen', 'Abbrechen']);
+    waitingFixture.destroy();
+
+    const playingFixture = render(HostDashboard, (c) => {
+      c.tracks = [playing, waiting];
+      c.confirmRemoveUri = playing.uri;
+    });
+    expect(buttonsOf(playingFixture.nativeElement)).toEqual(['Nur entfernen', 'Abbrechen']);
+    playingFixture.destroy();
   });
 
   it('dashboard: shows no HTL credit (only TV and landing page carry it)', () => {

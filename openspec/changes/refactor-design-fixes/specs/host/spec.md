@@ -46,7 +46,7 @@ Page details:
 
 **During the party.** The host dashboard menu MUST offer the entry "Blacklist". It opens the same page with the same capabilities: words, artist search, song search, and removing entries. In this mode the page MUST show a single button "Fertig" that returns to the host dashboard instead of "Weiter" / "Ohne Blacklist fortfahren". Every change is saved immediately.
 
-Adding the same entry twice MUST NOT create a duplicate. During the party the host can additionally block single songs from the queue via "Song sperren" (see "Host Blocks a Queued Song").
+Adding the same entry twice MUST NOT create a duplicate. During the party the host can additionally block single songs from the queue via "Song entfernen" → "Auch sperren" (see "Host Blocks a Queued Song").
 
 When a guest attempts to add a blocked song, the add MUST be rejected with "Nicht erlaubt." Blocked songs MUST NOT be added by the automatic queue refill either (see `playback/spec.md`).
 
@@ -120,19 +120,53 @@ When a guest attempts to add a blocked song, the add MUST be rejected with "Nich
 - THEN the blacklist still contains exactly one entry for "live"
 
 ### Requirement: Host Removes Songs from Queue
-The host MUST be able to remove any song from the queue, including ones not yet played. After tapping "Song entfernen", the song MUST disappear from the host's queue immediately and a notice "Song entfernt · Rückgängig" MUST be shown for 5 seconds. Tapping "Rückgängig" within that time MUST restore the song at its previous position. Because the removal is only sent to the backend when the notice expires or the host leaves the dashboard, the song never leaves the queue for other clients in this case.
+The host MUST be able to remove any song from the queue, including ones not yet played. Tapping "Song entfernen" MUST first ask "„<Titel>“ aus der Warteschlange entfernen?" with the choices "Auch sperren", "Nur entfernen" and "Abbrechen". "Nur entfernen" removes the song from the queue on every client. "Abbrechen" closes the question and changes nothing. For the currently playing song, "Auch sperren" MUST NOT be offered. Only one such question is open at a time.
 
 #### Scenario: Host removes a queued song
 - GIVEN a queue with three upcoming songs
-- WHEN the host removes the second song and does not undo within 5 seconds
+- WHEN the host taps "Song entfernen" on the second song and chooses "Nur entfernen"
 - THEN that song is gone from the queue on every client
 - AND the remaining queue is re-sorted according to queue rules
+- AND the blacklist is unchanged
 
-#### Scenario: Host undoes a removal
-- GIVEN the host has just removed song X and the notice "Song entfernt · Rückgängig" is visible
-- WHEN the host taps "Rückgängig"
-- THEN song X is shown in the host's queue again at its previous position
-- AND no removal request for song X is sent to the backend
+#### Scenario: Host cancels the removal
+- GIVEN song X is waiting in the queue
+- WHEN the host taps "Song entfernen" on song X and chooses "Abbrechen"
+- THEN song X stays in the queue
+- AND no request is sent to the backend
+
+#### Scenario: Currently playing song can only be removed
+- GIVEN song X is currently playing
+- WHEN the host taps "Song entfernen" on song X
+- THEN the question offers "Nur entfernen" and "Abbrechen"
+- AND "Auch sperren" is not offered
+
+### Requirement: Host Blocks a Queued Song
+The web host dashboard MUST NOT show a separate "Song sperren" button. The host blocks a waiting song through the removal question (see "Host Removes Songs from Queue"): choosing "Auch sperren" MUST add that track to the party blacklist as a song entry and MUST remove it from the queue on every client. The currently playing song cannot be blocked.
+
+#### Scenario: Host blocks a waiting song
+- GIVEN song X is waiting in the queue
+- WHEN the host taps "Song entfernen" on song X and chooses "Auch sperren"
+- THEN song X disappears from the queue on every client
+- AND a later attempt by a guest to add song X is rejected with "Nicht erlaubt."
+
+#### Scenario: Currently playing song has no block button
+- GIVEN song X is currently playing
+- WHEN the host views the queue on the host dashboard
+- THEN song X shows no "Song sperren" button
+- AND its removal question does not offer "Auch sperren"
+
+#### Scenario: Host cancels the confirmation
+- GIVEN song X is waiting in the queue
+- WHEN the host taps "Song entfernen" on song X and chooses "Abbrechen"
+- THEN song X stays in the queue
+- AND the blacklist is unchanged
+
+#### Scenario: Queue rows have no separate block button
+- GIVEN song X is waiting in the queue
+- WHEN the host views the queue on the host dashboard
+- THEN song X shows a "Song entfernen" button
+- AND no "Song sperren" button
 
 ## ADDED Requirements
 
