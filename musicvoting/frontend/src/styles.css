@@ -47,9 +47,10 @@
   --mv-on-stage-muted: #C9B6D4;
   /* Accent text on the stage (coral readable on the background). */
   --mv-stage-accent: #FF9A8F;
-  /* Layers: cards, rows, sticky bar. */
-  --mv-stage-card: rgba(18, 6, 26, 0.55);
-  --mv-stage-row: rgba(18, 6, 26, 0.45);
+  /* Layers: cards, rows, sticky bar. Dense enough that the dark cards read as
+     clear boxes in front of the glow, which now also fills the middle. */
+  --mv-stage-card: rgba(18, 6, 26, 0.72);
+  --mv-stage-row: rgba(18, 6, 26, 0.6);
   --mv-stage-bar: rgba(18, 6, 26, 0.82);
   /* Foreground tints for edges, hovers and quiet buttons. */
   --mv-stage-tint-1: rgba(251, 244, 255, 0.06);
@@ -61,6 +62,13 @@
   --mv-stage-highlight: rgba(132, 3, 166, 0.5);
   /* Strength of the brand glow behind the stage. */
   --mv-stage-glow: 1;
+  /* Soft purple/coral light in the middle of the host and guest pages (team
+     request 2026-11-03): without it the centre stayed black and the dark
+     cards disappeared into it. Kept translucent so the base still reads
+     dark — a full brand-colour fill was rejected earlier. Not used on the TV,
+     whose stronger glow would then fill the whole screen. */
+  --mv-stage-center-glow: radial-gradient(55vw 50vh at 50% 50%,
+    rgba(132, 3, 166, 0.5), rgba(242, 89, 75, 0.22) 55%, transparent 80%);
   --mv-stage-shadow: rgba(0, 0, 0, 0.5);
   /* Card of a song the guest liked (coral wash). */
   --mv-stage-liked: rgba(242, 89, 75, 0.22);
@@ -103,15 +111,16 @@
 
 /* Light mode for the stage pages (team decision 2026-11-03: switchable,
    dark stays the default). Contrast: --mv-on-stage/-muted are the light-
-   surface inks (>= 7:1 / >= 8:1 on white). --mv-stage-accent is a darker
-   coral (#A82E23): ~6.8:1 on white and ~5.3:1 on the purple highlight,
-   where the regular deep coral would only reach ~4:1. */
+   surface inks (>= 7:1 / >= 8:1 on white). Since the light glow was made
+   stronger (2026-11-03), muted (#4E3D56) and accent (#842419, a deep coral)
+   are darker so they keep >= 4.5:1 even on the strongest point of the glow
+   (measured ~4.9:1 / ~4.6:1; ~9.9:1 / ~9.3:1 on white). */
 :root[data-theme='light'] {
   --mv-stage: #FAF6FC;
   --mv-stage-raised: #FFFFFF;
   --mv-on-stage: #1D0A24;
-  --mv-on-stage-muted: #5B4A63;
-  --mv-stage-accent: #A82E23;
+  --mv-on-stage-muted: #4E3D56;
+  --mv-stage-accent: #842419;
   --mv-stage-card: rgba(255, 255, 255, 0.82);
   --mv-stage-row: #FFFFFF;
   --mv-stage-bar: rgba(250, 246, 252, 0.92);
@@ -121,7 +130,15 @@
   --mv-stage-tint-4: rgba(29, 10, 36, 0.14);
   --mv-stage-tint-strong: rgba(29, 10, 36, 0.4);
   --mv-stage-highlight: rgba(132, 3, 166, 0.12);
-  --mv-stage-glow: 0.35;
+  /* Stronger than before (team request 2026-11-03: the colours should come
+     through on white too). The glow stays a pastel wash behind white cards;
+     text placed directly on it keeps >= 4.5:1 (see design D1). */
+  --mv-stage-glow: 0.5;
+  /* The TV's corner glows are stronger, so it keeps the earlier, weaker
+     light glow; at 0.5 its text would drop below 4.5:1. */
+  --mv-stage-tv-glow: 0.35;
+  --mv-stage-center-glow: radial-gradient(60vw 55vh at 50% 50%,
+    rgba(132, 3, 166, 0.3), rgba(242, 89, 75, 0.18) 55%, transparent 85%);
   --mv-stage-shadow: rgba(29, 10, 36, 0.18);
   --mv-stage-liked: #FDE9E6;
   --mv-stage-liked-edge: rgba(200, 57, 44, 0.35);

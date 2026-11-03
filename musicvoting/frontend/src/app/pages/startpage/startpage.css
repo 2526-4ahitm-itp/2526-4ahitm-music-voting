@@ -48,7 +48,8 @@
     radial-gradient(50vw 65vh at 92% 85%, rgba(242, 89, 75, 0.45), transparent 70%),
     radial-gradient(45vw 55vh at 85% 10%, rgba(132, 3, 166, 0.5), transparent 70%);
   filter: blur(30px);
-  opacity: var(--mv-stage-glow);
+  /* Own light-mode strength (see --mv-stage-tv-glow); dark mode uses the shared value. */
+  opacity: var(--mv-stage-tv-glow, var(--mv-stage-glow));
   z-index: -1;
   pointer-events: none;
 }
