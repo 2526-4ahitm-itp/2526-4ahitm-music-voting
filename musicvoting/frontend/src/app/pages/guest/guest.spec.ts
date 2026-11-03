@@ -120,27 +120,8 @@ describe('Guest', () => {
     expect(comp.addError).toBeNull();
   });
 
-  it('toggleMenu toggles menuOpen', () => {
-    expect(comp.menuOpen).toBe(false);
-
-    comp.toggleMenu();
-    expect(comp.menuOpen).toBe(true);
-  });
-
   it('trackById combines the track id and index', () => {
     expect(comp.trackById(2, { id: 'abc' })).toBe('abc-2');
-  });
-
-  it('goToVoting navigates to /vote', () => {
-    comp.goToVoting();
-
-    expect(router.navigate).toHaveBeenCalledWith(['/vote']);
-  });
-
-  it('goToAddSongs navigates to /guest', () => {
-    comp.goToAddSongs();
-
-    expect(router.navigate).toHaveBeenCalledWith(['/guest']);
   });
 
   it('ngOnInit syncs inQueueUris from the queue state service', () => {
@@ -152,12 +133,34 @@ describe('Guest', () => {
     expect(cdr.detectChanges).toHaveBeenCalled();
   });
 
-  it('navigates home when a party-ended event is received', () => {
+  it('shows the goodbye screen and stops listening when a party-ended event is received', () => {
     comp.ngOnInit();
+    const es = (comp as any).eventSource as EventSource;
+    spyOn(es, 'close');
 
-    (comp as any).eventSource.onmessage({ data: JSON.stringify({ type: 'party-ended' }) });
+    es.onmessage!({ data: JSON.stringify({ type: 'party-ended' }) } as MessageEvent);
 
-    expect(router.navigate).toHaveBeenCalledWith(['/']);
+    expect(comp.partyEnded()).toBe(true);
+    expect(es.close).toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('marks a failed search so the connection message is shown', async () => {
+    spyOn(console, 'error');
+    trackApi.searchTracks.and.returnValue(throwError(() => new Error('offline')));
+
+    await comp.search('query');
+
+    expect(comp.searchFailed()).toBe(true);
+  });
+
+  it('remembers the searched term for the "Keine Treffer" message', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] } }));
+
+    await comp.search('xyzxyzxyz');
+
+    expect(comp.tracks()).toEqual([]);
+    expect(comp.lastSearchedTerm()).toBe('xyzxyzxyz');
   });
 
   it('ngOnInit opens the event stream with the party id, so party events reach this page', () => {
@@ -244,6 +247,100 @@ describe('Guest search results (DOM)', () => {
     expect(cards[1].textContent).not.toContain('Nicht erlaubt.');
     expect((cards[1].querySelector('.add-button') as HTMLButtonElement).disabled).toBe(false);
 
+    fixture.destroy();
+  });
+});
+
+// Feedback states of the real template (guest spec "Guest Search and Add Give Feedback").
+describe('Guest feedback (DOM)', () => {
+  let addResult: () => any;
+
+  function setup() {
+    TestBed.configureTestingModule({
+      imports: [Guest],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: PartyService, useValue: { currentPartyId: 'party-1', clearParty: () => {} } },
+        { provide: TrackService, useValue: { searchTracks: () => of({}) } },
+        { provide: SpotifyWebPlayerService, useValue: { addToPlaylist: () => addResult() } },
+        { provide: QueueStateService, useValue: { inQueueUris$: new BehaviorSubject<Set<string>>(new Set()), refresh: () => {} } },
+      ],
+    });
+    const fixture = TestBed.createComponent(Guest);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  const songX = { id: 't1', uri: 'spotify:track:t1', name: 'Song X', artists: [{ name: 'A' }], album: { images: [] } };
+
+  it('shows "Keine Treffer für „…“" after an empty search', () => {
+    const fixture = setup();
+    fixture.componentInstance.lastSearchedTerm.set('xyzxyzxyz');
+    fixture.componentInstance.tracks.set([]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.search-status').textContent).toContain('Keine Treffer für „xyzxyzxyz“');
+    fixture.destroy();
+  });
+
+  it('shows the connection message when the search failed', () => {
+    const fixture = setup();
+    fixture.componentInstance.searchFailed.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Verbindung verloren – versuch es gleich nochmal.');
+    fixture.destroy();
+  });
+
+  it('confirms a successful add with "Song hinzugefügt"', async () => {
+    addResult = () => of({});
+    const fixture = setup();
+    fixture.componentInstance.tracks.set([songX]);
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('.add-button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('mv-toast [aria-live="polite"]').textContent).toContain('Song hinzugefügt');
+    fixture.destroy();
+  });
+
+  it('announces a backend rejection in the alert region', async () => {
+    addResult = () => throwError(() => ({ error: { error: 'Song ist schon in der Warteschlange.' } }));
+    spyOn(console, 'error');
+    const fixture = setup();
+    fixture.componentInstance.tracks.set([songX]);
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('.add-button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('mv-toast [role="alert"]').textContent).toContain('Song ist schon in der Warteschlange.');
+    fixture.destroy();
+  });
+
+  it('labels add buttons and gives blocked results "Nicht verfügbar" without a reason', () => {
+    const fixture = setup();
+    fixture.componentInstance.tracks.set([{ ...songX, blocked: true }, { ...songX, id: 't2', uri: 'spotify:track:t2' }]);
+    fixture.detectChanges();
+
+    const buttons: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.add-button'));
+    expect(buttons[0].getAttribute('aria-label')).toBe('Nicht verfügbar');
+    expect(buttons[0].getAttribute('title')).toBe('Nicht verfügbar');
+    expect(buttons[1].getAttribute('aria-label')).toBe('Song hinzufügen');
+    expect(fixture.nativeElement.textContent).not.toContain('Nicht erlaubt.');
+    fixture.destroy();
+  });
+
+  it('shows the goodbye screen when the party ends', () => {
+    const fixture = setup();
+    fixture.componentInstance.partyEnded.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('mv-party-ended').textContent).toContain('Die Party ist beendet.');
     fixture.destroy();
   });
 });

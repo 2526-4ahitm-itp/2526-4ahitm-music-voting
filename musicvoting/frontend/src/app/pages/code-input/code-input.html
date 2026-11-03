@@ -1,18 +1,22 @@
 <div class="code-page">
   <header>
-    <div class="back-to-home" (click)="goBack()" role="button" aria-label="Zurück">←</div>
+    <button type="button" class="back-to-home mv-plain-button" aria-label="Zurück" (click)="goBack()">
+      <mv-icon name="arrow-left" [size]="26" />
+    </button>
     <h1>MusicVoting</h1>
   </header>
 
   <div class="code-input-wrapper">
     <h2>Party beitreten!</h2>
-    <p class="subtitle">Geben Sie den Code ein, um einer Party beizutreten!</p>
+    <p class="subtitle" id="code-hint">Gib den 5-stelligen Code vom TV-Bildschirm ein, um der Party beizutreten.</p>
 
-    <div class="code-container" (paste)="handlePaste($event)">
+    <div class="code-container" role="group" aria-label="Party-Code" aria-describedby="code-hint" (paste)="handlePaste($event)">
       <input #i1 type="text"
              maxlength="1"
              inputmode="numeric"
              pattern="[0-9]*"
+             autocomplete="one-time-code"
+             aria-label="Ziffer 1"
              (input)="moveFocus($event, i2)"
              (keydown)="handleDelete($event, null)">
 
@@ -20,6 +24,7 @@
              maxlength="1"
              inputmode="numeric"
              pattern="[0-9]*"
+             aria-label="Ziffer 2"
              (input)="moveFocus($event, i3)"
              (keydown)="handleDelete($event, i1)">
 
@@ -27,6 +32,7 @@
              maxlength="1"
              inputmode="numeric"
              pattern="[0-9]*"
+             aria-label="Ziffer 3"
              (input)="moveFocus($event, i4)"
              (keydown)="handleDelete($event, i2)">
 
@@ -34,6 +40,7 @@
              maxlength="1"
              inputmode="numeric"
              pattern="[0-9]*"
+             aria-label="Ziffer 4"
              (input)="moveFocus($event, i5)"
              (keydown)="handleDelete($event, i3)">
 
@@ -41,16 +48,30 @@
              maxlength="1"
              inputmode="numeric"
              pattern="[0-9]*"
+             aria-label="Ziffer 5"
              (input)="checkCode($event)"
              (keydown)="handleDelete($event, i4)">
     </div>
 
-    <button class="paste-button" (click)="pasteFromClipboard()">
+    <button type="button" class="paste-button" (click)="pasteFromClipboard()">
       Code aus Zwischenablage einfügen
     </button>
 
-    @if (showError) {
-      <p class="error-message">{{ errorMessage }}</p>
-    }
+    <!-- Live regions exist up front so screen readers announce changes. -->
+    <div class="status" aria-live="polite">
+      @if (resolving) {
+        <p class="searching"><mv-spinner label="" /> <span>Party wird gesucht …</span></p>
+      }
+    </div>
+    <div role="alert">
+      @if (showError) {
+        <p class="error-message">
+          <span>{{ errorMessage }}</span>
+          @if (isNotFound) {
+            <span class="error-hint">{{ notFoundHint }}</span>
+          }
+        </p>
+      }
+    </div>
   </div>
 </div>

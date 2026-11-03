@@ -1,23 +1,44 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, Optional } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PartyService } from '../../services/party.service';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvSpinner } from '../../shared/mv-spinner';
 
 @Component({
   selector: 'app-code-input',
   standalone: true,
-  imports: [],
+  imports: [MvIcon, MvSpinner],
   templateUrl: './code-input.html',
   styleUrl: './code-input.css',
 })
+/**
+ * Join page for guests: a typed 5-digit code, a pasted code, or a PIN from
+ * the QR link (/join/:pin).
+ *
+ * The app attempt (musicvotingapp://) stays in front of the web join (team
+ * decision Q5); while it and the PIN lookup run, "Party wird gesucht …" is
+ * shown so the guest is never left on a silent page (guest spec "Join via
+ * QR Code").
+ */
 export class CodeInput implements OnInit {
   showError = false;
   errorMessage = 'Falscher Code';
+  /** True while the app attempt or the PIN lookup is running. */
+  resolving = false;
+  /** Shown under "Party nicht gefunden." so the guest knows how to recover. */
+  readonly notFoundHint = 'Prüfe den Code auf dem TV-Bildschirm.';
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private partyService: PartyService
+    private partyService: PartyService,
+    @Optional() private cdr?: ChangeDetectorRef,
   ) {}
+
+  /** True when the current error is the "party not found" case. */
+  get isNotFound(): boolean {
+    return this.showError && this.errorMessage === 'Party nicht gefunden.';
+  }
 
   ngOnInit(): void {
     const queryCode = this.route.snapshot.queryParams['code'];
@@ -25,6 +46,7 @@ export class CodeInput implements OnInit {
     const finalPin = queryCode || pathPin;
 
     if (finalPin) {
+      this.resolving = true;
       const backend = `${window.location.hostname}:8080`;
       window.location.href = `musicvotingapp://join/${finalPin}?backend=${backend}`;
       setTimeout(() => {
@@ -129,13 +151,22 @@ export class CodeInput implements OnInit {
   }
 
   private resolveAndJoin(pin: string): void {
+    this.resolving = true;
+    this.showError = false;
     this.partyService.resolvePin(pin).subscribe({
-      next: () => this.router.navigate(['/voting']),
+      next: () => {
+        this.resolving = false;
+        this.router.navigate(['/voting']);
+      },
       error: () => {
+        // Keep the boxes as they are, so the guest can correct a digit and retry.
+        this.resolving = false;
         this.showError = true;
         this.errorMessage = 'Party nicht gefunden.';
+        this.cdr?.detectChanges();
       }
     });
+    this.cdr?.detectChanges();
   }
 
   goBack() {

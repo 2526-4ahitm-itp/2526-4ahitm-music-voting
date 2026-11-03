@@ -171,6 +171,8 @@ Alle fünf Bereiche stecken heute in **einem** Change.
 - **Q9:** „Gastgeber-PIN“ mit Bindestrich. Der Hinweis „Geheim – damit kommst du zurück ins Dashboard.“ bleibt unter der Gastgeber-PIN.
 - **Q5 „gleich lassen“:** Option C. Die App-Weiterleitung bleibt, während der Wartezeit erscheint „Party wird gesucht …“.
 - **Q4 „auch auf der Startseite“:** Gemeint ist die Landingpage `/`. Die HTL-Fußzeile kommt auf den TV (`/startpage`) und auf `/`.
-- **Q12b:** Meistens dasselbe Gerät, ein eigenes Gerät muss aber auch gehen. Deshalb gibt es den Button „Player auf dem TV öffnen“ **und** „Link kopieren“.
+- **Q12b:** Meistens dasselbe Gerät, ein eigenes Gerät muss aber auch gehen. Deshalb gibt es den Button „Player auf dem TV öffnen“ und eine Anleitung für ein eigenes Gerät (MusicVoting → Gastgeber → Gastgeber-PIN → Player öffnen). „Link kopieren“ entfällt (Entscheidung A, 2026-11-03), weil der Player die Gastgeber-PIN braucht.
+
+- **Q15 (Nachtrag nach Ansicht):** Am TV ausprobiert wurden hell/weiß, voller Marken-Farbverlauf und gedämpfter Farbverlauf. Entscheidung: zurück zur dunklen Bühne (Option A) mit dem Farbverlauf als Licht hinter dem Cover.
 
 **Status:** Alle Fragen sind beantwortet und in Proposal, Design, Specs und Tasks eingearbeitet.

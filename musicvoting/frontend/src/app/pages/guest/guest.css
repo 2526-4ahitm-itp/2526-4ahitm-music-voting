@@ -138,7 +138,6 @@ html, body {
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 0.5rem;
-  object-fit: cover;
   margin-right: 0.875rem;
   flex-shrink: 0;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
@@ -207,6 +206,7 @@ html, body {
 }
 
 .icon-circle {
+  color: var(--mv-purple);
   width: 6.25rem;
   height: 6.25rem;
   background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 100%);
@@ -360,9 +360,30 @@ html, body {
   background-color: #fff;
 }
 
-.add-error {
+/* Search status above the results. It sits on the page gradient, so it is
+   white and semibold; errors use a solid dark-red pill (>= 4.5:1), because
+   red text on the pink gradient was not readable. */
+.search-status:empty {
+  display: none;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
   margin: 0 0 0.75rem;
-  color: #C0392B;
+  color: white;
   font-weight: 600;
   text-align: center;
+}
+
+.status-line mv-spinner {
+  transform: scale(0.7);
+}
+
+.status-line.error {
+  padding: 0.6rem 1rem;
+  border-radius: var(--mv-radius-card);
+  background: var(--mv-danger);
 }

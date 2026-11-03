@@ -140,7 +140,7 @@ The host MUST be able to remove any song from the queue, including ones not yet 
 After the blacklist setup page, the web host flow MUST show a final step "Deine Party ist bereit". This step MUST:
 - explain in one sentence that the player is the page that plays the music and belongs on the device connected to the TV,
 - offer a button "Player auf dem TV öffnen" that opens `/startpage` for the party in a new window on the same device,
-- offer a link "Link kopieren" that copies the player URL, so the player can also be opened on a separate device,
+- explain how to open the player on a separate device: "Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen." The player route requires the host PIN, so a copied link alone would not work on another device,
 - show the "Voting-PIN" so the host can share it,
 - offer "Zum Dashboard", which navigates to the host dashboard.
 
@@ -149,16 +149,16 @@ Once a player has registered as the playback device, the step MUST show "Party i
 #### Scenario: Host finishes setup on the same device
 - GIVEN the host has completed the blacklist setup page
 - WHEN the go-live step loads
-- THEN "Deine Party ist bereit", the explanation, the button "Player auf dem TV öffnen", the link "Link kopieren" and the "Voting-PIN" are shown
+- THEN "Deine Party ist bereit", the explanation, the button "Player auf dem TV öffnen", the separate-device instructions and the "Voting-PIN" are shown
 - WHEN the host opens the player and it registers as the playback device
 - THEN "Party ist live 🎉" is shown
 - AND "Zum Dashboard" navigates to the host dashboard
 
 #### Scenario: Host opens the player on a separate device
 - GIVEN the host is on the go-live step
-- WHEN the host taps "Link kopieren"
-- THEN the player URL for the party is copied to the clipboard
-- AND when that URL is opened on another device and the player registers, "Party ist live 🎉" is shown
+- THEN the instructions "Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen." are shown
+- WHEN the host follows them on another device and that player registers
+- THEN the go-live step shows "Party ist live 🎉"
 
 ### Requirement: Only Supported Providers Are Selectable
 The "Party erstellen" page MUST offer only music providers that the web host flow fully supports as selectable options. Spotify MUST be selectable, together with the note "Du brauchst Spotify Premium." YouTube MUST be shown as a disabled option labelled "YouTube (bald verfügbar)" that cannot be selected. "Amazon Music" MUST NOT be shown.

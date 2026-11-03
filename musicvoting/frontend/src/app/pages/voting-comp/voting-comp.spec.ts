@@ -89,13 +89,17 @@ describe('VotingComp', () => {
     expect((comp as any).eventSource.url).toContain('/api/spotify/events?source=web&partyId=party-1');
   });
 
-  it('navigates home when a party-ended event is received', async () => {
+  it('shows the goodbye screen instead of redirecting when a party-ended event is received', async () => {
     spotifyService.getQueue.and.returnValue(of({ queue: [] }));
     comp.ngOnInit();
+    const es = (comp as any).eventSource as EventSource;
+    spyOn(es, 'close');
 
-    (comp as any).eventSource.onmessage({ data: JSON.stringify({ type: 'party-ended' }) });
+    es.onmessage!({ data: JSON.stringify({ type: 'party-ended' }) } as MessageEvent);
 
-    expect(router.navigate).toHaveBeenCalledWith(['/']);
+    expect(comp.partyEnded()).toBe(true);
+    expect(es.close).toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it('reloads the playlist when a queue-updated event is received', async () => {
