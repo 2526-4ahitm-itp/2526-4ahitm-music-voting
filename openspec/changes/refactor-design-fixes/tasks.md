@@ -48,13 +48,13 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 
 ## 5. Accessibility baseline (all pages)
 
-- [ ] 5.1 Replace `<div (click)>` back arrows and the `<p>` burger with `<button>` + `aria-label` in every page
-- [ ] 5.2 Add `aria-label`s to all icon buttons (add, player controls, remove, block)
-- [ ] 5.3 Fix the nested buttons in the "Party beenden" confirmation (`host-dashboard.html:196-207`)
-- [ ] 5.4 Add `:focus-visible` styles globally; remove `outline: none` without a replacement
-- [ ] 5.5 Check every text/background token pair against AA, including gradient endpoints; add a unit test over the token pairs
-- [ ] 5.6 Specs: a DOM check per page that no `button`/`a` contains another, that every icon-only button has an `aria-label`, and that back buttons respond to Enter
-- [ ] 5.7 Run `/impeccable audit musicvoting/frontend` and fix remaining P0/P1 accessibility findings
+- [x] 5.1 (2026-11-03: verified — no `(click)` on non-button elements left; back arrows are `host-icon-btn` buttons) Replace `<div (click)>` back arrows and the `<p>` burger with `<button>` + `aria-label` in every page
+- [x] 5.2 (2026-11-03: verified on every page incl. guest add/like, blacklist remove, player controls) Add `aria-label`s to all icon buttons (add, player controls, remove, block)
+- [x] 5.3 (2026-11-03: verified — confirmation buttons are siblings, covered by `host-stage-pages.dom.spec.ts`) Fix the nested buttons in the "Party beenden" confirmation (`host-dashboard.html:196-207`)
+- [x] 5.4 (2026-11-03: every `outline: none` has a ring; global `:focus-visible` box-shadow is `!important` so inset-shadow buttons like the host option cards and blacklist results no longer hide it) Add `:focus-visible` styles globally; remove `outline: none` without a replacement
+- [x] 5.5 (2026-11-03: `shared/contrast.tokens.spec.ts` samples the real glow gradients without blur on phone/desktop/TV; fixes: light accent `#80231A`, party-ready status chip text `--mv-on-stage`) Check every text/background token pair against AA, including gradient endpoints; add a unit test over the token pairs
+- [x] 5.6 (2026-11-03: `pages/a11y-baseline.dom.spec.ts` for guest, voting, blacklist, TV, party-ready and the back buttons; the other pages were already covered by `entry-pages` / `host-stage-pages` DOM specs) Specs: a DOM check per page that no `button`/`a` contains another, that every icon-only button has an `aria-label`, and that back buttons respond to Enter
+- [x] 5.7 (2026-11-03: report in `openspec/analyse/impeccable/audit-2026-11-03.md`, 16/20; P1 fixed: host-menu focus return, plus the contrast/focus-ring fixes of 5.4/5.5; open P2/P3: spinner under reduced motion, bundle budgets, 40px blacklist tabs, a few untokenised rgba colours) Run `/impeccable audit musicvoting/frontend` and fix remaining P0/P1 accessibility findings
 
 ## 5b. Light mode (added 2026-11-03)
 

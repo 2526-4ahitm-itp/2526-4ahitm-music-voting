@@ -56,4 +56,33 @@ describe('MvHostMenu', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.panel.open')).toBeNull();
   });
+
+  it('moves focus into the panel on open and back to the burger on Escape (WCAG 2.4.3)', async () => {
+    const fixture = create();
+    const root: HTMLElement = fixture.nativeElement;
+    const burger = root.querySelector('button.burger') as HTMLButtonElement;
+
+    burger.focus();
+    burger.click();
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(root.querySelector('button.close'));
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await fixture.whenStable();
+    expect(root.querySelector('nav')!.hasAttribute('inert')).toBe(true);
+    expect(document.activeElement).toBe(burger);
+  });
+
+  it('returns focus to the burger when closed with the close button', async () => {
+    const fixture = create();
+    const root: HTMLElement = fixture.nativeElement;
+    const burger = root.querySelector('button.burger') as HTMLButtonElement;
+
+    burger.click();
+    await fixture.whenStable();
+    (root.querySelector('button.close') as HTMLButtonElement).click();
+    await fixture.whenStable();
+
+    expect(document.activeElement).toBe(burger);
+  });
 });
