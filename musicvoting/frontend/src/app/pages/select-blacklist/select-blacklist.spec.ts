@@ -281,22 +281,22 @@ describe('SelectBlacklist', () => {
     expect(continueBtn().disabled).toBe(true);
   });
 
-  it('"Weiter" navigates to the dashboard when entries exist', async () => {
+  it('"Weiter" navigates to the go-live step when entries exist', async () => {
     const fixture = await createLoaded([
       { id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null },
     ]);
 
     click(fixture, '.continue-btn');
 
-    expect(router.navigate).toHaveBeenCalledWith(['/dashboard'], { queryParams: { partyId: 'party-x' } });
+    expect(router.navigate).toHaveBeenCalledWith(['/party-ready'], { queryParams: { partyId: 'party-x' } });
   });
 
-  it('"Ohne Blacklist fortfahren" navigates to the dashboard without saving anything', async () => {
+  it('"Ohne Blacklist fortfahren" navigates to the go-live step without saving anything', async () => {
     const fixture = await createLoaded([]);
 
     click(fixture, '.skip-btn');
 
-    expect(router.navigate).toHaveBeenCalledWith(['/dashboard'], { queryParams: { partyId: 'party-x' } });
+    expect(router.navigate).toHaveBeenCalledWith(['/party-ready'], { queryParams: { partyId: 'party-x' } });
     httpMock.expectNone('/api/party/party-x/blacklist');
   });
 });
