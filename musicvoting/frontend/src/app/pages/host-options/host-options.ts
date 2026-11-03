@@ -4,16 +4,23 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PartyService } from '../../services/party.service';
 import { lastValueFrom } from 'rxjs';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 
 type Mode = 'menu' | 'pin-dashboard' | 'pin-startpage';
 
 @Component({
   selector: 'app-host-options',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MvIcon, MvThemeToggle],
   templateUrl: './host-options.html',
-  styleUrl: './host-options.css'
+  // Shared stage look first, page layout second.
+  styleUrls: ['../../shared/stage.css', './host-options.css'],
 })
+/**
+ * Host entry: create a party, or reopen the dashboard / player of a running
+ * party with the Gastgeber-PIN.
+ */
 export class HostOptions {
   private router = inject(Router);
   private partyService = inject(PartyService);

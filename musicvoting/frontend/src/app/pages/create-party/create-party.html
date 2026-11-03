@@ -1,52 +1,57 @@
-<div class="create-party-page">
-  <header>
-    <div class="back-to-home" (click)="goBack()">←</div>
-    <h1>MusicVoting</h1>
+<!--
+  "Party erstellen" in the stage look (shared/stage.css), like every other
+  page (web-ui spec "Every Web Page Uses the Stage Look"). The provider
+  choice follows host spec "Only Supported Providers Are Selectable".
+-->
+<div class="host-stage">
+  <header class="host-top">
+    <button type="button" class="host-icon-btn" aria-label="Zurück zu den Gastgeber-Optionen" (click)="goBack()">
+      <mv-icon name="arrow-left" [size]="22" />
+    </button>
+    <span class="host-title">MusicVoting</span>
+    <mv-theme-toggle />
   </header>
 
-  <div class="create-party-wrapper">
-    <h2>Party erstellen</h2>
-    <p class="subtitle">Wähle deinen Musikanbieter und starte deine Party.</p>
+  <main class="host-content create-content">
+    <div class="stage-column">
+      <h1 class="stage-heading">Party erstellen</h1>
+      <p class="stage-lead">Wähle deinen Musikanbieter und starte deine Party.</p>
 
+      <fieldset class="providers">
+        <legend class="providers-legend">Musikanbieter</legend>
 
-    <div class="provider-box">
-      <span class="provider-label">Anbieter</span>
+        <label class="provider">
+          <input type="radio" name="provider" value="spotify" checked />
+          <span class="provider-icon"><mv-icon name="music" [size]="24" /></span>
+          <span class="provider-text">
+            <strong>Spotify</strong>
+            <small>Du brauchst Spotify Premium.</small>
+          </span>
+        </label>
 
+        <!-- Shown so hosts know it is coming, but not selectable yet. -->
+        <label class="provider disabled">
+          <input type="radio" name="provider" value="youtube" disabled />
+          <span class="provider-icon"><mv-icon name="monitor-play" [size]="24" /></span>
+          <span class="provider-text">
+            <strong>YouTube (bald verfügbar)</strong>
+          </span>
+        </label>
+      </fieldset>
 
-      <select id="selection-field" name="optionen"
-              style="
-        appearance: none !important;
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        padding: 0.2rem 0.2rem 0.2rem 1rem!important;
-        font-size: 1rem !important;
-        background: rgba(255, 255, 255, 0.80) !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        border-radius: 2rem !important;
-        cursor: pointer !important;
-        color: black !important;
-        display: block !important;
-        background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;12&quot; height=&quot;12&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;black&quot; stroke-width=&quot;3&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;%3E%3Cpolyline points=&quot;6 9 12 15 18 9&quot;%3E%3C/polyline%3E%3C/svg%3E') !important;
-        background-repeat: no-repeat !important;
-        background-position: right 1rem center !important;
-        background-size: 1em !important;
-    ">
-        <option value="option1" selected style="background: #333; color: white;">Spotify</option>
-        <option value="option2" style="background: #333; color: white;">Amazon Music</option>
-      </select>
+      <div role="alert">
+        @if (error) {
+          <p class="host-status error">{{ error }}</p>
+        }
+      </div>
 
+      <button class="create-btn host-btn large primary" type="button" (click)="create()" [disabled]="isLoading">
+        @if (isLoading) {
+          <mv-spinner label="" /> Wird erstellt …
+        } @else {
+          Party erstellen
+        }
+      </button>
     </div>
-
-    @if (error) {
-      <p class="error-message">{{ error }}</p>
-    }
-
-    <button class="create-btn" type="button" (click)="create()" [disabled]="isLoading">
-      @if (isLoading) {
-        Wird erstellt…
-      } @else {
-        Party erstellen
-      }
-    </button>
-  </div>
+  </main>
 </div>

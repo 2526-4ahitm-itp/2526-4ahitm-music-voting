@@ -99,7 +99,7 @@ All user-facing text in the web app MUST address the user with the informal "du"
 - AND it contains no "Sie"-forms
 
 ### Requirement: Host Can Switch Between Dark and Light Mode
-The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host search and the blacklist page) MUST offer a dark mode and a light mode. Dark mode is the default. The host pages MUST show a switch "Heller Modus" in the always-visible top bar; it MUST be a real control with `role="switch"` and `aria-checked`. The choice MUST be stored on the device and MUST be applied on the next visit and in other open tabs of the same browser, including the TV page, without a reload. The TV page itself MUST NOT show the switch (see dashboard spec "No Host Controls on Dashboard"). Both modes MUST meet the contrast rule "Text Meets WCAG AA Contrast". The guest views (voting, add songs) use the same stage look and MUST offer the same switch in their top bar; each guest decides on their own device, independent of the host.
+The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host search and the blacklist page) MUST offer a dark mode and a light mode. Dark mode is the default. The host pages MUST show a switch "Heller Modus" in the always-visible top bar; it MUST be a real control with `role="switch"` and `aria-checked`. The choice MUST be stored on the device and MUST be applied on the next visit and in other open tabs of the same browser, including the TV page, without a reload. The TV page itself MUST NOT show the switch (see dashboard spec "No Host Controls on Dashboard"). Both modes MUST meet the contrast rule "Text Meets WCAG AA Contrast". The guest views (voting, add songs) and the entry and setup pages (landing page, join page, host options, "Party erstellen", playlist choice) use the same stage look and MUST offer the same switch in their top bar; everyone decides on their own device.
 
 #### Scenario: Host switches to light mode
 - GIVEN the host is on the host dashboard in dark mode
@@ -121,3 +121,22 @@ The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host se
 - GIVEN a device that never chose a mode
 - WHEN the host opens the dashboard
 - THEN dark mode is shown
+
+#### Scenario: Switch on the entry pages
+- GIVEN a visitor opens the landing page or the join page
+- WHEN they look at the top bar
+- THEN the switch "Heller Modus" is shown
+- AND turning it on also applies to the guest views later on the same device
+
+### Requirement: Every Web Page Uses the Stage Look
+Every page of the web app MUST use the shared stage look: the dark (or light) stage background with the brand glow, the same top bar, cards, buttons and inputs. No page MUST use the full brand gradient as its page background. This includes the landing page, the join page, host options, "Party erstellen", the playlist choice and the "party ended" screen.
+
+#### Scenario: Entry pages match the rest of the app
+- GIVEN the app is in dark mode
+- WHEN a visitor goes from the landing page to the join page and then to the guest voting view
+- THEN all three pages show the same stage background, top bar and button style
+
+#### Scenario: No full-gradient page background
+- GIVEN any page of the web app
+- WHEN it is rendered
+- THEN its page background is the stage background, not the full purple-to-coral gradient

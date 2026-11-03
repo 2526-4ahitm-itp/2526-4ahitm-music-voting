@@ -1,42 +1,54 @@
-<div class="select-playlist-page">
-  <header>
-    <h1>MusicVoting</h1>
+<!--
+  Default-playlist step in the stage look (shared/stage.css), like every
+  other page (web-ui spec "Every Web Page Uses the Stage Look"). Setup step:
+  no back button, the host continues with a playlist or without one.
+-->
+<div class="host-stage">
+  <header class="host-top">
+    <span class="host-title">MusicVoting</span>
+    <mv-theme-toggle />
   </header>
 
-  <div class="select-playlist-wrapper">
-    <h2>Standard-Playlist wählen</h2>
-    <p class="subtitle">
-      Wenn die Warteschlange leer wird, spielt MusicVoting automatisch Songs aus dieser Playlist weiter.
-    </p>
+  <main class="host-content playlist-content">
+    <div class="stage-column">
+      <h1 class="stage-heading">Standard-Playlist wählen</h1>
+      <p class="stage-lead">
+        Wenn die Warteschlange leer wird, spielt MusicVoting automatisch Songs aus dieser Playlist weiter.
+      </p>
 
-    @if (error) {
-      <p class="error-message">{{ error }}</p>
-    }
-
-    @if (isLoading) {
-      <p class="status">Playlists werden geladen…</p>
-    } @else {
-      <div class="playlist-list">
-        @for (playlist of playlists; track playlist.id) {
-          <button class="playlist-item" type="button" [disabled]="isSaving" (click)="choose(playlist)">
-            @if (playlist.imageUrl) {
-              <img class="playlist-cover" [src]="playlist.imageUrl" alt="" />
-            } @else {
-              <div class="playlist-cover placeholder">♪</div>
-            }
-            <div class="playlist-info">
-              <span class="playlist-name">{{ playlist.name }}</span>
-              <span class="playlist-count">{{ playlist.trackCount }} Songs</span>
-            </div>
-          </button>
-        } @empty {
-          <p class="status">Keine Playlists gefunden.</p>
+      <div role="alert">
+        @if (error) {
+          <p class="host-status error">{{ error }}</p>
         }
       </div>
-    }
 
-    <button class="skip-btn" type="button" [disabled]="isSaving" (click)="skip()">
-      Ohne Standard-Playlist fortfahren
-    </button>
-  </div>
+      @if (isLoading) {
+        <p class="host-status" aria-live="polite"><mv-spinner label="" /><span>Playlists werden geladen…</span></p>
+      } @else {
+        <ul class="host-list playlist-list">
+          @for (playlist of playlists; track playlist.id) {
+            <li>
+              <button class="host-row playlist-item" type="button" [disabled]="isSaving" (click)="choose(playlist)">
+                <mv-cover class="host-row-cover" [url]="playlist.imageUrl" />
+                <span class="host-row-text">
+                  <span class="host-row-title">{{ playlist.name }}</span>
+                  <span class="host-row-artist">{{ playlist.trackCount }} Songs</span>
+                </span>
+                <mv-icon class="playlist-chevron" name="chevron-right" [size]="22" />
+              </button>
+            </li>
+          } @empty {
+            <li class="host-empty">
+              <mv-icon name="list-music" [size]="40" />
+              <p>Keine Playlists gefunden.</p>
+            </li>
+          }
+        </ul>
+      }
+
+      <button class="skip-btn host-btn large" type="button" [disabled]="isSaving" (click)="skip()">
+        Ohne Standard-Playlist fortfahren
+      </button>
+    </div>
+  </main>
 </div>

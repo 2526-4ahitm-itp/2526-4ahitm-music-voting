@@ -16,28 +16,34 @@ import { MvIcon } from './mv-icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { role: 'alert' },
   template: `
-    <div class="panel">
-      <span class="icon"><mv-icon name="music" [size]="40" /></span>
-      <h2>Die Party ist beendet.</h2>
-      <p>Danke fürs Mitfeiern!</p>
-      <button type="button" class="home" (click)="goHome()">Zur Startseite</button>
+    <div class="host-stage ended">
+      <div class="panel host-card">
+        <span class="icon"><mv-icon name="music" [size]="40" /></span>
+        <h2>Die Party ist beendet.</h2>
+        <p>Danke fürs Mitfeiern!</p>
+        <button type="button" class="home host-btn large primary" (click)="goHome()">Zur Startseite</button>
+      </div>
     </div>
   `,
+  // Same stage background and card as every other page (web-ui spec "Every
+  // Web Page Uses the Stage Look") instead of the old full gradient fill.
+  styleUrls: ['./stage.css'],
   styles: `
     :host {
       position: fixed;
       inset: 0;
       z-index: 2000;
+    }
+    .ended {
       display: flex;
       align-items: center;
       justify-content: center;
       padding: var(--mv-space-5);
-      background: var(--mv-gradient-ink);
-      color: var(--mv-on-accent);
       text-align: center;
     }
     .panel {
       max-width: 22rem;
+      width: 100%;
     }
     .icon {
       display: inline-flex;
@@ -46,30 +52,20 @@ import { MvIcon } from './mv-icon';
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.16);
+      background: var(--mv-purple);
+      color: var(--mv-on-accent);
       margin-bottom: var(--mv-space-4);
     }
     h2 {
       margin: 0 0 var(--mv-space-2);
+      font-family: var(--mv-font-display);
       font-size: 1.75rem;
       font-weight: 750;
     }
     p {
       margin: 0 0 var(--mv-space-6);
       font-size: 1.125rem;
-    }
-    .home {
-      appearance: none;
-      border: 0;
-      min-height: 52px;
-      padding: 0 var(--mv-space-6);
-      border-radius: var(--mv-radius-pill);
-      background: var(--mv-surface);
-      color: var(--mv-purple-deep);
-      font: inherit;
-      font-weight: 700;
-      font-size: 1.0625rem;
-      cursor: pointer;
+      color: var(--mv-on-stage-muted);
     }
   `,
 })

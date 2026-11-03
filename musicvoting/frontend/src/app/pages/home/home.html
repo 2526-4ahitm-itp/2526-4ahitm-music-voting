@@ -1,9 +1,33 @@
-<body>
-  <h1>MusicVoting</h1>
-  <p>Schlechte Musik auf der Party? Nicht mehr! Denn MusicVoting ermöglicht es jedem Partygast ganz einfach mittels Smartphone mitzubestimmen, welche Musik gespielt werden soll.</p>
+<!--
+  Landing page in the stage look (shared/stage.css), like every other page
+  (web-ui spec "Every Web Page Uses the Stage Look"). The wordmark carries
+  the page; the two roles are the only actions.
+-->
+<div class="host-stage home">
+  <header class="host-top">
+    <mv-theme-toggle />
+  </header>
 
-  <div class="button-row">
-    <button class="page-switch-btn" (click)="gotohostpage()">Gastgeber einer Party</button>
-    <button class="page-switch-btn" (click)="gotoguestpage()">Gast auf einer Party</button>
-  </div>
-</body>
+  <main class="host-content home-content">
+    <div class="stage-column hero">
+      <h1 class="wordmark">MusicVoting</h1>
+      <p class="stage-lead">
+        Schlechte Musik auf der Party? Nicht mehr! Mit MusicVoting bestimmt jeder Gast
+        ganz einfach per Smartphone mit, welche Musik als Nächstes läuft.
+      </p>
+
+      <div class="roles">
+        <button type="button" class="host-btn large primary" (click)="gotoguestpage()">
+          <mv-icon name="users" [size]="22" /> Gast auf einer Party
+        </button>
+        <button type="button" class="host-btn large" (click)="gotohostpage()">
+          <mv-icon name="crown" [size]="22" /> Gastgeber einer Party
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="home-footer">
+    <mv-credit-footer tone="dark" />
+  </footer>
+</div>

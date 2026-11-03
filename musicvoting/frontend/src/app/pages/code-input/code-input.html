@@ -1,14 +1,20 @@
-<div class="code-page">
-  <header>
-    <button type="button" class="back-to-home mv-plain-button" aria-label="Zurück" (click)="goBack()">
-      <mv-icon name="arrow-left" [size]="26" />
+<!--
+  Join page in the stage look (shared/stage.css), like every other page
+  (web-ui spec "Every Web Page Uses the Stage Look").
+-->
+<div class="host-stage code-page">
+  <header class="host-top">
+    <button type="button" class="back-to-home host-icon-btn" aria-label="Zurück" (click)="goBack()">
+      <mv-icon name="arrow-left" [size]="22" />
     </button>
-    <h1>MusicVoting</h1>
+    <span class="host-title">MusicVoting</span>
+    <mv-theme-toggle />
   </header>
 
-  <div class="code-input-wrapper">
-    <h2>Party beitreten!</h2>
-    <p class="subtitle" id="code-hint">Gib den 5-stelligen Code vom TV-Bildschirm ein, um der Party beizutreten.</p>
+  <main class="host-content code-input-wrapper">
+    <div class="stage-column">
+    <h1 class="stage-heading">Party beitreten!</h1>
+    <p class="stage-lead subtitle" id="code-hint">Gib den 5-stelligen Code vom TV-Bildschirm ein, um der Party beizutreten.</p>
 
     <div class="code-container" role="group" aria-label="Party-Code" aria-describedby="code-hint" (paste)="handlePaste($event)">
       <input #i1 type="text"
@@ -53,8 +59,8 @@
              (keydown)="handleDelete($event, i4)">
     </div>
 
-    <button type="button" class="paste-button" (click)="pasteFromClipboard()">
-      Code aus Zwischenablage einfügen
+    <button type="button" class="paste-button host-btn large" (click)="pasteFromClipboard()">
+      <mv-icon name="copy" [size]="20" /> Code aus Zwischenablage einfügen
     </button>
 
     <!-- Live regions exist up front so screen readers announce changes. -->
@@ -73,5 +79,6 @@
         </p>
       }
     </div>
-  </div>
+    </div>
+  </main>
 </div>

@@ -1,119 +1,42 @@
-body {
-  min-height: 100vh;
+/*
+ * Landing page layout. Background, top bar and buttons come from
+ * shared/stage.css; the old full-page brand gradient is gone (web-ui spec
+ * "Every Web Page Uses the Stage Look").
+ */
 
-  background: linear-gradient(135deg, #8403A6, #F2594B);
-
+.home {
   display: flex;
   flex-direction: column;
-  align-items: center;
-
-  color: white;
-  text-align: center;
-  overflow: hidden;
-  font-family: var(--font), serif;
-
-  padding: 2rem;
-
 }
 
-body h1 {
-  font-size: 10rem;
-  margin-bottom: 0.5rem;
-}
-
-body p {
-  font-size: 1.5rem;
-  width: 50vw;
-}
-
-.button-row {
+.home-content {
+  flex: 1;
   display: flex;
-  flex-direction: row;
-  gap: 2rem;
-  margin-top: 2rem;
+  align-items: center;
 }
 
-.page-switch-btn {
-  min-width: 15rem;
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 2rem;
-  border: none;
-  cursor: pointer;
-  letter-spacing: 0.05em;
-  transition: all 0.3s ease;
-  color: black;
+.hero {
+  text-align: center;
 }
 
-.page-switch-btn:hover {
-  transform: translateY(-0.2rem) scale(1.05);
-  box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
-  color: #8403A6;
-  font-weight: 1000;
-  background-color: white;
+/* The brand name is the hero: big display type, no gradient text. */
+.wordmark {
+  margin: 0 0 var(--mv-space-4);
+  font-family: var(--mv-font-display);
+  font-size: clamp(3rem, 12vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
-.page-switch-btn:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+.roles {
+  display: grid;
+  gap: var(--mv-space-3);
+  margin-top: var(--mv-space-6);
 }
 
-/* iPad - Querformat */
-@media (min-width: 48rem) and (max-width: 87.5rem) {
-
-  body{
-    position: fixed;
-    height: 100vh;
-    width: 100vw;
-    padding-top: 8rem;
-  }
-
-  body h1 {
-    font-size: 6rem;
-  }
-
-  body p {
-    width: 60vw;
-    font-size: 1.5rem;
-  }
-
-  .page-switch-btn {
-    font-size: 1.1rem;
-    padding: 1rem 2rem;
-  }
-}
-
-
-/** Handy - Format **/
-@media (max-width: 48rem) {
-  body {
-    padding: 2rem;
-    position: fixed;
-  }
-
-  body h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-  }
-
-  body p {
-    margin-top: 2rem;
-    width: 85vw;
-    font-size: 1.1rem;
-    text-align: center;
-  }
-
-  .button-row {
-    margin-top: 2.5rem;
-    gap: 1rem;
-    flex-direction: column;
-    width: 80%;
-  }
-
-  .page-switch-btn {
-    min-width: 100%;
-    font-size: 0.9rem;
-    padding: 1rem 1.5rem;
-  }
+.home-footer {
+  display: flex;
+  justify-content: center;
+  padding: var(--mv-space-4) var(--mv-space-4) var(--mv-space-5);
 }

@@ -1,101 +1,75 @@
-.code-page {
-  width: 100vw;
-  min-height: 100vh;
-  font-family: var(--font), sans-serif;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
-  color: white;
-}
-
-/* Header */
-
-header {
-  display: flex;
-  flex-direction: row;
-  justify-content: start;
-  align-items: center;
-}
-
-.back-to-home {
-  width: 48px;
-  height: 48px;
-  margin: 1rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: white;
-}
-
-header > h1 {
-  font-size: 2rem;
-}
-
-/* Code Container */
+/*
+ * Join page layout. Background, top bar, buttons and status texts come from
+ * shared/stage.css; the old full-page brand gradient is gone (web-ui spec
+ * "Every Web Page Uses the Stage Look").
+ */
 
 .code-input-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 30vw;
-  margin-left: 35vw;
-  margin-right: 35vw;
-  margin-top: 1vh;
   text-align: center;
+  padding-top: clamp(32px, 10vh, 96px);
 }
 
-.code-input-wrapper > h2 {
-  font-size: 1.8rem;
-  margin: 0;
-}
-
-.subtitle {
-  font-size: 1rem;
-  margin-bottom: 2rem;
-}
+/* ---------- Digit boxes ---------- */
 
 .code-container {
   display: flex;
-  gap: 10px;
-  padding: 20px;
   justify-content: center;
+  gap: clamp(6px, 2vw, 12px);
+  margin: 0 0 var(--mv-space-5);
 }
 
 .code-container input {
-  width: 50px;
-  height: 70px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  box-sizing: border-box;
+  width: clamp(44px, 14vw, 60px);
+  height: clamp(60px, 18vw, 76px);
+  border-radius: var(--mv-radius-card);
+  border: 1px solid var(--mv-stage-tint-3);
+  background: var(--mv-stage-tint-1);
+  color: var(--mv-on-stage);
   text-align: center;
-  font-size: 24px;
+  font-family: var(--mv-font-display);
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
   caret-color: transparent;
 }
 
 /* Visible focus for every way of reaching a box (tap or keyboard): a
-   thicker white border plus the global focus ring. */
+   stronger border plus the global focus ring. */
 .code-container input:focus {
-  border: 2px solid white;
   outline: none;
+  border-color: var(--mv-stage-tint-strong);
   box-shadow: var(--mv-focus-ring);
 }
 
-/* Error Message */
+/* ---------- Status and errors ---------- */
 
-/* Errors sit on a solid dark-red pill: red text directly on the pink
-   gradient was below 4.5:1. White on --mv-danger is about 6.5:1. */
+.searching {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: var(--mv-space-4) auto 0;
+  font-weight: 600;
+  color: var(--mv-on-stage-muted);
+}
+
+.searching mv-spinner {
+  transform: scale(0.75);
+}
+
+/* Errors sit on a solid red pill: white on --mv-danger is about 6.5:1 in
+   both themes. */
 .error-message {
   display: inline-flex;
   flex-direction: column;
   gap: 4px;
-  margin: 15px auto 0;
+  margin: var(--mv-space-4) auto 0;
   padding: 10px 16px;
   border-radius: var(--mv-radius-card);
   background: var(--mv-danger);
-  color: white;
+  color: var(--mv-on-accent);
   font-weight: 700;
-  font-size: 1.05rem;
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fade-in var(--mv-duration-base) var(--mv-ease-out);
 }
 
 .error-hint {
@@ -103,125 +77,9 @@ header > h1 {
   font-size: 0.95rem;
 }
 
-.searching {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin: 15px auto 0;
-  font-weight: 600;
-  font-size: 1.05rem;
-}
-
-.searching mv-spinner {
-  transform: scale(0.75);
-}
-
-/* paste button */
-.paste-button {
-  margin: 1vh auto;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid white;
-  color: white;
-  padding: 1rem;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.3s;
-  width: 20vw;
-
-}
-
-.paste-button:hover {
-  background: rgba(255, 255, 255, 0.4);
-}
-
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
-/* iPad - Querformat */
-@media (min-width: 48rem) and (max-width: 87.5rem) {
-
-  .back-to-home {
-    padding: 0.8rem;
-  }
-
-  header h1{
-    font-size: 1.6rem;
-  }
-
-  .code-page{
-    overflow-x: hidden;
-    position: fixed;
-  }
-
-  .code-input-wrapper{
-    margin-top: 8rem;
-  }
-
-  .code-input-wrapper p {
-    font-size: 1.1rem;
-  }
-
-  .paste-button{
-    width: 25vw;
-  }
-
-}
-
-
-/* Handy - Hochformat */
-@media (max-width: 48rem) {
-
-  .back-to-home {
-    padding: 0.8rem;
-  }
-
-  header h1{
-    font-size: 1.4rem;
-  }
-
-  .code-page{
-    overflow-x: hidden;
-    position: fixed;
-  }
-
-  .code-input-wrapper {
-    width: 90vw;
-    margin: 15vh auto 0 auto;
-  }
-
-  .code-container {
-    gap: 8px;
-    padding: 10px 0;
-  }
-
-  .code-container input {
-    width: 10vw;
-    height: 15vw;
-    font-size: 1.2rem;
-    border-radius: 8px;
-  }
-
-  .paste-button {
-    width: 80vw;
-    padding: 0.8rem;
-    margin-top: 2vh;
-  }
-
-  .code-input-wrapper > h2 {
-    font-size: 1.4rem;
-  }
-
-  .code-input-wrapper > p {
-    font-size: 1.1rem;
+    transform: translateY(-4px);
   }
 }
