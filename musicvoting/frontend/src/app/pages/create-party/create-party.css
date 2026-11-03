@@ -1,203 +1,91 @@
-.create-party-page {
-  width: 100vw;
-  min-height: 100vh;
-  font-family: var(--font), sans-serif;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
-  color: white;
+/*
+ * "Party erstellen" layout. Background, top bar, buttons and status texts come
+ * from shared/stage.css (web-ui spec "Every Web Page Uses the Stage Look").
+ */
+
+.create-content {
+  padding-top: clamp(24px, 8vh, 80px);
 }
 
-header {
+.providers {
+  display: grid;
+  gap: var(--mv-space-3);
+  margin: 0 0 var(--mv-space-5);
+  padding: 0;
+  border: 0;
+}
+
+.providers-legend {
+  margin-bottom: var(--mv-space-2);
+  padding: 0;
+  font-weight: 700;
+  color: var(--mv-on-stage-muted);
+}
+
+/* A provider is a card with a real radio button inside, so keyboard and
+   screen readers get the native radio group. */
+.provider {
   display: flex;
-  flex-direction: row;
-  justify-content: start;
   align-items: center;
-}
-
-.back-to-home {
-  padding: 1rem;
-  margin: 1rem;
+  gap: var(--mv-space-3);
+  padding: var(--mv-space-4);
+  border-radius: var(--mv-radius-card);
+  background: var(--mv-stage-card);
+  box-shadow: inset 0 0 0 1px var(--mv-stage-tint-2);
   cursor: pointer;
-  font-size: 1.5rem;
 }
 
-header > h1 {
-  font-size: 2rem;
+.provider:has(input:checked) {
+  box-shadow: inset 0 0 0 2px var(--mv-purple);
+  background: var(--mv-stage-highlight);
 }
 
-.create-party-wrapper {
+.provider:has(input:focus-visible) {
+  box-shadow: var(--mv-focus-ring);
+}
+
+.provider input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  /* Accent instead of purple: the checked card is purple-tinted, and a purple
+     dot on it read as "not selected". */
+  accent-color: var(--mv-stage-accent);
+}
+
+/* Disabled is shown by the label text and the native disabled radio, not by
+   colour alone; the dimming only adds to it. */
+.provider.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.provider-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--mv-stage-tint-2);
+}
+
+.provider-text {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 30vw;
-  margin: 4vh auto 0;
-  text-align: center;
+  gap: 2px;
 }
 
-.create-party-wrapper > h2 {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
+.provider-text strong {
+  font-size: 1.0625rem;
 }
 
-.subtitle {
-  font-size: 1rem;
-  opacity: 0.85;
-  margin-bottom: 2rem;
+.provider-text small {
+  font-size: 0.9375rem;
+  color: var(--mv-on-stage-muted);
 }
 
-.provider-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 20vw;
-  padding: 1rem 1.5rem;
-  border-radius: 2rem;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  margin-bottom: 1.5rem;
-}
-
-.provider-label {
-  font-size: 1.1rem;
-}
-
-.selection-field {
-  /* Styling des Feldes */
-  width: 10vw;
-  padding: 1rem;
-  font-size: 1rem;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 2rem;
-  cursor: pointer;
-}
-
-/* Fokus-Zustand für Barrierefreiheit */
-.selection-field:focus {
-  outline: none;
-  border-color: #2980b9;
-  box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
-}
-
-.error-message {
-  color: #FF3B30;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-/* BUtton */
-
-.create-btn {
-  min-width: 10vw;
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 2rem;
-  border: none;
-  cursor: pointer;
-  letter-spacing: 0.05em;
-  transition: all 0.3s ease;
-  color: black;
-}
-.create-btn:hover {
-  transform: translateY(-0.2rem) scale(1.05);
-  box-shadow: 0 0 0.5rem 1rem rgba(0, 0, 0, 0.01);
-  color: #8403A6;
-  font-weight: 1000;
-  background-color: white;
-}
-
-.create-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.create-btn:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* iPad - Querformat */
-@media (min-width: 48rem) and (max-width: 87.5rem) {
-
-  .create-party-page{
-    overflow: hidden;
-    position: fixed;
-  }
-
-  .back-to-home {
-    padding: 0.8rem;
-  }
-
-  header h1{
-    font-size: 1.6rem;
-  }
-
-  .create-party-wrapper{
-    margin-top: 10rem;
-  }
-
-  .create-party-wrapper h2{
-    font-size:  1.8rem;
-  }
-
-  .create-party-wrapper p{
-    width: 40vw;
-    font-size: 1.1rem;
-  }
-
-  .create-party-wrapper span{
-    font-size: 1.1rem;
-  }
-}
-
-
-/* Handy - Format */
-@media (max-width: 48rem) {
-
-  .create-party-page{
-    overflow: hidden;
-    position: fixed;
-  }
-
-  .back-to-home {
-    padding: 0.8rem;
-  }
-
-  header h1{
-    font-size: 1.4rem;
-  }
-
-  .create-party-wrapper {
-    margin-top: 5rem;
-    width: 92vw;
-  }
-
-  .create-party-wrapper h2{
-    font-size:  1.4rem;
-  }
-
-  .create-party-wrapper p{
-    width: 80vw;
-    font-size: 1rem;
-  }
-
-  .provider-box{
-    width: 60vw;
-  }
-
-  .create-party-wrapper #selection-field{
-    width: 30vw !important;
-    font-size: 1.2rem !important;
-    padding: 1rem !important;
-  }
-
-  .create-btn{
-    font-size: 0.9rem;
-  }
+.create-btn mv-spinner {
+  transform: scale(0.6);
 }

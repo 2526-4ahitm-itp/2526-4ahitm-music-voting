@@ -1,74 +1,91 @@
-<div class="host-options-page">
-  <header>
-    <div class="back-to-home" (click)="goBack()">←</div>
-    <h1>MusicVoting</h1>
+<!--
+  Host options in the stage look (shared/stage.css), like every other page
+  (web-ui spec "Every Web Page Uses the Stage Look").
+-->
+<div class="host-stage">
+  <header class="host-top">
+    <button type="button" class="host-icon-btn" aria-label="Zurück zur Startseite" (click)="goBack()">
+      <mv-icon name="arrow-left" [size]="22" />
+    </button>
+    <span class="host-title">MusicVoting</span>
+    <mv-theme-toggle />
   </header>
 
-  <div class="host-options-wrapper">
-    @if (mode() === 'menu') {
-      <h2>Gastgeber-Optionen</h2>
-      <p class="subtitle">Was möchtest du tun?</p>
+  <main class="host-content options-content">
+    <div class="stage-column">
+      @if (mode() === 'menu') {
+        <h1 class="stage-heading">Gastgeber-Optionen</h1>
+        <p class="stage-lead">Was möchtest du tun?</p>
 
-      <div class="options-list">
-        <button class="option-btn primary" type="button" (click)="goCreateParty()">
-          <span class="option-icon">🪩</span>
-          <span class="option-text">
-            <strong>Party erstellen</strong>
-            <small>Neue Party erstellen</small>
-          </span>
-        </button>
+        <div class="options-list">
+          <button class="option-btn primary" type="button" (click)="goCreateParty()">
+            <span class="option-icon"><mv-icon name="plus" [size]="26" /></span>
+            <span class="option-text">
+              <strong>Party erstellen</strong>
+              <small>Neue Party mit deinem Musikanbieter starten</small>
+            </span>
+            <mv-icon class="option-chevron" name="chevron-right" [size]="22" />
+          </button>
 
-        <button class="option-btn" type="button" (click)="showPinEntry('pin-dashboard')">
-          <span class="option-icon">👑</span>
-          <span class="option-text">
-            <strong>Dashboard öffnen</strong>
-            <small>Bestehende Party steuern (Pin erforderlich)</small>
-          </span>
-        </button>
+          <button class="option-btn" type="button" (click)="showPinEntry('pin-dashboard')">
+            <span class="option-icon"><mv-icon name="crown" [size]="26" /></span>
+            <span class="option-text">
+              <strong>Dashboard öffnen</strong>
+              <small>Laufende Party steuern (Gastgeber-PIN nötig)</small>
+            </span>
+            <mv-icon class="option-chevron" name="chevron-right" [size]="22" />
+          </button>
 
-        <button class="option-btn" type="button" (click)="showPinEntry('pin-startpage')">
-          <span class="option-icon">🔊</span>
-          <span class="option-text">
-            <strong>Player öffnen</strong>
-            <small>Player per PIN öffnen damit Musik abgespielt werden kann.</small>
-          </span>
-        </button>
-      </div>
-    } @else {
-      <div class="pin-entry">
-        <button class="back-btn" type="button" (click)="backToMenu()">← Zurück</button>
-        <h2>{{ mode() === 'pin-dashboard' ? 'Dashboard öffnen' : 'Startseite öffnen' }}</h2>
-        <p class="subtitle">Gib den Host-PIN deiner Party ein.</p>
+          <button class="option-btn" type="button" (click)="showPinEntry('pin-startpage')">
+            <span class="option-icon"><mv-icon name="tv" [size]="26" /></span>
+            <span class="option-text">
+              <strong>Player öffnen</strong>
+              <small>Musik auf dem Gerät am TV abspielen</small>
+            </span>
+            <mv-icon class="option-chevron" name="chevron-right" [size]="22" />
+          </button>
+        </div>
+      } @else {
+        <form class="pin-entry" (submit)="submitPin(); $event.preventDefault()">
+          <h1 class="stage-heading">{{ mode() === 'pin-dashboard' ? 'Dashboard öffnen' : 'Player öffnen' }}</h1>
+          <p class="stage-lead" id="pin-hint">Gib die Gastgeber-PIN deiner Party ein.</p>
 
-        <input
-          class="pin-input"
-          type="text"
-          inputmode="numeric"
-          maxlength="5"
-          placeholder="12345"
-          [value]="pin()"
-          (input)="pin.set($any($event.target).value)"
-          (keydown.enter)="submitPin()"
-          autofocus
-        />
+          <input
+            class="stage-input pin-input"
+            type="text"
+            inputmode="numeric"
+            maxlength="5"
+            placeholder="12345"
+            aria-label="Gastgeber-PIN"
+            aria-describedby="pin-hint"
+            autocomplete="off"
+            [value]="pin()"
+            (input)="pin.set($any($event.target).value)"
+            autofocus
+          />
 
-        @if (error()) {
-          <p class="error-message">{{ error() }}</p>
-        }
+          <div role="alert">
+            @if (error()) {
+              <p class="host-status error">{{ error() }}</p>
+            }
+          </div>
 
-        <button
-          class="confirm-btn"
-          type="button"
-          (click)="submitPin()"
-          [disabled]="isLoading() || pin().trim().length === 0"
-        >
-          @if (isLoading()) {
-            Wird geladen…
-          } @else {
-            Weiter
-          }
-        </button>
-      </div>
-    }
-  </div>
+          <button
+            class="confirm-btn host-btn large primary"
+            type="submit"
+            [disabled]="isLoading() || pin().trim().length === 0"
+          >
+            @if (isLoading()) {
+              Wird geladen …
+            } @else {
+              Weiter
+            }
+          </button>
+          <button class="back-btn host-btn large" type="button" (click)="backToMenu()">
+            <mv-icon name="arrow-left" [size]="20" /> Zurück zur Auswahl
+          </button>
+        </form>
+      }
+    </div>
+  </main>
 </div>

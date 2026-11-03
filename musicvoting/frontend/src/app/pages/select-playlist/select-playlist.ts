@@ -3,14 +3,23 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { HostPlaylist, PartyService } from '../../services/party.service';
+import { MvCover } from '../../shared/mv-cover';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvSpinner } from '../../shared/mv-spinner';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 
 @Component({
   selector: 'app-select-playlist',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MvCover, MvIcon, MvSpinner, MvThemeToggle],
   templateUrl: './select-playlist.html',
-  styleUrl: './select-playlist.css',
+  // Shared stage look first, page layout second.
+  styleUrls: ['../../shared/stage.css', './select-playlist.css'],
 })
+/**
+ * Setup step after the provider login: pick the playlist that refills an
+ * empty queue, or continue without one. Then on to the blacklist step.
+ */
 export class SelectPlaylist implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);

@@ -3,13 +3,15 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PartyService } from '../../services/party.service';
 import { MvIcon } from '../../shared/mv-icon';
 import { MvSpinner } from '../../shared/mv-spinner';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 
 @Component({
   selector: 'app-code-input',
   standalone: true,
-  imports: [MvIcon, MvSpinner],
+  imports: [MvIcon, MvSpinner, MvThemeToggle],
   templateUrl: './code-input.html',
-  styleUrl: './code-input.css',
+  // Shared stage look first, page layout second.
+  styleUrls: ['../../shared/stage.css', './code-input.css'],
 })
 /**
  * Join page for guests: a typed 5-digit code, a pasted code, or a PIN from

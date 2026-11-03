@@ -20,7 +20,7 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [x] 1.3 Create `shared/mv-spinner` (`role="status"`, hidden label "Lädt …"); spec asserts role and label
 - [x] 1.4 Create `ToastService` + `shared/mv-toast` (polite/alert live region, optional action button, auto-dismiss); spec with `jasmine.clock()` for dismiss and action
 - [x] 1.5 Create `shared/mv-host-menu` (burger in the sticky top bar) replacing the copied side menu in `host-dashboard`, `search-host` and `voting-host`; add the "Blacklist" entry, remove "Startseite"; delete the copied CSS; spec asserts the entries and navigation
-- [ ] 1.6 Replace every hand-written cover `<img>` (startpage, host-dashboard, guest, search-host, voting-comp, voting-host, select-playlist, select-blacklist) with `mv-cover`; verify `impeccable detect` no longer reports a real broken-image finding
+- [ ] 1.6 (2026-11-03: all covers now use `mv-cover`; only the `impeccable detect` check is still open) Replace every hand-written cover `<img>` (startpage, host-dashboard, guest, search-host, voting-comp, voting-host, select-playlist, select-blacklist) with `mv-cover`; verify `impeccable detect` no longer reports a real broken-image finding
 
 ## 2. TV page (`startpage`) — first priority
 
@@ -61,10 +61,20 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [x] 5b.1 Theme tokens `--mv-stage-*` for dark and `[data-theme='light']` in `styles.css`; stage CSS uses only tokens; `ThemeService` (localStorage, `storage` sync) and `mv-theme-toggle` in every host top bar
 - [x] 5b.2 Specs: default dark, toggle + persistence, cross-tab sync, light tokens applied, switch present with `role="switch"` on every host page, light background on the dashboard
 
+## 5c. Stage look for the remaining pages (added 2026-11-03)
+
+- [x] 5c.1 `home`: stage background, top bar with theme switch, large wordmark, two `host-btn` choices, HTL credit footer; verify with a DOM spec (no gradient background, buttons navigate, credit shown)
+- [x] 5c.2 `code-input` (also `/join/:pin`): stage look, back button as `host-icon-btn`, digit boxes and paste button in the stage input/button style, status and error unchanged; verify existing `code-input.spec.ts` plus theme switch present
+- [x] 5c.3 `host-options`: stage look, option cards with Lucide icons instead of emoji, back buttons as real buttons, "Gastgeber-PIN" wording and "Player öffnen" title (covers 6.1 for this page); verify in `host-options.spec.ts`
+- [x] 5c.4 `create-party`: stage look, provider choice per host spec "Only Supported Providers Are Selectable" without inline `!important` styles (covers 6.2); verify in `create-party.spec.ts`
+- [x] 5c.5 `select-playlist`: stage look, playlist rows as `host-row` with `mv-cover` (covers 1.6 for this page); verify in `select-playlist.spec.ts`
+- [x] 5c.6 `mv-party-ended`: stage background and glow instead of the gradient fill, button as `host-btn primary`; verify in `mv-party-ended.spec.ts`
+- [x] 5c.7 Check contrast of the new pages in dark and light mode (screenshots + measured worst points) and run the full frontend tests
+
 ## 6. Host setup
 
-- [ ] 6.1 Label the codes "Voting-PIN" / "Gastgeber-PIN" (with the hint "Geheim – damit kommst du zurück ins Dashboard."), remove "Host-PIN", use different icons, in host-options, host-dashboard and startpage; fix "Startseite öffnen" vs. "Player öffnen"
-- [ ] 6.2 `create-party`: Spotify selectable + "Du brauchst Spotify Premium.", "YouTube (bald verfügbar)" disabled, remove "Amazon Music" and the inline `!important` styles
+- [x] 6.1 Label the codes "Voting-PIN" / "Gastgeber-PIN" (with the hint "Geheim – damit kommst du zurück ins Dashboard."), remove "Host-PIN", use different icons, in host-options, host-dashboard and startpage; fix "Startseite öffnen" vs. "Player öffnen"
+- [x] 6.2 `create-party`: Spotify selectable + "Du brauchst Spotify Premium.", "YouTube (bald verfügbar)" disabled, remove "Amazon Music" and the inline `!important` styles
 - [ ] 6.3 New `party-ready` page + route with `hostGuard`; `select-blacklist` ("Weiter" / "Ohne Blacklist fortfahren") navigates there; "Player auf dem TV öffnen" + instructions for a separate device; "Party ist live 🎉" on device registration (design D8)
 - [x] 6.4 `select-blacklist`: keep the setup mode unchanged; add `mode=edit` opened from the dashboard menu with the full editing and a single "Fertig" button back to `/dashboard`
 - [x] 6.5 Removal question in `host-dashboard` (design D7): "Song entfernen" asks "„<Titel>“ aus der Warteschlange entfernen?" with "Auch sperren" / "Nur entfernen" / "Abbrechen" (no "Auch sperren" for the playing song); remove the separate "Song sperren" button; verify in `host-dashboard.spec.ts`: each choice sends the right requests (block + remove / remove only / none), playing song has no "Auch sperren", no ban button in rows
