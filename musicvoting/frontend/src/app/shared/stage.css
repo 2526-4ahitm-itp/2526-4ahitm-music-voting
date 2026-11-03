@@ -36,6 +36,7 @@
   position: fixed;
   inset: 0;
   background:
+    var(--mv-stage-center-glow),
     radial-gradient(60vw 70vh at 18% 30%, rgba(132, 3, 166, 0.7), transparent 70%),
     radial-gradient(55vw 60vh at 40% 100%, rgba(242, 89, 75, 0.45), transparent 70%),
     radial-gradient(50vw 65vh at 95% 85%, rgba(242, 89, 75, 0.35), transparent 70%),
