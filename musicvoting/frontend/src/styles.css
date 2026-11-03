@@ -38,11 +38,30 @@
   --mv-ink-muted: #5B4A63;
   --mv-on-accent: #FFFFFF;
 
-  /* Dark stage (TV / player) */
+  /* Stage (TV and host pages). Dark by default; [data-theme='light'] below
+     swaps these tokens, so the stage pages switch theme without any
+     page-specific CSS. Guest pages do not use these tokens. */
   --mv-stage: #12061A;
   --mv-stage-raised: #1F0D2A;
   --mv-on-stage: #FBF4FF;
   --mv-on-stage-muted: #C9B6D4;
+  /* Accent text on the stage (coral readable on the background). */
+  --mv-stage-accent: #FF9A8F;
+  /* Layers: cards, rows, sticky bar. */
+  --mv-stage-card: rgba(18, 6, 26, 0.55);
+  --mv-stage-row: rgba(18, 6, 26, 0.45);
+  --mv-stage-bar: rgba(18, 6, 26, 0.82);
+  /* Foreground tints for edges, hovers and quiet buttons. */
+  --mv-stage-tint-1: rgba(251, 244, 255, 0.06);
+  --mv-stage-tint-2: rgba(251, 244, 255, 0.1);
+  --mv-stage-tint-3: rgba(251, 244, 255, 0.16);
+  --mv-stage-tint-4: rgba(251, 244, 255, 0.22);
+  --mv-stage-tint-strong: rgba(251, 244, 255, 0.5);
+  /* Highlight for the current / next item (purple wash). */
+  --mv-stage-highlight: rgba(132, 3, 166, 0.5);
+  /* Strength of the brand glow behind the stage. */
+  --mv-stage-glow: 1;
+  --mv-stage-shadow: rgba(0, 0, 0, 0.5);
 
   /* Status */
   --mv-danger: #B3261E;
@@ -77,6 +96,30 @@
   --mv-duration-fast: 150ms;
   --mv-duration-base: 250ms;
   --mv-duration-slow: 400ms;
+}
+
+/* Light mode for the stage pages (team decision 2026-11-03: switchable,
+   dark stays the default). Contrast: --mv-on-stage/-muted are the light-
+   surface inks (>= 7:1 / >= 8:1 on white). --mv-stage-accent is a darker
+   coral (#A82E23): ~6.8:1 on white and ~5.3:1 on the purple highlight,
+   where the regular deep coral would only reach ~4:1. */
+:root[data-theme='light'] {
+  --mv-stage: #FAF6FC;
+  --mv-stage-raised: #FFFFFF;
+  --mv-on-stage: #1D0A24;
+  --mv-on-stage-muted: #5B4A63;
+  --mv-stage-accent: #A82E23;
+  --mv-stage-card: rgba(255, 255, 255, 0.82);
+  --mv-stage-row: #FFFFFF;
+  --mv-stage-bar: rgba(250, 246, 252, 0.92);
+  --mv-stage-tint-1: rgba(29, 10, 36, 0.06);
+  --mv-stage-tint-2: rgba(29, 10, 36, 0.07);
+  --mv-stage-tint-3: rgba(29, 10, 36, 0.1);
+  --mv-stage-tint-4: rgba(29, 10, 36, 0.14);
+  --mv-stage-tint-strong: rgba(29, 10, 36, 0.4);
+  --mv-stage-highlight: rgba(132, 3, 166, 0.12);
+  --mv-stage-glow: 0.35;
+  --mv-stage-shadow: rgba(29, 10, 36, 0.18);
 }
 
 /* Users who ask for reduced motion get state changes without movement. */

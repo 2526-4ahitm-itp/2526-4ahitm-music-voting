@@ -44,9 +44,11 @@ Introduce CSS custom properties in `styles.css` and use them in every component 
 
 How each surface uses them:
 - **TV (`startpage`)**: dark stage background (`--mv-stage`, #12061A). The purple/coral gradient becomes a soft glow behind the now-playing cover, not a full-page fill. On 2026-11-03 the team also tried a light background, the full brand gradient and a muted gradient, and went back to this dark stage.
-- **Phone views**: stay light. The gradient is limited to the header area, and cards sit on a calm background so text contrast is reliable.
+- **Host pages (dashboard, voting, search, blacklist)**: the same dark stage as the TV (team decision 2026-11-03), defined once in `src/app/shared/host-stage.css` and listed first in each host component's `styleUrls`: brand glow, translucent dark cards and rows, dark search field, round icon buttons. The host voting page shows the like ranking instead of the old non-functional heart button.
+- **Light mode for the stage pages**: a "Heller Modus" switch (`mv-theme-toggle`, `role="switch"`) sits in the top bar of every host page. `ThemeService` stores the choice in `localStorage` (`mv-theme`), sets `data-theme` on `<html>` and listens to `storage` events, so the TV page in another tab follows without a reload. `styles.css` defines the `--mv-stage-*` tokens for dark (default) and `[data-theme='light']`; all stage CSS uses only these tokens, so no page has its own theme CSS. The TV page has no switch (no host controls on the dashboard).
+- **Guest phone views**: stay light. The gradient is limited to the header area, and cards sit on a calm background so text contrast is reliable.
 - **Icons**: Lucide (MIT) as inline SVG components via a small `<mv-icon name="…">` wrapper, so the bundle only contains used icons. Emoji are removed from controls; they may stay in celebratory copy ("🎉").
-- **Fonts**: one display font for headings/TV titles and one text font, both self-hosted (`src/assets/fonts`, OFL). The concrete fonts are picked during implementation with the Impeccable typeset step and recorded in `DESIGN.md`.
+- **Fonts**: one variable family, Bricolage Grotesque (OFL), self-hosted via `@fontsource-variable/bricolage-grotesque` (registered in `angular.json`). Its optical-size axis covers both display (TV titles) and text, so no second family is needed.
 
 *Alternative considered:* keeping per-component literals and only patching colours. Rejected, because contrast and focus fixes would have to be repeated in 12 components.
 
@@ -54,7 +56,7 @@ How each surface uses them:
 New standalone components under `src/app/shared/`:
 - `mv-cover`: `[track]` input. Picks `album.images` safely (largest for TV, smallest for lists), falls back to `assets/img/placeholder.png` on a missing URL or `(error)`, and uses `alt=""`. It replaces all 8 hand-written cover `<img>`s.
 - `mv-icon`: Lucide SVGs, with `aria-hidden="true"`. The label lives on the button.
-- `mv-host-menu`: the side menu used by `host-dashboard`, `search-host` and `voting-host`. It gets the new "Blacklist" entry. The off-context "Startseite" entry is removed.
+- `mv-host-menu`: burger button + slide-in navigation used by `host-dashboard`, `search-host`, `voting-host` and the blacklist page in edit mode, replacing the copied side menu. The burger sits in the sticky top bar (`.host-top`), which stays visible while scrolling (team decision 2026-11-03). It has the new "Blacklist" entry; the off-context "Startseite" entry is removed.
 - `mv-spinner`: one spinner with `role="status"` and a visually hidden label.
 - `mv-toast`: a single live region (`aria-live="polite"`, or `role="alert"` for errors) provided by a `ToastService`. It is used for "Song hinzugefügt", backend errors and "Song entfernt · Rückgängig" (with an action).
 

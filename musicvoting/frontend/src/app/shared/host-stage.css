@@ -1,0 +1,320 @@
+/*
+ * Shared "stage" look for the host pages (dashboard, voting, search).
+ *
+ * The host pages use the same visual language as the TV/player page: a dark
+ * stage with the brand colours as light, translucent dark cards and white
+ * text (team decision 2026-11-03). Each host component lists this file in
+ * styleUrls before its own CSS, so the look is defined once instead of being
+ * copied into every page (design D1/D2).
+ *
+ * Contrast: --mv-on-stage (#FBF4FF) and --mv-on-stage-muted (#C9B6D4) stay
+ * >= 4.5:1 on the darkest and on the most coloured parts of the stage,
+ * because cards add their own dark layer behind the text.
+ */
+
+:host {
+  display: block;
+}
+
+.host-stage {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  background: var(--mv-stage);
+  color: var(--mv-on-stage);
+  font-family: var(--mv-font-text);
+  isolation: isolate;
+  /* clip, not hidden: overflow hidden would turn this element into a scroll
+     container, and the sticky top bar would then scroll away with the page. */
+  overflow-x: clip;
+}
+
+/* Brand light, fixed so it stays put while the page scrolls. */
+.host-stage::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(60vw 70vh at 18% 30%, rgba(132, 3, 166, 0.7), transparent 70%),
+    radial-gradient(55vw 60vh at 40% 100%, rgba(242, 89, 75, 0.45), transparent 70%),
+    radial-gradient(50vw 65vh at 95% 85%, rgba(242, 89, 75, 0.35), transparent 70%),
+    radial-gradient(45vw 55vh at 88% 5%, rgba(132, 3, 166, 0.45), transparent 70%);
+  filter: blur(30px);
+  opacity: var(--mv-stage-glow);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ---------- Top bar ---------- */
+
+/* Always visible while scrolling: burger menu and page title. */
+.host-top {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: var(--mv-space-3);
+  padding: var(--mv-space-3) clamp(16px, 3vw, 40px);
+  background: var(--mv-stage-bar);
+  box-shadow: 0 1px 0 var(--mv-stage-tint-1);
+}
+
+.host-title {
+  margin: 0;
+  font-family: var(--mv-font-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  min-width: 0;
+}
+
+.host-content {
+  box-sizing: border-box;
+  padding: clamp(16px, 3vw, 40px);
+  padding-bottom: 48px;
+}
+
+/* ---------- Cards and rows ---------- */
+
+.host-card {
+  box-sizing: border-box;
+  padding: clamp(16px, 2vw, 24px);
+  border-radius: 20px;
+  background: var(--mv-stage-card);
+  box-shadow: inset 0 0 0 1px var(--mv-stage-tint-2);
+}
+
+.host-card-title {
+  margin: 0 0 var(--mv-space-4);
+  font-family: var(--mv-font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.host-muted {
+  color: var(--mv-on-stage-muted);
+}
+
+.host-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--mv-space-2);
+}
+
+.host-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--mv-space-3);
+  padding: var(--mv-space-2) var(--mv-space-3);
+  border-radius: 16px;
+  background: var(--mv-stage-row);
+  box-shadow: inset 0 0 0 1px var(--mv-stage-tint-1);
+}
+
+.host-row.blocked {
+  opacity: 0.55;
+}
+
+.host-row-cover {
+  width: 52px;
+  height: 52px;
+}
+
+.host-row-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.host-row-title {
+  font-weight: 700;
+  font-size: 1.0625rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.host-row-artist {
+  font-size: 0.9375rem;
+  color: var(--mv-on-stage-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.host-likes {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mv-stage-accent);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.host-likes-count {
+  color: var(--mv-on-stage);
+  min-width: 2ch;
+}
+
+/* ---------- Search field ---------- */
+
+.host-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.host-search mv-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--mv-on-stage-muted);
+  pointer-events: none;
+}
+
+.host-search input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 0 16px 0 44px;
+  border-radius: var(--mv-radius-card);
+  border: 1px solid var(--mv-stage-tint-3);
+  background: var(--mv-stage-tint-1);
+  color: var(--mv-on-stage);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.host-search input::placeholder {
+  color: var(--mv-on-stage-muted);
+}
+
+.host-search input:focus {
+  outline: none;
+  border-color: var(--mv-stage-tint-strong);
+  box-shadow: var(--mv-focus-ring);
+}
+
+/* ---------- Buttons ---------- */
+
+.host-icon-btn {
+  appearance: none;
+  border: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mv-stage-tint-2);
+  color: var(--mv-on-stage);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--mv-duration-fast) var(--mv-ease-out),
+    transform var(--mv-duration-fast) var(--mv-ease-out);
+}
+
+.host-icon-btn:hover:not(:disabled) {
+  background: var(--mv-stage-tint-4);
+}
+
+.host-icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.host-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.host-icon-btn:focus-visible {
+  border-radius: 50%;
+}
+
+.host-icon-btn.primary {
+  width: 60px;
+  height: 60px;
+  background: var(--mv-purple);
+  color: var(--mv-on-accent);
+}
+
+.host-icon-btn.primary:hover:not(:disabled) {
+  background: var(--mv-purple-deep);
+}
+
+.host-icon-btn.danger {
+  color: var(--mv-stage-accent);
+}
+
+.host-btn {
+  appearance: none;
+  border: 0;
+  min-height: 44px;
+  padding: 0 var(--mv-space-4);
+  border-radius: var(--mv-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mv-space-2);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--mv-stage-tint-2);
+  color: var(--mv-on-stage);
+}
+
+.host-btn:hover:not(:disabled) {
+  background: var(--mv-stage-tint-4);
+}
+
+.host-btn.primary {
+  background: var(--mv-purple);
+  color: var(--mv-on-accent);
+}
+
+.host-btn.primary:hover:not(:disabled) {
+  background: var(--mv-purple-deep);
+}
+
+.host-btn.danger {
+  background: var(--mv-danger);
+  color: var(--mv-on-accent);
+}
+
+/* ---------- Status texts ---------- */
+
+.host-status {
+  display: flex;
+  align-items: center;
+  gap: var(--mv-space-2);
+  margin: 0 0 var(--mv-space-3);
+  font-weight: 600;
+  color: var(--mv-on-stage-muted);
+}
+
+.host-status.error {
+  padding: var(--mv-space-2) var(--mv-space-3);
+  border-radius: var(--mv-radius-sm);
+  background: var(--mv-danger);
+  color: var(--mv-on-accent);
+}
+
+.host-empty {
+  padding: var(--mv-space-6) var(--mv-space-4);
+  text-align: center;
+  color: var(--mv-on-stage-muted);
+}
+
+.host-empty h2 {
+  margin: var(--mv-space-3) 0 var(--mv-space-2);
+  font-size: 1.25rem;
+  color: var(--mv-on-stage);
+}
+
+.host-empty p {
+  margin: 0;
+}

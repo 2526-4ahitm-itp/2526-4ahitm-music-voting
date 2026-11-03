@@ -19,7 +19,7 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [x] 1.2 Create `shared/mv-icon` (Lucide wrapper, `aria-hidden`); spec asserts the SVG renders and is hidden from assistive technology
 - [x] 1.3 Create `shared/mv-spinner` (`role="status"`, hidden label "Lädt …"); spec asserts role and label
 - [x] 1.4 Create `ToastService` + `shared/mv-toast` (polite/alert live region, optional action button, auto-dismiss); spec with `jasmine.clock()` for dismiss and action
-- [ ] 1.5 Create `shared/mv-host-menu` replacing the copied side menu in `host-dashboard`, `search-host` and `voting-host`; add the "Blacklist" entry, remove "Startseite"; delete the copied CSS; spec asserts the entries and navigation
+- [x] 1.5 Create `shared/mv-host-menu` (burger in the sticky top bar) replacing the copied side menu in `host-dashboard`, `search-host` and `voting-host`; add the "Blacklist" entry, remove "Startseite"; delete the copied CSS; spec asserts the entries and navigation
 - [ ] 1.6 Replace every hand-written cover `<img>` (startpage, host-dashboard, guest, search-host, voting-comp, voting-host, select-playlist, select-blacklist) with `mv-cover`; verify `impeccable detect` no longer reports a real broken-image finding
 
 ## 2. TV page (`startpage`) — first priority
@@ -56,14 +56,19 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [ ] 5.6 Specs: a DOM check per page that no `button`/`a` contains another, that every icon-only button has an `aria-label`, and that back buttons respond to Enter
 - [ ] 5.7 Run `/impeccable audit musicvoting/frontend` and fix remaining P0/P1 accessibility findings
 
+## 5b. Light mode (added 2026-11-03)
+
+- [x] 5b.1 Theme tokens `--mv-stage-*` for dark and `[data-theme='light']` in `styles.css`; stage CSS uses only tokens; `ThemeService` (localStorage, `storage` sync) and `mv-theme-toggle` in every host top bar
+- [x] 5b.2 Specs: default dark, toggle + persistence, cross-tab sync, light tokens applied, switch present with `role="switch"` on every host page, light background on the dashboard
+
 ## 6. Host setup
 
 - [ ] 6.1 Label the codes "Voting-PIN" / "Gastgeber-PIN" (with the hint "Geheim – damit kommst du zurück ins Dashboard."), remove "Host-PIN", use different icons, in host-options, host-dashboard and startpage; fix "Startseite öffnen" vs. "Player öffnen"
 - [ ] 6.2 `create-party`: Spotify selectable + "Du brauchst Spotify Premium.", "YouTube (bald verfügbar)" disabled, remove "Amazon Music" and the inline `!important` styles
 - [ ] 6.3 New `party-ready` page + route with `hostGuard`; `select-blacklist` ("Weiter" / "Ohne Blacklist fortfahren") navigates there; "Player auf dem TV öffnen" + instructions for a separate device; "Party ist live 🎉" on device registration (design D8)
-- [ ] 6.4 `select-blacklist`: keep the setup mode unchanged; add `mode=edit` opened from the dashboard menu with the full editing and a single "Fertig" button back to `/dashboard`
+- [x] 6.4 `select-blacklist`: keep the setup mode unchanged; add `mode=edit` opened from the dashboard menu with the full editing and a single "Fertig" button back to `/dashboard`
 - [ ] 6.5 Undo removal toast in `host-dashboard` (design D7)
-- [ ] 6.6 Fix the typo "befor" and the English `alt="delete"`; remove the commented-out block and the invalid `height="300px"`
+- [x] 6.6 Fix the typo "befor" and the English `alt="delete"`; remove the commented-out block and the invalid `height="300px"`
 - [ ] 6.7 Specs: code labels and no "Voting-PIN"/"Host-PIN" text; no "Amazon Music", YouTube disabled; `select-blacklist` setup → `/party-ready`; `party-ready` button, separate-device instructions, code and live state; blacklist edit mode loads entries, adds/removes, "Fertig" → `/dashboard`; undo restores and sends no request, expiry sends the request
 
 ## 7. Verify and document

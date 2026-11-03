@@ -48,6 +48,7 @@
     radial-gradient(50vw 65vh at 92% 85%, rgba(242, 89, 75, 0.45), transparent 70%),
     radial-gradient(45vw 55vh at 85% 10%, rgba(132, 3, 166, 0.5), transparent 70%);
   filter: blur(30px);
+  opacity: var(--mv-stage-glow);
   z-index: -1;
   pointer-events: none;
 }
@@ -65,7 +66,7 @@
   width: min(48vh, 34vw);
   height: min(48vh, 34vw);
   border-radius: 20px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(132, 3, 166, 0.35);
+  box-shadow: 0 30px 80px var(--mv-stage-shadow), 0 8px 24px rgba(132, 3, 166, 0.35);
   background: var(--mv-stage-raised);
 }
 
@@ -78,7 +79,7 @@
   margin: 0 0 1vh;
   font-size: 2.4vh;
   font-weight: 700;
-  color: var(--mv-coral-light);
+  color: var(--mv-stage-accent);
 }
 
 .now-title {
@@ -128,7 +129,7 @@
   flex: 1;
   height: 0.8vh;
   border-radius: var(--mv-radius-pill);
-  background: rgba(251, 244, 255, 0.16);
+  background: var(--mv-stage-tint-3);
   overflow: hidden;
 }
 
@@ -167,8 +168,8 @@
   gap: 2vw;
   padding: 1.6vh 1.4vw;
   border-radius: 24px;
-  background: rgba(18, 6, 26, 0.55);
-  box-shadow: inset 0 0 0 1px rgba(251, 244, 255, 0.12);
+  background: var(--mv-stage-card);
+  box-shadow: inset 0 0 0 1px var(--mv-stage-tint-2);
 }
 
 .qr {
@@ -254,12 +255,12 @@
   gap: 1.2vw;
   padding: 0.6vh 1vw;
   border-radius: 16px;
-  background: rgba(18, 6, 26, 0.45);
+  background: var(--mv-stage-row);
 }
 
 /* The leading song gets a quiet highlight: it is what plays next. */
 .row:first-child {
-  background: rgba(132, 3, 166, 0.55);
+  background: var(--mv-stage-highlight);
 }
 
 .rank {

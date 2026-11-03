@@ -1,7 +1,11 @@
 import { Component, NgZone, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MvHostMenu } from '../../shared/mv-host-menu';
+import { MvCover } from '../../shared/mv-cover';
+import { MvIcon } from '../../shared/mv-icon';
+import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { PartyService } from '../../services/party.service';
@@ -10,9 +14,10 @@ import { SpotifyWebPlayerService } from '../../services/spotify-player';
 @Component({
   selector: 'app-host-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './host-dashboard.html',
-  styleUrl: './host-dashboard.css',
+  // Shared stage look first, page layout second (design D1/D2).
+  styleUrls: ['../../shared/host-stage.css', './host-dashboard.css'],
 })
 export class HostDashboard implements OnInit, OnDestroy {
   tracks: any[] = [];

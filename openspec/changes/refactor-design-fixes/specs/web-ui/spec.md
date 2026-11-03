@@ -97,3 +97,27 @@ All user-facing text in the web app MUST address the user with the informal "du"
 - WHEN the page text is read
 - THEN it uses "du"-forms such as "Gib den Code ein"
 - AND it contains no "Sie"-forms
+
+### Requirement: Host Can Switch Between Dark and Light Mode
+The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host search and the blacklist page) MUST offer a dark mode and a light mode. Dark mode is the default. The host pages MUST show a switch "Heller Modus" in the always-visible top bar; it MUST be a real control with `role="switch"` and `aria-checked`. The choice MUST be stored on the device and MUST be applied on the next visit and in other open tabs of the same browser, including the TV page, without a reload. The TV page itself MUST NOT show the switch (see dashboard spec "No Host Controls on Dashboard"). Both modes MUST meet the contrast rule "Text Meets WCAG AA Contrast". Guest views are not affected.
+
+#### Scenario: Host switches to light mode
+- GIVEN the host is on the host dashboard in dark mode
+- WHEN the host turns on "Heller Modus"
+- THEN the dashboard switches to the light look
+- AND the switch reports `aria-checked="true"`
+
+#### Scenario: Choice is remembered
+- GIVEN the host turned on light mode
+- WHEN the host reloads the dashboard
+- THEN the dashboard is shown in light mode
+
+#### Scenario: TV follows the choice in the same browser
+- GIVEN the TV page is open in another tab of the same browser
+- WHEN the host turns on light mode on the dashboard
+- THEN the TV page switches to light mode without a reload
+
+#### Scenario: Default is dark
+- GIVEN a device that never chose a mode
+- WHEN the host opens the dashboard
+- THEN dark mode is shown

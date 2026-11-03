@@ -1,5 +1,6 @@
 import { Component, DOCUMENT, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ThemeService } from './shared/theme.service';
 
 /**
  * Root component. Besides hosting the router outlet it pins the document
@@ -16,5 +17,7 @@ import { RouterOutlet } from '@angular/router';
 export class App {
   constructor() {
     inject(DOCUMENT).documentElement.lang = 'de';
+    // Instantiating the service applies the stored stage theme right away.
+    inject(ThemeService);
   }
 }
