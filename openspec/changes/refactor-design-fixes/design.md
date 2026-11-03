@@ -1,0 +1,112 @@
+# Design: Design Fixes from the Impeccable UI/UX Critique
+
+> All decisions are based on the answers in `questions.md` (2026-11-03).
+
+## Context
+
+See `proposal.md` and [`openspec/analyse/impeccable/ui-ux-critique.md`](../../analyse/impeccable/ui-ux-critique.md). Relevant current state of `musicvoting/frontend/src/`:
+
+- **Visual system**:
+  - Every page sets its own `linear-gradient(135deg, #8403A6, #F2594B)` background.
+  - `styles.css` only defines the Segoe UI font stack.
+  - Colours, radii and spacing are hard-coded per component. Icons are emoji or ad-hoc inline SVGs.
+- **Duplication**: the side menu and spinner (markup + CSS) are copied into `host-dashboard`, `search-host` and `voting-host`. The cover `<img>` is written by hand in 8 templates with different (or missing) fallbacks. Two templates use the non-existent path `assets/placeholder.png`; the file is `assets/img/placeholder.png`.
+- **Voting**: `voting-comp.css:235-239` sets `.voted { pointer-events: none; opacity: .5; filter: grayscale(1) }`. `toggleVote` (`voting-comp.ts:223`) waits for the HTTP response before updating.
+- **TV page** (`startpage`): reuses the dashboard grid. Queue text is about 13px, the QR code about 150px, and the QR caption uses gradient text (`startpage.css:259`).
+- **Join**: `code-input.ts:27-35` sets `window.location.href = musicvotingapp://…` and only resolves the PIN after 1.5 s if `!document.hidden`.
+- **Frontend is zoneless**: after every `await`, components call `ChangeDetectorRef.detectChanges()`.
+- **Backend**: no changes needed.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Fix all five priority issues of the critique without changing backend behaviour.
+- Replace the duplicated building blocks with shared components, so the fixes (fallbacks, labels, focus) are made once.
+- Evolve the look with the same colours: TV as a "stage", phones calm and readable.
+- Leave the app in a state where `/impeccable critique` scores clearly higher (target ≥ 28/40).
+
+**Non-Goals:**
+- The iOS app.
+- A party name or a party recap (would need their own backend change).
+- Merging the two guest tabs into one list (critique question 2, a separate discussion).
+- YouTube support in the web host flow.
+- Dark mode as a user setting.
+
+## Decisions
+
+### D1: Design tokens in `styles.css`, look evolved per surface
+Introduce CSS custom properties in `styles.css` and use them in every component instead of literal values:
+- **Colours**: `--mv-purple: #8403A6`, `--mv-coral: #F2594B`, plus derived tints/shades. Text colours are chosen so that the AA contrast rule in `web-ui/spec.md` holds.
+- **Surfaces**: `--mv-surface`, `--mv-surface-raised`, `--mv-on-surface`.
+- **Spacing, radii**: `--mv-radius-card`, `--mv-space-*`.
+- **Type**: `--mv-font-display`, `--mv-font-text`.
+- **Motion**: `--mv-ease-out` and `--mv-duration-*`, set to 0 under `prefers-reduced-motion`.
+
+How each surface uses them:
+- **TV (`startpage`)**: dark stage background (`#14061a`-ish). The purple/coral gradient becomes a soft glow behind the now-playing cover, not a full-page fill.
+- **Phone views**: stay light. The gradient is limited to the header area, and cards sit on a calm background so text contrast is reliable.
+- **Icons**: Lucide (MIT) as inline SVG components via a small `<mv-icon name="…">` wrapper, so the bundle only contains used icons. Emoji are removed from controls; they may stay in celebratory copy ("🎉").
+- **Fonts**: one display font for headings/TV titles and one text font, both self-hosted (`src/assets/fonts`, OFL). The concrete fonts are picked during implementation with the Impeccable typeset step and recorded in `DESIGN.md`.
+
+*Alternative considered:* keeping per-component literals and only patching colours. Rejected, because contrast and focus fixes would have to be repeated in 12 components.
+
+### D2: Shared components
+New standalone components under `src/app/shared/`:
+- `mv-cover`: `[track]` input. Picks `album.images` safely (largest for TV, smallest for lists), falls back to `assets/img/placeholder.png` on a missing URL or `(error)`, and uses `alt=""`. It replaces all 8 hand-written cover `<img>`s.
+- `mv-icon`: Lucide SVGs, with `aria-hidden="true"`. The label lives on the button.
+- `mv-host-menu`: the side menu used by `host-dashboard`, `search-host` and `voting-host`. It gets the new "Blacklist" entry. The off-context "Startseite" entry is removed.
+- `mv-spinner`: one spinner with `role="status"` and a visually hidden label.
+- `mv-toast`: a single live region (`aria-live="polite"`, or `role="alert"` for errors) provided by a `ToastService`. It is used for "Song hinzugefügt", backend errors and "Song entfernt · Rückgängig" (with an action).
+
+### D3: Optimistic, toggleable vote
+`toggleVote` flips `hasVoted` and adjusts `likes` locally, re-sorts, calls `detectChanges()`, then sends the request. On error it restores the snapshot and shows the error toast. A `pendingVotes` set ignores a second tap on the same entry until the first request settles; this prevents double requests while staying tappable. Incoming `vote-updated` SSE reloads are merged so that a still-pending local toggle is not overwritten.
+
+The `.voted` CSS gets:
+- an accent tint/outline
+- a filled `--mv-coral` heart
+- a 250 ms scale pop (keyframes, disabled under reduced motion)
+
+`pointer-events`, `opacity` and `grayscale` are removed.
+
+### D4: TV layout
+A CSS grid on a 16:9 stage:
+- **Left (~60 %):** the now-playing cover (`min(40vh, 45vw)`), title (≥ 48px, clamped with `clamp()`), artist, and progress.
+- **Right column:** the fixed QR block (≥ 25vh) with the "Voting-PIN" below it, then the top 5 queue rows (≥ 32px) and "+ N weitere".
+- **Footer:** a single-line HTL credit. The same footer component is used on the landing page `/`.
+
+Sizes use `vh`/`clamp()` so 720p and 4K scale proportionally. Rank animation uses FLIP: measure positions before and after the data update, then animate `transform`, keyed by queue entry ID. This avoids pulling in Angular animations for one effect. The empty state replaces the queue column content while keeping the QR block.
+
+### D5: Join with loading state (Q5: keep the app redirect)
+The `musicvotingapp://` attempt and the 1.5 s `document.hidden` check in `code-input` stay as they are. A `resolving` flag is set as soon as a PIN is present, before the app attempt, and is cleared on admission or error. While it is set, "Party wird gesucht …" is shown in a live region. The error state keeps the boxes editable and adds the hint text.
+
+### D6: One-time welcome
+A `localStorage` key `mv-welcome-<partyId>` is set when "Los geht's" is tapped. It is keyed by party, so a new party shows it again. The device identity itself is unchanged (`deviceId` stays as specified in `voting/spec.md`).
+
+### D7: Undo removal in the frontend
+The dashboard hides the entry locally and starts a 5 s timer with the undo toast. When the timer expires, or on `ngOnDestroy`/`beforeunload`, it sends the existing remove request. Undo cancels the timer. A `queue-updated` SSE arriving meanwhile keeps the pending entry hidden. No backend change is needed.
+
+### D8: Host flow routing
+- Setup: `select-playlist` → `select-blacklist` (unchanged, still with "Weiter" / "Ohne Blacklist fortfahren") → new route `/party-ready?partyId=…` (component `party-ready`, `hostGuard`) → `/dashboard`.
+- During the party: the dashboard menu entry "Blacklist" opens `select-blacklist?partyId=…&mode=edit`. In edit mode the page shows the same word/artist/song editing plus a single "Fertig" back to `/dashboard`.
+- `party-ready` offers "Player auf dem TV öffnen" (`window.open`, same device) and "Link kopieren" (Clipboard API, separate device), because the player usually runs on the same laptop but must also work on a separate TV device.
+- The `party-ready` page listens to the existing playback-device availability (see `playback/spec.md` "Playback Device Availability Exposed to Clients") to switch to "Party ist live 🎉".
+
+### D9: Testing approach
+All behaviour is asserted with DOM-based component specs (Karma/Jasmine, the existing setup):
+- aria attributes, text content, classes, and computed font sizes for the TV spec
+- `HttpTestingController` for optimistic/rollback ordering
+- `jasmine.clock()` for the undo timer
+
+Contrast is verified by a small unit test over the token pairs in `styles.css`, plus a manual check with the Impeccable `audit` step.
+
+## Risks / Trade-offs
+
+- **[Optimistic vote vs. SSE reload race]**: a reload could flip the state back while the request is in flight. → Mitigated by the `pendingVotes` merge (D3).
+- **[Undo delays the removal for other clients by 5 s]**: guests may still see and like the song briefly. → Acceptable, and it matches common undo patterns.
+- **[New font/icon dependencies]**: rule 8 says always use the latest stable versions. → The versions are pinned at implementation time, and the bundle size is checked in `ng build` output.
+- **[Large change]**: touches 12+ components. → Implemented section by section in `tasks.md`, with one commit per section.
+- **[Spec drift with iOS]**: the code names and the welcome only apply to web. → The iOS specs are unchanged; a later iOS change can adopt the names.
+
+## Open Questions
+
+None. All questions are answered in [`questions.md`](questions.md).
