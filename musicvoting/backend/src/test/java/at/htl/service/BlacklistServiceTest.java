@@ -101,6 +101,54 @@ class BlacklistServiceTest {
         assertFalse(bl.isBlocked("spotify:track:a", "Live", List.of("x"), List.of("Live")));
     }
 
+    // --- banned-artist check for the guest search (pure, no DB) ---
+
+    private static Blacklist artist(String id, String label) {
+        BlacklistEntry e = new BlacklistEntry();
+        e.kind = BlacklistKind.ARTIST;
+        e.value = id;
+        e.label = label;
+        return Blacklist.of(List.of(e));
+    }
+
+    @Test
+    void isArtistBlocked_matchesAnyOfTheIds() {
+        Blacklist bl = artist("artistA", "Artist A");
+        assertTrue(bl.isArtistBlocked(List.of("artistB", "artistA")));
+        assertFalse(bl.isArtistBlocked(List.of("artistB")));
+        assertFalse(bl.isArtistBlocked(null));
+    }
+
+    @Test
+    void isArtistBlocked_ignoresWordEntries() {
+        // A word matching an artist name greys the song out, but it is not a banned artist.
+        Blacklist bl = words("drake");
+        assertFalse(bl.isArtistBlocked(List.of("drakeId")));
+    }
+
+    @Test
+    void isBannedArtistName_isCaseInsensitiveAndTrimmed() {
+        Blacklist bl = artist("drakeId", "Drake");
+        assertTrue(bl.isBannedArtistName("drake"));
+        assertTrue(bl.isBannedArtistName("  DRAKE "));
+    }
+
+    @Test
+    void isBannedArtistName_needsTheWholeName() {
+        Blacklist bl = artist("drakeId", "Drake");
+        assertFalse(bl.isBannedArtistName("drake remix"));
+        assertFalse(bl.isBannedArtistName("dra"));
+        assertFalse(bl.isBannedArtistName(""));
+        assertFalse(bl.isBannedArtistName(null));
+    }
+
+    @Test
+    void emptyBlacklist_hasNoBannedArtists() {
+        Blacklist bl = Blacklist.of(List.of());
+        assertFalse(bl.isArtistBlocked(List.of("x")));
+        assertFalse(bl.isBannedArtistName("x"));
+    }
+
     // --- DB-backed: add / list / remove / load ---
 
     @Test

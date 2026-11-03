@@ -28,7 +28,7 @@ Mit 🔒 markierte Endpunkte sind `@HostOnly` und erfordern den Header
 
 | Methode | Pfad | Beschreibung |
 |---|---|---|
-| `GET` | `/search?q=` | Suche beim Provider; leeres `q` → Top-Charts. Jedes Ergebnis in `tracks.items` hat zusätzlich `blocked: true/false` (Blacklist der Party, ohne Begründung). |
+| `GET` | `/search?q=&audience=` | Suche beim Provider; leeres `q` → Top-Charts. Jedes Ergebnis in `tracks.items` hat zusätzlich `blocked: true/false` (Blacklist der Party, ohne Begründung). Mit `audience=guest` (Gast-Suche im Web) werden Songs gesperrter Artists entfernt und `hiddenHint` gesetzt: `ARTIST` (Suchbegriff = Name eines gesperrten Artists), `SOME` (andere Songs entfernt) oder `null`. |
 | `GET` | `/{id}` | Einzelnen Track abrufen. |
 | `GET` | `/queue?deviceId=` | Sortierte Queue; mit `deviceId` zusätzlich `hasVoted` pro Eintrag. |
 | `POST` | `/addToPlaylist` | Song(s) zur Queue hinzufügen. Body: Liste von URIs. Ist der Song bereits **wartend** in der Queue → `409` „Song ist schon in der Warteschlange.“ (der gerade spielende Song darf erneut hinzugefügt werden). Steht der Song auf der Blacklist → `403` „Nicht erlaubt.“ |

@@ -163,6 +163,74 @@ describe('Guest', () => {
     expect(comp.lastSearchedTerm()).toBe('xyzxyzxyz');
   });
 
+  it('searches in guest mode so banned artists are removed by the backend', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] }, hiddenHint: null }));
+
+    await comp.search('drake');
+
+    expect(trackApi.searchTracks).toHaveBeenCalledWith('drake', { guest: true });
+  });
+
+  it('shows the artist hint when the guest searched for a banned artist', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] }, hiddenHint: 'ARTIST' }));
+
+    await comp.search('drake');
+
+    expect(comp.hiddenHintText()).toBe('Dieser Artist ist nicht zulässig.');
+  });
+
+  it('shows the general hint when other songs were hidden', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [{ id: 't1' }] }, hiddenHint: 'SOME' }));
+
+    await comp.search('hotline');
+
+    expect(comp.hiddenHintText()).toBe('Einige Ergebnisse sind auf dieser Party nicht zulässig.');
+  });
+
+  it('shows the general hint when a result is greyed out', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [{ id: 't1', blocked: true }, { id: 't2', blocked: false }] }, hiddenHint: null }));
+
+    await comp.search('live');
+
+    expect(comp.hiddenHintText()).toBe('Einige Ergebnisse sind auf dieser Party nicht zulässig.');
+  });
+
+  it('keeps the artist hint when greyed-out results are shown as well', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [{ id: 't1', blocked: true }] }, hiddenHint: 'ARTIST' }));
+
+    await comp.search('drake');
+
+    expect(comp.hiddenHintText()).toBe('Dieser Artist ist nicht zulässig.');
+  });
+
+  it('has no hint when no result is blocked', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [{ id: 't1', blocked: false }] }, hiddenHint: null }));
+
+    await comp.search('queen');
+
+    expect(comp.hiddenHintText()).toBeNull();
+  });
+
+  it('has no hint when nothing was hidden, and clears it on an empty query or error', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] }, hiddenHint: 'ARTIST' }));
+    await comp.search('drake');
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] }, hiddenHint: null }));
+    await comp.search('queen');
+    expect(comp.hiddenHintText()).toBeNull();
+
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] }, hiddenHint: 'SOME' }));
+    await comp.search('drake');
+    await comp.search('   ');
+    expect(comp.hiddenHint()).toBeNull();
+
+    spyOn(console, 'error');
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] }, hiddenHint: 'SOME' }));
+    await comp.search('drake');
+    trackApi.searchTracks.and.returnValue(throwError(() => new Error('offline')));
+    await comp.search('drake');
+    expect(comp.hiddenHint()).toBeNull();
+  });
+
   it('ngOnInit opens the event stream with the party id, so party events reach this page', () => {
     comp.ngOnInit();
 
@@ -247,6 +315,83 @@ describe('Guest search results (DOM)', () => {
     expect(cards[1].textContent).not.toContain('Nicht erlaubt.');
     expect((cards[1].querySelector('.add-button') as HTMLButtonElement).disabled).toBe(false);
 
+    fixture.destroy();
+  });
+});
+
+// The hint below the search field when songs by banned artists were removed (search spec).
+describe('Guest hidden-results hint (DOM)', () => {
+  function render(response: any) {
+    TestBed.configureTestingModule({
+      imports: [Guest],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: PartyService, useValue: { currentPartyId: 'party-1' } },
+        { provide: TrackService, useValue: { searchTracks: () => of(response) } },
+        { provide: SpotifyWebPlayerService, useValue: { addToPlaylist: () => of({}) } },
+        { provide: QueueStateService, useValue: { inQueueUris$: new BehaviorSubject<Set<string>>(new Set()), refresh: () => {} } },
+      ],
+    });
+    return TestBed.createComponent(Guest);
+  }
+
+  async function searchAndRender(fixture: any, term: string) {
+    await fixture.componentInstance.search(term);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return fixture.nativeElement.querySelector('.search-status').textContent as string;
+  }
+
+  it('replaces "Keine Treffer" with the artist hint when every result was hidden', async () => {
+    const fixture = render({ tracks: { items: [] }, hiddenHint: 'ARTIST' });
+    fixture.detectChanges();
+
+    const status = await searchAndRender(fixture, 'Drake');
+
+    expect(status).toContain('Dieser Artist ist nicht zulässig.');
+    expect(status).not.toContain('Keine Treffer');
+    fixture.destroy();
+  });
+
+  it('shows the general hint next to the remaining results', async () => {
+    const fixture = render({
+      tracks: { items: [{ id: 't2', uri: 'spotify:track:t2', name: 'Other', artists: [{ name: 'B' }], blocked: false }] },
+      hiddenHint: 'SOME',
+    });
+    fixture.detectChanges();
+
+    const status = await searchAndRender(fixture, 'hotline');
+
+    expect(status).toContain('Einige Ergebnisse sind auf dieser Party nicht zulässig.');
+    expect(fixture.nativeElement.querySelectorAll('.track-card').length).toBe(1);
+    fixture.destroy();
+  });
+
+  it('shows the general hint above a greyed-out result', async () => {
+    const fixture = render({
+      tracks: { items: [{ id: 't1', uri: 'spotify:track:t1', name: 'Song X (Live)', artists: [{ name: 'A' }], blocked: true }] },
+      hiddenHint: null,
+    });
+    fixture.detectChanges();
+
+    const status = await searchAndRender(fixture, 'song x');
+
+    expect(status).toContain('Einige Ergebnisse sind auf dieser Party nicht zulässig.');
+    const card: HTMLElement = fixture.nativeElement.querySelector('.track-card');
+    expect(card.classList).toContain('blocked');
+    expect(card.textContent).not.toContain('nicht zulässig');
+    fixture.destroy();
+  });
+
+  it('still shows "Keine Treffer" when nothing was hidden', async () => {
+    const fixture = render({ tracks: { items: [] }, hiddenHint: null });
+    fixture.detectChanges();
+
+    const status = await searchAndRender(fixture, 'xyz');
+
+    expect(status).toContain('Keine Treffer für „xyz“');
+    expect(status).not.toContain('nicht zulässig');
     fixture.destroy();
   });
 });

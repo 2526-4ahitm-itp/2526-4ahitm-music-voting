@@ -55,6 +55,14 @@ describe('SearchHost', () => {
     expect(comp.isSearching()).toBe(false);
   });
 
+  it('searches without guest mode, so the host still sees banned-artist songs greyed out', async () => {
+    trackApi.searchTracks.and.returnValue(of({ tracks: { items: [] } }));
+
+    await comp.search('drake');
+
+    expect(trackApi.searchTracks).toHaveBeenCalledWith('drake');
+  });
+
   it('search sets an empty list when the response has no track items', async () => {
     trackApi.searchTracks.and.returnValue(of({}));
 

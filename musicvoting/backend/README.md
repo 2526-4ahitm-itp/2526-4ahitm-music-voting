@@ -57,7 +57,13 @@ The host can block words, artists and songs per party (`BlacklistResource`, all 
 All matching lives in `BlacklistService.Blacklist#isBlocked` (words match as whole words,
 case-insensitive; artists by Spotify ID; songs by track URI). It is applied when a song is
 added (`403 "Nicht erlaubt."`), during the auto-refill, and as a `blocked` flag on search
-results. Full API reference: `hugo/content/dev/api-reference.md`.
+results.
+
+The web guest search calls `GET /api/party/{partyId}/track/search?q=…&audience=guest`. In
+that mode songs by a banned artist are removed from the results instead of flagged, and the
+response gets `hiddenHint`: `ARTIST` (the query is a banned artist's name), `SOME` (other
+songs were removed) or `null`. Without `audience=guest` (host search, iOS app) the response is
+unchanged. Full API reference: `hugo/content/dev/api-reference.md`.
 
 ## Packaging and running the application
 

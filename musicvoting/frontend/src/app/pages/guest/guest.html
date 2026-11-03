@@ -30,6 +30,10 @@
         <p class="host-status"><mv-spinner label="" /><span>Suche läuft …</span></p>
       } @else if (searchFailed()) {
         <p class="host-status error">{{ connectionLostText }}</p>
+      } @else if (hiddenHintText(); as hint) {
+        <!-- Songs by banned artists were removed; the hint replaces "Keine Treffer"
+             when nothing is left (search spec). -->
+        <p class="host-status hidden-hint">{{ hint }}</p>
       } @else if (lastSearchedTerm() && tracks().length === 0) {
         <p class="host-status">Keine Treffer für „{{ lastSearchedTerm() }}“</p>
       }
