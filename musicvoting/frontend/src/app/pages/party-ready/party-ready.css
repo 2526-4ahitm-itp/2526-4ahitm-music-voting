@@ -26,7 +26,9 @@
   padding: var(--mv-space-2) var(--mv-space-4);
   border-radius: 999px;
   background: var(--mv-stage-tint-2);
-  color: var(--mv-on-stage-muted);
+  /* Full ink, not muted: on a translucent chip right on the glow, muted text
+     drops below 4.5:1 (contrast.tokens.spec.ts). */
+  color: var(--mv-on-stage);
   font-weight: 600;
   transition: background-color var(--mv-duration-base) var(--mv-ease-out),
     color var(--mv-duration-base) var(--mv-ease-out);

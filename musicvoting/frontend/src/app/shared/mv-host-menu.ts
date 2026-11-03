@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, inject, input, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PartyService } from '../services/party.service';
 import { MvIcon, MvIconName } from './mv-icon';
@@ -34,6 +34,7 @@ interface MenuEntry {
   host: { '(document:keydown.escape)': 'close()' },
   template: `
     <button
+      #burger
       type="button"
       class="burger"
       aria-label="Menü öffnen"
@@ -43,10 +44,10 @@ interface MenuEntry {
       <mv-icon name="menu" [size]="26" />
     </button>
 
-    <nav id="mv-host-menu-panel" class="panel" [class.open]="open()" aria-label="Gastgeber-Menü" [attr.inert]="open() ? null : ''">
+    <nav #panel id="mv-host-menu-panel" class="panel" [class.open]="open()" aria-label="Gastgeber-Menü" [attr.inert]="open() ? null : ''">
       <div class="panel-head">
         <span class="brand">MusicVoting</span>
-        <button type="button" class="close" aria-label="Menü schließen" (click)="close()">
+        <button #closeBtn type="button" class="close" aria-label="Menü schließen" (click)="close()">
           <mv-icon name="x" [size]="22" />
         </button>
       </div>
@@ -177,11 +178,29 @@ export class MvHostMenu {
     ];
   }
 
+  private readonly injector = inject(Injector);
+  private readonly burger = viewChild.required<ElementRef<HTMLButtonElement>>('burger');
+  private readonly panel = viewChild.required<ElementRef<HTMLElement>>('panel');
+  private readonly closeBtn = viewChild.required<ElementRef<HTMLButtonElement>>('closeBtn');
+
   toggle(): void {
-    this.open.update((v) => !v);
+    if (this.open()) {
+      this.close();
+      return;
+    }
+    this.open.set(true);
+    // Keyboard users land inside the panel. The panel is inert until the next
+    // render, so focusing right away would silently fail.
+    afterNextRender(() => this.closeBtn().nativeElement.focus(), { injector: this.injector });
   }
 
   close(): void {
+    if (!this.open()) return;
+    // The panel turns inert on close; focus inside it would fall back to <body>
+    // and keyboard users would start over at the top (WCAG 2.4.3). Hand it back
+    // to the burger. Clicks elsewhere (overlay, a menu link) keep their own focus.
+    const focusInPanel = this.panel().nativeElement.contains(document.activeElement);
     this.open.set(false);
+    if (focusInPanel) this.burger().nativeElement.focus();
   }
 }

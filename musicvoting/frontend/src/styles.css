@@ -112,7 +112,7 @@
 /* Light mode for the stage pages (team decision 2026-11-03: switchable,
    dark stays the default). Contrast: --mv-on-stage/-muted are the light-
    surface inks (>= 7:1 / >= 8:1 on white). Since the light glow was made
-   stronger (2026-11-03), muted (#4E3D56) and accent (#842419, a deep coral)
+   stronger (2026-11-03), muted (#4E3D56) and accent (#80231A, a deep coral; darkened a bit further after the token contrast test, task 5.5)
    are darker so they keep >= 4.5:1 even on the strongest point of the glow
    (measured ~4.9:1 / ~4.6:1; ~9.9:1 / ~9.3:1 on white). */
 :root[data-theme='light'] {
@@ -120,7 +120,7 @@
   --mv-stage-raised: #FFFFFF;
   --mv-on-stage: #1D0A24;
   --mv-on-stage-muted: #4E3D56;
-  --mv-stage-accent: #842419;
+  --mv-stage-accent: #80231A;
   --mv-stage-card: rgba(255, 255, 255, 0.82);
   --mv-stage-row: #FFFFFF;
   --mv-stage-bar: rgba(250, 246, 252, 0.92);
@@ -199,10 +199,13 @@ p {
 
 /* Keyboard focus is always visible (web-ui spec "Focus Is Always Visible").
    Mouse and touch clicks do not show the ring because :focus-visible only
-   matches keyboard-style focus. */
+   matches keyboard-style focus.
+   !important on purpose: component styles load after this file, and buttons
+   that draw their outline with an inset box-shadow (option cards, search
+   results) would otherwise replace the ring and hide keyboard focus. */
 :focus-visible {
   outline: none;
-  box-shadow: var(--mv-focus-ring);
+  box-shadow: var(--mv-focus-ring) !important;
   border-radius: var(--mv-radius-sm);
 }
 
