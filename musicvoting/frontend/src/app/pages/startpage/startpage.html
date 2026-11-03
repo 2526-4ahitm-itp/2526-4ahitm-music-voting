@@ -1,117 +1,88 @@
-<div class="layout">
-  <div class="content-cards">
+<!--
+  TV / player screen. Laid out for viewing distance on a 16:9 display
+  (dashboard spec "Persistent Dashboard Elements"): the now-playing song is
+  the largest element, the join block (QR + Voting-PIN) stays fixed on the
+  right, and only the top 5 queue entries are shown in large type.
+  No host controls live here (dashboard spec "No Host Controls on Dashboard").
+-->
+<main class="stage">
+  <div class="glow" aria-hidden="true"></div>
 
-    <div class="left">
+  <section class="now" aria-label="Läuft gerade">
+    <mv-cover class="now-cover" size="large" [eager]="true" [images]="currentTrack?.album?.images" />
 
-      <section class="current-song">
-        @if (currentTrack) {
-          <img class="cover"
-              [src]="currentTrack.album.images[0]?.url"
-              height="300px" width="300px" alt="Cover">
+    <div class="now-info">
+      @if (currentTrack) {
+        <p class="now-label">Läuft gerade</p>
+        <h1 class="now-title">{{ currentTrack.name }}</h1>
+        <p class="now-artist">{{ currentTrack.artists?.[0]?.name }}</p>
 
-          <div class="song-info">
-            <h1>{{ currentTrack.name }}</h1>
-            <p>{{ currentTrack.artists[0]?.name }}</p>
-
-            <div class="progress">
-              <span>{{ formatTime(currentPosition) }}</span>
-
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="progressPercent"></div>
-              </div>
-
-              <span>{{ formatTime(currentDuration || currentTrack.duration_ms) }}</span>
-            </div>
-
+        <div class="progress">
+          <span class="time">{{ formatTime(currentPosition) }}</span>
+          <div class="progress-bar" role="progressbar" aria-label="Fortschritt"
+               [attr.aria-valuenow]="progressPercent | number:'1.0-0'" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill" [style.width.%]="progressPercent"></div>
           </div>
-        } @else {
-          <img class="cover" src="../../../assets/img/placeholder.png" height="300px" width="300px" alt="Kein Song">
-          <div class="song-info">
-            <div class="status-box">
-            @if (tracks.length > 0) {
-              <h1>Playlist nicht gestartet</h1>
-              <p>Der Host kann den ersten Song im Dashboard starten.</p>
-            } @else {
-              <h1>Kein Song aktiv</h1>
-              <p>Füge Songs hinzu oder starte die Playlist über die Steuerung.</p>
-            }
-            </div>
-          </div>
-        }
-      </section>
-
-
-
-      <section class="queue">
-        <h2>Warteschlange</h2>
-
-        <div class="queue-info">
-          <span>Lieder in der Warteschlange: {{ tracks.length }}</span>
+          <span class="time">{{ formatTime(currentDuration || currentTrack.duration_ms) }}</span>
         </div>
-
-        @if (tracks.length === 0) {
-          <div class="queue-text-default">Keine Songs in der Warteschlange!</div>
-        } @else {
-          <div class="queue-grid">
-            @for (track of tracks; track track.id; let i = $index) {
-              <div class="track">
-                <div class="cover-wrapper">
-                  <span class="queue-number">{{ i + 1 }}</span>
-
-                  @if (track.album?.images?.length) {
-                    <img [src]="track.album.images[track.album.images.length - 1].url"
-                        alt="Cover">
-                  }
-                </div>
-
-                <div class="track-info">
-                  <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
-                  <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
-                </div>
-              </div>
-            }
-          </div>
-        }
-
-      </section>
-
+      } @else if (tracks.length > 0) {
+        <h1 class="now-title">Gleich geht's los</h1>
+        <p class="now-artist">Der erste Song startet in wenigen Sekunden.</p>
+      } @else {
+        <!-- Guest-facing empty state (dashboard spec "Dashboard Shows a Guest-Facing Empty State"). -->
+        <h1 class="now-title empty-call">Scan den Code und wünsch dir den ersten Song!</h1>
+      }
     </div>
 
-    <div class="right">
+    <footer class="stage-footer">
+      <span class="wordmark">MusicVoting</span>
+      <mv-credit-footer tone="dark" />
+    </footer>
+  </section>
 
-      <div class="qr-code">
-
-        <div class="host-pin-box">
-          <div class="pin-content">
-            <p class="party-pin-label">Voting-PIN</p>
-            <p class="party-pin-value"><strong>{{ pin || 'nicht verfügbar' }}</strong></p>
-          </div>
-          <div class="crown-icon" style="font-size: 40px; line-height: 1;">
-            👑
-          </div>
-        </div>
-
-        @if (qrUrl) {
-          <img class="cover" [src]="qrUrl" alt="QR-Code">
-        } @else {
-          <img class="cover" src="../../../assets/img/default-qr.png" alt="QR-Code">
-        }
-        <p class="qr-code-text">
-          QR-Code scannen & mitmachen: Songs hinzufügen oder für deine Favoriten voten!
+  <aside class="side">
+    <section class="join" aria-label="Mitmachen">
+      <img class="qr" [src]="qrUrl || 'assets/img/default-qr.png'" alt="QR-Code zum Mitmachen" />
+      <div class="join-text">
+        <p class="pin-label">
+          <mv-icon name="users" [size]="28" />
+          Voting-PIN
         </p>
-
-
+        <p class="pin-value">{{ pin || '–––––' }}</p>
+        <p class="join-hint">Scannen oder PIN eingeben – dann voten &amp; Songs wünschen.</p>
       </div>
+    </section>
 
-      <div class="logo-box">
-        <span class="logo">MusicVoting</span>
-        <div class="powered-by">
-          <span class="powered-by-text">powered by</span>
-          <img class="htl-logo" src="../../../assets/img/htl-leonding-logo.jpg" alt="HTL Leonding">
-        </div>
-      </div>
+    <section class="queue" aria-label="Als Nächstes">
+      <h2 class="queue-title">Als Nächstes</h2>
 
-    </div>
-
-  </div>
-</div>
+      @if (tracks.length === 0) {
+        <p class="queue-empty">
+          @if (currentTrack) {
+            Noch nichts in der Warteschlange – wünsch dir was!
+          }
+        </p>
+      } @else {
+        <ol class="queue-list">
+          @for (track of visibleTracks; track trackById($index, track); let i = $index) {
+            <li class="row" [attr.data-flip-id]="trackById(i, track)">
+              <span class="rank">{{ i + 1 }}</span>
+              <mv-cover class="row-cover" [images]="track.album?.images" />
+              <span class="row-text">
+                <span class="row-title">{{ track.name || 'Unbekannter Titel' }}</span>
+                <span class="row-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</span>
+              </span>
+              <span class="row-likes" [attr.aria-label]="(track.likeCount ?? 0) + ' Likes'">
+                <mv-icon name="heart" [size]="30" [filled]="true" />
+                <span class="row-likes-count">{{ track.likeCount ?? 0 }}</span>
+              </span>
+            </li>
+          }
+        </ol>
+        @if (moreCount > 0) {
+          <p class="queue-more">+ {{ moreCount }} weitere</p>
+        }
+      }
+    </section>
+  </aside>
+</main>

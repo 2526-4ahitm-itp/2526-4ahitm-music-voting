@@ -24,6 +24,7 @@
               "src/favicon.ico"
             ],
             "styles": [
+              "@fontsource-variable/bricolage-grotesque/opsz.css",
               "src/styles.css"
             ]
           },
@@ -80,6 +81,7 @@
               }
             ],
             "styles": [
+              "@fontsource-variable/bricolage-grotesque/opsz.css",
               "src/styles.css"
             ]
           }

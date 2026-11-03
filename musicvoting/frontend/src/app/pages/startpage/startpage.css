@@ -1,424 +1,362 @@
-body{
-  font-family: var(--font), sans-serif;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
+/*
+ * TV / player stage.
+ *
+ * Dark background so the screen does not glare in a dim room; the brand
+ * gradient appears as light behind the cover instead of a full-page fill.
+ * The team compared light, full-gradient and muted-gradient variants on
+ * 2026-11-03 and chose this dark stage.
+ *
+ * All sizes are tied to the viewport height (vh) without px floors, so the
+ * composition always fits the window exactly: a 720p beamer, a browser
+ * window with toolbars and a 4K TV show the same layout and all 5 queue
+ * rows. On 1920x1080 the spec minimums hold (title >= 48px, queue rows
+ * >= 32px). Height budget of the side column (90vh): join block 35.2vh,
+ * gap 2.5vh, queue title 4.8vh, 5 rows of ~7.3vh with 0.8vh gaps, "+ N weitere"
+ * 4.3vh, about 2vh left as slack. Icons in the rows are vh-sized too.
+ */
+
+:host {
+  display: block;
 }
 
-.layout{
-  width: 100vw;
-  height: 100vh;
-  font-family: var(--font), sans-serif;
-  background: linear-gradient(135deg, #8403A6, #F2594B);
-}
-
-.content-cards{
-  display: flex;
-  width: 100vw;
-}
-
-.left{
-  width: 80vw;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-.right{
-  width: 20vw;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-/* CURRENT SONG */
-
-.current-song{
-  display: flex;
-  gap: 2rem;
-  width: auto;
+.stage {
+  position: relative;
   box-sizing: border-box;
-  padding: 2rem;
-
-  margin: 2rem;
-  background-color: white;
-
-  border-radius: 30px;
-  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 4vw;
+  padding: 5vh 4vw;
+  background: var(--mv-stage);
+  color: var(--mv-on-stage);
+  font-family: var(--mv-font-text);
+  isolation: isolate;
 }
 
-.song-info{
-  padding-left: 2rem;
-  flex: 1;
+/* Brand light on the dark stage: a strong purple glow behind the cover,
+   coral flowing in from below, and a second coral/purple wash behind the
+   queue so the brand colours carry the whole screen, not just one corner.
+   The base stays dark so text contrast and the calm TV feel are kept. */
+.glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60vw 70vh at 22% 38%, rgba(132, 3, 166, 0.85), transparent 70%),
+    radial-gradient(55vw 60vh at 40% 95%, rgba(242, 89, 75, 0.6), transparent 70%),
+    radial-gradient(50vw 65vh at 92% 85%, rgba(242, 89, 75, 0.45), transparent 70%),
+    radial-gradient(45vw 55vh at 85% 10%, rgba(132, 3, 166, 0.5), transparent 70%);
+  filter: blur(30px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ---------- Now playing ---------- */
+
+.now {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 4vh;
+  min-height: 0;
+}
+
+.now-cover {
+  width: min(48vh, 34vw);
+  height: min(48vh, 34vw);
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(132, 3, 166, 0.35);
+  background: var(--mv-stage-raised);
+}
+
+.now-info {
   min-width: 0;
+  align-self: start;
 }
 
-.song-info > h1 {
-  font-size: 2.5rem;
+.now-label {
+  margin: 0 0 1vh;
+  font-size: 2.4vh;
+  font-weight: 700;
+  color: var(--mv-coral-light);
 }
-.song-info > p {
-  font-size: 1.5rem;
+
+.now-title {
+  margin: 0;
+  font-family: var(--mv-font-display);
+  font-size: 6.2vh;
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.now-title.empty-call {
+  -webkit-line-clamp: 3;
+  max-width: 18ch;
+}
+
+.now-artist {
+  margin: 1.2vh 0 0;
+  font-size: 3.2vh;
+  font-weight: 500;
+  color: var(--mv-on-stage-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .progress {
-  margin-top: 10rem;
-  width: 100%;
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 1.5vw;
+  margin-top: 3.5vh;
+  max-width: 46vw;
+}
+
+.time {
+  font-size: 2vh;
+  font-variant-numeric: tabular-nums;
+  color: var(--mv-on-stage-muted);
+  min-width: 4ch;
 }
 
 .progress-bar {
   flex: 1;
-  min-width: 0;
-  height: 6px;
-  background-color: #eee;
-  border-radius: 10px;
+  height: 0.8vh;
+  border-radius: var(--mv-radius-pill);
+  background: rgba(251, 244, 255, 0.16);
+  overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background-color: #F2594B;
-  width: 0;
-  transition: width 0.5s linear;
-  border-radius: 4px 0 0 4px;
+  border-radius: inherit;
+  background: var(--mv-gradient);
+  transition: width 1s linear;
 }
 
-
-/* WARTESCHLANGE */
-
-.queue{
-  gap: 2rem;
-  width: auto;
-  height: max-content;
-  box-sizing: border-box;
-  padding: 2rem 2rem 0 2rem;
-
-  flex-grow: 1;
-  overflow: auto;
-
-  margin: 0 2rem 2rem 2rem;
-  background-color: white;
-
-  border-radius: 30px;
-  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
-}
-
-.queue > h2{
-  font-size: 2rem;
-  margin: 0 0 0 1.5rem;
-}
-
-.queue-info {
-  font-size: 1rem;
-  margin: 0.5rem 0 0 1.5rem;
-}
-
-.queue-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-flow: row;
-  gap: 1rem;
-  margin: 1.5rem;
-}
-
-.track {
+.stage-footer {
   display: flex;
-  gap: 1rem;
-  font-weight: bold;
-  font-size: 1.2rem;
-  position: relative;
   align-items: center;
-  box-shadow: 0 0 0.4rem 0.4rem rgba(0, 0, 0, 0.1);
-  margin: 0.75rem;
+  gap: 2vw;
 }
 
-.track-info{
-  height: 60px;
+.wordmark {
+  font-family: var(--mv-font-display);
+  font-size: 2.2vh;
+  font-weight: 750;
+  color: var(--mv-on-stage);
 }
 
-.song-artist,
-.song-title{
-  margin-bottom: .5rem;
+/* ---------- Side column: join + queue ---------- */
+
+.side {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 2.5vh;
+  min-height: 0;
 }
 
-.song-title{
-  margin-top: .2rem;
-  font-size: 15px;
+.join {
+  display: flex;
+  align-items: center;
+  gap: 2vw;
+  padding: 1.6vh 1.4vw;
+  border-radius: 24px;
+  background: rgba(18, 6, 26, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(251, 244, 255, 0.12);
 }
 
-.song-artist{
-  font-size: 12px;
+.qr {
+  width: 32vh;
+  height: 32vh;
+  border-radius: 14px;
+  background: #fff;
+  padding: 1vh;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
-.cover-wrapper {
-  position: relative;
-  width: 5.2rem;
-  height: 5.2rem;
+
+.join-text {
+  min-width: 0;
+}
+
+.pin-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6vw;
+  margin: 0;
+  font-size: min(2.4vh, 1.3vw);
+  font-weight: 600;
+  color: var(--mv-on-stage-muted);
+}
+
+/* The PIN must never overflow sideways, so on narrower screens (16:10,
+   4:3) it is limited by the width as well. */
+.pin-value {
+  margin: 0.4vh 0 1vh;
+  font-family: var(--mv-font-display);
+  font-size: min(8vh, 4.2vw);
+  white-space: nowrap;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.join-hint {
+  margin: 0;
+  font-size: min(2.1vh, 1.15vw);
+  line-height: 1.3;
+  color: var(--mv-on-stage-muted);
+}
+
+.queue {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.queue-title {
+  margin: 0 0 1vh;
+  font-size: 3.2vh;
+  font-weight: 700;
+}
+
+.queue-empty {
+  margin: 0;
+  font-size: 3vh;
+  color: var(--mv-on-stage-muted);
+}
+
+.queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  align-content: start;
+  gap: 0.8vh;
+  /* The list takes the remaining height and clips on very small screens,
+     so the "+ N weitere" line below it never falls off the screen. */
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
 }
 
-.cover-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.queue-number {
-  position: absolute;
-  inset: 0;
-  display: flex;
+.row {
+  display: grid;
+  grid-template-columns: 2.2ch auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: rgba(255,255,255,0.85);
-  background: rgba(0,0,0,0.4);
+  gap: 1.2vw;
+  padding: 0.6vh 1vw;
+  border-radius: 16px;
+  background: rgba(18, 6, 26, 0.45);
 }
 
-.queue-text-default {
-  margin: 1rem 2rem 3rem 1.5rem;
+/* The leading song gets a quiet highlight: it is what plays next. */
+.row:first-child {
+  background: rgba(132, 3, 166, 0.55);
 }
 
-/* RIGHT SIDE */
-
-
-/* HOST PIN */
-.host-pin-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.2rem 1.8rem;
-  width: 80%;
-  /* Optik des Containers */
-  background-color: #efefef;
-  border-radius: 20px;
-  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-}
-
-.pin-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.party-pin-label {
-  margin: 0;
-  color: #8e8e8e;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.party-pin-value {
-  margin: 0;
-  color: #000000;
-  font-size: 38px;
+.rank {
+  font-family: var(--mv-font-display);
+  font-size: 3.4vh;
   font-weight: 800;
-  letter-spacing: 20%;
+  color: var(--mv-on-stage-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-.crown-icon {
-  margin-left: 20px;
-  display: flex;
-  align-items: center;
-  height: 2vh;
+.row-cover {
+  width: 5.6vh;
+  height: 5.6vh;
 }
 
-/* QR-CODE */
-
-.qr-code{
+.row-text {
+  min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+.row-title {
+  font-size: 3.1vh;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-artist {
+  font-size: 2.2vh;
+  line-height: 1.2;
+  color: var(--mv-on-stage-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-likes {
+  display: inline-flex;
   align-items: center;
-  justify-content: start;
-
-  gap: 2rem;
-  width: auto;
-  box-sizing: border-box;
-  padding: 2rem;
-  align-content: start;
-
-  flex-grow: 1;
-  overflow: auto;
-
-  margin: 2rem 2rem 2rem 0;
-  background-color: white;
-
-  border-radius: 30px;
-  box-shadow: 0 0 0.9rem 0.9rem rgba(0, 0, 0, 0.1);
+  gap: 0.5vw;
+  color: var(--mv-coral);
 }
 
-.qr-code > .cover {
-  width: 100%;
+/* The heart scales with the screen like the text; a fixed px icon made rows
+   taller than planned on low windows and pushed the 5th song off screen. */
+.row-likes mv-icon ::ng-deep svg {
+  width: 3vh;
+  height: 3vh;
 }
 
-.qr-code-text{
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-top: 0;
-  /* farbverlauf*/
-  background: linear-gradient(135deg, #F2594B, #8403A6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.row-likes-count {
+  font-family: var(--mv-font-display);
+  font-size: 3.4vh;
+  font-weight: 800;
+  color: var(--mv-on-stage);
+  font-variant-numeric: tabular-nums;
+  min-width: 2ch;
 }
 
-.logo-box {
-  width: calc(20vw - 2rem);
-  height: auto;
-  box-sizing: border-box;
-  align-content: center;
-  text-align: center;
-  margin-top: auto;
-  margin-bottom: 2rem;
-}
-
-span.logo {
-  font-size: calc((20vw - 2rem)/6.5);
-  font-weight: bold;
-  text-align: center;
-}
-
-.powered-by {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.35rem;
-}
-
-.powered-by-text {
-  font-size: 0.85rem;
+.queue-more {
+  flex-shrink: 0;
+  margin: 1.2vh 0 0;
+  font-size: 2.6vh;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  opacity: 0.7;
+  color: var(--mv-on-stage-muted);
 }
 
-.htl-logo {
-  height: 2.9rem;
-  width: auto;
-  mix-blend-mode: multiply;
+/* Squarish screens (4:3 beamers, small windows): the column is too narrow
+   for the hint next to the QR code, which would make the join block taller
+   than planned and push the 5th song off the screen. QR code and PIN are
+   enough to join, so the hint is dropped and the QR code shrinks a little. */
+@media (max-aspect-ratio: 3/2) {
+  .join-hint {
+    display: none;
+  }
+  .qr {
+    width: 27vh;
+    height: 27vh;
+  }
 }
 
-
-
-
-@media (min-width: 48rem) and (max-width: 87.5rem) {
-
-  .status-box h1 {
-    font-size: 1.8rem !important;
-    color: #333;
-    margin-bottom: 0.5rem;
-  }
-
-  .status-box p {
-    font-size: 1.1rem !important;
-    color: #666;
-  }
-
-
-  .content-cards {
-    display: flex;
-    width: 100vw;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-
-  .left {
-    width: 75vw;
-  }
-
-  .right {
-    margin-left: 1.5rem;
-    width: 25vw;
-  }
-
-  .qr-code, .logo-box {
-    box-sizing: border-box;
-  }
-
-  .current-song .cover {
-    height: 250px;
-    width: 250px;
-  }
-
-  .current-song .song-info h1 {
-    font-size: 2rem;
-  }
-
-  .current-song .song-info p {
-    font-size: 1.4rem;
-  }
-
-  .queue{
+/* Portrait or narrow displays (e.g. a phone opened as player): stack. */
+@media (max-aspect-ratio: 1/1) {
+  .stage {
     height: auto;
+    grid-template-columns: 1fr;
+    overflow: visible;
   }
-
-  .queue h2 {
-    font-size: 1.4rem;
+  .now-cover {
+    width: min(70vw, 45vh);
+    height: min(70vw, 45vh);
   }
-
-  .queue-text-default {
-    font-size: 1.1rem;
-  }
-
-  .queue-grid {
-    margin-left: 0.5rem;
-    gap: 0;
-    width: auto;
-  }
-
-  .track{
-    display: flex;
-    align-items: center;
-    position: relative;
-    padding-right: 4rem;
-    width: 20vw;
-    gap: 1rem;
-    box-sizing: border-box;
-  }
-
-  .track-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .cover-wrapper{
-    width: 10vw;
-    padding: 0;
-  }
-
-  .host-pin-box .crown-icon {
-    margin-top: 1rem;
-    font-size: 30px !important;
-  }
-
-  .right .qr-code .cover {
-    height: 230px;
-    width: 230px;
-  }
-
-
-  .qr-code {
-    position: static;
-    width: 85%;
-  }
-
-  .logo-box {
-    width: calc(25vw - 2rem);
-    height: auto;
-    margin-top: auto;
-    margin-bottom: 2rem;
-  }
-
-  .logo-box .logo {
-    font-size: calc((25vw - 2rem)/6.5);
-  }
-
-  .play-icon, .skip-icon {
-    margin-top: 1rem;
+  .progress {
+    max-width: none;
   }
 }
