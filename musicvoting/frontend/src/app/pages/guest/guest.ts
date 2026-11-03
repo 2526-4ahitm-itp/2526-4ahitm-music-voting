@@ -1,8 +1,9 @@
-import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, effect} from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, effect, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { QueueStateService } from '../../services/queue-state';
+import { PartyService } from '../../services/party.service';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -22,9 +23,12 @@ export class Guest implements OnInit, OnDestroy {
   isSearching = signal<boolean>(false);
   menuOpen = false;
   addingTrackId: string | null = null;
+  /** Last add rejection from the backend, shown verbatim above the results. */
+  addError: string | null = null;
   inQueueUris = new Set<string>();
   private eventSource?: EventSource;
   private queueStateSubscription?: Subscription;
+  private partyService = inject(PartyService);
 
   private searchAutoTrigger = toObservable(this.searchQuery).pipe(
     debounceTime(400),
@@ -46,7 +50,11 @@ export class Guest implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     });
 
-    this.eventSource = new EventSource('/api/spotify/events?source=web');
+    // The backend only forwards party events (queue-updated, blacklist-updated, …) to
+    // subscribers that name their party, so the party ID must be part of the URL.
+    const partyId = this.partyService.currentPartyId;
+    const partyQuery = partyId ? `&partyId=${encodeURIComponent(partyId)}` : '';
+    this.eventSource = new EventSource(`/api/spotify/events?source=web${partyQuery}`);
     this.eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -54,6 +62,9 @@ export class Guest implements OnInit, OnDestroy {
           this.ngZone.run(() => this.router.navigate(['/']));
         } else if (data?.type === 'queue-updated') {
           this.queueState.refresh();
+        } else if (data?.type === 'blacklist-updated' && this.searchQuery().trim()) {
+          // The host blocked or unblocked something: search again so the greyed-out state is current.
+          this.search(this.searchQuery());
         }
       } catch { /* ignore malformed events */ }
     };
@@ -99,14 +110,20 @@ export class Guest implements OnInit, OnDestroy {
 
   /** Track zur Playlist hinzufügen */
   async addToPlaylist(track: any) {
+    if (track?.blocked) return; // on the party blacklist — the backend would reject it anyway
     this.addingTrackId = track.id;
+    this.addError = null;
     this.cdr.detectChanges();
 
     try {
       await lastValueFrom(this.spotifyService.addToPlaylist(track.uri));
       this.queueState.refresh();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Fehler beim Hinzufügen:', err);
+      // The backend sends German messages meant to be shown verbatim, e.g. "Nicht erlaubt."
+      // (blacklist, 403) or "Song ist schon in der Warteschlange." (409).
+      const message = err?.error?.error;
+      this.addError = typeof message === 'string' ? message : null;
     } finally {
       this.addingTrackId = null;
       this.cdr.detectChanges();

@@ -22,7 +22,7 @@ Die App ist im HTL-Leonding-Cluster deployed und unter
 
 1. **Build & Push:** Backend- und Frontend-Image werden gebaut und nach **GHCR** gepusht
    (`ghcr.io/2526-4ahitm-itp/music-voting-backend` und `…-frontend`, Tags `latest` + Commit-SHA).
-2. **Deploy:** `kubectl apply -f k8s/` im Namespace `student-it220241`.
+2. **Deploy:** `kubectl apply -f deployment/k8s/` im Namespace `student-it220241`.
 3. **Postgres neu starten:** `kubectl rollout restart deployment/postgres` und auf `rollout status`
    warten – so wird das Schema aus der (evtl. geänderten) ConfigMap neu angelegt, **bevor** das
    Backend sich verbindet.

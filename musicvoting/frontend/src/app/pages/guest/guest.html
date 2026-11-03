@@ -32,9 +32,12 @@
     </div>
 
     <main class="main-content">
+      @if (addError) {
+        <p class="add-error">{{ addError }}</p>
+      }
       <div class="track-list">
         @for (track of tracks(); track track.id) {
-          <div class="track-card">
+          <div class="track-card" [class.blocked]="track.blocked">
             <img class="album-cover"
                  [src]="track.album?.images?.[0]?.url || 'assets/placeholder.png'"
                  alt="Cover">
@@ -44,7 +47,7 @@
               <span class="artist-name">{{ track.artists[0]?.name }}</span>
             </div>
 
-            <button class="add-button" (click)="addToPlaylist(track)" [disabled]="addingTrackId === track.id || inQueueUris.has(track.uri)">
+            <button class="add-button" (click)="addToPlaylist(track)" [disabled]="track.blocked || addingTrackId === track.id || inQueueUris.has(track.uri)">
               @if (addingTrackId === track.id || inQueueUris.has(track.uri)) {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>

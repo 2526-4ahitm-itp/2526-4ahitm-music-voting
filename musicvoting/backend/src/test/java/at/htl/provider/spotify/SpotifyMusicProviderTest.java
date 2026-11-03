@@ -1,6 +1,7 @@
 package at.htl.provider.spotify;
 
 import at.htl.domain.*;
+import at.htl.service.BlacklistService;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -448,5 +450,112 @@ class SpotifyMusicProviderTest {
         provider.refillQueue(party);
 
         assertEquals(2, QueueEntry.count("partyId", party.id().value()));
+    }
+
+    // --- finished entry already deleted by a parallel request ("next" twice) ---
+
+    @Test
+    @TestTransaction
+    void deleteQueueEntryIfPresent_whenRowAlreadyGone_doesNotFailOnFlush() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        persistPartyEntity(party);
+        QueueEntry entry = persistQueueEntry(partyId, "spotify:track:done", "Done", OffsetDateTime.now());
+        QueueEntry.flush();
+
+        // Another request deleted the row; this session still holds the loaded entity. The old
+        // deleteById would remove that stale entity and fail at flush with StaleStateException
+        // ("expected row count 1 but was 0"), rolling back the whole advance.
+        QueueEntry.delete("id", entry.id);
+
+        assertFalse(provider.deleteQueueEntryIfPresent(entry.id));
+        assertDoesNotThrow(() -> QueueEntry.flush());
+        assertEquals(0, QueueEntry.count("partyId", partyId));
+    }
+
+    @Test
+    @TestTransaction
+    void deleteQueueEntryIfPresent_removesExistingEntry() {
+        Party party = newParty();
+        String partyId = party.id().value();
+        persistPartyEntity(party);
+        QueueEntry entry = persistQueueEntry(partyId, "spotify:track:done", "Done", OffsetDateTime.now());
+        persistQueueEntry(partyId, "spotify:track:next", "Next", OffsetDateTime.now().plusSeconds(1));
+        QueueEntry.flush();
+
+        assertTrue(provider.deleteQueueEntryIfPresent(entry.id));
+        assertEquals(1, QueueEntry.count("partyId", partyId));
+    }
+
+    // --- blacklist (add-party-blacklist) ---
+
+    private static BlacklistService.Blacklist blacklistOf(BlacklistKind kind, String value) {
+        BlacklistEntry e = new BlacklistEntry();
+        e.kind = kind;
+        e.value = value;
+        return BlacklistService.Blacklist.of(List.of(e));
+    }
+
+    @Test
+    void orderRefillCandidates_dropsBlockedTrackUris() {
+        BlacklistService.Blacklist bl = blacklistOf(BlacklistKind.TRACK, "spotify:track:blocked");
+
+        List<String> ordered = SpotifyMusicProvider.orderRefillCandidates(
+                List.of("spotify:track:blocked", "spotify:track:ok"), Set.of(), bl, newParty());
+
+        assertEquals(List.of("spotify:track:ok"), ordered);
+    }
+
+    @Test
+    void orderRefillCandidates_onlyCandidateBlocked_yieldsNothing() {
+        BlacklistService.Blacklist bl = blacklistOf(BlacklistKind.TRACK, "spotify:track:blocked");
+
+        assertTrue(SpotifyMusicProvider.orderRefillCandidates(
+                List.of("spotify:track:blocked"), Set.of(), bl, newParty()).isEmpty());
+    }
+
+    @Test
+    void orderRefillCandidates_withEmptyBlacklist_keepsPreviousOrderAndRepeatFallback() {
+        Party party = newParty();
+        party.recordAutoFilled("spotify:track:a");
+
+        List<String> ordered = SpotifyMusicProvider.orderRefillCandidates(
+                List.of("spotify:track:a", "spotify:track:b", "spotify:track:queued", "spotify:track:b"),
+                Set.of("spotify:track:queued"), BlacklistService.Blacklist.of(List.of()), party);
+
+        // not-yet-used first, already-used as fallback, queued and duplicates dropped
+        assertEquals(List.of("spotify:track:b", "spotify:track:a"), ordered);
+    }
+
+    @Test
+    void isBlockedTrack_checksTitleArtistIdsAndArtistNamesOfSpotifyJson() {
+        Map<String, Object> track = Map.of(
+                "uri", "spotify:track:1",
+                "name", "Song (Live)",
+                "artists", List.of(Map.of("id", "artist-1", "name", "Oliver")));
+
+        assertTrue(SpotifyMusicProvider.isBlockedTrack(blacklistOf(BlacklistKind.WORD, "live"), "spotify:track:1", track));
+        assertTrue(SpotifyMusicProvider.isBlockedTrack(blacklistOf(BlacklistKind.ARTIST, "artist-1"), "spotify:track:1", track));
+        assertFalse(SpotifyMusicProvider.isBlockedTrack(blacklistOf(BlacklistKind.WORD, "oli"), "spotify:track:1", track));
+        assertFalse(SpotifyMusicProvider.isBlockedTrack(BlacklistService.Blacklist.of(List.of()), "spotify:track:1", track));
+    }
+
+    @Test
+    void markBlockedSearchResults_flagsOnlyBlockedItems() {
+        Map<String, Object> blocked = new java.util.HashMap<>(Map.of(
+                "uri", "spotify:track:1", "name", "Song (Live)", "artists", List.of(Map.of("id", "a1", "name", "A"))));
+        Map<String, Object> allowed = new java.util.HashMap<>(Map.of(
+                "uri", "spotify:track:2", "name", "Delivery", "artists", List.of(Map.of("id", "a2", "name", "B"))));
+        List<Object> items = new java.util.ArrayList<>();
+        items.add(blocked);
+        items.add(null); // Spotify can return null items; they must be left alone
+        items.add(allowed);
+        Map<String, Object> json = Map.of("tracks", Map.of("items", items));
+
+        SpotifyMusicProvider.markBlockedSearchResults(blacklistOf(BlacklistKind.WORD, "live"), json);
+
+        assertEquals(true, blocked.get("blocked"));
+        assertEquals(false, allowed.get("blocked"));
+        assertNull(items.get(1));
     }
 }

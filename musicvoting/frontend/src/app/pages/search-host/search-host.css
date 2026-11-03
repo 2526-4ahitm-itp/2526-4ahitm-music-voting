@@ -470,3 +470,25 @@ html, body {
 
 
 
+
+/* Song is on the party blacklist: shown but greyed out and not addable. */
+.track-card.blocked {
+  opacity: 0.5;
+}
+
+.track-card.blocked:hover {
+  background-color: #fff;
+}
+
+.blocked-hint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #C0392B;
+}
+
+.add-error {
+  margin: 0 0 0.75rem;
+  color: #C0392B;
+  font-weight: 600;
+  text-align: center;
+}

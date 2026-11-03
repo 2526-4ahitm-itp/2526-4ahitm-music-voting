@@ -137,10 +137,24 @@
                     <div class="song-title">{{ track.name || 'Unbekannter Titel' }}</div>
                     <div class="song-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</div>
                   </div>
-                  <button class="delete-icon" type="button" (click)="onDeleteTrack(track)">
-                    <img src="./assets/img/trash-bin.png" height="20" width="20" alt="delete">
-                  </button>
+                  <!-- Buttons stacked in a narrow column so the title and artist keep most of the width. -->
+                  <div class="track-actions">
+                    @if (!track.isCurrentlyPlaying) {
+                      <button class="block-icon" type="button" title="Song sperren" aria-label="Song sperren"
+                              (click)="requestBlock(track)">🚫</button>
+                    }
+                    <button class="delete-icon" type="button" (click)="onDeleteTrack(track)">
+                      <img src="./assets/img/trash-bin.png" height="20" width="20" alt="delete">
+                    </button>
+                  </div>
                 </div>
+                @if (confirmBlockUri === track.uri) {
+                  <div class="block-confirm">
+                    <p>Diesen Song für die Party sperren?</p>
+                    <button class="block-confirm-btn" type="button" (click)="confirmBlock(track)">Ja, sperren</button>
+                    <button class="block-cancel-btn" type="button" (click)="cancelBlock()">Abbrechen</button>
+                  </div>
+                }
               </div>
             }
           </div>

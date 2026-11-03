@@ -269,10 +269,12 @@ body{
 
 .track-info {
   display: flex;
-  gap: 5rem;
+  align-items: center;
+  gap: 0.5rem;
   min-height: 3.75rem;
   flex: 1;
-  padding-right: 4.5rem;
+  min-width: 0;
+  padding-right: 0.5rem;
   box-sizing: border-box;
 }
 
@@ -281,23 +283,91 @@ body{
   min-width: 0;
 }
 
-.track-info .delete-icon {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+/* "Song sperren" above the delete icon in normal flow: the column is only as wide as one icon,
+   so the song text no longer has to reserve room for two absolutely positioned buttons. */
+.track-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.track-actions .delete-icon,
+.track-actions .block-icon {
   margin: 0;
+  padding: 0.25rem;
   cursor: pointer;
   background: transparent;
   border: none;
-  padding: 0;
+  line-height: 1;
 }
 
-.track-info .delete-icon img {
-  width: 1.6rem;
+.track-actions .block-icon {
+  font-size: 1.3rem;
+}
+
+/* Confirmation overlays the queue row it belongs to. The cards are narrow (3-column grid),
+   so the question gets its own line (flex-basis 100%) and the two buttons wrap below it. */
+.block-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 0.4rem 0.5rem;
+  padding: 0.5rem 0.75rem;
+  box-sizing: border-box;
+  background: rgb(60 0 80 / 0.94);
+  color: white;
+  z-index: 1;
+}
+
+.block-confirm p {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.block-confirm-btn,
+.block-cancel-btn {
+  padding: 0.3rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 2rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.block-confirm-btn {
+  border: 1px solid rgb(242 89 75);
+  background-color: rgb(242 89 75);
+  color: white;
+}
+
+.block-confirm-btn:hover {
+  background-color: rgb(220 70 58);
+}
+
+.block-cancel-btn {
+  border: 1px solid rgb(255 255 255 / 0.6);
+  background: transparent;
+  color: white;
+}
+
+.block-cancel-btn:hover {
+  background: white;
+  color: #3C0050;
+}
+
+.track-actions .delete-icon img {
+  width: 1.4rem;
   height: auto;
   display: block;
-  margin: 1rem;
 }
 
 .song-artist,

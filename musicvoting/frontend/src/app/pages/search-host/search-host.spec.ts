@@ -5,6 +5,7 @@ import { SearchHost } from './search-host';
 import { TrackService } from '../../services/spotify-tracks';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { QueueStateService } from '../../services/queue-state';
+import { PartyService } from '../../services/party.service';
 import { Router } from '@angular/router';
 
 describe('SearchHost', () => {
@@ -25,7 +26,9 @@ describe('SearchHost', () => {
     cdr = { detectChanges: jasmine.createSpy('detectChanges') };
     router = { navigate: jasmine.createSpy('navigate') };
 
-    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), { provide: PartyService, useValue: { currentPartyId: 'party-1' } }],
+    });
 
     comp = TestBed.runInInjectionContext(
       () => new SearchHost(trackApi as any, spotifyService as any, queueState as any, cdr as any, router as any)
@@ -96,6 +99,35 @@ describe('SearchHost', () => {
     expect(comp.addingTrackId).toBeNull();
   });
 
+  it('addToPlaylist does nothing for a blacklisted track', async () => {
+    const track = { id: 't1', uri: 'spotify:track:t1', name: 'Song (Live)', blocked: true };
+
+    await comp.addToPlaylist(track);
+
+    expect(spotifyService.addToPlaylist).not.toHaveBeenCalled();
+  });
+
+  it('addToPlaylist shows the backend message "Nicht erlaubt." on a 403', async () => {
+    spyOn(console, 'error');
+    spotifyService.addToPlaylist.and.returnValue(
+      throwError(() => ({ status: 403, error: { error: 'Nicht erlaubt.' } }))
+    );
+
+    await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+
+    expect(comp.addError).toBe('Nicht erlaubt.');
+    expect(comp.addingTrackId).toBeNull();
+  });
+
+  it('addToPlaylist clears a previous error on the next add', async () => {
+    comp.addError = 'Nicht erlaubt.';
+    spotifyService.addToPlaylist.and.returnValue(of({}));
+
+    await comp.addToPlaylist({ id: 't2', uri: 'spotify:track:t2', name: 'Other' });
+
+    expect(comp.addError).toBeNull();
+  });
+
   it('toggleMenu toggles menuOpen', () => {
     expect(comp.menuOpen).toBe(false);
 
@@ -110,6 +142,31 @@ describe('SearchHost', () => {
 
     expect(comp.inQueueUris).toEqual(new Set(['spotify:track:abc']));
     expect(cdr.detectChanges).toHaveBeenCalled();
+  });
+
+  it('ngOnInit opens the event stream with the party id, so party events reach this page', () => {
+    comp.ngOnInit();
+
+    expect((comp as any).eventSource.url).toContain('/api/spotify/events?source=web&partyId=party-1');
+  });
+
+  it('re-runs the current search when a blacklist-updated event is received', () => {
+    spyOn(comp, 'search').and.returnValue(Promise.resolve());
+    comp.searchQuery.set('queen');
+    comp.ngOnInit();
+
+    (comp as any).eventSource.onmessage({ data: JSON.stringify({ type: 'blacklist-updated' }) });
+
+    expect(comp.search).toHaveBeenCalledWith('queen');
+  });
+
+  it('does not search on blacklist-updated while the search field is empty', () => {
+    spyOn(comp, 'search').and.returnValue(Promise.resolve());
+    comp.ngOnInit();
+
+    (comp as any).eventSource.onmessage({ data: JSON.stringify({ type: 'blacklist-updated' }) });
+
+    expect(comp.search).not.toHaveBeenCalled();
   });
 
   it('ngOnInit refreshes the queue state when a queue-updated event is received', () => {

@@ -1,0 +1,322 @@
+/* Same look as the playlist picker (select-playlist.css), the step right before this page. */
+.select-blacklist-page {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font), sans-serif;
+  background: linear-gradient(135deg, #8403A6, #F2594B);
+  color: white;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  flex-shrink: 0;
+}
+
+header > h1 {
+  font-size: 2rem;
+}
+
+.select-blacklist-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40vw;
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 1vh 0 1.5rem;
+  text-align: center;
+}
+
+.select-blacklist-wrapper > h2 {
+  flex-shrink: 0;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  flex-shrink: 0;
+  font-size: 1rem;
+  opacity: 0.85;
+  margin-bottom: 1rem;
+}
+
+.status {
+  font-size: 1rem;
+  opacity: 0.85;
+  margin: 0.75rem 0;
+}
+
+.error-message {
+  color: #FF3B30;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.word-form,
+.search-form {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.text-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.65rem 1rem;
+  font-size: 1rem;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.text-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.add-word-btn,
+.continue-btn {
+  flex-shrink: 0;
+  padding: 0.65rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 2rem;
+  border: none;
+  background: white;
+  color: #8403A6;
+  cursor: pointer;
+}
+
+.add-word-btn:disabled,
+.continue-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tabs {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.tab {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: white;
+  color: #8403A6;
+}
+
+.scroll-area {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.scroll-area > h3 {
+  margin: 0.75rem 0 0;
+  font-size: 1.2rem;
+  text-align: left;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.result-item:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.result-item:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cover {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.cover.round {
+  border-radius: 50%;
+}
+
+.cover.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.result-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.result-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist-result .result-name {
+  flex: 1;
+}
+
+.result-sub {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* "Sperren" looks like the "Ohne Blacklist fortfahren" button (outline pill that fills white
+   on hover), so the host sees what a click on the row will do. The whole row stays clickable. */
+.result-action {
+  flex-shrink: 0;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.03em;
+  transition: all 0.3s ease;
+}
+
+.result-item:hover:not(:disabled) .result-action,
+.result-item:focus-visible .result-action {
+  background: white;
+  color: #8403A6;
+}
+
+/* Already blocked: "Gesperrt" without the outline, it is not an action anymore. */
+.result-item:disabled .result-action {
+  border-color: transparent;
+}
+
+.entry-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  background: rgba(0, 0, 0, 0.15);
+  text-align: left;
+}
+
+.entry-kind {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  min-width: 4.5rem;
+}
+
+.entry-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-btn {
+  flex-shrink: 0;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.continue-btn {
+  min-width: 12rem;
+  padding: 0.75rem 2rem;
+}
+
+.skip-btn {
+  min-width: 12rem;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: all 0.3s ease;
+}
+
+.skip-btn:hover {
+  background: white;
+  color: #8403A6;
+}
+
+@media (max-width: 48rem) {
+  .select-blacklist-wrapper {
+    width: 92vw;
+  }
+}

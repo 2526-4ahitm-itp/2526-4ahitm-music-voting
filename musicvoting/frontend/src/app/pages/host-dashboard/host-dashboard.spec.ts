@@ -355,6 +355,72 @@ describe('HostDashboard', () => {
     });
   });
 
+  describe('Song sperren', () => {
+    const track = {
+      uri: 'spotify:track:t1',
+      name: 'Song X',
+      artists: [{ name: 'A' }, { name: 'B' }],
+      album: { images: [{ url: 'big' }, { url: 'small' }] },
+    };
+
+    beforeEach(() => {
+      (partyService as any).addBlacklistEntry = jasmine.createSpy('addBlacklistEntry').and.returnValue(of({}));
+    });
+
+    it('does not offer blocking for the currently playing song', () => {
+      comp.requestBlock({ ...track, isCurrentlyPlaying: true });
+
+      expect(comp.confirmBlockUri).toBeNull();
+    });
+
+    it('opens the confirmation for a waiting song', () => {
+      comp.requestBlock(track);
+
+      expect(comp.confirmBlockUri).toBe('spotify:track:t1');
+    });
+
+    it('cancel closes the confirmation without blocking or removing', () => {
+      comp.requestBlock(track);
+      comp.cancelBlock();
+
+      expect(comp.confirmBlockUri).toBeNull();
+      expect((partyService as any).addBlacklistEntry).not.toHaveBeenCalled();
+      expect(http.delete).not.toHaveBeenCalled();
+    });
+
+    it('confirm blocks the track first, then removes it from the queue', async () => {
+      comp.partyId = 'party-1';
+      const calls: string[] = [];
+      (partyService as any).addBlacklistEntry.and.callFake(() => { calls.push('block'); return of({}); });
+      http.delete.and.callFake(() => { calls.push('remove'); return of({}); });
+      http.get.and.returnValue(of({ queue: [] }));
+      comp.requestBlock(track);
+
+      await comp.confirmBlock(track);
+
+      expect((partyService as any).addBlacklistEntry).toHaveBeenCalledWith('party-1', {
+        kind: 'TRACK',
+        value: 'spotify:track:t1',
+        label: 'Song X – A, B',
+        imageUrl: 'small',
+      });
+      expect(http.delete).toHaveBeenCalledWith('/api/party/party-1/track/remove', { body: { uri: 'spotify:track:t1' } });
+      expect(calls).toEqual(['block', 'remove']);
+      expect(comp.confirmBlockUri).toBeNull();
+    });
+
+    it('does not remove the song when blocking fails', async () => {
+      spyOn(console, 'error');
+      comp.partyId = 'party-1';
+      (partyService as any).addBlacklistEntry.and.returnValue(throwError(() => new Error('boom')));
+
+      await comp.confirmBlock(track);
+
+      expect(http.delete).not.toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalled();
+    });
+  });
+
   describe('endParty', () => {
     it('does nothing without an active party', async () => {
       await comp.endParty();
