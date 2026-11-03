@@ -20,7 +20,7 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [x] 1.3 Create `shared/mv-spinner` (`role="status"`, hidden label "Lädt …"); spec asserts role and label
 - [x] 1.4 Create `ToastService` + `shared/mv-toast` (polite/alert live region, optional action button, auto-dismiss); spec with `jasmine.clock()` for dismiss and action
 - [x] 1.5 Create `shared/mv-host-menu` (burger in the sticky top bar) replacing the copied side menu in `host-dashboard`, `search-host` and `voting-host`; add the "Blacklist" entry, remove "Startseite"; delete the copied CSS; spec asserts the entries and navigation
-- [ ] 1.6 (2026-11-03: all covers now use `mv-cover`; only the `impeccable detect` check is still open) Replace every hand-written cover `<img>` (startpage, host-dashboard, guest, search-host, voting-comp, voting-host, select-playlist, select-blacklist) with `mv-cover`; verify `impeccable detect` no longer reports a real broken-image finding
+- [x] 1.6 (2026-11-03: all covers use `mv-cover`; `impeccable detect` in the audit found 0 issues in source and rendered pages, see `openspec/analyse/impeccable/audit-2026-11-03.md`) Replace every hand-written cover `<img>` (startpage, host-dashboard, guest, search-host, voting-comp, voting-host, select-playlist, select-blacklist) with `mv-cover`; verify `impeccable detect` no longer reports a real broken-image finding
 
 ## 2. TV page (`startpage`) — first priority
 
@@ -81,11 +81,11 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [x] 6.4 `select-blacklist`: keep the setup mode unchanged; add `mode=edit` opened from the dashboard menu with the full editing and a single "Fertig" button back to `/dashboard`
 - [x] 6.5 Removal question in `host-dashboard` (design D7): "Song entfernen" asks "„<Titel>“ aus der Warteschlange entfernen?" with "Auch sperren" / "Nur entfernen" / "Abbrechen" (no "Auch sperren" for the playing song); remove the separate "Song sperren" button; verify in `host-dashboard.spec.ts`: each choice sends the right requests (block + remove / remove only / none), playing song has no "Auch sperren", no ban button in rows
 - [x] 6.6 Fix the typo "befor" and the English `alt="delete"`; remove the commented-out block and the invalid `height="300px"`
-- [ ] 6.7 Specs: code labels and no "Voting-PIN"/"Host-PIN" text; no "Amazon Music", YouTube disabled; `select-blacklist` setup → `/party-ready`; `party-ready` button, separate-device instructions, code and live state; blacklist edit mode loads entries, adds/removes, "Fertig" → `/dashboard`
+- [x] 6.7 (2026-11-03: mostly covered by earlier specs — `host-stage-pages`, `entry-pages`, `party-ready`, `select-blacklist`; added: TV never shows Gastgeber-PIN/Host-PIN in `startpage.layout.spec.ts`, edit mode loads entries and saves add/remove in `select-blacklist.edit.spec.ts`) Specs: code labels and no "Voting-PIN"/"Host-PIN" text; no "Amazon Music", YouTube disabled; `select-blacklist` setup → `/party-ready`; `party-ready` button, separate-device instructions, code and live state; blacklist edit mode loads entries, adds/removes, "Fertig" → `/dashboard`
 
 ## 7. Verify and document
 
-- [ ] 7.1 Full frontend test suite passes; backend suite passes (regression)
+- [x] 7.1 (2026-11-03: frontend 396/396, backend 192/192) Full frontend test suite passes; backend suite passes (regression)
 - [ ] 7.2 Run `/impeccable critique musicvoting/frontend/src/app` again and save the new score in `openspec/analyse/impeccable/`; target ≥ 28/40
 - [ ] 7.3 Run `/impeccable document` to write `DESIGN.md` from the finished build
 - [ ] 7.4 Update `musicvoting/frontend/README.md` (shared components, tokens, fonts/icons) and the host flow in `hugo/content/dev/` docs if described there

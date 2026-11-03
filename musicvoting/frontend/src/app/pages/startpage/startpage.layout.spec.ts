@@ -80,6 +80,9 @@ describe('Startpage layout (TV)', () => {
     expect(q('.now-title')?.textContent?.trim()).toBe('Song 0');
     expect(q('.progress-bar')).toBeTruthy();
     expect(fixture.nativeElement.querySelectorAll('.queue-list .row').length).toBe(2);
+    // The TV is public: the secret Gastgeber-PIN and the old name "Host-PIN" never appear.
+    expect(fixture.nativeElement.textContent).not.toContain('Gastgeber-PIN');
+    expect(fixture.nativeElement.textContent).not.toContain('Host-PIN');
   });
 
   it('shows the like count of every queue entry, including 0', () => {
