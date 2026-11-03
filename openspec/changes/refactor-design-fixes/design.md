@@ -74,7 +74,7 @@ The `.voted` CSS gets:
 A CSS grid on a 16:9 stage:
 - **Left (~60 %):** the now-playing cover (`min(40vh, 45vw)`), title (≥ 48px, clamped with `clamp()`), artist, and progress.
 - **Right column:** the fixed QR block (≥ 25vh) with the "Voting-PIN" below it, then the top 5 queue rows (≥ 32px) and "+ N weitere".
-- **Footer:** a single-line HTL credit. The same footer component is used on the landing page `/`.
+- **Footer:** the "MusicVoting" wordmark (3.4vh, ≈ 37px at 1080p) and a single-line HTL credit. On the TV the credit is scaled to 2.6vh (≈ 28px), enlarged on 2026-11-03 so both read from the sofa, but still below the queue titles (3.1vh) as the dashboard spec requires. The same credit component is used on the landing page `/` at its own size.
 
 Sizes use `vh`/`clamp()` so 720p and 4K scale proportionally. Rank animation uses FLIP: measure positions before and after the data update, then animate `transform`, keyed by queue entry ID. This avoids pulling in Angular animations for one effect. The empty state replaces the queue column content while keeping the QR block.
 

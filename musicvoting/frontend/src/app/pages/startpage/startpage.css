@@ -149,9 +149,18 @@
 
 .wordmark {
   font-family: var(--mv-font-display);
-  font-size: 2.2vh;
+  /* Readable from the sofa (team request 2026-11-03: was 2.2vh). */
+  font-size: 3.4vh;
   font-weight: 750;
   color: var(--mv-on-stage);
+}
+
+/* The credit's own size (0.875rem) is meant for the landing page; on the TV
+   it scales with the screen like everything else. It stays below the queue
+   titles (3.1vh), as dashboard spec "smaller than every queue entry" requires.
+   The logo is 1.5em, so it grows along. */
+.stage-footer mv-credit-footer {
+  font-size: 2.6vh;
 }
 
 /* ---------- Side column: join + queue ---------- */

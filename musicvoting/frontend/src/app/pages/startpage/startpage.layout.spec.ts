@@ -180,4 +180,15 @@ describe('Startpage layout (TV)', () => {
 
     expect(q('mv-credit-footer')?.textContent).toContain('powered by');
   });
+
+  it('shows "MusicVoting" and the credit large enough for the TV, the credit still below the queue titles', () => {
+    comp.currentTrack = track(0);
+    comp.tracks = [track(1)];
+    fixture.detectChanges();
+
+    const px = (sel: string) => parseFloat(getComputedStyle(q(sel)!).fontSize);
+    expect(atTv(px('.wordmark'))).toBeGreaterThanOrEqual(36);
+    expect(atTv(px('mv-credit-footer'))).toBeGreaterThanOrEqual(26);
+    expect(px('mv-credit-footer')).toBeLessThan(px('.row-title'));
+  });
 });
