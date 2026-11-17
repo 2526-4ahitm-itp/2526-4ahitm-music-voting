@@ -6,7 +6,7 @@
 #   3. Screenshots neu machen: siehe hugo/scripts/status-screenshots/README.md
 #   4. Texte der Screenshots prüfen (screens[].text).
 
-stand: 2026-09-28
+stand: 2026-11-17
 
 # ---------------------------------------------------------------------------
 # Ist-Zustand: was heute funktioniert
@@ -14,13 +14,19 @@ stand: 2026-09-28
 ist:
   - icon: "👑"
     title: Gastgeber
-    text: Party erstellen, Spotify-Login, Standard-Playlist wählen, Wiedergabe steuern, Songs entfernen, Party beenden.
+    text: Party erstellen, Spotify-Login, Standard-Playlist und Blacklist wählen, Player starten, Wiedergabe steuern, Songs entfernen oder sperren, Party beenden.
   - icon: "📱"
     title: Gäste
-    text: Beitritt per QR-Code oder 5-stelligem PIN, anonym. Songs suchen, wünschen und liken – alles live.
+    text: Beitritt per QR-Code oder 5-stelligem PIN, anonym. Sehen, was läuft und auf welchem Platz ihr Song steht; Songs suchen, wünschen und liken – alles live.
   - icon: "🖥️"
     title: Player (TV)
     text: Spielt über das Spotify Web Playback SDK, zeigt QR-Code, aktuellen Song mit Fortschritt und die Warteschlange.
+  - icon: "🚫"
+    title: Blacklist
+    text: Der Host sperrt Wörter, Künstler und Songs für die Party – vorab oder während der Party. Gäste können gesperrte Songs nicht hinzufügen.
+  - icon: "🎨"
+    title: Ein Design für alles
+    text: Dunkle Bühne mit Markenlicht auf TV, Host und Handy, Hell/Dunkel umschaltbar, barrierearm (WCAG 2.2 AA).
   - icon: "🔁"
     title: Musik geht nie aus
     text: Bei leerer Warteschlange wird automatisch nachgefüllt (Standard-Playlist → ähnliche Songs → Top-Charts → Suche).
@@ -36,10 +42,6 @@ ist:
 # Soll-Zustand: wohin es geht
 # ---------------------------------------------------------------------------
 soll:
-  - title: Songs an die Party anpassen
-    icon: "🚫"
-    items:
-      - "Blacklist: Der Host sperrt Wörter, passende Songs werden mit „Nicht erlaubt.“ abgelehnt"
   - title: Mehrere Musikanbieter
     icon: "🎵"
     items:
@@ -55,6 +57,7 @@ soll:
 # file: Dateiname in hugo/content/status/screens/ (vom Skript erzeugt)
 # device: mobile | desktop (bestimmt Fenstergröße im Skript und Rahmen auf der Folie)
 # search: optionaler Suchbegriff, den das Skript vor dem Screenshot eintippt
+# submit: false = nach dem Suchbegriff kein Enter drücken
 # ---------------------------------------------------------------------------
 screens:
   - file: home.png
@@ -62,37 +65,51 @@ screens:
     device: mobile
     role: Alle
     title: Startseite
-    text: Einstieg für alle – als Gastgeber oder als Gast weiter.
+    text: Einstieg für alle – als Gast oder als Gastgeber weiter.
   - file: host-options.png
     route: /host-options
     device: mobile
     role: Gastgeber
     title: Gastgeber-Optionen
-    text: Neue Party erstellen oder mit dem Host-PIN Dashboard bzw. Player einer laufenden Party öffnen.
+    text: Neue Party erstellen oder mit der Gastgeber-PIN Dashboard bzw. Player einer laufenden Party öffnen.
   - file: create-party.png
     route: /create-party
     device: mobile
     role: Gastgeber
     title: Party erstellen
-    text: Anbieter wählen – derzeit funktioniert nur Spotify („Amazon Music“ steht nur in der Auswahl). Danach geht es zum Spotify-Login.
+    text: Anbieter wählen – derzeit Spotify (Premium nötig), YouTube folgt. Danach geht es zum Spotify-Login.
   - file: select-playlist.png
     route: /select-playlist
     device: mobile
     role: Gastgeber
     title: Standard-Playlist
     text: Nach dem Login wählt der Host optional eine Playlist, aus der nachgefüllt wird, wenn niemand etwas wünscht.
+  - file: select-blacklist.png
+    route: /select-blacklist
+    device: desktop
+    role: Gastgeber
+    title: Blacklist
+    search: live   # wird vom Skript ins Suchfeld getippt
+    submit: false  # kein Enter – sonst würde „live“ wirklich gesperrt
+    text: Ein Suchfeld für Wörter, Künstler und Songs – zuerst „Wort sperren“, dann passende Künstler und Songs. Optional, auch während der Party änderbar.
+  - file: party-ready.png
+    route: /party-ready
+    device: mobile
+    role: Gastgeber
+    title: Party ist bereit
+    text: Letzter Schritt – den Player auf dem Gerät am TV öffnen. Sobald er verbunden ist, heißt es „Party ist live 🎉“.
   - file: dashboard.png
     route: /dashboard
     device: desktop
     role: Gastgeber
     title: Host-Dashboard
-    text: Aktueller Song mit Steuerung (Neu starten, Play/Pause, Skip), Warteschlange mit Löschen, Host-PIN, QR-Code, Player öffnen und Party beenden.
+    text: Aktueller Song mit Steuerung, Warteschlange mit Rang und Likes, Entfernen oder Sperren, QR-Code und Voting-PIN. Navigation als feste Leiste, Gastgeber-PIN verborgen bis „Anzeigen“.
   - file: startpage.png
     route: /startpage
     device: desktop
     role: Player (TV)
     title: Player
-    text: Läuft am Fernseher und spielt die Musik ab. Gäste scannen hier den QR-Code.
+    text: Läuft am Fernseher und spielt die Musik ab – vom Sofa lesbar, mit großem QR-Code, Voting-PIN und den nächsten fünf Songs.
   - file: code-input.png
     route: /code
     device: mobile
@@ -103,12 +120,12 @@ screens:
     route: /voting
     device: mobile
     role: Gast
-    title: Voten
-    text: Die Warteschlange, sortiert nach Likes. Ein Tipp auf das Herz liked oder nimmt das Like zurück.
+    title: Warteschlange
+    text: Was gerade läuft, darunter die Warteschlange mit Platz und Likes. Ein Tipp auf das Herz liked oder nimmt das Like zurück.
   - file: guest-search.png
     route: /guest
     device: mobile
     role: Gast
-    title: Songs hinzufügen
+    title: Song suchen
     search: Daft Punk   # wird vom Skript ins Suchfeld getippt
-    text: Suche bei Spotify; „+“ fügt den Song hinzu, ein Häkchen zeigt Songs, die schon warten.
+    text: Suche bei Spotify; „+“ fügt den Song hinzu, danach zeigt ein Hinweis, auf welchem Platz er steht.
