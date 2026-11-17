@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, inject, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, Injector, afterNextRender, inject, input, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PartyService } from '../services/party.service';
 import { MvIcon, MvIconName } from './mv-icon';
@@ -24,6 +24,12 @@ interface MenuEntry {
  *
  * The burger sits in the sticky top bar of each host page (.host-top in
  * shared/stage.css), so it is always reachable while scrolling.
+ *
+ * From 1024 px the same navigation is a permanently visible side rail
+ * instead (task 8.4): on a laptop next to the TV the host switches pages
+ * often, and two clicks per switch for a hidden menu were a point of the
+ * critique. stage.css makes room for the rail on every page that contains
+ * this component.
  */
 @Component({
   selector: 'mv-host-menu',
@@ -33,6 +39,7 @@ interface MenuEntry {
   // Escape closes the panel, as keyboard users expect from an overlay.
   host: { '(document:keydown.escape)': 'close()' },
   template: `
+    @if (!rail()) {
     <button
       #burger
       type="button"
@@ -43,13 +50,18 @@ interface MenuEntry {
       (click)="toggle()">
       <mv-icon name="menu" [size]="26" />
     </button>
+    }
 
-    <nav #panel id="mv-host-menu-panel" class="panel" [class.open]="open()" aria-label="Gastgeber-Menü" [attr.inert]="open() ? null : ''">
+    <!-- As a rail the panel is always reachable, so it is only inert while it is a closed slide-in. -->
+    <nav #panel id="mv-host-menu-panel" class="panel" [class.open]="open()" [class.rail]="rail()"
+         aria-label="Gastgeber-Menü" [attr.inert]="rail() || open() ? null : ''">
       <div class="panel-head">
         <span class="brand">MusicVoting</span>
-        <button #closeBtn type="button" class="close" aria-label="Menü schließen" (click)="close()">
-          <mv-icon name="x" [size]="22" />
-        </button>
+        @if (!rail()) {
+          <button #closeBtn type="button" class="close" aria-label="Menü schließen" (click)="close()">
+            <mv-icon name="x" [size]="22" />
+          </button>
+        }
       </div>
       <ul>
         @for (entry of entries(); track entry.page) {
@@ -68,7 +80,7 @@ interface MenuEntry {
       </ul>
     </nav>
 
-    @if (open()) {
+    @if (open() && !rail()) {
       <div class="overlay" (click)="close()"></div>
     }
   `,
@@ -106,6 +118,15 @@ interface MenuEntry {
     }
     .panel.open {
       transform: none;
+    }
+    /* Rail (from 1024 px): always in place, no slide, no overlay shadow. Its width
+       is the --mv-host-rail-width token that stage.css also uses as page offset. */
+    .panel.rail {
+      width: var(--mv-host-rail-width);
+      transform: none;
+      transition: none;
+      box-shadow: inset -1px 0 0 var(--mv-stage-tint-1);
+      z-index: 60;
     }
     .panel-head {
       display: flex;
@@ -159,6 +180,26 @@ export class MvHostMenu {
 
   readonly open = signal(false);
 
+  /** Viewport width from which the navigation is a rail; must match stage.css. */
+  static readonly RAIL_QUERY = '(min-width: 1024px)';
+
+  /** True while the viewport is wide enough for the rail (follows window resizes). */
+  readonly rail = signal(false);
+
+  constructor() {
+    // matchMedia is missing outside a browser (SSR, some test setups): then stay a burger.
+    const mql = typeof window !== 'undefined' ? window.matchMedia?.(MvHostMenu.RAIL_QUERY) : undefined;
+    if (!mql) return;
+    this.rail.set(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => {
+      this.rail.set(e.matches);
+      // Growing past 1024 px while the slide-in is open: the rail replaces it, nothing to close.
+      if (e.matches) this.open.set(false);
+    };
+    mql.addEventListener('change', onChange);
+    inject(DestroyRef).onDestroy(() => mql.removeEventListener('change', onChange));
+  }
+
   private readonly party = inject(PartyService);
 
   /** Entries are computed on access so the blacklist link carries the current party id. */
@@ -179,9 +220,10 @@ export class MvHostMenu {
   }
 
   private readonly injector = inject(Injector);
-  private readonly burger = viewChild.required<ElementRef<HTMLButtonElement>>('burger');
+  // Burger and close button only exist below 1024 px, so they are optional queries.
+  private readonly burger = viewChild<ElementRef<HTMLButtonElement>>('burger');
   private readonly panel = viewChild.required<ElementRef<HTMLElement>>('panel');
-  private readonly closeBtn = viewChild.required<ElementRef<HTMLButtonElement>>('closeBtn');
+  private readonly closeBtn = viewChild<ElementRef<HTMLButtonElement>>('closeBtn');
 
   toggle(): void {
     if (this.open()) {
@@ -191,7 +233,7 @@ export class MvHostMenu {
     this.open.set(true);
     // Keyboard users land inside the panel. The panel is inert until the next
     // render, so focusing right away would silently fail.
-    afterNextRender(() => this.closeBtn().nativeElement.focus(), { injector: this.injector });
+    afterNextRender(() => this.closeBtn()?.nativeElement.focus(), { injector: this.injector });
   }
 
   close(): void {
@@ -201,6 +243,6 @@ export class MvHostMenu {
     // to the burger. Clicks elsewhere (overlay, a menu link) keep their own focus.
     const focusInPanel = this.panel().nativeElement.contains(document.activeElement);
     this.open.set(false);
-    if (focusInPanel) this.burger().nativeElement.focus();
+    if (focusInPanel) this.burger()?.nativeElement.focus();
   }
 }

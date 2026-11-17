@@ -47,6 +47,16 @@
   pointer-events: none;
 }
 
+/* From 1024 px the host navigation is a fixed side rail (mv-host-menu, task 8.4).
+   Pages that contain it shift right by the rail width; pages without it (setup
+   steps, guest pages) keep the full width. The breakpoint matches
+   MvHostMenu.RAIL_QUERY. */
+@media (min-width: 1024px) {
+  .host-stage:has(mv-host-menu) {
+    padding-left: var(--mv-host-rail-width);
+  }
+}
+
 /* ---------- Top bar ---------- */
 
 /* Always visible while scrolling: burger menu and page title. */
