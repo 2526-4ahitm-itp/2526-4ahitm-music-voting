@@ -129,6 +129,48 @@ describe('Host pages in stage look (DOM)', () => {
     fixture.destroy();
   });
 
+  it('dashboard: the Gastgeber-PIN is hidden as "•••••" until "Anzeigen", and sits below the party actions', () => {
+    const fixture = render(HostDashboard, (c) => {
+      c.pin = '47291';
+      c.hostPin = '83615';
+    });
+    const root: HTMLElement = fixture.nativeElement;
+    const card = root.querySelector('.host-pin') as HTMLElement;
+    const toggle = card.querySelector('.pin-toggle') as HTMLButtonElement;
+
+    expect(card.querySelector('.pin-value')!.textContent!.trim()).toBe('•••••');
+    expect(root.textContent).not.toContain('83615');
+    expect(toggle.textContent!.trim()).toBe('Anzeigen');
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    // The hint stays visible while the PIN is hidden.
+    expect(card.textContent).toContain('Geheim – damit kommst du zurück ins Dashboard.');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(card.querySelector('.pin-value')!.textContent!.trim()).toBe('83615');
+    expect(toggle.textContent!.trim()).toBe('Verbergen');
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(card.querySelector('.pin-value')!.textContent!.trim()).toBe('•••••');
+
+    // Order in the side column: join (QR + Voting-PIN), party actions, then the Gastgeber-PIN.
+    const order = Array.from(root.querySelectorAll('.side-col > section')).map((sec) => sec.getAttribute('aria-label'));
+    expect(order).toEqual(['Mitmachen', 'Party', 'Gastgeber-PIN']);
+    fixture.destroy();
+  });
+
+  it('dashboard: the Gastgeber-PIN is hidden again on every load', () => {
+    const first = render(HostDashboard, (c) => { c.hostPin = '83615'; });
+    (first.nativeElement.querySelector('.pin-toggle') as HTMLButtonElement).click();
+    first.destroy();
+
+    const second = render(HostDashboard, (c) => { c.hostPin = '83615'; });
+    expect(second.nativeElement.querySelector('.host-pin .pin-value').textContent.trim()).toBe('•••••');
+    second.destroy();
+  });
+
   it('dashboard: labels player controls and queue actions, with no nested buttons in the end-party confirmation', () => {
     const fixture = render(HostDashboard, (c) => {
       c.currentTrack = song('now');

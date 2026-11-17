@@ -129,12 +129,6 @@
         </div>
       </section>
 
-      <section class="host-card" aria-label="Gastgeber-PIN">
-        <p class="pin-label"><mv-icon name="key" [size]="20" /> Gastgeber-PIN</p>
-        <p class="pin-value">{{ hostPin || '–––––' }}</p>
-        <p class="host-muted small">Geheim – damit kommst du zurück ins Dashboard.</p>
-      </section>
-
       <section class="host-card actions" aria-label="Party">
         <button type="button" class="action" (click)="openPlayer()">
           <mv-icon name="monitor-play" [size]="24" />
@@ -158,6 +152,27 @@
             <span><strong>Party beenden</strong></span>
           </button>
         }
+      </section>
+
+      <!-- Hidden by default and below the actions (task 8.4): the dashboard is often open on a
+           laptop next to the TV, where guests could read a visible secret over the host's shoulder. -->
+      <section class="host-card host-pin" aria-label="Gastgeber-PIN">
+        <p class="pin-label"><mv-icon name="key" [size]="20" /> Gastgeber-PIN</p>
+        <div class="pin-row">
+          <p class="pin-value" aria-live="polite">
+            @if (hostPinVisible) {
+              {{ hostPin || '–––––' }}
+            } @else {
+              <span aria-label="verborgen">•••••</span>
+            }
+          </p>
+          <button type="button" class="host-btn pin-toggle" [attr.aria-pressed]="hostPinVisible"
+                  (click)="hostPinVisible = !hostPinVisible">
+            <mv-icon [name]="hostPinVisible ? 'eye-off' : 'eye'" [size]="18" />
+            {{ hostPinVisible ? 'Verbergen' : 'Anzeigen' }}
+          </button>
+        </div>
+        <p class="host-muted small">Geheim – damit kommst du zurück ins Dashboard.</p>
       </section>
     </aside>
   </main>
