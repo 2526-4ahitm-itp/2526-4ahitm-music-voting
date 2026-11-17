@@ -15,7 +15,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   host: { '[class.on-dark]': "tone() === 'dark'" },
   template: `
     <span>powered by</span>
-    <img src="assets/img/htl-leonding-logo.jpg" alt="HTL Leonding" />
+    <!-- 480 px copy of the 2763 px original: the footer shows it at most ~160 px wide (Angular warning NG0913). -->
+    <img src="assets/img/htl-leonding-logo-480.jpg" width="480" height="126" alt="HTL Leonding" />
   `,
   styles: `
     :host {

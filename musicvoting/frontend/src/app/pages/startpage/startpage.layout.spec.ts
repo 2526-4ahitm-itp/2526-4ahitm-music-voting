@@ -204,6 +204,8 @@ describe('Startpage layout (TV)', () => {
     fixture.detectChanges();
 
     expect(q('mv-credit-footer')?.textContent).toContain('powered by');
+    // The resized copy, not the 2763 px original (Angular warning NG0913).
+    expect(q('mv-credit-footer img')?.getAttribute('src')).toBe('assets/img/htl-leonding-logo-480.jpg');
   });
 
   it('shows "MusicVoting" and the credit large enough for the TV, the credit still below the queue titles', () => {

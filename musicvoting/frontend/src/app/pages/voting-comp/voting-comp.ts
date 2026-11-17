@@ -10,6 +10,7 @@ import { MvToast } from '../../shared/mv-toast';
 import { ToastService } from '../../shared/toast.service';
 import { MvPartyEnded } from '../../shared/mv-party-ended';
 import { MvThemeToggle } from '../../shared/mv-theme-toggle';
+import { MvGuestParty } from '../../shared/mv-guest-party';
 import { MvGuestTabs } from '../../shared/mv-guest-tabs';
 
 /** localStorage key prefix for "welcome already seen" per party. */
@@ -18,7 +19,7 @@ export const WELCOME_KEY_PREFIX = 'mv-welcome-';
 @Component({
   selector: 'app-voting-comp',
   standalone: true,
-  imports: [FormsModule, MvCover, MvIcon, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs],
+  imports: [FormsModule, MvCover, MvIcon, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs, MvGuestParty],
   templateUrl: './voting-comp.html',
   // Shared stage look first, page layout second (design D1/D2).
   styleUrls: ['../../shared/stage.css', './voting-comp.css'],
@@ -128,7 +129,9 @@ export class VotingComp implements OnInit, OnDestroy {
 
   async loadPlaylist() {
     try {
-      const res: any = await lastValueFrom(this.spotifyService.getQueue(this.deviceId));
+      // getQueue completes without a value when no party is stored (e.g. after "Party verlassen"
+      // or without backend); that is an empty queue, not an EmptyError (task 8.5).
+      const res: any = await lastValueFrom(this.spotifyService.getQueue(this.deviceId), { defaultValue: null });
       this.ngZone.run(() => {
         const queue: any[] = Array.isArray(res?.queue) ? res.queue : [];
         // Keep optimistic state for songs whose vote request is still running.

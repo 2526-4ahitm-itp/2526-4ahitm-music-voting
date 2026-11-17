@@ -1,4 +1,4 @@
-import { of, throwError } from 'rxjs';
+import { EMPTY, of, throwError } from 'rxjs';
 import { VotingComp } from './voting-comp';
 
 describe('VotingComp', () => {
@@ -51,6 +51,17 @@ describe('VotingComp', () => {
     await comp.loadPlaylist();
 
     expect(comp.tracks()).toEqual([]);
+  });
+
+  it('loadPlaylist treats a response without value (no party stored) as an empty queue, not an error', async () => {
+    spyOn(console, 'error');
+    comp.tracks.set([{ name: 'old', artists: [] }]);
+    spotifyService.getQueue.and.returnValue(EMPTY);
+
+    await comp.loadPlaylist();
+
+    expect(comp.tracks()).toEqual([]);
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it('loadPlaylist logs an error when the request fails', async () => {
