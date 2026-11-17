@@ -15,7 +15,12 @@ The web app's root document MUST declare `lang="de"`, because all user-facing te
 - THEN its `lang` attribute is `"de"`
 
 ### Requirement: Interactive Elements Are Real, Labelled Controls
-Every element that reacts to a click or tap MUST be a native `<button>` or `<a>` (or an element with the matching role, `tabindex="0"` and Enter/Space handling). Interactive elements MUST NOT be nested inside other interactive elements. Every control without visible text, such as icon buttons, the back arrow, the menu button and the player controls, MUST have a German `aria-label` describing its action (for example "Zurück", "Menü öffnen", "Song hinzufügen", "Pause", "Nächster Song", "Song entfernen").
+Every element that reacts to a click or tap MUST be a native `<button>` or `<a>` (or an element with the matching role, `tabindex="0"` and Enter/Space handling). Interactive elements MUST NOT be nested inside other interactive elements. Every control without visible text MUST have a German `aria-label` describing its action.
+
+#### Scenario: Icon-only controls are named
+- GIVEN the back arrow, the menu button, the player controls and the queue actions are rendered
+- WHEN a screen reader focuses them
+- THEN they announce German action names such as "Zurück", "Menü öffnen", "Pause", "Nächster Song" and "Song entfernen"
 
 #### Scenario: Keyboard user goes back
 - GIVEN a keyboard-only user is on the "Party erstellen" page
@@ -67,7 +72,17 @@ All non-essential animations (vote pop, rank movement, soundwave, page transitio
 - AND the liked state is still shown immediately
 
 ### Requirement: Cover Images Have a Working Fallback
-Every album cover in the web app MUST be rendered through one shared cover component. It MUST show the bundled placeholder image when the track has no image URL, the `images` array is empty or missing, or the image fails to load. The placeholder MUST fit the stage in both modes: a dark brand-coloured tile with a line-drawn note, not a light image that glares on the dark stage. Covers are decorative next to the song title, so they MUST use `alt=""`. Pages MUST NOT index into an images array without a guard.
+Every album cover in the web app MUST be rendered through one shared cover component. It MUST show the bundled placeholder image when the track has no image URL, the `images` array is empty or missing, or the image fails to load. The placeholder MUST be a dark brand-coloured tile with a line-drawn note that fits the stage in both modes. Covers are decorative next to the song title, so they MUST use `alt=""`.
+
+#### Scenario: Placeholder fits the dark stage
+- GIVEN the TV page shows a song without cover in dark mode
+- THEN the placeholder is a dark brand tile with a line-drawn note
+- AND not a light image that glares on the dark stage
+
+#### Scenario: Missing images array does not break the page
+- GIVEN a track whose `album` has no `images` field
+- WHEN any page renders its cover
+- THEN the placeholder is shown and no script error occurs
 
 #### Scenario: Search result without cover
 - GIVEN a search result whose `album.images` is empty
@@ -108,7 +123,7 @@ All user-facing text in the web app MUST address the user with the informal "du"
 - AND it contains no "Sie"-forms
 
 ### Requirement: Host Can Switch Between Dark and Light Mode
-The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host search and the blacklist page) MUST offer a dark mode and a light mode. Dark mode is the default. The host pages MUST show a switch "Heller Modus" in the always-visible top bar; it MUST be a real control with `role="switch"` and `aria-checked`. The choice MUST be stored on the device and MUST be applied on the next visit and in other open tabs of the same browser, including the TV page, without a reload. The TV page itself MUST NOT show the switch (see dashboard spec "No Host Controls on Dashboard"). Both modes MUST meet the contrast rule "Text Meets WCAG AA Contrast". The guest views (voting, add songs) and the entry and setup pages (landing page, join page, host options, "Party erstellen", playlist choice) use the same stage look and MUST offer the same switch in their top bar; everyone decides on their own device. The guest pages (join page `/code` and `/join/:pin`, voting, add songs) MUST keep their own choice, separate from the host pages, the TV page and the other entry pages: switching on a guest page MUST NOT change the host pages or the TV, and switching on a host page MUST NOT change a guest page whose mode was already chosen. Until a guest chooses, the guest pages start with the mode chosen on the entry pages of that device.
+All stage pages MUST offer a dark mode and a light mode; dark mode is the default. Every page except the TV page `/startpage` MUST show a switch "Heller Modus" in its top bar, as a real control with `role="switch"` and `aria-checked`. The choice MUST be stored on the device and applied on the next visit and, without a reload, in other open tabs of the same browser, including the TV page. Both modes MUST meet the contrast rule "Text Meets WCAG AA Contrast".
 
 #### Scenario: Host switches to light mode
 - GIVEN the host is on the host dashboard in dark mode
@@ -130,6 +145,9 @@ The stage pages (TV dashboard `/startpage`, host dashboard, host voting, host se
 - GIVEN a device that never chose a mode
 - WHEN the host opens the dashboard
 - THEN dark mode is shown
+
+### Requirement: Guests Keep Their Own Dark/Light Choice
+The guest pages (join page `/code` and `/join/:pin`, voting, add songs) MUST store their dark/light choice separately from the host pages, the TV page and the other entry pages. Switching on a guest page MUST NOT change the host pages or the TV, and switching on a host page MUST NOT change a guest page whose mode was already chosen. Until a guest chooses, the guest pages start with the mode chosen on the entry pages of that device.
 
 #### Scenario: Guest choice is separate from the host choice
 - GIVEN a phone on which the host dashboard is in dark mode

@@ -207,14 +207,12 @@ From 1024 px viewport width the web host pages (dashboard, voting, search, black
 - THEN the same entries slide in
 
 ### Requirement: Host Setup Ends with a Go-Live Step
-After the blacklist setup page, the web host flow MUST show a final step "Deine Party ist bereit". This step MUST:
-- explain in one sentence that the player is the page that plays the music and belongs on the device connected to the TV,
-- offer a button "Player auf dem TV öffnen" that opens `/startpage` for the party in a new window on the same device,
-- explain how to open the player on a separate device: "Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen." The player route requires the host PIN, so a copied link alone would not work on another device,
+After the blacklist setup page, the web host flow MUST end with the step "Deine Party ist bereit", which MUST:
+- explain in one sentence that the player plays the music and belongs on the device at the TV,
+- offer "Player auf dem TV öffnen", opening `/startpage` for the party in a new window,
 - show the "Voting-PIN" so the host can share it,
-- offer "Zum Dashboard", which navigates to the host dashboard.
-
-Once a player has registered as the playback device, the step MUST show "Party ist live 🎉".
+- offer "Zum Dashboard", which navigates to the host dashboard,
+- show "Party ist live 🎉" once a player has registered as the playback device.
 
 #### Scenario: Host finishes setup on the same device
 - GIVEN the host has completed the blacklist setup page
@@ -223,6 +221,9 @@ Once a player has registered as the playback device, the step MUST show "Party i
 - WHEN the host opens the player and it registers as the playback device
 - THEN "Party ist live 🎉" is shown
 - AND "Zum Dashboard" navigates to the host dashboard
+
+### Requirement: Go-Live Step Explains a Separate TV Device
+The go-live step MUST explain how to open the player on a separate device: "Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen." The player route requires the host PIN, so a copied link alone would not work on another device.
 
 #### Scenario: Host opens the player on a separate device
 - GIVEN the host is on the go-live step
