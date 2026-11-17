@@ -98,4 +98,4 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 - [x] 7.2 (2026-11-17: 27/40, accepted) Run `/impeccable critique musicvoting/frontend/src/app` again and save the new score in `openspec/analyse/impeccable/`; target ≥ 28/40
 - [x] 7.3 (2026-11-17: `DESIGN.md` at the repo root + `.impeccable/design.json`) Run `/impeccable document` to write `DESIGN.md` from the finished build
 - [x] 7.4 (2026-11-17) Update `musicvoting/frontend/README.md` (shared components, tokens, fonts/icons) and the host flow in `hugo/content/dev/` docs if described there
-- [ ] 7.5 New screenshots in `hugo/content/status/screens/` for the next sprint review
+- [x] 7.5 (2026-11-17, real party, old ones archived under `screens/archive/2026-10-12/`) New screenshots in `hugo/content/status/screens/` for the next sprint review

@@ -9,7 +9,7 @@ und legt die Bilder in `hugo/content/status/screens/` ab. Die Präsentation lieg
 1. **App lokal starten**: Datenbank, Backend und Frontend (siehe „How To Run“, Variante B –
    `script/start.sh`). Das Frontend muss unter `http://localhost:4200` laufen.
 2. **Party anlegen**: im Browser `http://127.0.0.1:4200` → „Gastgeber einer Party“ → „Party erstellen“,
-   bei Spotify anmelden, Standard-Playlist wählen. Den **Host-PIN** aus dem Dashboard notieren.
+   bei Spotify anmelden, Standard-Playlist wählen. Die **Gastgeber-PIN** aus dem Dashboard notieren („Anzeigen“).
 3. **Screenshots machen**:
    ```bash
    cd hugo/scripts/status-screenshots
@@ -27,7 +27,7 @@ und legt die Bilder in `hugo/content/status/screens/` ab. Die Präsentation lieg
 
 | Option | Bedeutung |
 |---|---|
-| `--host-pin <PIN>` | Host-PIN der Party (Pflicht) |
+| `--host-pin <PIN>` | Gastgeber-PIN der Party (Pflicht) |
 | `--seed` | Songs + Likes in die Warteschlange legen |
 | `--only a.png,b.png` | nur diese Screenshots neu machen |
 | `--base <URL>` | Frontend-URL (Standard `http://localhost:4200`) |
@@ -37,12 +37,19 @@ und legt die Bilder in `hugo/content/status/screens/` ab. Die Präsentation lieg
 ## Neue Seite aufnehmen
 
 Einen Eintrag unter `screens` in `hugo/data/status.yaml` ergänzen (`file`, `route`, `device`,
-`role`, `title`, `text`). Host-Seiten (mit Host-PIN) und Gast-Seiten sind in `screenshots.mjs`
+`role`, `title`, `text`, optional `search` und `submit: false`). Host-Seiten (mit Host-PIN) und Gast-Seiten sind in `screenshots.mjs`
 in `HOST_ROUTES` bzw. `GUEST_ROUTES` eingetragen – eine neue geschützte Route dort ergänzen.
 
 > Hinweis: Das Skript blockiert das Spotify Web Playback SDK. So registriert der unsichtbare
-> Chrome kein eigenes Wiedergabegerät und nimmt der Party die Musik nicht weg. Der Player
-> (`/startpage`) zeigt trotzdem den aktuellen Stand aus dem Backend.
+> Chrome kein eigenes Wiedergabegerät und nimmt der Party die Musik nicht weg. Ohne SDK zeigt
+> der Player (`/startpage`) im Skript aber nur den leeren Zustand („Scan den Code …“), auch wenn
+> Musik läuft (festgestellt 2026-11-17).
 >
-> Für Screenshots mit laufender Musik: Player in deinem normalen Browser öffnen, im Dashboard
-> Play drücken und dann `node screenshots.mjs --host-pin <PIN> --only dashboard.png,startpage.png`.
+> `startpage.png` mit laufender Musik deshalb aus einem echten Chrome-Fenster aufnehmen: Player
+> dort öffnen (Chrome wegen DRM, siehe unten), Fenster so einstellen, dass der Inhalt 1440×900
+> groß ist, Screenshot als `hugo/content/status/screens/startpage.png` speichern (1440×900 PNG).
+> Die übrigen Seiten zeigen den Stand aus dem Backend und funktionieren mit dem Skript.
+>
+> Der Player spielt nur in einem Browser mit DRM (Widevine): Google Chrome, oder Firefox in einem
+> normalen Fenster mit „DRM-gesteuerte Inhalte abspielen“. Im privaten Firefox-Fenster und in
+> Fedora-Chromium bleibt er stumm.

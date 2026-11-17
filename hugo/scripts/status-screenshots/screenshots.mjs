@@ -22,7 +22,8 @@ const VIEWPORTS = {
 };
 
 // Seiten, die als Host (mit Host-PIN im localStorage) bzw. als Gast geöffnet werden.
-const HOST_ROUTES = new Set(['/select-playlist', '/dashboard', '/startpage', '/voting-host', '/search-host']);
+// Verglichen wird nur der Pfad, eine Query in status.yaml (z. B. ?mode=edit) bleibt in der URL.
+const HOST_ROUTES = new Set(['/select-playlist', '/select-blacklist', '/party-ready', '/dashboard', '/startpage', '/voting-host', '/search-host']);
 const GUEST_ROUTES = new Set(['/voting', '/guest']);
 
 const SEED_QUERIES = ['Daft Punk', 'Queen', 'Adele', 'Coldplay', 'Dua Lipa'];
@@ -140,10 +141,13 @@ async function main() {
       mv_party_id: party.id,
       mv_party_pin: party.pin,
       mv_device_id: GUEST_DEVICE_ID,
+      // Das einmalige Willkommens-Fenster nach dem Beitritt würde die Warteschlange verdecken.
+      [`mv-welcome-${party.id}`]: '1',
     });
 
     for (const screen of screens) {
-      const context = HOST_ROUTES.has(screen.route) ? host : GUEST_ROUTES.has(screen.route) ? guest : neutral;
+      const routePath = screen.route.split('?')[0];
+      const context = HOST_ROUTES.has(routePath) ? host : GUEST_ROUTES.has(routePath) ? guest : neutral;
       const page = await context.newPage();
       await page.setViewport(VIEWPORTS[screen.device] || VIEWPORTS.desktop);
       await page.setRequestInterception(true);
@@ -153,7 +157,7 @@ async function main() {
       });
 
       const url = new URL(`${args.base}${screen.route}`);
-      if (HOST_ROUTES.has(screen.route)) url.searchParams.set('partyId', party.id);
+      if (HOST_ROUTES.has(routePath)) url.searchParams.set('partyId', party.id);
 
       // Kein networkidle: die SSE-Verbindung bleibt offen, deshalb feste Wartezeit.
       await page.goto(url.toString(), { waitUntil: 'domcontentloaded' });
@@ -162,7 +166,8 @@ async function main() {
       // Optional: Suchbegriff eintippen (Feld `search` in status.yaml).
       if (screen.search) {
         await page.type('input[type="search"]', screen.search);
-        await page.keyboard.press('Enter');
+        // `submit: false` in status.yaml: kein Enter, z. B. auf der Blacklist, wo Enter das Wort sperren würde.
+        if (screen.submit !== false) await page.keyboard.press('Enter');
         await new Promise((r) => setTimeout(r, args.wait));
       }
 
