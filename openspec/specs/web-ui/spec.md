@@ -1,0 +1,179 @@
+# web-ui Specification
+
+## Purpose
+Cross-cutting requirements for every page of the Angular web app (guest, host and TV dashboard): language, accessibility, focus, status announcements, contrast, motion, image fallbacks and form of address. The iOS app is not covered.
+
+## Requirements
+
+### Requirement: Document Language Is German
+The web app's root document MUST declare `lang="de"`, because all user-facing text is German.
+
+#### Scenario: Screen reader uses German pronunciation
+- GIVEN any page of the web app is loaded
+- WHEN the document root is inspected
+- THEN its `lang` attribute is `"de"`
+
+### Requirement: Interactive Elements Are Real, Labelled Controls
+Every element that reacts to a click or tap MUST be a native `<button>` or `<a>` (or an element with the matching role, `tabindex="0"` and Enter/Space handling). Interactive elements MUST NOT be nested inside other interactive elements. Every control without visible text MUST have a German `aria-label` describing its action.
+
+#### Scenario: Icon-only controls are named
+- GIVEN the back arrow, the menu button, the player controls and the queue actions are rendered
+- WHEN a screen reader focuses them
+- THEN they announce German action names such as "Zurück", "Menü öffnen", "Pause", "Nächster Song" and "Song entfernen"
+
+#### Scenario: Keyboard user goes back
+- GIVEN a keyboard-only user is on the "Party erstellen" page
+- WHEN the user presses Tab until the back arrow is focused and presses Enter
+- THEN the app navigates back
+
+#### Scenario: Icon button has a label
+- GIVEN a guest is on the add/search view
+- WHEN a screen reader focuses the add button of a search result
+- THEN it announces "Song hinzufügen"
+
+#### Scenario: No nested buttons
+- GIVEN any page of the web app is rendered
+- WHEN the DOM is inspected
+- THEN no `<button>` or `<a>` contains another `<button>` or `<a>`
+
+### Requirement: Focus Is Always Visible
+Every focusable element MUST show a visible focus indicator when focused via keyboard (`:focus-visible`), with at least 3:1 contrast against the surrounding background. `outline: none` MUST NOT be used without a replacement indicator of equal visibility. The five code-input boxes MUST be grouped with the accessible name "Party-Code" and each box MUST be labelled "Ziffer 1" to "Ziffer 5".
+
+#### Scenario: Focused code box is visible
+- GIVEN a guest tabs into the code-input page
+- WHEN the first code box receives focus
+- THEN a clearly visible focus ring is shown around it
+- AND a screen reader announces "Party-Code, Ziffer 1"
+
+### Requirement: Status Changes Are Announced
+Confirmations, errors and loading messages that appear without a page change, such as "Song hinzugefügt", "Nicht erlaubt.", "Party nicht gefunden.", "Party wird gesucht …" and "Die Party ist beendet.", MUST be rendered in a live region (`aria-live="polite"`, or `role="alert"` for errors) so screen readers announce them.
+
+#### Scenario: Add error is announced
+- GIVEN a guest using a screen reader adds a song that is already queued
+- WHEN the backend rejects it with "Song ist schon in der Warteschlange."
+- THEN the message is announced by the screen reader without moving focus
+
+### Requirement: Text Meets WCAG AA Contrast
+All text MUST meet WCAG 2.2 AA contrast against the background it is actually rendered on, including every point of a gradient behind it: at least 4.5:1 for normal text and 3:1 for text of 24px or larger (or 18.66px bold). Meaning MUST NOT be conveyed by colour alone. A blocked or disabled state MUST also be recognisable without colour, through a label, an icon or a disabled control.
+
+#### Scenario: Subtitle on the gradient is readable
+- GIVEN a subtitle is rendered on the purple-to-coral gradient
+- WHEN its contrast is measured at the lightest point of the gradient behind it
+- THEN the ratio is at least 4.5:1
+
+### Requirement: Motion Respects User Preference
+All non-essential animations (vote pop, rank movement, soundwave, page transitions) MUST be disabled or reduced to a simple fade when `prefers-reduced-motion: reduce` is set.
+
+#### Scenario: Reduced motion on a phone
+- GIVEN a guest's phone requests reduced motion
+- WHEN the guest likes a song
+- THEN no pop animation plays
+- AND the liked state is still shown immediately
+
+### Requirement: Cover Images Have a Working Fallback
+Every album cover in the web app MUST be rendered through one shared cover component. It MUST show the bundled placeholder image when the track has no image URL, the `images` array is empty or missing, or the image fails to load. The placeholder MUST be a dark brand-coloured tile with a line-drawn note that fits the stage in both modes. Covers are decorative next to the song title, so they MUST use `alt=""`.
+
+#### Scenario: Placeholder fits the dark stage
+- GIVEN the TV page shows a song without cover in dark mode
+- THEN the placeholder is a dark brand tile with a line-drawn note
+- AND not a light image that glares on the dark stage
+
+#### Scenario: Missing images array does not break the page
+- GIVEN a track whose `album` has no `images` field
+- WHEN any page renders its cover
+- THEN the placeholder is shown and no script error occurs
+
+#### Scenario: Search result without cover
+- GIVEN a search result whose `album.images` is empty
+- WHEN the guest or host search renders it
+- THEN the placeholder image is shown
+- AND no broken-image icon appears
+
+#### Scenario: Cover URL fails to load
+- GIVEN a queue entry whose cover URL returns an error
+- WHEN the voting view renders it
+- THEN the placeholder image replaces the broken image
+
+### Requirement: HTL Credit Appears as a Footer on TV and Landing Page
+The "powered by HTL Leonding" credit MUST appear as a single, unobtrusive footer line on the TV dashboard (`/startpage`) and on the landing page (`/`). On the landing page the line MUST be at least 20px high so it is noticed, while staying smaller than the role buttons. It MUST NOT appear as a separate content block on any page, and MUST NOT appear on the guest or host views.
+
+#### Scenario: Credit on landing page and TV only
+- GIVEN the web app is running
+- WHEN a visitor opens `/` and the TV opens `/startpage`
+- THEN both show the footer line "powered by HTL Leonding"
+- AND the guest views `/voting` and `/guest` and the host dashboard do not show it
+
+### Requirement: Brand Logo on Landing Page and TV
+The MusicVoting logo mark MUST appear on the landing page (`/`) above the "MusicVoting" wordmark and on the TV dashboard (`/startpage`) in the footer directly in front of the wordmark. It is decorative next to the written name (empty alt text). Images in the UI MUST be served in a size close to their display size, not as multi-thousand-pixel originals.
+
+#### Scenario: Logo on landing page and TV
+- GIVEN the web app is running
+- WHEN a visitor opens `/` and the TV opens `/startpage`
+- THEN `/` shows the logo mark above "MusicVoting"
+- AND the TV footer shows the logo mark in front of "MusicVoting", followed by "powered by HTL Leonding"
+
+### Requirement: Guests and Hosts Are Addressed with "du"
+All user-facing text in the web app MUST address the user with the informal "du". Formal "Sie" MUST NOT be used.
+
+#### Scenario: Code input page uses "du"
+- GIVEN a guest opens the code-input page
+- WHEN the page text is read
+- THEN it uses "du"-forms such as "Gib den Code ein"
+- AND it contains no "Sie"-forms
+
+### Requirement: Host Can Switch Between Dark and Light Mode
+All stage pages MUST offer a dark mode and a light mode; dark mode is the default. Every page except the TV page `/startpage` MUST show a switch "Heller Modus" in its top bar, as a real control with `role="switch"` and `aria-checked`. The choice MUST be stored on the device and applied on the next visit and, without a reload, in other open tabs of the same browser, including the TV page. Both modes MUST meet the contrast rule "Text Meets WCAG AA Contrast".
+
+#### Scenario: Host switches to light mode
+- GIVEN the host is on the host dashboard in dark mode
+- WHEN the host turns on "Heller Modus"
+- THEN the dashboard switches to the light look
+- AND the switch reports `aria-checked="true"`
+
+#### Scenario: Choice is remembered
+- GIVEN the host turned on light mode
+- WHEN the host reloads the dashboard
+- THEN the dashboard is shown in light mode
+
+#### Scenario: TV follows the choice in the same browser
+- GIVEN the TV page is open in another tab of the same browser
+- WHEN the host turns on light mode on the dashboard
+- THEN the TV page switches to light mode without a reload
+
+#### Scenario: Default is dark
+- GIVEN a device that never chose a mode
+- WHEN the host opens the dashboard
+- THEN dark mode is shown
+
+### Requirement: Guests Keep Their Own Dark/Light Choice
+The guest pages (join page `/code` and `/join/:pin`, voting, add songs) MUST store their dark/light choice separately from the host pages, the TV page and the other entry pages. Switching on a guest page MUST NOT change the host pages or the TV, and switching on a host page MUST NOT change a guest page whose mode was already chosen. Until a guest chooses, the guest pages start with the mode chosen on the entry pages of that device.
+
+#### Scenario: Guest choice is separate from the host choice
+- GIVEN a phone on which the host dashboard is in dark mode
+- WHEN a guest page on the same phone is switched to light mode
+- THEN the guest pages are shown in light mode
+- AND the host dashboard and the TV page stay in dark mode
+
+#### Scenario: Guest starts from the landing page choice
+- GIVEN a guest switched the landing page to light mode and never used the switch on a guest page
+- WHEN the guest joins a party
+- THEN the join and voting pages are shown in light mode
+
+#### Scenario: Switch on the entry pages
+- GIVEN a visitor opens the landing page or the join page
+- WHEN they look at the top bar
+- THEN the switch "Heller Modus" is shown
+- AND turning it on also applies to the guest views later on the same device
+
+### Requirement: Every Web Page Uses the Stage Look
+Every page of the web app MUST use the shared stage look: the dark (or light) stage background with the brand glow, the same top bar, cards, buttons and inputs. No page MUST use the full brand gradient as its page background. This includes the landing page, the join page, host options, "Party erstellen", the playlist choice and the "party ended" screen.
+
+#### Scenario: Entry pages match the rest of the app
+- GIVEN the app is in dark mode
+- WHEN a visitor goes from the landing page to the join page and then to the guest voting view
+- THEN all three pages show the same stage background, top bar and button style
+
+#### Scenario: No full-gradient page background
+- GIVEN any page of the web app
+- WHEN it is rendered
+- THEN its page background is the stage background, not the full purple-to-coral gradient
