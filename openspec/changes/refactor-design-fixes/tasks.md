@@ -94,7 +94,7 @@ Every component change needs code comments (why, not what) and DOM-based specs w
 
 ## 7. Verify and document
 
-- [x] 7.1 (2026-11-03: frontend 396/396, backend 192/192) Full frontend test suite passes; backend suite passes (regression)
+- [x] 7.1 (2026-11-03: frontend 396/396, backend 192/192; 2026-11-17 after 8.3–8.5: frontend 426/426, backend 192/192) Full frontend test suite passes; backend suite passes (regression)
 - [ ] 7.2 Run `/impeccable critique musicvoting/frontend/src/app` again and save the new score in `openspec/analyse/impeccable/`; target ≥ 28/40
 - [ ] 7.3 Run `/impeccable document` to write `DESIGN.md` from the finished build
 - [ ] 7.4 Update `musicvoting/frontend/README.md` (shared components, tokens, fonts/icons) and the host flow in `hugo/content/dev/` docs if described there

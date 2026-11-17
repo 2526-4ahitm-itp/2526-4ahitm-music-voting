@@ -43,9 +43,6 @@ The web add/search view MUST tell the guest what is happening at every step:
 - While a search request is running, a loading indicator MUST be shown.
 - A search that returns no results MUST show "Keine Treffer für „<Suchbegriff>“".
 - A failed search or a failed queue load (network or server error) MUST show "Verbindung verloren – versuch es gleich nochmal." instead of leaving stale content without a message.
-- After a successful add, a short confirmation MUST appear above the bottom tab bar for about 4 seconds, in addition to the checkmark on the result. It MUST say where the song now ranks among the waiting songs, "Song hinzugefügt – Platz <N>", and offer the action "Zum Voten", which opens the voting view. If the rank cannot be determined, it says "Song hinzugefügt".
-- Errors returned by the backend (for example "Song ist schon in der Warteschlange.", "Zu viele Anfragen — bitte kurz warten.") MUST be shown in the same confirmation area, in a colour with at least 4.5:1 contrast to its background.
-- A blocked search result keeps the behaviour of `search/spec.md` (greyed out, no visible text). Its disabled "+" MUST have the `aria-label` and tooltip "Nicht verfügbar", without revealing the reason.
 - Status messages MUST be announced to screen readers (see `web-ui/spec.md`).
 
 #### Scenario: Search without results
@@ -53,11 +50,22 @@ The web add/search view MUST tell the guest what is happening at every step:
 - WHEN the guest searches for "xyzxyzxyz" and no tracks are found
 - THEN "Keine Treffer für „xyzxyzxyz“" is shown
 
+#### Scenario: Network error while searching
+- GIVEN the backend is unreachable
+- WHEN the guest searches
+- THEN "Verbindung verloren – versuch es gleich nochmal." is shown
+
+### Requirement: Guest Add Is Confirmed with the Rank
+After a successful add, a confirmation MUST appear above the bottom tab bar for about 4 seconds, besides the checkmark on the result. It MUST say "Song hinzugefügt – Platz <N>" (the rank among the waiting songs) and offer the action "Zum Voten", which opens the voting view; without a known rank it says "Song hinzugefügt". Backend errors (for example "Song ist schon in der Warteschlange.", "Zu viele Anfragen — bitte kurz warten.") MUST be shown in the same area, with at least 4.5:1 contrast.
+
 #### Scenario: Successful add is confirmed
 - GIVEN a guest sees song X in the search results
 - WHEN the guest taps "+" on song X and the add succeeds
 - THEN "Song hinzugefügt" appears above the tab bar
 - AND song X's "+" turns into a checkmark
+
+### Requirement: Blocked Search Results Stay Discreet
+A blocked search result keeps the behaviour of `search/spec.md` (greyed out, no visible text). Its disabled "+" MUST have the `aria-label` and tooltip "Nicht verfügbar", without revealing the reason.
 
 #### Scenario: Blocked result explains itself without a reason
 - GIVEN song X is blocked by the party blacklist
@@ -65,16 +73,10 @@ The web add/search view MUST tell the guest what is happening at every step:
 - THEN "Nicht verfügbar" is announced or shown as a tooltip
 - AND no blacklist entry or reason is revealed
 
-#### Scenario: Network error while searching
-- GIVEN the backend is unreachable
-- WHEN the guest searches
-- THEN "Verbindung verloren – versuch es gleich nochmal." is shown
-
 ### Requirement: Guest Voting View Shows What Plays and the Ranking
 The web voting view MUST make visible that the room decides the order:
-- The currently playing song MUST be shown in a compact bar at the top of the view (cover, title, artist, a "Läuft gerade" indicator), not as an entry inside the list.
-- Every waiting song MUST show its rank as a number, counted from 1 in the order of the queue (see `queue/spec.md`), so a guest sees which song plays next.
-- After the guest likes a song, its row MUST be highlighted for about 2 seconds, so the guest can follow it to its new position. Under reduced motion the highlight appears without animation.
+- The currently playing song MUST be shown in a compact bar at the top (cover, title, artist, a "Läuft gerade" indicator), not as an entry inside the list.
+- Every waiting song MUST show its rank as a number, counted from 1 in queue order (see `queue/spec.md`).
 - Filtering the list with the search field MUST NOT change the rank numbers.
 
 #### Scenario: Guest sees the playing song and the ranks
@@ -82,11 +84,6 @@ The web voting view MUST make visible that the room decides the order:
 - WHEN a guest opens the voting view
 - THEN A is shown in the bar at the top with "Läuft gerade"
 - AND B is shown with rank 1 and C with rank 2
-
-#### Scenario: Liked song is highlighted
-- GIVEN a guest is on the voting view
-- WHEN the guest likes song C
-- THEN the row of C is highlighted for about 2 seconds
 
 #### Scenario: Filter keeps the ranks
 - GIVEN B has rank 1 and C has rank 2
@@ -98,10 +95,16 @@ The web voting view MUST make visible that the room decides the order:
 - WHEN a guest adds a new song that ends up fourth
 - THEN "Song hinzugefügt – Platz 4" is shown with the action "Zum Voten"
 
+### Requirement: Liked Song Is Highlighted in the Guest List
+After the guest likes a song, its row MUST be highlighted for about 2 seconds, so the guest can follow it to its new position. Under reduced motion the highlight appears without animation.
+
+#### Scenario: Liked song is highlighted
+- GIVEN a guest is on the voting view
+- WHEN the guest likes song C
+- THEN the row of C is highlighted for about 2 seconds
+
 ### Requirement: Guest Sees Which Party They Are In
 Both guest views MUST show a plain page title in the top bar: "Warteschlange" on `/voting` and "Song suchen" on `/guest`. Directly below the title the top bar MUST show the party as "Party <Voting-PIN>" (e.g. "Party 47291") and a button "Party verlassen".
-
-"Party verlassen" MUST first ask "Party wirklich verlassen?" with "Ja, verlassen" and "Abbrechen". Confirming MUST clear the stored party (party ID and PIN) but keep the persistent `deviceId`, and return to the start page `/`. "Abbrechen" or Escape closes the question and the guest stays in the party.
 
 #### Scenario: Guest sees the party in the top bar
 - GIVEN a guest has joined the party with Voting-PIN 47291
@@ -109,6 +112,9 @@ Both guest views MUST show a plain page title in the top bar: "Warteschlange" on
 - THEN the top bar shows the title "Warteschlange" and below it "Party 47291" and "Party verlassen"
 - WHEN the guest switches to `/guest`
 - THEN the title reads "Song suchen" with the same party line
+
+### Requirement: Guest Can Leave the Party
+"Party verlassen" MUST first ask "Party wirklich verlassen?" with "Ja, verlassen" and "Abbrechen". Confirming MUST clear the stored party (party ID and PIN) but keep the persistent `deviceId`, and return to the start page `/`. "Abbrechen" or Escape closes the question and the guest stays in the party.
 
 #### Scenario: Guest leaves the party
 - GIVEN a guest is on `/voting`
