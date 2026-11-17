@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-17T07:28:53+00:00",
+  "title": "Design System: MusicVoting",
+  "extensions": {
+    "colorMeta": {
+      "stage-purple": {
+        "role": "primary",
+        "displayName": "Stage Purple",
+        "canonical": "#8403A6",
+        "tonalRamp": [
+          "#280334",
+          "#410352",
+          "#590371",
+          "#72038F",
+          "#9D35B8",
+          "#BB74CE",
+          "#DAB3E4",
+          "#F3E6F6"
+        ]
+      },
+      "coral": {
+        "role": "secondary",
+        "displayName": "Coral",
+        "canonical": "#F2594B",
+        "tonalRamp": [
+          "#44181D",
+          "#722A29",
+          "#A13B36",
+          "#CF4C42",
+          "#F57A6F",
+          "#F8A49C",
+          "#FBCDC9",
+          "#FEEEED"
+        ]
+      },
+      "coral-light": {
+        "role": "secondary",
+        "displayName": "Coral Light",
+        "canonical": "#FF9A8F",
+        "tonalRamp": [
+          "#47292E",
+          "#784748",
+          "#A96562",
+          "#DA837C",
+          "#FFAEA5",
+          "#FFC7C1",
+          "#FFE1DD",
+          "#FFF5F4"
+        ]
+      },
+      "stage-night": {
+        "role": "neutral",
+        "displayName": "Stage Night",
+        "canonical": "#12061A",
+        "tonalRamp": [
+          "#0C0411",
+          "#0E0413",
+          "#0F0516",
+          "#110618",
+          "#413848",
+          "#7D7681",
+          "#B8B4BA",
+          "#E7E6E8"
+        ]
+      },
+      "on-stage": {
+        "role": "neutral",
+        "displayName": "On Stage",
+        "canonical": "#FBF4FF",
+        "tonalRamp": [
+          "#463F4A",
+          "#766F7A",
+          "#A7A0AB",
+          "#D7D0DB",
+          "#FCF6FF",
+          "#FDF9FF",
+          "#FEFCFF",
+          "#FFFEFF"
+        ]
+      },
+      "on-stage-muted": {
+        "role": "neutral",
+        "displayName": "On Stage Muted",
+        "canonical": "#C9B6D4",
+        "tonalRamp": [
+          "#3A3040",
+          "#605467",
+          "#86778F",
+          "#AC9BB6",
+          "#D4C5DD",
+          "#E1D7E7",
+          "#EFE9F2",
+          "#FAF8FB"
+        ]
+      },
+      "danger": {
+        "role": "error",
+        "displayName": "Danger",
+        "canonical": "#B3261E",
+        "tonalRamp": [
+          "#340C12",
+          "#561315",
+          "#781A18",
+          "#9A211C",
+          "#C2514B",
+          "#D58883",
+          "#E8BEBC",
+          "#F7E9E8"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Wordmark on the landing page; current song title on the TV (6.2vh)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Step headings of entry and setup pages."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Page title in the sticky top bar."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, leads, song rows."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase group labels and kind chips."
+      }
+    },
+    "shadows": [
+      {
+        "name": "inner-edge",
+        "value": "inset 0 0 0 1px rgba(251, 244, 255, 0.06)",
+        "purpose": "Every row and card; replaces borders."
+      },
+      {
+        "name": "floating-panel",
+        "value": "0 12px 32px rgba(0, 0, 0, 0.45)",
+        "purpose": "Confirmation popovers."
+      },
+      {
+        "name": "slide-in",
+        "value": "4px 0 32px rgba(0, 0, 0, 0.5)",
+        "purpose": "Host burger panel below 1024 px."
+      },
+      {
+        "name": "cover-lift",
+        "value": "0 30px 80px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(132, 3, 166, 0.35)",
+        "purpose": "Now-playing cover on TV and dashboard."
+      },
+      {
+        "name": "focus-ring",
+        "value": "0 0 0 2px #FFFFFF, 0 0 0 5px #8403A6",
+        "purpose": "Visible focus on light, dark and glow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Default easing for state changes."
+      },
+      {
+        "name": "duration-fast",
+        "value": "150ms",
+        "purpose": "Hovers, presses."
+      },
+      {
+        "name": "duration-base",
+        "value": "250ms",
+        "purpose": "Panels, menu slide."
+      },
+      {
+        "name": "duration-slow",
+        "value": "400ms",
+        "purpose": "Queue row reordering (FLIP)."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact",
+        "value": "560px"
+      },
+      {
+        "name": "single-column",
+        "value": "900px"
+      },
+      {
+        "name": "host-rail",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action per screen.",
+      "html": "<button class=\"ds-btn-primary\">Player auf dem TV öffnen</button>",
+      "css": ".ds-btn-primary{font-family:'Bricolage Grotesque Variable','Segoe UI',system-ui,sans-serif;border:0;min-height:44px;padding:0 16px;border-radius:999px;background:var(--mv-purple,#8403A6);color:#fff;font-weight:700;font-size:1rem;cursor:pointer;transition:background-color 150ms cubic-bezier(.16,1,.3,1)}.ds-btn-primary:hover{background:var(--mv-purple-deep,#5A0272)}.ds-btn-primary:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 5px #8403A6}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Every other action next to the primary one.",
+      "html": "<button class=\"ds-btn-secondary\">Abbrechen</button>",
+      "css": ".ds-btn-secondary{font-family:'Bricolage Grotesque Variable','Segoe UI',system-ui,sans-serif;border:0;min-height:44px;padding:0 16px;border-radius:999px;background:rgba(251,244,255,.1);color:#FBF4FF;font-weight:700;font-size:1rem;cursor:pointer}.ds-btn-secondary:hover{background:rgba(251,244,255,.22)}.ds-btn-secondary:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 5px #8403A6}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive choice inside a confirmation.",
+      "html": "<button class=\"ds-btn-danger\">Ja, beenden</button>",
+      "css": ".ds-btn-danger{font-family:'Bricolage Grotesque Variable','Segoe UI',system-ui,sans-serif;border:0;min-height:44px;padding:0 16px;border-radius:999px;background:#B3261E;color:#fff;font-weight:700;font-size:1rem;cursor:pointer}.ds-btn-danger:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 5px #8403A6}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Search with inset icon; blacklist, guest and host search.",
+      "html": "<label class=\"ds-search\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input type=\"search\" placeholder=\"Wort, Künstler oder Song\"></label>",
+      "css": ".ds-search{position:relative;display:flex;align-items:center;width:320px}.ds-search svg{position:absolute;left:14px;color:#C9B6D4}.ds-search input{font-family:'Bricolage Grotesque Variable','Segoe UI',system-ui,sans-serif;width:100%;min-height:48px;padding:0 16px 0 44px;border-radius:16px;border:1px solid rgba(251,244,255,.16);background:rgba(251,244,255,.06);color:#FBF4FF;font-size:1rem}.ds-search input::placeholder{color:#C9B6D4}.ds-search input:focus{outline:none;border-color:rgba(251,244,255,.5);box-shadow:0 0 0 2px #fff,0 0 0 5px #8403A6}"
+    },
+    {
+      "name": "Queue Row",
+      "kind": "custom",
+      "refersTo": "queue-row",
+      "description": "Rank, cover, title/artist, like count and heart; liked state in coral wash.",
+      "html": "<div class=\"ds-row ds-row-liked\"><span class=\"ds-rank\">1</span><span class=\"ds-cover\"></span><span class=\"ds-text\"><strong>Mr. Brightside</strong><small>The Killers</small></span><span class=\"ds-count\">7</span><button class=\"ds-heart\" aria-pressed=\"true\" aria-label=\"Like entfernen\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg></button></div>",
+      "css": ".ds-row{font-family:'Bricolage Grotesque Variable','Segoe UI',system-ui,sans-serif;display:grid;grid-template-columns:2ch 48px minmax(0,1fr) auto 44px;align-items:center;gap:12px;width:360px;padding:8px 12px;border-radius:16px;background:rgba(18,6,26,.6);box-shadow:inset 0 0 0 1px rgba(251,244,255,.06);color:#FBF4FF}.ds-row-liked{background:rgba(242,89,75,.22);box-shadow:inset 0 0 0 1px rgba(255,154,143,.55)}.ds-rank{font-weight:800;color:#FF9A8F;font-variant-numeric:tabular-nums}.ds-cover{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#8403A6,#F2594B)}.ds-text{display:flex;flex-direction:column;min-width:0}.ds-text small{color:#C9B6D4}.ds-count{font-weight:800;font-variant-numeric:tabular-nums}.ds-heart{width:44px;height:44px;border:0;border-radius:50%;background:#C8392C;color:#fff;display:grid;place-items:center;cursor:pointer}"
+    },
+    {
+      "name": "Stage Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Translucent dark card in front of the glow.",
+      "html": "<section class=\"ds-card\"><h2>Gesperrt</h2><p>Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen.</p></section>",
+      "css": ".ds-card{font-family:'Bricolage Grotesque Variable','Segoe UI',system-ui,sans-serif;width:320px;padding:24px;border-radius:20px;background:rgba(18,6,26,.72);box-shadow:inset 0 0 0 1px rgba(251,244,255,.1);color:#FBF4FF}.ds-card h2{margin:0 0 8px;font-size:1.25rem;font-weight:700}.ds-card p{margin:0;color:#C9B6D4}"
+    },
+    {
+      "name": "Host Navigation Rail",
+      "kind": "nav",
+      "refersTo": "top-bar",
+      "description": "Fixed rail from 1024 px; burger slide-in below.",
+      "html": "<nav class=\"ds-rail\"><b>MusicVoting</b><a class=\"on\" aria-current=\"page\">Dashboard</a><a>Suchen</a><a>Blacklist</a></nav>",
+      "css": ".ds-rail{font-family:'Bricolage Grotesque Variable','Segoe UI',system-ui,sans-serif;display:grid;gap:4px;width:220px;padding:16px;background:#1F0D2A;color:#FBF4FF}.ds-rail b{font-size:1.375rem;font-weight:750;margin-bottom:12px}.ds-rail a{display:flex;align-items:center;min-height:48px;padding:0 12px;border-radius:10px;font-weight:600;cursor:pointer}.ds-rail a:hover{background:rgba(251,244,255,.06)}.ds-rail a.on{background:rgba(132,3,166,.5)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Die Bühne im Wohnzimmer",
+    "overview": "**Creative North Star: \"Die Bühne im Wohnzimmer\"** (the stage in the living room)\n\nMusicVoting turns a private party's living room into a small stage. Every surface (the TV across the room, the host's laptop, each guest's phone) is the same dark stage, lit from behind by soft purple and coral light, as if a party lamp stood in the corner. The music is what the light falls on: covers, titles, ranks and hearts sit in front, everything else steps back into the dark.\n\nThe system is calm, not clubby. It has to suit a loud birthday and a cosy evening with family alike, so the light is a blurred glow, never a hard gradient fill. Density follows the viewing distance: the TV is built for the sofa (type in `vh`, five rows, a QR code you can scan from metres away), the phone for one thumb (44 px targets, actions at the bottom), the host pages for a quick glance between dances. A light mode exists for every surface and swaps only tokens; the stage stays the same stage.\n\nRejected directions, confirmed by the team on 2026-11-03: a light TV, a full-screen brand gradient and a muted gradient. The dark stage with the brand light as glow won.",
+    "keyCharacteristics": [
+      "One dark stage (`#12061A`) for every page, with a blurred purple/coral glow behind it.",
+      "Translucent dark cards and rows in front of the glow; no hard borders, only a 1 px inner tint line.",
+      "One variable typeface (Bricolage Grotesque) for everything, from TV display to small labels.",
+      "Colour is scarce: purple for the one main action and the current item, coral for likes.",
+      "Pills and soft corners everywhere; nothing sharp, nothing glossy.",
+      "Light mode swaps tokens only; contrast is guaranteed by a token test."
+    ],
+    "rules": [
+      {
+        "name": "The Light, Not Paint Rule",
+        "body": "The brand gradient is only ever light behind the stage (blurred radial glows) or the fill of a large tile without small text. Never a full-page background, never gradient-clipped text.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Purple Rule",
+        "body": "Each screen has at most one filled purple button. If two actions compete, the second becomes a secondary (tinted) button.",
+        "section": "colors"
+      },
+      {
+        "name": "The Coral Means Love Rule",
+        "body": "Coral marks likes and nothing else that looks interactive; a coral element the guest can tap is always a heart.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sofa Rule",
+        "body": "TV text is sized in `vh`, scaled for 1080p: queue titles and likes ≥ 32px, the current title ≥ 48px. Nothing on the TV is smaller than what can be read from the sofa.",
+        "section": "typography"
+      },
+      {
+        "name": "The Plain Title Rule",
+        "body": "Page titles name the place (\"Warteschlange\", \"Song suchen\", \"Blacklist\"), not a slogan.",
+        "section": "typography"
+      },
+      {
+        "name": "The Glow Behind, Never Inside Rule",
+        "body": "The glow lives only behind the stage. The TV gets corner glows but no centre glow (it would fill the whole screen); host and guest pages get the softer centre glow so their dark cards do not sink into black.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** take every colour from the `--mv-*` tokens in `src/styles.css`; light mode works only because components never hard-code colours.",
+      "**Do** keep one filled Stage Purple button per screen and make every other action secondary.",
+      "**Do** use Coral Light (#FF9A8F) for coral text on the dark stage and Light Accent (#80231A) in light mode.",
+      "**Do** place new text only on surfaces covered by `shared/contrast.tokens.spec.ts` (glow, stage card, row, bar), or extend that test.",
+      "**Do** keep touch targets at 44px or more and guest actions in the lower half of the screen.",
+      "**Do** size TV text in `vh` so it stays readable from the sofa at any screen size.",
+      "**Do** give every motion a reduced-motion fallback; the global rule in `styles.css` already zeroes the duration tokens.",
+      "**Do** serve images close to their display size (e.g. `assets/img/logo-mark.png`, `htl-leonding-logo-480.jpg`)."
+    ],
+    "donts": [
+      "**Don't** fill a page or the TV with the brand gradient, and don't clip a gradient into text (rejected 2026-11-03).",
+      "**Don't** put the centre glow on the TV.",
+      "**Don't** use plain coral (#F2594B) for small text on the dark stage; it fails contrast.",
+      "**Don't** add hard borders or sharp corners; separate layers with translucency and the 1px inner edge.",
+      "**Don't** show the Gastgeber-PIN openly on any screen the room can see; it stays masked on the dashboard and never appears on the TV.",
+      "**Don't** credit guests on the shared screen or tell a guest why a song is blocked.",
+      "**Don't** put the \"powered by HTL Leonding\" credit anywhere except the TV footer and the landing page."
+    ]
+  }
+}
