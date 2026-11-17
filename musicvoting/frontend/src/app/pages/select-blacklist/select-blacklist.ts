@@ -27,6 +27,12 @@ export interface SongSearchResult {
 /**
  * Blacklist page: the host blocks words, artists and songs for this party.
  *
+ * One search field serves all three kinds (task 8.3): while the host types,
+ * the results show "Wort „x“ sperren" first, then matching artists, then
+ * matching songs. Enter blocks the input as a word, because that is the
+ * first result row. This replaced a separate word form plus artist/song tabs,
+ * which made the host decide the kind before typing.
+ *
  * Two modes (host spec "Host Manages Party Blacklist"):
  * - setup (default): step after the default-playlist picker, with "Weiter" and
  *   "Ohne Blacklist fortfahren"; no navigation so the setup flow stays focused.
@@ -48,6 +54,9 @@ export interface SongSearchResult {
 export class SelectBlacklist implements OnInit, OnDestroy {
   /** Same delay as the guest search: searches while typing without one Spotify call per key. */
   static readonly SEARCH_DEBOUNCE_MS = 400;
+  /** Few artists and songs keep the mixed list short enough for a phone (team decision 2026-11-17). */
+  static readonly MAX_ARTISTS = 3;
+  static readonly MAX_SONGS = 5;
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -62,9 +71,6 @@ export class SelectBlacklist implements OnInit, OnDestroy {
   isLoading = true;
   error: string | null = null;
 
-  wordInput = '';
-
-  searchTab: 'artists' | 'songs' = 'artists';
   searchQuery = '';
   artistResults: ArtistSearchResult[] = [];
   songResults: SongSearchResult[] = [];
@@ -127,12 +133,27 @@ export class SelectBlacklist implements OnInit, OnDestroy {
     return this.entries.filter(e => e.kind === 'TRACK');
   }
 
+  /** The trimmed input, offered as the first result row "Wort „x“ sperren". */
+  get wordCandidate(): string {
+    return this.searchQuery.trim();
+  }
+
+  /** True if the current input is already blocked as a word (the backend stores words lower-case). */
+  get wordBlocked(): boolean {
+    const word = this.wordCandidate.toLowerCase();
+    return this.entries.some(e => e.kind === 'WORD' && e.value.toLowerCase() === word);
+  }
+
+  /**
+   * Blocks the current input as a word (first result row, also bound to Enter).
+   * Afterwards the field is emptied: the word is done, and the artist/song
+   * results for it would only distract from the next entry.
+   */
   async addWord() {
-    const word = this.wordInput.trim();
-    if (!word) return;
+    const word = this.wordCandidate;
+    if (!word || this.wordBlocked) return;
     if (await this.add({ kind: 'WORD', value: word })) {
-      this.wordInput = '';
-      this.cd.detectChanges();
+      this.onSearchQueryChange('');
     }
   }
 
@@ -161,43 +182,37 @@ export class SelectBlacklist implements OnInit, OnDestroy {
     this.cd.detectChanges();
   }
 
-  selectTab(tab: 'artists' | 'songs') {
-    if (this.searchTab === tab) return;
-    this.searchTab = tab;
-    this.artistResults = [];
-    this.songResults = [];
-    this.cd.detectChanges();
-    if (this.searchQuery.trim()) {
-      this.search();
-    }
-  }
-
+  /**
+   * Searches artists and songs in parallel for the current input.
+   *
+   * Both requests are independent: if one fails, the other group is still
+   * shown, so a Spotify hiccup on one endpoint does not hide useful results.
+   * Only when both fail does the host see an error. The word row needs no
+   * request and is always there while the field has text.
+   */
   async search() {
     const query = this.searchQuery.trim();
     if (!this.partyId || !query) return;
     const seq = ++this.searchSeq;
-    const tab = this.searchTab;
     // No "Suche läuft…" indicator on purpose: with search-while-typing it would flicker on every pause.
     this.error = null;
     this.cd.detectChanges();
-    try {
-      if (tab === 'artists') {
-        const artists = await lastValueFrom(this.partyService.searchArtists(this.partyId, query));
-        if (seq !== this.searchSeq) return; // typing went on — a newer search owns the list
-        this.artistResults = artists;
-      } else {
-        const res = await lastValueFrom(this.trackService.searchTracks(query));
-        if (seq !== this.searchSeq) return;
-        this.songResults = toSongResults(res);
-      }
-    } catch {
-      if (seq !== this.searchSeq) return;
+    // defaultValue: searchTracks completes empty when no party is set; that is "no songs", not an error.
+    const [artists, songs] = await Promise.allSettled([
+      lastValueFrom(this.partyService.searchArtists(this.partyId, query), { defaultValue: [] }),
+      lastValueFrom(this.trackService.searchTracks(query), { defaultValue: null }),
+    ]);
+    if (seq !== this.searchSeq) return; // typing went on — a newer search owns the list
+    this.artistResults = artists.status === 'fulfilled'
+      ? (artists.value ?? []).slice(0, SelectBlacklist.MAX_ARTISTS)
+      : [];
+    this.songResults = songs.status === 'fulfilled'
+      ? toSongResults(songs.value).slice(0, SelectBlacklist.MAX_SONGS)
+      : [];
+    if (artists.status === 'rejected' && songs.status === 'rejected') {
       this.error = 'Suche fehlgeschlagen. Bitte erneut versuchen.';
-    } finally {
-      if (seq === this.searchSeq) {
-        this.cd.detectChanges();
-      }
     }
+    this.cd.detectChanges();
   }
 
   /** Setup mode: the go-live step comes next, where the host opens the player (design D8). */

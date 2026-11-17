@@ -30,21 +30,19 @@ The host MUST be able to keep a blacklist scoped to the current party. A blackli
 - **Artist**: identified by the provider's artist ID; blocks every song the artist takes part in, including features.
 - **Song**: identified by the provider's track URI; blocks exactly that track.
 
-**Setup step.** The web host flow MUST offer a blacklist setup page directly after the default-playlist picker. On this page the host MUST be able to:
-- add words,
-- search for artists and add one,
-- search for songs and add one,
-- remove entries again.
+**Setup step.** The web host flow MUST offer a blacklist setup page directly after the default-playlist picker. On this page the host MUST be able to block words, artists and songs from **one search field** with the placeholder "Wort, Künstler oder Song", and remove entries again. There are no tabs.
 
 Page details:
 - The page MUST show the subtitle "Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen."
-- The word input MUST have the placeholder "Wort".
+- While the field has text, the results MUST show first the row "Wort „<eingabe>“ sperren", then at most 3 matching artists, then at most 5 matching songs.
+- Pressing Enter in the field MUST block the input as a word; the field is emptied afterwards.
 - The artist and song search MUST start while the host types (no "Suchen" button). Emptying the field clears the results.
+- If only one of the two searches fails, the results of the other MUST still be shown.
 - The page MUST be skippable via "Ohne Blacklist fortfahren".
 - "Weiter" continues with the current entries and MUST be disabled (greyed out) while the blacklist has no entries.
 - Both "Weiter" and "Ohne Blacklist fortfahren" continue to the go-live step (see "Host Setup Ends with a Go-Live Step").
 
-**During the party.** The host dashboard menu MUST offer the entry "Blacklist". It opens the same page with the same capabilities: words, artist search, song search, and removing entries. In this mode the page MUST show a single button "Fertig" that returns to the host dashboard instead of "Weiter" / "Ohne Blacklist fortfahren". Every change is saved immediately.
+**During the party.** The host dashboard menu MUST offer the entry "Blacklist". It opens the same page with the same capabilities: the one search field for words, artists and songs, and removing entries. In this mode the page MUST show a single button "Fertig" that returns to the host dashboard instead of "Weiter" / "Ohne Blacklist fortfahren". Every change is saved immediately.
 
 Adding the same entry twice MUST NOT create a duplicate. During the party the host can additionally block single songs from the queue via "Song entfernen" → "Auch sperren" (see "Host Blocks a Queued Song").
 
@@ -94,11 +92,24 @@ When a guest attempts to add a blocked song, the add MUST be rejected with "Nich
 - AND "Fertig" returns to the host dashboard
 
 #### Scenario: Blacklist search starts while typing
-- GIVEN the host is on the blacklist page with the tab "Künstler" selected
+- GIVEN the host is on the blacklist page
 - WHEN the host types "a" into the search field and pauses briefly
-- THEN matching artists are shown without pressing a button
+- THEN the row "Wort „a“ sperren", matching artists and matching songs are shown without pressing a button
+- AND the word row comes first, then the artists, then the songs
 - WHEN the host empties the search field
 - THEN the results are cleared
+
+#### Scenario: Host blocks a word from the search field
+- GIVEN the host is on the blacklist page
+- WHEN the host types "remix" and presses Enter
+- THEN the word "remix" is added to the blacklist
+- AND the search field is empty again
+
+#### Scenario: One failed search does not hide the other results
+- GIVEN the host is on the blacklist page
+- WHEN the host types "abba" and the artist search fails but the song search succeeds
+- THEN the matching songs are shown
+- AND the row "Wort „abba“ sperren" is still available
 
 #### Scenario: "Weiter" is disabled until something is blocked
 - GIVEN the host is on the blacklist setup page and the blacklist has no entries

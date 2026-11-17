@@ -27,6 +27,30 @@ describe('SelectBlacklist', () => {
     (fixture.nativeElement.querySelector(selector) as HTMLElement).click();
   }
 
+  const artistUrl = (q: string) => `/api/party/party-x/blacklist/artists?q=${q}`;
+  const songUrl = (q: string) => `/api/party/party-x/track/search?q=${q}`;
+
+  /** One search fires both requests (artists and songs) in parallel; answer both. */
+  function flushSearch(q: string, artists: any[] = [], songItems: any[] = []) {
+    httpMock.expectOne(artistUrl(q)).flush(artists);
+    httpMock.expectOne(songUrl(q)).flush({ tracks: { items: songItems } });
+  }
+
+  /** Types into the field and runs the search right away (the debounce is tested separately). */
+  async function typeAndSearch(fixture: any, q: string, artists: any[] = [], songItems: any[] = []) {
+    const comp = fixture.componentInstance as SelectBlacklist;
+    // Set the field directly: onSearchQueryChange would also arm the real-time debounce.
+    comp.searchQuery = q;
+    const searching = comp.search();
+    flushSearch(q, artists, songItems);
+    await searching;
+    await fixture.whenStable();
+  }
+
+  const song = (n: number) => ({
+    uri: `spotify:track:t${n}`, name: `Song ${n}`, artists: [{ name: 'ABBA' }], album: { images: [] },
+  });
+
   beforeEach(() => {
     localStorage.clear();
     router = { navigate: jasmine.createSpy('navigate') };
@@ -68,20 +92,21 @@ describe('SelectBlacklist', () => {
     expect(text(fixture)).toContain('Noch nichts gesperrt.');
   });
 
-  it('adds a word and clears the input', async () => {
+  it('Enter in the search field blocks the input as a word and empties the field', async () => {
     const fixture = await createLoaded([]);
     const comp = fixture.componentInstance;
 
-    comp.wordInput = 'Live';
-    const done = comp.addWord();
+    comp.searchQuery = 'Live';
+    fixture.nativeElement.querySelector('form.search-form')
+      .dispatchEvent(new Event('submit', { cancelable: true }));
     const req = httpMock.expectOne('/api/party/party-x/blacklist');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ kind: 'WORD', value: 'Live' });
     req.flush({ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null });
-    await done;
     await fixture.whenStable();
 
-    expect(comp.wordInput).toBe('');
+    expect(comp.searchQuery).toBe('');
+    expect(fixture.nativeElement.querySelector('.word-result')).toBeNull();
     const entries = fixture.nativeElement.querySelectorAll('.entry');
     expect(entries.length).toBe(1);
     expect(entries[0].textContent).toContain('Wort');
@@ -101,16 +126,98 @@ describe('SelectBlacklist', () => {
     expect(text(fixture)).toContain('Noch nichts gesperrt.');
   });
 
-  it('artist search result becomes an ARTIST entry', async () => {
+  it('shows one search field and no tabs', async () => {
+    const fixture = await createLoaded([]);
+    const root: HTMLElement = fixture.nativeElement;
+
+    expect(root.querySelectorAll('input[type="search"]').length).toBe(1);
+    expect((root.querySelector('input[name="query"]') as HTMLInputElement).placeholder).toBe('Wort, Künstler oder Song');
+    expect(root.querySelector('[role="tablist"]')).toBeNull();
+    expect(root.querySelector('input[name="word"]')).toBeNull();
+  });
+
+  it('lists the word row first, then artists, then songs', async () => {
+    const fixture = await createLoaded([]);
+
+    await typeAndSearch(fixture, 'abba', [{ id: 'a1', name: 'ABBA', imageUrl: null }], [song(1)]);
+
+    const rows = Array.from(fixture.nativeElement.querySelectorAll('.results > *')) as HTMLElement[];
+    expect(rows.map((r) => r.className.match(/word-result|artist-result|song-result|result-group/)?.[0]))
+      .toEqual(['word-result', 'result-group', 'artist-result', 'result-group', 'song-result']);
+    expect(rows[0].textContent).toContain('Wort „abba“ sperren');
+    expect(rows[1].textContent?.trim()).toBe('Künstler');
+    expect(rows[3].textContent?.trim()).toBe('Songs');
+  });
+
+  it('shows at most 3 artists and 5 songs', async () => {
+    const fixture = await createLoaded([]);
+    const artists = [1, 2, 3, 4, 5].map((n) => ({ id: `a${n}`, name: `Artist ${n}`, imageUrl: null }));
+
+    await typeAndSearch(fixture, 'a', artists, [1, 2, 3, 4, 5, 6, 7].map(song));
+
+    expect(fixture.nativeElement.querySelectorAll('.artist-result').length).toBe(3);
+    expect(fixture.nativeElement.querySelectorAll('.song-result').length).toBe(5);
+  });
+
+  it('clicking the word row blocks the word', async () => {
+    const fixture = await createLoaded([]);
+    await typeAndSearch(fixture, 'remix');
+
+    click(fixture, '.word-result');
+    const req = httpMock.expectOne('/api/party/party-x/blacklist');
+    expect(req.request.body).toEqual({ kind: 'WORD', value: 'remix' });
+    req.flush({ id: 'e1', kind: 'WORD', value: 'remix', label: 'remix', imageUrl: null });
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('.entry[data-kind="WORD"]').textContent).toContain('remix');
+  });
+
+  it('marks the word row as blocked when the word is already on the list', async () => {
+    const fixture = await createLoaded([{ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null }]);
+
+    await typeAndSearch(fixture, 'Live');
+
+    const row = fixture.nativeElement.querySelector('.word-result') as HTMLButtonElement;
+    expect(row.disabled).toBe(true);
+    expect(row.textContent).toContain('Wort „Live“ ist gesperrt');
+  });
+
+  it('still shows songs when the artist search fails', async () => {
     const fixture = await createLoaded([]);
     const comp = fixture.componentInstance;
 
     comp.searchQuery = 'abba';
     const searching = comp.search();
-    httpMock.expectOne('/api/party/party-x/blacklist/artists?q=abba')
-      .flush([{ id: 'a1', name: 'ABBA', imageUrl: 'http://img/a' }]);
+    httpMock.expectOne(artistUrl('abba')).flush('boom', { status: 502, statusText: 'Bad Gateway' });
+    httpMock.expectOne(songUrl('abba')).flush({ tracks: { items: [song(1)] } });
     await searching;
     await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelectorAll('.song-result').length).toBe(1);
+    expect(fixture.nativeElement.querySelectorAll('.artist-result').length).toBe(0);
+    expect(comp.error).toBeNull();
+  });
+
+  it('shows an error only when both searches fail', async () => {
+    const fixture = await createLoaded([]);
+    const comp = fixture.componentInstance;
+
+    comp.searchQuery = 'abba';
+    const searching = comp.search();
+    httpMock.expectOne(artistUrl('abba')).flush('boom', { status: 502, statusText: 'Bad Gateway' });
+    httpMock.expectOne(songUrl('abba')).flush('boom', { status: 502, statusText: 'Bad Gateway' });
+    await searching;
+    await fixture.whenStable();
+
+    expect(text(fixture)).toContain('Suche fehlgeschlagen. Bitte erneut versuchen.');
+    // The word row needs no request, so it stays usable.
+    expect(fixture.nativeElement.querySelector('.word-result')).toBeTruthy();
+  });
+
+  it('artist search result becomes an ARTIST entry', async () => {
+    const fixture = await createLoaded([]);
+
+    await typeAndSearch(fixture, 'abba', [{ id: 'a1', name: 'ABBA', imageUrl: 'http://img/a' }]);
     expect(text(fixture)).toContain('ABBA');
 
     click(fixture, '.artist-result');
@@ -125,21 +232,11 @@ describe('SelectBlacklist', () => {
 
   it('song search result becomes a TRACK entry', async () => {
     const fixture = await createLoaded([]);
-    const comp = fixture.componentInstance;
 
-    comp.selectTab('songs');
-    comp.searchQuery = 'dancing';
-    const searching = comp.search();
-    httpMock.expectOne('/api/party/party-x/track/search?q=dancing').flush({
-      tracks: {
-        items: [
-          null,
-          { uri: 'spotify:track:t1', name: 'Dancing Queen', artists: [{ name: 'ABBA' }], album: { images: [{ url: 'http://img/t' }] } },
-        ],
-      },
-    });
-    await searching;
-    await fixture.whenStable();
+    await typeAndSearch(fixture, 'dancing', [], [
+      null,
+      { uri: 'spotify:track:t1', name: 'Dancing Queen', artists: [{ name: 'ABBA' }], album: { images: [{ url: 'http://img/t' }] } },
+    ]);
     expect(text(fixture)).toContain('Dancing Queen');
 
     click(fixture, '.song-result');
@@ -174,11 +271,10 @@ describe('SelectBlacklist', () => {
 
       fixture.componentInstance.onSearchQueryChange('abba');
       jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
-      const pending = httpMock.expectOne('/api/party/party-x/blacklist/artists?q=abba');
       await fixture.whenStable();
 
       expect(fixture.nativeElement.textContent).not.toContain('Suche läuft');
-      pending.flush([]);
+      flushSearch('abba');
     });
 
     it('searches after the debounce without pressing a button', async () => {
@@ -187,12 +283,15 @@ describe('SelectBlacklist', () => {
 
       comp.onSearchQueryChange('a');
       jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS - 1);
-      httpMock.expectNone('/api/party/party-x/blacklist/artists?q=a');
+      httpMock.expectNone(artistUrl('a'));
+      httpMock.expectNone(songUrl('a'));
 
       jasmine.clock().tick(1);
-      httpMock.expectOne('/api/party/party-x/blacklist/artists?q=a')
-        .flush([{ id: 'a1', name: 'ABBA', imageUrl: null }]);
+      flushSearch('a', [{ id: 'a1', name: 'ABBA', imageUrl: null }], [song(1)]);
       await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelector('.word-result').textContent).toContain('Wort „a“ sperren');
+      expect(fixture.nativeElement.querySelector('.song-result').textContent).toContain('Song 1');
 
       expect(fixture.nativeElement.querySelector('.artist-result').textContent).toContain('ABBA');
     });
@@ -208,22 +307,31 @@ describe('SelectBlacklist', () => {
       comp.onSearchQueryChange('abb');
       jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
 
-      httpMock.expectOne('/api/party/party-x/blacklist/artists?q=abb').flush([]);
-      httpMock.expectNone('/api/party/party-x/blacklist/artists?q=a');
-      httpMock.expectNone('/api/party/party-x/blacklist/artists?q=ab');
+      flushSearch('abb');
+      httpMock.expectNone(artistUrl('a'));
+      httpMock.expectNone(artistUrl('ab'));
+      httpMock.expectNone(songUrl('a'));
+      httpMock.expectNone(songUrl('ab'));
+      // Exactly the one pair of requests for the final text, nothing else is outstanding.
+      expect(httpMock.match(() => true).length).toBe(0);
     });
 
     it('clears the results when the field is emptied, without a request', async () => {
       const fixture = await createLoaded([]);
       const comp = fixture.componentInstance;
-      comp.artistResults = [{ id: 'a1', name: 'ABBA', imageUrl: null }];
+      comp.onSearchQueryChange('abba');
+      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      flushSearch('abba', [{ id: 'a1', name: 'ABBA', imageUrl: null }], [song(1)]);
+      await fixture.whenStable();
+      expect(fixture.nativeElement.querySelectorAll('.artist-result').length).toBe(1);
 
       comp.onSearchQueryChange('');
       jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
       await fixture.whenStable();
 
       expect(comp.artistResults).toEqual([]);
-      expect(fixture.nativeElement.querySelectorAll('.artist-result').length).toBe(0);
+      expect(comp.songResults).toEqual([]);
+      expect(fixture.nativeElement.querySelector('.results')).toBeNull();
     });
 
     it('ignores a slower answer to an older query', async () => {
@@ -232,26 +340,26 @@ describe('SelectBlacklist', () => {
 
       comp.onSearchQueryChange('ab');
       jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
-      const older = httpMock.expectOne('/api/party/party-x/blacklist/artists?q=ab');
+      const older = httpMock.expectOne(artistUrl('ab'));
+      const olderSongs = httpMock.expectOne(songUrl('ab'));
       comp.onSearchQueryChange('abba');
       jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
-      const newer = httpMock.expectOne('/api/party/party-x/blacklist/artists?q=abba');
 
-      newer.flush([{ id: 'a1', name: 'ABBA', imageUrl: null }]);
+      flushSearch('abba', [{ id: 'a1', name: 'ABBA', imageUrl: null }]);
       await fixture.whenStable();
       older.flush([{ id: 'a2', name: 'Abbott', imageUrl: null }]);
+      olderSongs.flush({ tracks: { items: [] } });
       await fixture.whenStable();
 
       expect(comp.artistResults.map(a => a.name)).toEqual(['ABBA']);
     });
   });
 
-  it('shows only the short subtitle and the placeholder "Wort"', async () => {
+  it('shows only the short subtitle', async () => {
     const fixture = await createLoaded([]);
 
     expect(fixture.nativeElement.querySelector('.subtitle').textContent.trim())
       .toBe('Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen.');
-    expect(fixture.nativeElement.querySelector('input[name="word"]').placeholder).toBe('Wort');
   });
 
   it('"Weiter" is disabled while nothing is blocked', async () => {
@@ -267,7 +375,7 @@ describe('SelectBlacklist', () => {
     const fixture = await createLoaded([]);
     const continueBtn = () => fixture.nativeElement.querySelector('.continue-btn') as HTMLButtonElement;
 
-    fixture.componentInstance.wordInput = 'live';
+    fixture.componentInstance.searchQuery = 'live';
     const adding = fixture.componentInstance.addWord();
     httpMock.expectOne('/api/party/party-x/blacklist')
       .flush({ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null });

@@ -26,71 +26,73 @@
         <section class="host-card" aria-labelledby="add-title">
           <h2 class="host-card-title" id="add-title">Hinzufügen</h2>
 
-          <form class="word-form" (ngSubmit)="addWord()">
-            <input
-              class="text-input"
-              type="text"
-              name="word"
-              placeholder="Wort"
-              aria-label="Wort sperren"
-              [(ngModel)]="wordInput"
-              autocomplete="off" />
-            <button class="add-word-btn host-btn primary" type="submit" [disabled]="!wordInput.trim()">Wort hinzufügen</button>
-          </form>
-
-          <div class="tabs" role="tablist" aria-label="Was sperren?">
-            <button class="tab" type="button" role="tab"
-                    [attr.aria-selected]="searchTab === 'artists'"
-                    [class.active]="searchTab === 'artists'" (click)="selectTab('artists')">Künstler</button>
-            <button class="tab" type="button" role="tab"
-                    [attr.aria-selected]="searchTab === 'songs'"
-                    [class.active]="searchTab === 'songs'" (click)="selectTab('songs')">Songs</button>
-          </div>
-
-          <form class="host-search search-form" role="search" (ngSubmit)="search()">
+          <!-- One field for all three kinds (task 8.3). Enter blocks the input as a word,
+               the first result row; artists and songs are picked by clicking. -->
+          <form class="host-search search-form" role="search" (ngSubmit)="addWord()">
             <mv-icon name="search" [size]="18" />
             <input
               type="search"
               name="query"
-              [placeholder]="searchTab === 'artists' ? 'Künstler suchen' : 'Song suchen'"
-              [attr.aria-label]="searchTab === 'artists' ? 'Künstler suchen' : 'Song suchen'"
+              placeholder="Wort, Künstler oder Song"
+              aria-label="Wort, Künstler oder Song sperren"
+              aria-describedby="search-hint"
               [ngModel]="searchQuery"
               (ngModelChange)="onSearchQueryChange($event)"
               autocomplete="off" />
           </form>
+          <p class="search-hint host-muted" id="search-hint">Enter sperrt die Eingabe als Wort.</p>
 
-          <div class="results">
-            @if (searchTab === 'artists') {
-              @for (artist of artistResults; track artist.id) {
-                <button class="result-item artist-result" type="button"
-                        [disabled]="isBlocked('ARTIST', artist.id)" (click)="addArtist(artist)">
-                  <mv-cover class="result-cover round" shape="round" [url]="artist.imageUrl" />
-                  <span class="result-info">
-                    <span class="result-name">{{ artist.name }}</span>
-                  </span>
-                  <span class="result-action">
-                    <mv-icon [name]="isBlocked('ARTIST', artist.id) ? 'check' : 'ban'" [size]="16" />
-                    {{ isBlocked('ARTIST', artist.id) ? 'Gesperrt' : 'Sperren' }}
-                  </span>
-                </button>
+          @if (wordCandidate) {
+            <div class="results">
+              <button class="result-item word-result" type="button"
+                      [disabled]="wordBlocked" (click)="addWord()">
+                <span class="result-cover word-icon" aria-hidden="true"><mv-icon name="ban" [size]="20" /></span>
+                <span class="result-info">
+                  <span class="result-name">Wort „{{ wordCandidate }}“ {{ wordBlocked ? 'ist gesperrt' : 'sperren' }}</span>
+                  <span class="result-sub">Sperrt alle Songs mit diesem Wort im Titel oder Künstlernamen</span>
+                </span>
+                <span class="result-action">
+                  <mv-icon [name]="wordBlocked ? 'check' : 'ban'" [size]="16" />
+                  {{ wordBlocked ? 'Gesperrt' : 'Sperren' }}
+                </span>
+              </button>
+
+              @if (artistResults.length) {
+                <h3 class="result-group">Künstler</h3>
+                @for (artist of artistResults; track artist.id) {
+                  <button class="result-item artist-result" type="button"
+                          [disabled]="isBlocked('ARTIST', artist.id)" (click)="addArtist(artist)">
+                    <mv-cover class="result-cover round" shape="round" [url]="artist.imageUrl" />
+                    <span class="result-info">
+                      <span class="result-name">{{ artist.name }}</span>
+                    </span>
+                    <span class="result-action">
+                      <mv-icon [name]="isBlocked('ARTIST', artist.id) ? 'check' : 'ban'" [size]="16" />
+                      {{ isBlocked('ARTIST', artist.id) ? 'Gesperrt' : 'Sperren' }}
+                    </span>
+                  </button>
+                }
               }
-            } @else {
-              @for (song of songResults; track song.uri) {
-                <button class="result-item song-result" type="button"
-                        [disabled]="isBlocked('TRACK', song.uri)" (click)="addSong(song)">
-                  <mv-cover class="result-cover" [url]="song.imageUrl" />
-                  <span class="result-info">
-                    <span class="result-name">{{ song.name }}</span>
-                    <span class="result-sub">{{ song.artists }}</span>
-                  </span>
-                  <span class="result-action">
-                    <mv-icon [name]="isBlocked('TRACK', song.uri) ? 'check' : 'ban'" [size]="16" />
-                    {{ isBlocked('TRACK', song.uri) ? 'Gesperrt' : 'Sperren' }}
-                  </span>
-                </button>
+
+              @if (songResults.length) {
+                <h3 class="result-group">Songs</h3>
+                @for (song of songResults; track song.uri) {
+                  <button class="result-item song-result" type="button"
+                          [disabled]="isBlocked('TRACK', song.uri)" (click)="addSong(song)">
+                    <mv-cover class="result-cover" [url]="song.imageUrl" />
+                    <span class="result-info">
+                      <span class="result-name">{{ song.name }}</span>
+                      <span class="result-sub">{{ song.artists }}</span>
+                    </span>
+                    <span class="result-action">
+                      <mv-icon [name]="isBlocked('TRACK', song.uri) ? 'check' : 'ban'" [size]="16" />
+                      {{ isBlocked('TRACK', song.uri) ? 'Gesperrt' : 'Sperren' }}
+                    </span>
+                  </button>
+                }
               }
-            }
-          </div>
+            </div>
+          }
         </section>
 
         <section class="host-card" aria-labelledby="blocked-title">

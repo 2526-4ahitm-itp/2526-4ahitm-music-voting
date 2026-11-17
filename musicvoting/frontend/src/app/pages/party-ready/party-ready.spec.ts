@@ -128,6 +128,8 @@ describe('PartyReady', () => {
 
       jasmine.clock().tick(PartyReady.POLL_MS * 3);
       httpMock.expectNone(CURRENT);
+      // expectNone is not a jasmine expectation; state explicitly that nothing is outstanding.
+      expect(httpMock.match(CURRENT).length).toBe(0);
     } finally {
       jasmine.clock().uninstall();
     }
