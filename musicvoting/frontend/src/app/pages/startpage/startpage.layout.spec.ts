@@ -208,6 +208,14 @@ describe('Startpage layout (TV)', () => {
     expect(q('mv-credit-footer img')?.getAttribute('src')).toBe('assets/img/htl-leonding-logo-480.jpg');
   });
 
+  it('shows the MusicVoting logo in front of the wordmark in the footer', () => {
+    fixture.detectChanges();
+
+    const logo = q('.stage-footer img.logo') as HTMLImageElement;
+    expect(logo.getAttribute('src')).toBe('assets/img/logo-mark.png');
+    expect(logo.nextElementSibling?.classList).toContain('wordmark');
+  });
+
   it('shows "MusicVoting" and the credit large enough for the TV, the credit still below the queue titles', () => {
     comp.currentTrack = track(0);
     comp.tracks = [track(1)];

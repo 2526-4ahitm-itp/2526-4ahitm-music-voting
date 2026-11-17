@@ -87,6 +87,14 @@
   padding-bottom: 48px;
 }
 
+/* Guest top bar: page title with "Party 12345 · Party verlassen" below it (mv-guest-party). */
+.guest-head {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ---------- Cards and rows ---------- */
 
 .host-card {

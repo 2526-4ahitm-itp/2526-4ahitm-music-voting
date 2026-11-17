@@ -159,6 +159,13 @@
    it scales with the screen like everything else. It stays below the queue
    titles (3.1vh), as dashboard spec "smaller than every queue entry" requires.
    The logo is 1.5em, so it grows along. */
+/* Logo mark in front of the wordmark, a bit taller than its cap height (task 8.5). */
+.stage-footer .logo {
+  height: 4.2vh;
+  width: auto;
+  margin-right: -1vw;
+}
+
 .stage-footer mv-credit-footer {
   font-size: 2.6vh;
 }
