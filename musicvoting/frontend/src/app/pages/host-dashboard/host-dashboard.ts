@@ -44,6 +44,12 @@ export class HostDashboard implements OnInit, OnDestroy {
   partyId: string | null = null;
   pin: string | null = null;
   hostPin: string | null = null;
+  /**
+   * The Gastgeber-PIN starts hidden on every load ("•••••" + "Anzeigen"), so it is
+   * not readable by guests around the host's screen (host spec, task 8.4). Not
+   * persisted on purpose: a revealed PIN should not stay revealed next time.
+   */
+  hostPinVisible = false;
   qrUrl: string | null = null;
   confirmEnd = false;
   private sseSource?: EventSource;

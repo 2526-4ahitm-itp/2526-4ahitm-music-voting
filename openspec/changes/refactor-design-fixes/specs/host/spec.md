@@ -11,6 +11,8 @@ In all web host and TV views, the two codes MUST be named consistently and shown
 
 The term "Host-PIN" MUST NOT appear in the web UI. The two codes MUST NOT share the same icon.
 
+On the host dashboard the Gastgeber-PIN MUST be hidden by default and shown as "•••••", placed below the party actions. A button "Anzeigen" reveals it; while it is visible the button reads "Verbergen". The hint "Geheim – damit kommst du zurück ins Dashboard." stays visible in both states. Every time the dashboard loads, the PIN starts hidden again.
+
 #### Scenario: Host dashboard shows PIN and QR code
 - GIVEN the host has just created a party
 - WHEN the host dashboard loads
@@ -23,6 +25,15 @@ The term "Host-PIN" MUST NOT appear in the web UI. The two codes MUST NOT share 
 - WHEN the host looks for the host PIN
 - THEN it is labelled "Gastgeber-PIN" with the hint "Geheim – damit kommst du zurück ins Dashboard."
 - AND it uses a different icon than the "Voting-PIN"
+
+#### Scenario: Gastgeber-PIN is hidden until revealed
+- GIVEN the host is on the host dashboard
+- WHEN the dashboard loads
+- THEN the Gastgeber-PIN shows "•••••" below the party actions, with the button "Anzeigen"
+- WHEN the host chooses "Anzeigen"
+- THEN the 5-digit Gastgeber-PIN is visible and the button reads "Verbergen"
+- WHEN the host reloads the dashboard
+- THEN the Gastgeber-PIN is hidden again
 
 ### Requirement: Host Manages Party Blacklist
 The host MUST be able to keep a blacklist scoped to the current party. A blacklist entry is one of three kinds:

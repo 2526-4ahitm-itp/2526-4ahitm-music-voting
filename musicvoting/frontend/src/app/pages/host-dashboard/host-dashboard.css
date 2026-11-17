@@ -196,6 +196,18 @@
   white-space: nowrap;
 }
 
+/* Gastgeber-PIN: value and "Anzeigen" side by side, the button never wraps under the dots. */
+.pin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mv-space-3);
+}
+
+.pin-toggle {
+  flex: none;
+}
+
 .small {
   margin: 0;
   font-size: 0.9375rem;
