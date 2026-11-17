@@ -89,6 +89,15 @@ The "powered by HTL Leonding" credit MUST appear as a single, unobtrusive footer
 - THEN both show the footer line "powered by HTL Leonding"
 - AND the guest views `/voting` and `/guest` and the host dashboard do not show it
 
+### Requirement: Brand Logo on Landing Page and TV
+The MusicVoting logo mark MUST appear on the landing page (`/`) above the "MusicVoting" wordmark and on the TV dashboard (`/startpage`) in the footer directly in front of the wordmark. It is decorative next to the written name (empty alt text). Images in the UI MUST be served in a size close to their display size, not as multi-thousand-pixel originals.
+
+#### Scenario: Logo on landing page and TV
+- GIVEN the web app is running
+- WHEN a visitor opens `/` and the TV opens `/startpage`
+- THEN `/` shows the logo mark above "MusicVoting"
+- AND the TV footer shows the logo mark in front of "MusicVoting", followed by "powered by HTL Leonding"
+
 ### Requirement: Guests and Hosts Are Addressed with "du"
 All user-facing text in the web app MUST address the user with the informal "du". Formal "Sie" MUST NOT be used.
 

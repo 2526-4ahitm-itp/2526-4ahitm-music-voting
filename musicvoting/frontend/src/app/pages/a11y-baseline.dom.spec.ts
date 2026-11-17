@@ -55,7 +55,7 @@ describe('Accessibility baseline (DOM)', () => {
         {
           provide: PartyService,
           useValue: {
-            currentPartyId: 'party-1', currentPin: '47291', currentHostPin: '99999', deviceId: 'device-1',
+            currentPartyId: 'party-1', currentPin: '47291', currentHostPin: '99999', deviceId: 'device-1', pin$: of('47291'),
             setCurrentPartyId: () => {}, getParty: () => of({ pin: '47291' }),
           },
         },
@@ -95,6 +95,24 @@ describe('Accessibility baseline (DOM)', () => {
     expectAccessibleControls(root);
     fixture.destroy();
   });
+
+  // Task 8.5: plain page titles instead of slogans, and the party the guest is in.
+  for (const [name, type, title] of [
+    ['guest voting', VotingComp, 'Warteschlange'],
+    ['guest add', Guest, 'Song suchen'],
+  ] as const) {
+    it(`${name}: title "${title}" with "Party 47291" and "Party verlassen" in the top bar`, () => {
+      const fixture = render(type as any);
+      const top: HTMLElement = fixture.nativeElement.querySelector('header.host-top');
+
+      expect(top.querySelector('h1')!.textContent!.trim()).toBe(title);
+      expect(top.querySelector('mv-guest-party .party-id')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Party 47291');
+      expect(top.querySelector('mv-guest-party button.leave')!.textContent!.trim()).toBe('Party verlassen');
+      expect(fixture.nativeElement.textContent).not.toContain('Lieblingssongs');
+      expectAccessibleControls(fixture.nativeElement);
+      fixture.destroy();
+    });
+  }
 
   it('guest voting: like buttons are labelled toggles, the welcome sheet button has text', () => {
     const fixture = render(VotingComp, (c) => {

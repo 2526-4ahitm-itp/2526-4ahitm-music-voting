@@ -82,6 +82,10 @@ describe('Entry and setup pages in stage look (DOM)', () => {
     const text = fixture.nativeElement.textContent as string;
 
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('MusicVoting');
+    // Brand mark above the wordmark (task 8.5): the small copy, decorative next to the h1.
+    const logo = fixture.nativeElement.querySelector('img.logo') as HTMLImageElement;
+    expect(logo.getAttribute('src')).toBe('assets/img/logo-mark.png');
+    expect(logo.getAttribute('alt')).toBe('');
     expect(text).toContain('Gast auf einer Party');
     expect(text).toContain('Gastgeber einer Party');
     const credit = fixture.nativeElement.querySelector('footer mv-credit-footer') as HTMLElement;

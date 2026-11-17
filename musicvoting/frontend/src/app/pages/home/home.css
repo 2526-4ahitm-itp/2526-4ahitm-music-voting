@@ -19,6 +19,14 @@
   text-align: center;
 }
 
+/* Brand mark: big enough to be recognised, small enough that the wordmark stays the hero. */
+.logo {
+  display: block;
+  height: clamp(56px, 10vw, 88px);
+  width: auto;
+  margin: 0 auto var(--mv-space-4);
+}
+
 /* The brand name is the hero: big display type, no gradient text. */
 .wordmark {
   margin: 0 0 var(--mv-space-4);

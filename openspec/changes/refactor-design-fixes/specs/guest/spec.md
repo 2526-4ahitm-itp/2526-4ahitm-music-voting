@@ -98,6 +98,31 @@ The web voting view MUST make visible that the room decides the order:
 - WHEN a guest adds a new song that ends up fourth
 - THEN "Song hinzugefügt – Platz 4" is shown with the action "Zum Voten"
 
+### Requirement: Guest Sees Which Party They Are In
+Both guest views MUST show a plain page title in the top bar: "Warteschlange" on `/voting` and "Song suchen" on `/guest`. Directly below the title the top bar MUST show the party as "Party <Voting-PIN>" (e.g. "Party 47291") and a button "Party verlassen".
+
+"Party verlassen" MUST first ask "Party wirklich verlassen?" with "Ja, verlassen" and "Abbrechen". Confirming MUST clear the stored party (party ID and PIN) but keep the persistent `deviceId`, and return to the start page `/`. "Abbrechen" or Escape closes the question and the guest stays in the party.
+
+#### Scenario: Guest sees the party in the top bar
+- GIVEN a guest has joined the party with Voting-PIN 47291
+- WHEN the guest opens `/voting`
+- THEN the top bar shows the title "Warteschlange" and below it "Party 47291" and "Party verlassen"
+- WHEN the guest switches to `/guest`
+- THEN the title reads "Song suchen" with the same party line
+
+#### Scenario: Guest leaves the party
+- GIVEN a guest is on `/voting`
+- WHEN the guest chooses "Party verlassen"
+- THEN the question "Party wirklich verlassen?" appears
+- WHEN the guest chooses "Ja, verlassen"
+- THEN the guest is on the start page and no party is stored any more
+- AND the guest's `deviceId` is unchanged
+
+#### Scenario: Guest cancels leaving
+- GIVEN the question "Party wirklich verlassen?" is open
+- WHEN the guest chooses "Abbrechen"
+- THEN the question closes and the guest is still in the party
+
 ### Requirement: Guest Sees a Clear End of the Party
 When the `party-ended` event arrives in the web guest views, the app MUST show a dedicated screen with "Die Party ist beendet." and "Danke fürs Mitfeiern!" and a button "Zur Startseite", instead of redirecting silently. This refines "Party-Ended Redirect for Guests": the session is still cleared and no further API calls are made.
 

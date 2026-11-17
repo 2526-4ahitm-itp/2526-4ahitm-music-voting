@@ -16,12 +16,13 @@ import { MvToast } from '../../shared/mv-toast';
 import { MvPartyEnded } from '../../shared/mv-party-ended';
 import { ToastService } from '../../shared/toast.service';
 import { MvThemeToggle } from '../../shared/mv-theme-toggle';
+import { MvGuestParty } from '../../shared/mv-guest-party';
 import { MvGuestTabs } from '../../shared/mv-guest-tabs';
 
 @Component({
   selector: 'app-guest',
   standalone: true,
-  imports: [CommonModule, FormsModule, MvCover, MvIcon, MvSpinner, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs],
+  imports: [CommonModule, FormsModule, MvCover, MvIcon, MvSpinner, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs, MvGuestParty],
   templateUrl: './guest.html',
   // Shared stage look first, page layout second (design D1/D2).
   styleUrls: ['../../shared/stage.css', './guest.css'],
