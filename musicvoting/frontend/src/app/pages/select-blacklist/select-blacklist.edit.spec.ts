@@ -69,12 +69,12 @@ describe('SelectBlacklist edit mode (DOM)', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard'], { queryParams: { partyId: 'party-x' } });
   });
 
-  it('keeps the full editing: word form, artist and song tabs, and labelled remove buttons', async () => {
+  it('keeps the full editing: one search field for word, artist and song, and labelled remove buttons', async () => {
     const fixture = await createLoaded([{ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null }]);
     const root: HTMLElement = fixture.nativeElement;
 
-    expect(root.querySelector('input[name="word"]')).toBeTruthy();
-    expect(Array.from(root.querySelectorAll('.tab')).map((t) => t.textContent?.trim())).toEqual(['Künstler', 'Songs']);
+    expect((root.querySelector('input[name="query"]') as HTMLInputElement).placeholder).toBe('Wort, Künstler oder Song');
+    expect(root.querySelector('[role="tablist"]')).toBeNull();
     expect(root.querySelector('.remove-btn')?.getAttribute('aria-label')).toBe('live entfernen');
   });
 
@@ -88,7 +88,7 @@ describe('SelectBlacklist edit mode (DOM)', () => {
     expect(entries()[0].textContent).toContain('ABBA');
 
     // Adding saves immediately: there is no separate save button in edit mode.
-    comp.wordInput = 'explicit';
+    comp.searchQuery = 'explicit';
     const adding = comp.addWord();
     const post = httpMock.expectOne('/api/party/party-x/blacklist');
     expect(post.request.method).toBe('POST');

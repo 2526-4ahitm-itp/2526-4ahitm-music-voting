@@ -114,16 +114,20 @@ describe('Accessibility baseline (DOM)', () => {
     fixture.destroy();
   });
 
-  it('blacklist: tabs, results and remove buttons are labelled real buttons', () => {
+  it('blacklist: one labelled search field, results and remove buttons are labelled real buttons', () => {
     const fixture = render(SelectBlacklist, (c) => {
       c.partyId = 'party-1';
       c.isLoading = false;
+      c.searchQuery = 'abba';
       c.entries = [{ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null } as any];
       c.artistResults = [{ id: 'ar1', name: 'ABBA', imageUrl: null } as any];
     });
     const root: HTMLElement = fixture.nativeElement;
 
-    expect(root.querySelectorAll('[role="tab"]').length).toBe(2);
+    // Task 8.3 removed the 40 px tabs; the single field carries its own label.
+    expect(root.querySelectorAll('[role="tab"]').length).toBe(0);
+    expect(root.querySelector('input[name="query"]')?.getAttribute('aria-label')).toBe('Wort, Künstler oder Song sperren');
+    expect(root.querySelector('button.word-result')).not.toBeNull();
     expect(root.querySelector('button.artist-result')).not.toBeNull();
     expect(root.querySelector('button.remove-btn')?.getAttribute('aria-label')).toBe('live entfernen');
     expectAccessibleControls(root);

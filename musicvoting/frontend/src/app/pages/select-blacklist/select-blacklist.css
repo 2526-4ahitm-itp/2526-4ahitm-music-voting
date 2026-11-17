@@ -26,73 +26,18 @@
   margin-left: 6px;
 }
 
-/* ---------- Word form ---------- */
-
-.word-form {
-  display: flex;
-  gap: var(--mv-space-2);
-  margin-bottom: var(--mv-space-5);
-}
-
-.text-input {
-  flex: 1;
-  min-width: 0;
-  min-height: 48px;
-  box-sizing: border-box;
-  padding: 0 16px;
-  border-radius: var(--mv-radius-card);
-  border: 1px solid var(--mv-stage-tint-3);
-  background: var(--mv-stage-tint-1);
-  color: var(--mv-on-stage);
-  font: inherit;
-}
-
-.text-input::placeholder {
-  color: var(--mv-on-stage-muted);
-}
-
-.text-input:focus {
-  outline: none;
-  border-color: var(--mv-stage-tint-strong);
-  box-shadow: var(--mv-focus-ring);
-}
-
 .host-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* ---------- Tabs ---------- */
-
-.tabs {
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  margin-bottom: var(--mv-space-3);
-  border-radius: var(--mv-radius-pill);
-  background: var(--mv-stage-tint-1);
-}
-
-.tab {
-  appearance: none;
-  border: 0;
-  min-height: 40px;
-  padding: 0 var(--mv-space-4);
-  border-radius: var(--mv-radius-pill);
-  background: transparent;
-  color: var(--mv-on-stage-muted);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.tab.active {
-  background: var(--mv-purple);
-  color: var(--mv-on-accent);
-}
-
 .search-form {
-  margin-bottom: var(--mv-space-3);
+  margin-bottom: var(--mv-space-2);
+}
+
+.search-hint {
+  margin: 0 0 var(--mv-space-3);
+  font-size: 0.875rem;
 }
 
 /* ---------- Search results ---------- */
@@ -133,6 +78,25 @@
 .result-cover {
   width: 44px;
   height: 44px;
+}
+
+/* Group labels between word row, artists and songs: small, so the rows stay the focus. */
+.result-group {
+  margin: var(--mv-space-2) 0 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mv-on-stage-muted);
+}
+
+/* The word row has no cover; an icon tile in the same size keeps the columns aligned. */
+.word-icon {
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--mv-stage-highlight);
+  color: var(--mv-on-stage);
 }
 
 .result-info {
