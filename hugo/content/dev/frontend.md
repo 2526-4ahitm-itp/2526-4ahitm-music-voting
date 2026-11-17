@@ -5,7 +5,7 @@ tags: [ Developer ]
 weight: 80
 showDate: true
 date: 2026-06-23
-lastmod: 2026-09-28
+lastmod: 2026-11-17
 ---
 
 Das Frontend ist eine **Angular**-App unter `musicvoting/frontend/`. Es bedient drei Rollen:
@@ -20,13 +20,15 @@ Definiert in `src/app/app.routes.ts`. 🔒 = durch `hostGuard` geschützt.
 | `` (Home) | `Home` | Startseite |
 | `code` | `CodeInput` | 5-stelligen PIN eingeben |
 | `join/:pin` | `CodeInput` | Beitritt per QR-Link (`/join/<pin>`) |
-| `voting` | `VotingComp` | Gast: Voting-Ansicht (Queue) |
-| `guest` | `Guest` | Gast: Suchen & Hinzufügen |
+| `voting` | `VotingComp` | Gast: „Warteschlange“ (Läuft-gerade-Leiste, Ränge, Likes) |
+| `guest` | `Guest` | Gast: „Song suchen“ (Suchen & Hinzufügen) |
 | `host-options` | `HostOptions` | Host-Menü |
 | `create-party` | `CreateParty` | Party erstellen (Provider wählen) |
 | `select-playlist` 🔒 | `SelectPlaylist` | Standard-Playlist wählen oder überspringen (Ziel nach Spotify-Login) |
+| `select-blacklist` 🔒 | `SelectBlacklist` | Blacklist: ein Suchfeld für Wort, Künstler und Song; mit `?mode=edit` während der Party |
+| `party-ready` 🔒 | `PartyReady` | „Deine Party ist bereit“: Player öffnen, Voting-PIN, „Party ist live 🎉“ |
 | `startpage` 🔒 | `Startpage` | Monitor/TV-Player (Web Playback SDK) |
-| `dashboard` 🔒 | `HostDashboard` | Host-Steuerung (Wiedergabe, Queue, Host-PIN, QR, Player öffnen, Party beenden) |
+| `dashboard` 🔒 | `HostDashboard` | Host-Steuerung (Wiedergabe, Queue, QR, Voting-PIN, Player öffnen, Party beenden, Gastgeber-PIN verborgen bis „Anzeigen“) |
 | `voting-host` 🔒 | `VotingHost` | Host: Queue-Ansicht |
 | `search-host` 🔒 | `SearchHost` | Host: Suche |
 | `**` | → `` | Fallback auf Home |
@@ -45,11 +47,14 @@ Definiert in `src/app/app.routes.ts`. 🔒 = durch `hostGuard` geschützt.
 ## Rollen-Verhalten
 
 - **Gast:** landet nach dem Beitreten auf `voting`; untere Tab-Leiste wechselt zwischen „Voten“
-  (`voting`) und „Hinzufügen“ (`guest`).
+  (`voting`) und „Hinzufügen“ (`guest`). Oben steht „Party 12345“ mit „Party verlassen“
+  (Rückfrage; löscht die Party, behält die `deviceId`).
 - **Host:** erstellt die Party (`host-options` → `create-party` → Spotify-Login →
-  `select-playlist` → `dashboard`), steuert Wiedergabe und Queue über `dashboard`;
-  Fortschrittsbalken aus `progress`-SSE-Events. Play/Pause/Skip sind gesperrt, solange kein Player
-  offen ist („Player muss zuerst geöffnet werden.“).
+  `select-playlist` → `select-blacklist` → `party-ready` → `dashboard`), steuert Wiedergabe und
+  Queue über `dashboard`; Fortschrittsbalken aus `progress`-SSE-Events. Play/Pause/Skip sind
+  gesperrt, solange kein Player offen ist („Player muss zuerst geöffnet werden.“). Die
+  Host-Navigation (`mv-host-menu`: Dashboard, Voting, Suchen, Blacklist) ist unter 1024 px ein
+  Burger-Menü, ab 1024 px eine feste Leiste links.
 - **Monitor/TV (`startpage`):** lädt das Web Playback SDK, registriert das Spotify-Gerät, sendet das
   Fortschritts-Relay und reagiert auf `track-changed`/`party-ended`. Geöffnet wird er über
   „Player öffnen“ (im Dashboard oder in `host-options` mit Host-PIN).
@@ -77,7 +82,26 @@ Der Player ist der einzige Client, der das echte Songende kennt, und treibt desh
 - **Idle-Restart:** Wird ein Song zu einer Party ohne aktiven Track hinzugefügt, startet der Player die
   Wiedergabe selbst – ein laufender oder bewusst pausierter Song wird nie unterbrochen.
 
+## Design-System
+
+Das visuelle System („Die Bühne im Wohnzimmer“: dunkle Bühne mit lila-korallenem Licht) ist in
+[`DESIGN.md`](https://github.com/2526-4ahitm-itp/2526-4ahitm-music-voting/blob/main/DESIGN.md) im Repo-Root beschrieben. Im Code:
+
+- **Tokens** in `src/styles.css` (`--mv-*`); Komponenten verwenden nur diese, deshalb funktioniert
+  der Hellmodus ohne seitenspezifisches CSS.
+- **`shared/stage.css`** – gemeinsamer Seitenrahmen (Bühne, Top-Bar, Karten, Zeilen, Knöpfe).
+- **Shared Components** in `src/app/shared/`: `mv-cover`, `mv-icon` (Lucide), `mv-host-menu`,
+  `mv-guest-tabs`, `mv-guest-party`, `mv-theme-toggle`, `mv-toast`, `mv-spinner`,
+  `mv-party-ended`, `mv-credit-footer`.
+- **Hell/Dunkel:** getrennte Einstellungen für Host/TV/Einstieg (`mv-theme`) und Gäste
+  (`mv-guest-theme`).
+- **Kontrast-Test** `shared/contrast.tokens.spec.ts` prüft alle Text-/Flächen-Paare inklusive
+  Markenlicht (4,5:1, auf dem TV 3:1).
+
+Details: `musicvoting/frontend/README.md`.
+
 ## Branding
 
-Player (`startpage`) und Dashboard zeigen unten „MusicVoting – powered by HTL Leonding“
-(`assets/img/htl-leonding-logo.jpg`).
+Player (`startpage`) und Startseite (`/`) zeigen unten das Logo, „MusicVoting“ und
+„powered by HTL Leonding“ (`assets/img/logo-mark.png`, `assets/img/htl-leonding-logo-480.jpg`).
+Host- und Gast-Seiten zeigen den HTL-Hinweis nicht.
