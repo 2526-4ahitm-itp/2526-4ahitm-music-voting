@@ -6,7 +6,25 @@ import { MvHostMenu } from './mv-host-menu';
 import { PartyService } from '../services/party.service';
 
 describe('MvHostMenu', () => {
+  // The real test browser width decides nothing: matchMedia is faked so each test
+  // chooses burger (narrow) or rail (from 1024 px) and can simulate a resize.
+  let wide = false;
+  let mediaListener: ((e: MediaQueryListEvent) => void) | null = null;
+
+  function resizeTo(isWide: boolean) {
+    wide = isWide;
+    mediaListener?.({ matches: isWide } as MediaQueryListEvent);
+  }
+
   beforeEach(async () => {
+    wide = false;
+    mediaListener = null;
+    spyOn(window, 'matchMedia').and.callFake((query: string) => ({
+      matches: query === MvHostMenu.RAIL_QUERY ? wide : false,
+      addEventListener: (_: string, l: any) => { mediaListener = l; },
+      removeEventListener: () => { mediaListener = null; },
+    }) as unknown as MediaQueryList);
+
     await TestBed.configureTestingModule({
       imports: [MvHostMenu],
       providers: [provideZonelessChangeDetection(), provideRouter([]), provideHttpClient()],
@@ -84,5 +102,55 @@ describe('MvHostMenu', () => {
     await fixture.whenStable();
 
     expect(document.activeElement).toBe(burger);
+  });
+
+  describe('from 1024 px (rail)', () => {
+    beforeEach(() => { wide = true; });
+
+    it('shows the navigation permanently, without burger, close button or overlay', () => {
+      const fixture = create('voting');
+      const root: HTMLElement = fixture.nativeElement;
+      const nav = root.querySelector('nav')!;
+
+      expect(root.querySelector('button.burger')).toBeNull();
+      expect(root.querySelector('button.close')).toBeNull();
+      expect(nav.classList).toContain('rail');
+      expect(nav.hasAttribute('inert')).toBe(false);
+      expect(root.querySelector('[aria-current="page"]')!.textContent!.trim()).toBe('Voting');
+    });
+
+    it('lists the same entries as the burger menu', () => {
+      const fixture = create();
+      const labels = Array.from(fixture.nativeElement.querySelectorAll('nav a')).map((a: any) => a.textContent.trim());
+
+      expect(labels).toEqual(['Dashboard', 'Voting', 'Suchen', 'Blacklist']);
+    });
+
+    it('switches back to the burger when the window gets narrower, and closes an open slide-in when it grows', () => {
+      const fixture = create();
+      const root: HTMLElement = fixture.nativeElement;
+
+      resizeTo(false);
+      fixture.detectChanges();
+      expect(root.querySelector('button.burger')).toBeTruthy();
+      expect(root.querySelector('nav')!.hasAttribute('inert')).toBe(true);
+
+      (root.querySelector('button.burger') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(fixture.componentInstance.open()).toBe(true);
+
+      resizeTo(true);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.open()).toBe(false);
+      expect(root.querySelector('.overlay')).toBeNull();
+      expect(root.querySelector('nav')!.classList).toContain('rail');
+    });
+
+    it('stops listening to the viewport when destroyed', () => {
+      const fixture = create();
+      fixture.destroy();
+
+      expect(mediaListener).toBeNull();
+    });
   });
 });

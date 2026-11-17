@@ -91,6 +91,8 @@
 
   /* Shape and spacing */
   --mv-radius-sm: 10px;
+  /* Width of the host navigation rail from 1024 px (mv-host-menu, shared/stage.css). */
+  --mv-host-rail-width: 220px;
   --mv-radius-card: 16px;
   --mv-radius-pill: 999px;
   --mv-space-1: 4px;

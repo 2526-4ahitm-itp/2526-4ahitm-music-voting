@@ -181,6 +181,20 @@ The web host dashboard MUST NOT show a separate "Song sperren" button. The host 
 
 ## ADDED Requirements
 
+### Requirement: Host Navigation Adapts to Screen Width
+From 1024 px viewport width the web host pages (dashboard, voting, search, blacklist during the party) MUST show the host navigation as a permanently visible side rail with icon and text per entry; below that width it MUST stay a burger menu. Both contain the same entries and mark the current page.
+
+#### Scenario: Host on a laptop sees the navigation rail
+- GIVEN the host opens the dashboard in a window at least 1024 px wide
+- THEN the entries "Dashboard", "Voting", "Suchen" and "Blacklist" are visible at the left edge without opening a menu
+- AND "Dashboard" is marked as the current page
+
+#### Scenario: Host on a phone uses the burger menu
+- GIVEN the host opens the dashboard in a window narrower than 1024 px
+- THEN only the burger button is visible
+- WHEN the host taps it
+- THEN the same entries slide in
+
 ### Requirement: Host Setup Ends with a Go-Live Step
 After the blacklist setup page, the web host flow MUST show a final step "Deine Party ist bereit". This step MUST:
 - explain in one sentence that the player is the page that plays the music and belongs on the device connected to the TV,
