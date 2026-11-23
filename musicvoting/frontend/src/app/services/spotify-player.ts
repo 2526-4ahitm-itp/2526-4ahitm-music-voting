@@ -89,7 +89,10 @@ export class SpotifyWebPlayerService {
 
     this.player = new Spotify.Player({
       name: 'Web Player MusicVoting',
-      getOAuthToken: (cb: any) => cb(this.token),
+      // Das SDK fragt beim Verbinden und vor jedem Token-Ablauf (~60 min) erneut nach einem Token.
+      // Deshalb hier jedes Mal frisch vom Backend holen statt den Start-Token zurückzugeben —
+      // sonst verliert der Player nach einer Stunde die Berechtigung und die Musik bleibt stehen.
+      getOAuthToken: (cb: (token: string) => void) => this.provideOAuthToken(partyId, cb),
       volume: 0.5
     });
 
@@ -126,6 +129,29 @@ export class SpotifyWebPlayerService {
     });
 
     await this.player.connect();
+  }
+
+  /**
+   * Beantwortet eine Token-Anfrage des Spotify SDK mit einem aktuellen Access-Token.
+   *
+   * Der Token wird bei jedem Aufruf vom Backend geholt, weil nur das Backend den Refresh-Token
+   * kennt und abgelaufene Tokens dort erneuert werden (`/spotify/token`). Schlägt die Anfrage fehl
+   * oder kommt ein leerer Token zurück, bekommt das SDK den zuletzt bekannten Token — der Callback
+   * muss immer aufgerufen werden, sonst wartet das SDK ewig.
+   */
+  provideOAuthToken(partyId: string, cb: (token: string) => void): void {
+    this.http.get(`/api/party/${partyId}/spotify/token`, { responseType: 'text' }).subscribe({
+      next: (token) => {
+        if (token) {
+          this.token = token;
+        }
+        cb(this.token ?? '');
+      },
+      error: (err) => {
+        console.warn('Spotify-Token konnte nicht erneuert werden, verwende den letzten Token:', err);
+        cb(this.token ?? '');
+      },
+    });
   }
 
   private loadSpotifySDK(): Promise<void> {
