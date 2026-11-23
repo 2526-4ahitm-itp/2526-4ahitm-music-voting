@@ -35,13 +35,39 @@ The existing attempt to open the native app first (`musicvotingapp://join/<pin>`
 - AND the guest can type a different code without reloading the page
 
 ### Requirement: Per-Guest Add Rate Limit
-A guest MUST NOT be able to add more than 10 songs per rolling minute. Exceeding the limit MUST be rejected with a user-visible message.
+A guest MUST NOT be able to add more than 10 songs per rolling minute. Exceeding the limit MUST be rejected with a user-visible message. The guest is identified by their persistent `deviceId`; only songs actually added count. The host (valid host PIN) is exempt.
 
 #### Scenario: Guest is rate-limited after 10 adds
 - GIVEN a guest who has added 10 songs within the last minute
 - WHEN the guest attempts to add an 11th song
 - THEN the request is rejected
 - AND the guest sees a message such as "Zu viele Anfragen — bitte kurz warten."
+
+#### Scenario: Rejection carries status and wait time
+- **GIVEN** a guest who has added 10 songs within the last 60 seconds
+- **WHEN** the guest sends another add request with their `deviceId`
+- **THEN** the backend answers HTTP 429 with the error "Zu viele Anfragen — bitte kurz warten."
+- **AND** includes `retryAfterSeconds`, the seconds until the oldest of those adds leaves the window
+
+#### Scenario: Window rolls forward
+- **GIVEN** a guest added 10 songs, the first of them 61 seconds ago
+- **WHEN** the guest adds another song
+- **THEN** the song is added
+
+#### Scenario: Rejected adds do not count
+- **GIVEN** a guest whose add is rejected because the song is already queued or blacklisted
+- **WHEN** the guest adds other songs afterwards
+- **THEN** the rejected attempt does not count towards the 10 songs
+
+#### Scenario: Limit is per guest and per party
+- **GIVEN** guest A has reached the limit
+- **WHEN** guest B of the same party adds a song
+- **THEN** guest B's song is added
+
+#### Scenario: Host is not limited
+- **GIVEN** the host sends add requests with a valid host PIN
+- **WHEN** the host adds more than 10 songs within a minute
+- **THEN** every song is added
 
 ### Requirement: Party-Ended Redirect for Guests
 When a connected guest receives a `party-ended` SSE event, the guest view MUST immediately show "Die Party ist beendet." and MUST stop attempting any further API calls for that party. On all platforms (web and iOS), the stored session MUST be cleared and the user MUST be returned to the start screen.
