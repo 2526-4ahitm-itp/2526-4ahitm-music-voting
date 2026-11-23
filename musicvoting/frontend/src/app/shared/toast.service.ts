@@ -8,6 +8,8 @@ export interface Toast {
   kind: 'info' | 'error';
   /** Optional action, e.g. "Rückgängig". */
   actionLabel?: string;
+  /** Optional icon in front of the text: check for an add, heart for a like. */
+  icon?: 'check' | 'heart';
   onAction?: () => void;
 }
 
@@ -18,7 +20,7 @@ export interface Toast {
  * Pages call show(); the <mv-toast> outlet renders the current message in a
  * live region so screen readers announce it (web-ui spec "Status Changes Are
  * Announced"). Only one toast is visible at a time: a new message replaces
- * the old one, which keeps the area above the guest tab bar calm.
+ * the old one, which keeps the bottom of the guest page calm.
  */
 @Injectable({ providedIn: 'root' })
 export class ToastService {
@@ -42,6 +44,7 @@ export class ToastService {
       actionLabel?: string;
       onAction?: () => void;
       onExpire?: () => void;
+      icon?: 'check' | 'heart';
     } = {},
   ): number {
     this.clearTimer();
@@ -51,6 +54,7 @@ export class ToastService {
       kind: options.kind ?? 'info',
       actionLabel: options.actionLabel,
       onAction: options.onAction,
+      icon: options.icon,
     };
     this.current.set(toast);
     this.timer = setTimeout(() => {

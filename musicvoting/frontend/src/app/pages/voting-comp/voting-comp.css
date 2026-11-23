@@ -1,5 +1,5 @@
 /*
- * Guest voting layout. The stage look (background, top bar, rows, search
+ * Layout of the single guest page (queue + search). The stage look (background, top bar, rows, search
  * field) comes from shared/stage.css; colours come from the --mv-stage-*
  * tokens, so dark and light mode need no extra CSS here.
  */
@@ -7,8 +7,8 @@
 .guest-content {
   max-width: 760px;
   margin: 0 auto;
-  /* Room for the floating tab bar. */
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8rem);
+  /* Room for the toast at the bottom, so it never covers the last row. */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
 }
 
 .host-search {
@@ -197,16 +197,78 @@
   to   { transform: scaleY(1); }
 }
 
+/* ---------- Search results ---------- */
+
+.search-status:empty {
+  display: none;
+}
+
+.host-status mv-spinner {
+  transform: scale(0.7);
+}
+
+/* "Suchergebnisse": tells the guest this is not the ranked queue (results have no rank). */
+.list-label {
+  margin: 0 0 var(--mv-space-2);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--mv-on-stage-muted);
+}
+
+/* No rank column: results are not in queue order. */
+.result-card {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.playing-tag {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--mv-stage-accent);
+}
+
+/* Blocked: greyed out via .host-row.blocked in stage.css, no text hint. */
+
+.add-button {
+  appearance: none;
+  border: 0;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--mv-purple);
+  color: var(--mv-on-accent);
+  cursor: pointer;
+  transition: transform var(--mv-duration-fast) var(--mv-ease-out);
+}
+
+.add-button:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.add-button:disabled {
+  background: var(--mv-stage-tint-3);
+  color: var(--mv-on-stage-muted);
+  cursor: default;
+}
+
+.add-button:focus-visible {
+  border-radius: 50%;
+}
+
 .host-empty mv-icon {
   color: var(--mv-stage-accent);
 }
 
-/* One-time welcome after joining: a sheet above the tab bar, in the thumb
+/* One-time welcome after joining: a sheet at the bottom, in the thumb
    zone. Deliberately not a modal; the queue behind it stays usable. */
 .welcome-sheet {
   position: fixed;
   left: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 6.5rem);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
   transform: translateX(-50%);
   width: min(92vw, 420px);
   box-sizing: border-box;
@@ -225,9 +287,26 @@
   font-weight: 750;
 }
 
-.welcome-sheet p {
+.welcome-guide {
   margin: 0 0 var(--mv-space-4);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--mv-space-2);
   color: var(--mv-on-stage-muted);
+  line-height: 1.4;
+}
+
+.welcome-guide li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--mv-space-2);
+  align-items: start;
+}
+
+.welcome-guide mv-icon {
+  margin-top: 2px;
+  color: var(--mv-stage-accent);
 }
 
 .welcome-ok {

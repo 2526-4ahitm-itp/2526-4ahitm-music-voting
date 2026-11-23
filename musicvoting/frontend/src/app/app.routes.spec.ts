@@ -31,12 +31,12 @@ describe('app.routes', () => {
     expect(route?.canActivate).toEqual([hostGuard]);
   });
 
-  it('protects the guest views voting and guest with the guest guard', () => {
+  it('protects the guest page voting with the guest guard', () => {
+    // /guest is only a redirect to /voting now (guest spec "Guest Uses One Page for Queue
+    // and Search"), so the guard on /voting covers both paths.
     const voting = routes.find((r) => r.path === 'voting');
-    const guest = routes.find((r) => r.path === 'guest');
 
     expect(voting?.canActivate).toEqual([guestGuard]);
-    expect(guest?.canActivate).toEqual([guestGuard]);
   });
 
   it('routes join/:pin to the CodeInput component', () => {
@@ -49,5 +49,20 @@ describe('app.routes', () => {
     const route = routes.find((r) => r.path === '**');
 
     expect(route?.redirectTo).toBe('');
+  });
+
+  it('redirects the old guest add/search route to the guest page', () => {
+    const route = routes.find((r) => r.path === 'guest');
+
+    expect(route?.redirectTo).toBe('voting');
+    expect(route?.component).toBeUndefined();
+  });
+
+  it('redirects the old host voting and search routes to the dashboard', () => {
+    for (const path of ['voting-host', 'search-host']) {
+      const route = routes.find((r) => r.path === path);
+      expect(route?.redirectTo).withContext(path).toBe('dashboard');
+      expect(route?.component).withContext(path).toBeUndefined();
+    }
   });
 });
