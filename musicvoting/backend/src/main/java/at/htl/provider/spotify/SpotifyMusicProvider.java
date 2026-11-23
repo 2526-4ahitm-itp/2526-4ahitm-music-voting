@@ -718,6 +718,7 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
 
             partyEntity.currentlyPlayingEntryId = UUID.fromString((String) nextTrack.get("id"));
+            party.recordPlayed(uri);
 
             return Response.ok(Map.of("status", "playing", "trackName", nextTrack.get("name"))).build();
         } catch (Exception e) {
@@ -954,6 +955,7 @@ public class SpotifyMusicProvider implements MusicProvider {
             PartyEntity partyEntity = PartyEntity.findById(party.id().value());
             if (partyEntity == null) throw new WebApplicationException(Response.Status.NOT_FOUND);
             partyEntity.currentlyPlayingEntryId = UUID.fromString((String) firstTrack.get("id"));
+            party.recordPlayed(uri);
 
             Map<String, Object> payload = new HashMap<>();
             payload.put("status", "playing");
@@ -1250,62 +1252,31 @@ public class SpotifyMusicProvider implements MusicProvider {
             // Modify Playlists in the Host's Account").
             String defaultPlaylistId = party.defaultPlaylistId();
 
-            // One shared fall-through chain: the default playlist is just the first preference, so
-            // it can never dead-end. If reading it yields nothing (transient error / unreadable /
-            // empty), keep going — similar songs → Top-Charts → search — exactly like the
-            // no-default-playlist path, so autoplay always advances.
-            List<String> candidates = List.of();
-            if (defaultPlaylistId != null && !defaultPlaylistId.isBlank()) {
-                candidates = getPlaylistTrackUris(party, defaultPlaylistId);
-            }
-            if (candidates.isEmpty()) {
-                candidates = getSimilarTrackUris(party, currentSeedTrackId(pe));
-            }
-            if (candidates.isEmpty()) {
-                candidates = getPlaylistTrackUris(party, topChartsPlaylistId.orElse(null));
-            }
-            if (candidates.isEmpty()) {
-                // Last resort that survives Spotify's API restrictions: /search still works
-                // (it powers the in-app search), so search for more tracks by the current
-                // song's artist. This keeps autoplay going on-vibe without any host config.
-                candidates = getSearchFallbackUris(party, currentTrackArtistName(pe));
-            }
-            if (candidates.isEmpty()) {
-                return; // refill genuinely yields nothing → playback stops ("Warteschlange ist leer")
-            }
+            // One shared fall-through chain, asked lazily in this order. A source only counts if it
+            // has a song not yet played in this party (playback spec "Auto-Refill Prefers Songs Not
+            // Yet Played"), so an exhausted default playlist hands over instead of looping. The
+            // broad search at the end practically always has something new.
+            List<Supplier<List<String>>> sources = List.of(
+                    () -> defaultPlaylistId == null || defaultPlaylistId.isBlank()
+                            ? List.of() : getPlaylistTrackUris(party, defaultPlaylistId),
+                    () -> getSimilarTrackUris(party, currentSeedTrackId(pe)),
+                    () -> getPlaylistTrackUris(party, topChartsPlaylistId.orElse(null)),
+                    () -> getArtistSearchUris(party, currentTrackArtistName(pe)),
+                    () -> getBroadSearchUris(party));
 
             Set<String> alreadyQueued = QueueEntry.<QueueEntry>list("partyId", party.id().value())
                     .stream().map(e -> e.trackUri).collect(Collectors.toSet());
-
             BlacklistService.Blacklist blacklist = blacklistService.load(party.id().value());
-            List<String> ordered = orderRefillCandidates(candidates, alreadyQueued, blacklist, party);
 
-            // Word and artist entries need title and artist IDs, so check each candidate's
-            // metadata and take the first allowed one. Capped so a playlist full of blocked
-            // songs can't trigger an unbounded number of Spotify calls per refill.
-            String pick = null;
-            Map<String, Object> meta = null;
-            int fetches = 0;
-            for (String candidate : ordered) {
-                if (fetches >= REFILL_MAX_METADATA_FETCHES) {
-                    break;
-                }
-                fetches++;
-                try {
-                    String candidateId = candidate.contains(":") ? candidate.substring(candidate.lastIndexOf(":") + 1) : candidate;
-                    Map<String, Object> candidateMeta = fetchTrackMetadata(party, candidateId);
-                    if (!isBlockedTrack(blacklist, candidate, candidateMeta)) {
-                        pick = candidate;
-                        meta = candidateMeta;
-                        break;
-                    }
-                } catch (Exception ignored) {
-                    // Skip a track that can't be loaded.
-                }
+            RefillPick refillPick = pickRefillTrack(sources, alreadyQueued, blacklist, party, uri -> {
+                String trackId = uri.contains(":") ? uri.substring(uri.lastIndexOf(":") + 1) : uri;
+                return fetchTrackMetadata(party, trackId);
+            });
+            if (refillPick == null) {
+                return; // refill genuinely yields nothing allowed → playback stops ("Warteschlange ist leer")
             }
-            if (pick == null) {
-                return; // nothing allowed → same as "refill yields nothing"
-            }
+            String pick = refillPick.uri();
+            Map<String, Object> meta = refillPick.meta();
 
             try {
                 QueueEntry entry = new QueueEntry();
@@ -1334,21 +1305,103 @@ public class SpotifyMusicProvider implements MusicProvider {
         }
     }
 
+    /** A chosen refill track with the metadata loaded for its blacklist check. */
+    record RefillPick(String uri, Map<String, Object> meta) {
+    }
+
+    /** Loads a track's Spotify metadata; may throw, which skips that candidate. */
+    @FunctionalInterface
+    interface TrackMetadataLoader {
+        Map<String, Object> load(String uri) throws Exception;
+    }
+
     /**
-     * The order in which {@link #refillQueue} tries candidates. Drops blank, already queued and
-     * blacklisted track URIs (no metadata needed for those), then puts tracks not yet auto-filled
-     * first so the refill walks the playlist forward; already used tracks follow as a fallback so
-     * the music keeps going once the playlist is exhausted.
+     * Chooses the next refill track (playback spec "Auto-Refill Prefers Songs Not Yet Played").
+     * Pass 1 asks the sources one after another and takes the first allowed song not yet played
+     * in this party; a source without such a song counts as empty. Pass 2 runs only if pass 1
+     * found nothing: it reuses the lists already fetched (no extra list calls) and allows
+     * songs played earlier, so the music keeps going. The blacklist applies to both passes;
+     * word and artist entries need metadata, so each pass is capped at
+     * {@link #REFILL_MAX_METADATA_FETCHES} lookups per source (pass 2: in total).
+     *
+     * @return the pick, or null if no source yields an allowed song
      */
-    static List<String> orderRefillCandidates(List<String> candidates, Set<String> alreadyQueued,
+    static RefillPick pickRefillTrack(List<Supplier<List<String>>> sources, Set<String> alreadyQueued,
+                                      BlacklistService.Blacklist blacklist, Party party,
+                                      TrackMetadataLoader metadataLoader) {
+        List<List<String>> fetched = new ArrayList<>();
+        for (Supplier<List<String>> source : sources) {
+            List<String> candidates;
+            try {
+                candidates = source.get();
+            } catch (Exception e) {
+                candidates = List.of(); // best-effort: a failing source just falls through
+            }
+            if (candidates == null) {
+                candidates = List.of();
+            }
+            fetched.add(candidates);
+            RefillPick pick = firstAllowed(
+                    freshRefillCandidates(candidates, alreadyQueued, blacklist, party), blacklist, metadataLoader);
+            if (pick != null) {
+                return pick;
+            }
+        }
+
+        List<String> repeats = new ArrayList<>();
+        for (List<String> candidates : fetched) {
+            repeats.addAll(repeatRefillCandidates(candidates, alreadyQueued, blacklist, party));
+        }
+        return firstAllowed(repeats.stream().distinct().toList(), blacklist, metadataLoader);
+    }
+
+    /** Checks candidates in order and returns the first one whose metadata passes the blacklist. */
+    private static RefillPick firstAllowed(List<String> ordered, BlacklistService.Blacklist blacklist,
+                                           TrackMetadataLoader metadataLoader) {
+        int fetches = 0;
+        for (String candidate : ordered) {
+            if (fetches >= REFILL_MAX_METADATA_FETCHES) {
+                break; // a list full of blocked songs must not cause unbounded Spotify calls
+            }
+            fetches++;
+            try {
+                Map<String, Object> meta = metadataLoader.load(candidate);
+                if (meta != null && !isBlockedTrack(blacklist, candidate, meta)) {
+                    return new RefillPick(candidate, meta);
+                }
+            } catch (Exception ignored) {
+                // Skip a track that can't be loaded.
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Candidates of one source that may be refilled in pass 1: not blank, not waiting in the
+     * queue, not blocked by track URI and not yet played or auto-filled in this party.
+     * Duplicates are dropped; the source order is kept.
+     */
+    static List<String> freshRefillCandidates(List<String> candidates, Set<String> alreadyQueued,
                                               BlacklistService.Blacklist blacklist, Party party) {
-        List<String> eligible = candidates.stream()
+        return eligibleRefillCandidates(candidates, alreadyQueued, blacklist).stream()
+                .filter(u -> !party.wasUsedForRefill(u))
+                .toList();
+    }
+
+    /** Candidates for the last-resort pass 2: like pass 1, but only songs already used in this party. */
+    static List<String> repeatRefillCandidates(List<String> candidates, Set<String> alreadyQueued,
+                                               BlacklistService.Blacklist blacklist, Party party) {
+        return eligibleRefillCandidates(candidates, alreadyQueued, blacklist).stream()
+                .filter(party::wasUsedForRefill)
+                .toList();
+    }
+
+    private static List<String> eligibleRefillCandidates(List<String> candidates, Set<String> alreadyQueued,
+                                                         BlacklistService.Blacklist blacklist) {
+        return candidates.stream()
                 .filter(u -> u != null && !u.isBlank() && !alreadyQueued.contains(u) && !blacklist.isTrackBlocked(u))
                 .distinct()
                 .toList();
-        List<String> ordered = new ArrayList<>(eligible.stream().filter(u -> !party.wasAutoFilled(u)).toList());
-        eligible.stream().filter(party::wasAutoFilled).forEach(ordered::add);
-        return ordered;
     }
 
     private String currentTrackArtistName(PartyEntity pe) {
@@ -1360,30 +1413,40 @@ public class SpotifyMusicProvider implements MusicProvider {
     }
 
     /**
-     * Reliable last-resort refill source. Spotify's recommendation, related-artist and
-     * editorial-playlist endpoints are all blocked for newer apps, but {@code /search}
-     * still works — so we search for tracks by the current song's artist, and if that
-     * yields nothing fall back to a broad query. This guarantees there is always a next
-     * song so autoplay never dead-stops. Best-effort: empty list only if every search
-     * fails (e.g. no network).
+     * Search-based refill backstop, step 1 (provider spec "Search-Based Refill Backstop
+     * Guarantees a Next Song"). Spotify's recommendation, related-artist and editorial-playlist
+     * endpoints are blocked for newer apps, but {@code /search} still works — so search for
+     * tracks by the current song's primary artist. Empty if no artist is known or search fails.
      */
-    @SuppressWarnings("unchecked")
-    private List<String> getSearchFallbackUris(Party party, String artistName) {
-        String primaryArtist = null;
-        if (artistName != null && !artistName.isBlank()) {
-            primaryArtist = artistName.contains(",")
-                    ? artistName.substring(0, artistName.indexOf(",")).trim()
-                    : artistName.trim();
+    private List<String> getArtistSearchUris(Party party, String artistName) {
+        if (artistName == null || artistName.isBlank()) {
+            return List.of();
         }
+        String primaryArtist = artistName.contains(",")
+                ? artistName.substring(0, artistName.indexOf(",")).trim()
+                : artistName.trim();
+        return primaryArtist.isBlank() ? List.of() : searchTrackUris(party, "artist:" + primaryArtist);
+    }
 
-        List<String> byArtist = (primaryArtist == null || primaryArtist.isBlank())
-                ? List.of()
-                : searchTrackUris(party, "artist:" + primaryArtist);
-        if (!byArtist.isEmpty()) {
-            return byArtist;
-        }
-        // Nothing by that artist (or no artist known) — a broad query so something always plays.
-        return searchTrackUris(party, "year:2010-2025");
+    /**
+     * Search-based refill backstop, step 2: a broad query so there is always a new song, also
+     * when every track by the current artist was already played. A separate source (not just a
+     * fallback for an empty artist search) so the refill reaches it in that case too.
+     */
+    private List<String> getBroadSearchUris(Party party) {
+        return searchTrackUris(party, broadSearchQuery(java.time.Year.now().getValue()));
+    }
+
+    /** Years covered by the broad search: the current year and the 15 years before it. */
+    static final int BROAD_SEARCH_YEARS_BACK = 15;
+
+    /**
+     * Broad refill query over recent years, e.g. {@code year:2011-2026} in 2026. Computed from
+     * the current year so new releases are included and the range never goes stale (provider
+     * spec "Search-Based Refill Backstop Guarantees a Next Song").
+     */
+    static String broadSearchQuery(int currentYear) {
+        return "year:" + (currentYear - BROAD_SEARCH_YEARS_BACK) + "-" + currentYear;
     }
 
     @SuppressWarnings("unchecked")
@@ -1811,23 +1874,6 @@ public class SpotifyMusicProvider implements MusicProvider {
             creds.setLastPlaybackUri(uri);
         }
         creds.setLastPlaybackActive(isPlaying);
-    }
-
-    private String getCurrentlyPlayingUri(Party party) {
-        try {
-            Map<String, Object> snapshot = getCurrentPlaybackSnapshot(party);
-            if (snapshot == null) {
-                return null;
-            }
-
-            Object itemObj = snapshot.get("item");
-            if (!(itemObj instanceof Map<?, ?> item)) {
-                return null;
-            }
-            return (String) item.get("uri");
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     private Response propagateOrUnexpected(String actionLabel, Exception exception) {
