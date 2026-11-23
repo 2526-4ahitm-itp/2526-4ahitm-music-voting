@@ -111,6 +111,18 @@ describe('Guest', () => {
     expect(comp.addingTrackId).toBeNull();
   });
 
+  it('addToPlaylist shows the rate-limit message on a 429', async () => {
+    spyOn(console, 'error');
+    spotifyService.addToPlaylist.and.returnValue(
+      throwError(() => ({ status: 429, error: { error: 'Zu viele Anfragen — bitte kurz warten.', retryAfterSeconds: 30 } }))
+    );
+
+    await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+
+    expect(comp.addError).toBe('Zu viele Anfragen — bitte kurz warten.');
+    expect(comp.addingTrackId).toBeNull();
+  });
+
   it('addToPlaylist clears a previous error on the next add', async () => {
     comp.addError = 'Nicht erlaubt.';
     spotifyService.addToPlaylist.and.returnValue(of({}));

@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static io.restassured.RestAssured.given;
+import static org.mockito.ArgumentMatchers.any;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -251,6 +252,93 @@ class TrackResourceTest {
                     e.type().equals("queue-updated") && party.id().value().equals(e.payload().get("partyId"))));
         } finally {
             subscription.cancel();
+        }
+    }
+
+    // ---------- per-guest add limit (guest spec "Per-Guest Add Rate Limit") ----------
+
+    /** Posts one song as a guest with the given deviceId and returns the status code. */
+    private int addAsGuest(Party party, String deviceId, String uri) {
+        return given()
+                .contentType(ContentType.JSON)
+                .queryParam("deviceId", deviceId)
+                .body(List.of(uri))
+                .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
+                .then().extract().statusCode();
+    }
+
+    @Test
+    void addToPlaylist_eleventhGuestAddWithinAMinute_isRejectedWith429() {
+        Party party = registerSpotifyParty("10031", "20031");
+        when(spotifyMusicProvider.addTracksToPlaylist(eq(party), any())).thenReturn(Response.ok().build());
+        String device = "device-" + UUID.randomUUID();
+
+        for (int i = 0; i < 10; i++) {
+            assertEquals(200, addAsGuest(party, device, "spotify:track:" + i));
+        }
+
+        given()
+                .contentType(ContentType.JSON)
+                .queryParam("deviceId", device)
+                .body(List.of("spotify:track:eleven"))
+                .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
+                .then()
+                .statusCode(429)
+                .header("Retry-After", notNullValue())
+                .body("error", equalTo("Zu viele Anfragen — bitte kurz warten."))
+                .body("retryAfterSeconds", greaterThan(0));
+
+        // Another guest of the same party is not affected.
+        assertEquals(200, addAsGuest(party, "device-" + UUID.randomUUID(), "spotify:track:other"));
+    }
+
+    @Test
+    void addToPlaylist_rejectedAddsDoNotCountTowardsTheLimit() {
+        Party party = registerSpotifyParty("10032", "20032");
+        when(spotifyMusicProvider.addTracksToPlaylist(eq(party), eq(List.of("spotify:track:dup"))))
+                .thenReturn(Response.status(Response.Status.CONFLICT).build());
+        when(spotifyMusicProvider.addTracksToPlaylist(eq(party), argThat(l -> l != null && !l.contains("spotify:track:dup"))))
+                .thenReturn(Response.ok().build());
+        String device = "device-" + UUID.randomUUID();
+
+        for (int i = 0; i < 5; i++) {
+            assertEquals(409, addAsGuest(party, device, "spotify:track:dup"));
+        }
+        for (int i = 0; i < 10; i++) {
+            assertEquals(200, addAsGuest(party, device, "spotify:track:" + i));
+        }
+    }
+
+    @Test
+    void addToPlaylist_hostWithValidPin_isNotLimited() {
+        Party party = registerSpotifyParty("10033", "20033");
+        when(spotifyMusicProvider.addTracksToPlaylist(eq(party), any())).thenReturn(Response.ok().build());
+        String device = "device-" + UUID.randomUUID();
+
+        for (int i = 0; i < 12; i++) {
+            given()
+                    .contentType(ContentType.JSON)
+                    .header("Authorization", "Bearer 20033")
+                    .queryParam("deviceId", device)
+                    .body(List.of("spotify:track:" + i))
+                    .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
+                    .then()
+                    .statusCode(200);
+        }
+    }
+
+    @Test
+    void addToPlaylist_withoutDeviceId_isNotLimited() {
+        Party party = registerSpotifyParty("10034", "20034");
+        when(spotifyMusicProvider.addTracksToPlaylist(eq(party), any())).thenReturn(Response.ok().build());
+
+        for (int i = 0; i < 12; i++) {
+            given()
+                    .contentType(ContentType.JSON)
+                    .body(List.of("spotify:track:" + i))
+                    .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
+                    .then()
+                    .statusCode(200);
         }
     }
 

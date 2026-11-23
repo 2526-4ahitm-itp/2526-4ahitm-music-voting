@@ -76,8 +76,14 @@ final class SongAddViewModel: ObservableObject {
     private var searchURL: URL {
         partySession?.partyURL(path: "track/search") ?? BackendConfiguration.endpoint("/api/party/unknown/track/search")
     }
+    /// The deviceId identifies the guest for the backend's limit of 10 songs per minute
+    /// (guest spec "Per-Guest Add Rate Limit").
     private var addToPlaylistURL: URL {
-        partySession?.partyURL(path: "track/addToPlaylist") ?? BackendConfiguration.endpoint("/api/party/unknown/track/addToPlaylist")
+        let base = partySession?.partyURL(path: "track/addToPlaylist") ?? BackendConfiguration.endpoint("/api/party/unknown/track/addToPlaylist")
+        guard let deviceId = partySession?.deviceId,
+              var components = URLComponents(url: base, resolvingAgainstBaseURL: false) else { return base }
+        components.queryItems = (components.queryItems ?? []) + [URLQueryItem(name: "deviceId", value: deviceId)]
+        return components.url ?? base
     }
     private var queueURL: URL {
         partySession?.partyURL(path: "track/queue") ?? BackendConfiguration.endpoint("/api/party/unknown/track/queue")
@@ -189,10 +195,14 @@ final class SongAddViewModel: ObservableObject {
         var request = URLRequest(url: addToPlaylistURL)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        // The host is exempt from the per-guest limit, so it can fill the queue before the party.
+        if partySession?.role == .host, let hostPin = partySession?.hostPin, !hostPin.isEmpty {
+            request.setValue("Bearer \(hostPin)", forHTTPHeaderField: "Authorization")
+        }
         request.httpBody = try? JSONEncoder().encode([track.uri])
 
         do {
-            let (_, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
                 errorMessage = String(localized: "search.add.error")
                 return
@@ -205,11 +215,22 @@ final class SongAddViewModel: ObservableObject {
                 addedTrackIds.insert(track.id)
                 await loadQueue()
             } else {
-                errorMessage = String(localized: "search.add.error")
+                // Backend errors ("Nicht erlaubt.", "Song ist schon in der Warteschlange.",
+                // "Zu viele Anfragen — bitte kurz warten.") are shown verbatim (ios-localization
+                // spec "Backend Error Strings Remain Backend-Defined German").
+                errorMessage = Self.backendErrorMessage(from: data) ?? String(localized: "search.add.error")
             }
         } catch {
             errorMessage = String(localized: "error.backendUnreachable")
         }
+    }
+
+    /// Reads the `error` text of a backend JSON error body; nil if there is none.
+    static func backendErrorMessage(from data: Data) -> String? {
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let message = object["error"] as? String,
+              !message.isEmpty else { return nil }
+        return message
     }
 }
 

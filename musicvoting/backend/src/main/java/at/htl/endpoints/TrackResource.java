@@ -5,6 +5,7 @@ import at.htl.domain.PartyRegistry;
 import at.htl.domain.ProviderKind;
 import at.htl.provider.MusicProvider;
 import at.htl.provider.MusicProviderFactory;
+import at.htl.service.GuestAddRateLimiter;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -14,6 +15,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 
 @Path("/party/{partyId}/track")
 @Produces(MediaType.APPLICATION_JSON)
@@ -31,6 +33,16 @@ public class TrackResource {
 
     @Inject
     LoginEventBus loginEventBus;
+
+    @Inject
+    GuestAddRateLimiter rateLimiter;
+
+    /** Same check as {@link HostAuthFilter}, but a missing header just means "not the host". */
+    private static boolean isHost(Party party, String authorization) {
+        return authorization != null
+                && authorization.startsWith("Bearer ")
+                && party.hostPin().equals(authorization.substring("Bearer ".length()).trim());
+    }
 
     private Party resolveParty() {
         return partyRegistry.findById(partyId)
@@ -96,17 +108,45 @@ public class TrackResource {
         return Response.ok(Map.of("queue", queue)).build();
     }
 
+    /**
+     * Adds songs to the queue. Guests pass their persistent {@code deviceId} so the per-guest
+     * limit of {@link GuestAddRateLimiter#MAX_ADDS} songs per minute applies (guest spec
+     * "Per-Guest Add Rate Limit"); the host (valid host PIN) is exempt so the queue can be
+     * filled before the party. Without a {@code deviceId} the request is not limited, so older
+     * iOS versions keep working.
+     */
     @POST
     @Path("/addToPlaylist")
-    public Response addToPlaylist(List<String> uris) {
+    public Response addToPlaylist(List<String> uris,
+                                  @QueryParam("deviceId") String deviceId,
+                                  @HeaderParam("Authorization") String authorization) {
         if (uris == null || uris.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\":\"No tracks provided\"}")
                     .build();
         }
         Party party = resolveParty();
+
+        boolean limited = deviceId != null && !deviceId.isBlank() && !isHost(party, authorization);
+        if (limited) {
+            OptionalLong retryAfter = rateLimiter.check(party.id().value(), deviceId.trim(), uris.size());
+            if (retryAfter.isPresent()) {
+                return Response.status(429)
+                        .header("Retry-After", retryAfter.getAsLong())
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(Map.of(
+                                "error", GuestAddRateLimiter.MESSAGE,
+                                "retryAfterSeconds", retryAfter.getAsLong()))
+                        .build();
+            }
+        }
+
         Response response = provider(party).addTracksToPlaylist(party, uris);
         if (response.getStatus() >= 200 && response.getStatus() < 300) {
+            if (limited) {
+                // Only songs that were really added use up the guest's budget.
+                rateLimiter.record(party.id().value(), deviceId.trim(), uris.size());
+            }
             loginEventBus.emit(new LoginEvent(
                     "queue-updated",
                     Instant.now(),
