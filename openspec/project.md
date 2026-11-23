@@ -1,37 +1,26 @@
 # MusicVoting — Project Overview
 
-MusicVoting is an interactive web application that lets party guests co-curate the music. Guests join a party from their phone (no account, no name), add songs via search, and like songs to push them up in the queue. The host runs one party at a time, backed by a single music provider (Spotify or YouTube), and the music plays on a shared monitor/TV in the browser.
+> Short product overview for people. The OpenSpec CLI does **not** read this file —
+> the context and rules given to AI agents live in [`config.yaml`](config.yaml).
+> Binding team rules: [`ai/ARBEITSREGELN.md`](../ai/ARBEITSREGELN.md).
+
+MusicVoting lets party guests choose the music together. Guests join from their phone (no account, no name) by scanning a QR code or typing the 5-digit PIN. They add songs through search and like songs to push them up the queue. The host runs one party at a time with one music provider (Spotify or YouTube), and the music plays in the browser on a shared monitor or TV.
 
 ## Product shape
 
-- **Three clients**: a guest web app (phone), a host control UI (phone), and a dashboard display (monitor/TV).
-- **One party = one provider**: providers are not mixed within a party. The host selects the provider at party creation time.
-- **Anonymous guests**: no accounts, no names; the backend assigns an anonymous identifier per guest session.
-- **Queue sorting is automatic**: more likes first, FIFO on ties. The queue is the source of truth for what plays next.
-- **The host authenticates with the provider via OAuth** once per party. Tokens are dropped when the party ends.
+- **Three clients:** the guest page (phone), the host dashboard (phone) and the TV display (monitor). There is also an optional SwiftUI iOS app.
+- **One party = one provider:** the host picks Spotify or YouTube when creating the party.
+- **Anonymous guests:** each device is recognised by a persistent `deviceId`; there are no accounts.
+- **Automatic queue order:** more likes first, FIFO on ties.
+- **Host OAuth once per party:** the tokens are dropped when the party ends.
 
-## Primary domains (see `specs/`)
+## Spec areas
 
-- `party` — lifecycle (create, PIN/QR identity, provider selection, end)
-- `guest` — anonymous join and per-guest rate limits
-- `host` — host-only controls and blacklist management
-- `queue` — queue contents, sorting, de-duplication, add/remove
-- `voting` — per-guest like toggle with live updates
-- `playback` — playback on the monitor, skip, pause, advance
-- `dashboard` — monitor/TV display and reconnect semantics
-- `search` — search flow and top-charts fallback
-- `provider` — provider integration constraints (Spotify/YouTube, OAuth, ads)
+The current behaviour is in [`specs/`](specs/): `party`, `guest`, `host`, `queue`, `voting`, `playback`, `dashboard`, `search`, `provider`, `web-ui`, `ios-localization`.
 
-## Stack (context, not contract)
+## Out of scope
 
-- Backend: Quarkus (Java), REST + live updates to clients.
-- Frontend: Angular web app (guest, host, dashboard views).
-- Optional mobile: Swift app mirroring the guest experience (see `hugo/content/swift/`).
-- Documentation site: Hugo under `hugo/`.
-
-## Out of scope (explicitly)
-
-- Multiple providers per party.
-- Named/registered guest accounts.
+- Multiple providers in one party.
+- Named or registered guest accounts.
 - Persistent play history or "recently played" lists.
-- Guarantee of ad-free playback on YouTube (best-effort only).
+- Guaranteed ad-free playback on YouTube (best effort only).
