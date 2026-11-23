@@ -11,4 +11,4 @@
 
 ## 3. Verify
 
-- [ ] 3.1 Manual check on localhost: fresh browser (no storage) → `/voting` and `/guest` land on `/code`; after joining with a code, `/voting` opens and survives a reload
+- [x] 3.1 Manual check on localhost: fresh browser (no storage) → `/voting` and `/guest` land on `/code`; after joining with a code, `/voting` opens and survives a reload
