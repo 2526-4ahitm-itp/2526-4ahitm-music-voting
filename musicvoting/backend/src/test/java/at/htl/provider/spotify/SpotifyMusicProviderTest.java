@@ -496,35 +496,144 @@ class SpotifyMusicProviderTest {
         return BlacklistService.Blacklist.of(List.of(e));
     }
 
+    // --- Refill candidate selection (playback spec "Auto-Refill Prefers Songs Not Yet Played")
+
+    private static final BlacklistService.Blacklist NO_BLACKLIST = BlacklistService.Blacklist.of(List.of());
+
+    /** Metadata stub: every track is allowed and carries its URI as name. */
+    private static Map<String, Object> meta(String uri) {
+        return Map.of("uri", uri, "name", uri, "artists", List.of(Map.of("id", "artist-" + uri, "name", "Artist")));
+    }
+
     @Test
-    void orderRefillCandidates_dropsBlockedTrackUris() {
+    void freshRefillCandidates_dropsBlockedTrackUris() {
         BlacklistService.Blacklist bl = blacklistOf(BlacklistKind.TRACK, "spotify:track:blocked");
 
-        List<String> ordered = SpotifyMusicProvider.orderRefillCandidates(
+        List<String> fresh = SpotifyMusicProvider.freshRefillCandidates(
                 List.of("spotify:track:blocked", "spotify:track:ok"), Set.of(), bl, newParty());
 
-        assertEquals(List.of("spotify:track:ok"), ordered);
+        assertEquals(List.of("spotify:track:ok"), fresh);
     }
 
     @Test
-    void orderRefillCandidates_onlyCandidateBlocked_yieldsNothing() {
+    void freshRefillCandidates_dropsQueuedDuplicateAndAlreadyUsedTracks() {
+        Party party = newParty();
+        party.recordAutoFilled("spotify:track:filled");
+        party.recordPlayed("spotify:track:guestPlayed");
+
+        List<String> fresh = SpotifyMusicProvider.freshRefillCandidates(
+                java.util.Arrays.asList("spotify:track:filled", "spotify:track:new", "spotify:track:queued",
+                        "spotify:track:guestPlayed", "spotify:track:new", "", null),
+                Set.of("spotify:track:queued"), NO_BLACKLIST, party);
+
+        assertEquals(List.of("spotify:track:new"), fresh);
+    }
+
+    @Test
+    void repeatRefillCandidates_keepsOnlyUsedAllowedTracks() {
+        Party party = newParty();
+        party.recordPlayed("spotify:track:a");
+        party.recordPlayed("spotify:track:blocked");
         BlacklistService.Blacklist bl = blacklistOf(BlacklistKind.TRACK, "spotify:track:blocked");
 
-        assertTrue(SpotifyMusicProvider.orderRefillCandidates(
-                List.of("spotify:track:blocked"), Set.of(), bl, newParty()).isEmpty());
+        List<String> repeats = SpotifyMusicProvider.repeatRefillCandidates(
+                List.of("spotify:track:a", "spotify:track:b", "spotify:track:blocked"), Set.of(), bl, party);
+
+        assertEquals(List.of("spotify:track:a"), repeats);
     }
 
     @Test
-    void orderRefillCandidates_withEmptyBlacklist_keepsPreviousOrderAndRepeatFallback() {
+    void party_wasUsedForRefill_coversPlayedAndAutoFilledTracks() {
         Party party = newParty();
-        party.recordAutoFilled("spotify:track:a");
+        party.recordPlayed("spotify:track:played");
+        party.recordAutoFilled("spotify:track:filled");
 
-        List<String> ordered = SpotifyMusicProvider.orderRefillCandidates(
-                List.of("spotify:track:a", "spotify:track:b", "spotify:track:queued", "spotify:track:b"),
-                Set.of("spotify:track:queued"), BlacklistService.Blacklist.of(List.of()), party);
+        assertTrue(party.wasUsedForRefill("spotify:track:played"));
+        assertTrue(party.wasUsedForRefill("spotify:track:filled"));
+        assertFalse(party.wasUsedForRefill("spotify:track:new"));
+        assertFalse(party.wasUsedForRefill(null));
+    }
 
-        // not-yet-used first, already-used as fallback, queued and duplicates dropped
-        assertEquals(List.of("spotify:track:b", "spotify:track:a"), ordered);
+    @Test
+    void pickRefillTrack_exhaustedFirstSourceFallsThroughInsteadOfLooping() {
+        Party party = newParty();
+        party.recordAutoFilled("spotify:track:p1");
+        party.recordPlayed("spotify:track:p2");
+        List<String> asked = new java.util.ArrayList<>();
+
+        SpotifyMusicProvider.RefillPick pick = SpotifyMusicProvider.pickRefillTrack(
+                List.of(
+                        () -> { asked.add("playlist"); return List.of("spotify:track:p1", "spotify:track:p2"); },
+                        () -> { asked.add("similar"); return List.of("spotify:track:s1"); },
+                        () -> { asked.add("broad"); return List.of("spotify:track:x"); }),
+                Set.of(), NO_BLACKLIST, party, SpotifyMusicProviderTest::meta);
+
+        assertNotNull(pick);
+        assertEquals("spotify:track:s1", pick.uri());
+        // Later sources are only asked when needed.
+        assertEquals(List.of("playlist", "similar"), asked);
+    }
+
+    @Test
+    void pickRefillTrack_freshSongInFirstSourceWins() {
+        SpotifyMusicProvider.RefillPick pick = SpotifyMusicProvider.pickRefillTrack(
+                List.of(() -> List.of("spotify:track:p1"), () -> List.of("spotify:track:s1")),
+                Set.of(), NO_BLACKLIST, newParty(), SpotifyMusicProviderTest::meta);
+
+        assertEquals("spotify:track:p1", pick.uri());
+        assertEquals("spotify:track:p1", pick.meta().get("name"));
+    }
+
+    @Test
+    void pickRefillTrack_nothingFreshFallsBackToEarlierPlayedSong() {
+        Party party = newParty();
+        party.recordPlayed("spotify:track:p1");
+        party.recordPlayed("spotify:track:s1");
+
+        SpotifyMusicProvider.RefillPick pick = SpotifyMusicProvider.pickRefillTrack(
+                List.of(() -> List.of("spotify:track:p1"), List::of, () -> List.of("spotify:track:s1")),
+                Set.of(), NO_BLACKLIST, party, SpotifyMusicProviderTest::meta);
+
+        assertNotNull(pick);
+        assertEquals("spotify:track:p1", pick.uri()); // first source's song, as a last resort
+    }
+
+    @Test
+    void pickRefillTrack_blacklistStillAppliesToRepeats() {
+        Party party = newParty();
+        party.recordPlayed("spotify:track:p1");
+        BlacklistService.Blacklist bl = blacklistOf(BlacklistKind.TRACK, "spotify:track:p1");
+
+        assertNull(SpotifyMusicProvider.pickRefillTrack(
+                List.of(() -> List.of("spotify:track:p1")), Set.of(), bl, party, SpotifyMusicProviderTest::meta));
+    }
+
+    @Test
+    void pickRefillTrack_failingOrUnloadableSourcesAreSkipped() {
+        SpotifyMusicProvider.RefillPick pick = SpotifyMusicProvider.pickRefillTrack(
+                List.of(
+                        () -> { throw new IllegalStateException("Spotify down"); },
+                        () -> List.of("spotify:track:broken", "spotify:track:ok")),
+                Set.of(), NO_BLACKLIST, newParty(),
+                uri -> {
+                    if (uri.endsWith("broken")) throw new IllegalStateException("404");
+                    return meta(uri);
+                });
+
+        assertEquals("spotify:track:ok", pick.uri());
+    }
+
+    @Test
+    void pickRefillTrack_everySourceEmpty_yieldsNothing() {
+        assertNull(SpotifyMusicProvider.pickRefillTrack(
+                List.of(List::of, List::of), Set.of(), NO_BLACKLIST, newParty(), SpotifyMusicProviderTest::meta));
+    }
+
+    @Test
+    void broadSearchQuery_coversCurrentYearAndFifteenYearsBack() {
+        assertEquals("year:2011-2026", SpotifyMusicProvider.broadSearchQuery(2026));
+        // The range moves along with the year, no code change needed.
+        assertEquals("year:2015-2030", SpotifyMusicProvider.broadSearchQuery(2030));
     }
 
     @Test
