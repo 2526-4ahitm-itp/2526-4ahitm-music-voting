@@ -2,6 +2,29 @@
 
 ## ADDED Requirements
 
+### Requirement: Guest Like Is Confirmed with the Rank
+After a guest likes a song, a confirmation MUST say "Geliked – jetzt auf Platz <N>", where N is the song's rank among the waiting songs once the server has re-sorted the queue; without a known rank it says "Geliked". Taking a like back shows no confirmation.
+
+#### Scenario: Like names the new rank
+- GIVEN song C is waiting at rank 3
+- WHEN the guest likes C and the re-sorted queue puts C at rank 2
+- THEN "Geliked – jetzt auf Platz 2" is shown
+
+#### Scenario: Un-like is silent
+- GIVEN the guest has liked song C
+- WHEN the guest takes the like back
+- THEN no confirmation is shown
+
+### Requirement: Guest Confirmations Stand Out
+Confirmations on the guest page ("Song hinzugefügt – Platz <N>", "Geliked – jetzt auf Platz <N>") MUST be clearly noticeable: a filled brand-colour card with an icon (check for an add, heart for a like), at least 1.0625rem bold text, at least 4.5:1 contrast, shown for about 1.5 seconds at the bottom of the page. Error messages keep their own error colour and stay about 4 seconds.
+
+#### Scenario: Like confirmation is noticeable
+- GIVEN a guest likes a song
+- WHEN the confirmation appears
+- THEN it is a filled brand-colour card with a heart icon and bold text
+- AND it disappears after about 1.5 seconds
+
+
 ### Requirement: Guest Uses One Page for Queue and Search
 The web guest experience MUST be a single page at `/voting`. It always shows the queue, and guests like songs there. The search field on that page searches the party's provider (see `search/spec.md`), so guests add songs from the same page. There MUST NOT be a tab bar or any other navigation between guest views. The former add/search route `/guest` MUST redirect to `/voting`.
 
@@ -44,6 +67,27 @@ A web guest search result whose song is already in the queue MUST show that song
 
 ## MODIFIED Requirements
 
+### Requirement: Guest Is Welcomed After Joining
+After a guest joins a party for the first time on a device, the guest page MUST show a one-time welcome sheet with "Du bist dabei!" and a short guide: "Tipp auf ♥ bei Songs, die du hören willst – je mehr Likes, desto früher laufen sie." and "Such oben nach einem Song und tipp auf +, um ihn hinzuzufügen.", plus a button "Los geht's" that closes it. The sheet MUST close by itself after 10 seconds. It MUST NOT appear again for the same `deviceId` and party, including after a reload. Joining a different party shows it again.
+
+#### Scenario: First join shows the welcome
+- GIVEN a guest has never joined party P on this device
+- WHEN the guest joins party P and lands on the guest page
+- THEN the welcome sheet with "Du bist dabei!" and the two-line guide is shown
+- WHEN the guest taps "Los geht's"
+- THEN the sheet closes
+
+#### Scenario: Welcome closes by itself
+- GIVEN the welcome sheet is shown
+- WHEN 10 seconds pass without a tap
+- THEN the sheet closes and is not shown again for party P
+
+#### Scenario: Reload does not show the welcome again
+- GIVEN a guest has dismissed the welcome sheet for party P
+- WHEN the guest reloads the voting view
+- THEN the welcome sheet is not shown
+
+
 ### Requirement: Guest Lands on the Voting View After Joining
 After a guest successfully enters a valid party PIN, the app MUST navigate the guest to the guest page (`/voting`), so the queue is the first thing shown. The guest adds songs through the search field on that page.
 
@@ -71,7 +115,7 @@ The web guest page MUST tell the guest what is happening at every step while sea
 - THEN "Verbindung verloren – versuch es gleich nochmal." is shown
 
 ### Requirement: Guest Add Is Confirmed with the Rank
-After a successful add, a confirmation MUST appear at the bottom of the guest page for about 4 seconds, besides the like count replacing the "+" on the result. It MUST say "Song hinzugefügt – Platz <N>" (the rank among the waiting songs) and offer no action, because the guest is already on the queue page; without a known rank it says "Song hinzugefügt". Backend errors (for example "Song ist schon in der Warteschlange.", "Zu viele Anfragen — bitte kurz warten.") MUST be shown in the same area, with at least 4.5:1 contrast.
+After a successful add, a confirmation MUST appear at the bottom of the guest page for about 1.5 seconds, besides the like count replacing the "+" on the result. It MUST say "Song hinzugefügt – Platz <N>" (the rank among the waiting songs) and offer no action, because the guest is already on the queue page; without a known rank it says "Song hinzugefügt". Backend errors (for example "Song ist schon in der Warteschlange.", "Zu viele Anfragen — bitte kurz warten.") MUST be shown in the same area, with at least 4.5:1 contrast.
 
 #### Scenario: Successful add is confirmed
 - GIVEN a guest sees song X in the search results

@@ -64,12 +64,15 @@ In `app.routes.ts`:
 
 The dashboard's `hostGuard` then covers the old host links. The `VotingHost`, `SearchHost`, `Guest` and `MvGuestTabs` files are deleted. `app.routes.spec.ts` asserts the redirects.
 
-### D5: Host dashboard — filter and "+ Song" panel
-- The filter field sits in the queue card header. It is a local `computed` over `tracks`, and ranks come from the unfiltered index (`rankOf` map), the same approach `voting-comp` used.
-- "+ Song" sits next to the queue title and toggles an inline search card **above** the queue card (not a modal: the host should see the song land in the queue). It contains the template and logic of `search-host`, moved into `shared/mv-host-song-search`, a standalone component. That keeps `host-dashboard.ts` from growing further and keeps the search spec reusable.
-- The search card has "Fertig" and closes on Escape. Focus moves into its input on open and back to "+ Song" on close.
+### D5: Host dashboard — one search field, like the guest page (updated 2026-11-23)
+The first version had a separate "+ Song" card (`shared/mv-host-song-search`) and a queue filter. The team asked for the guest behaviour instead, and the child component was unstyled anyway: `shared/stage.css` is encapsulated per component, so its `.host-row`/`.host-search` rules did not reach into the child. Now:
+- One search field in the queue card, as on the guest page: debounced provider search while typing, results under "Suchergebnisse" replace the queue, an empty field shows the queue. The filter and `mv-host-song-search` are removed.
+- Result states as in D2 (`blocked` / `queued` / `addable`), derived from the dashboard's `tracks` by URI. Blocked results keep the host text "Nicht erlaubt.".
+- The host likes with `SpotifyWebPlayerService.toggleVote(uri, partyService.deviceId)`, optimistic with rollback, like `voting-comp`. The dashboard now loads the queue with `?deviceId=…`, so `hasVoted` is known. The heart sits in each waiting queue row next to "Song entfernen".
+- The clear button ("Suche leeren", design D12) is the same on both pages.
 
-*Alternative:* a dialog or sheet. Rejected: it hides the queue the song is added to.
+### D12: Clear button in the search field
+A round icon button with an "x" inside `.host-search` (shared in `stage.css`, so guest page and dashboard look the same), shown only while the field holds text. It empties the query, the results and the status, and puts the focus back in the input. The browser's own `::-webkit-search-cancel-button` is hidden, so there is only one "x".
 
 ### D6: Phone rows on the dashboard
 Below 560 px the queue row stays `rank · cover · text · likes · remove`. The cover shrinks to 40 px, rank and likes use the compact type size, and the text column keeps `minmax(0,1fr)` with ellipsis. This replaces the `display: none` rule in `host-dashboard.css:277-280`.
@@ -81,7 +84,7 @@ Below 560 px the queue row stays `rank · cover · text · likes · remove`. The
 - After a real removal the trigger is gone with its row, so focus goes to the queue card heading (`tabindex="-1"`) instead of being lost on `<body>`.
 
 ### D8: TV layout and like pulse
-- **Grid:** `grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr)` and `gap: clamp(32px, 4vw, 115px)`. The `max-width: 46vw` cap on the now-playing text (`startpage.css:119`) is removed, so both columns use their full width. A layout spec measures the gap at 1920×1080 (≤ 115 px).
+- **Grid (reverted 2026-11-23):** a first version sized the now-playing column to the cover to close the gap in the middle. The team preferred the original look with the gap, so the TV layout is unchanged (`1.25fr 1fr`, `gap: 4vw`); only the pulse and the logo glow remain.
 - **Pulse:** `startpage.ts` remembers the last like count per URI. When a new queue snapshot differs for a visible entry, that URI goes into a `pulsing` set for 600 ms. The CSS class `.pulse` runs a scale keyframe (1 → 1.25 → 1) on heart and count. Under `prefers-reduced-motion` the same class runs a colour-only keyframe (accent colour flash). This sits next to the FLIP code and does not interfere with it: the pulse is on the child elements, FLIP on the row.
 
 ### D9: Logo glow, host bar logo and badge, landing top bar
@@ -95,6 +98,14 @@ Below 560 px the queue row stays `rank · cover · text · likes · remove`. The
 ### D11: party-ready and PIN tags
 - The separate-device sentence becomes `<p>Anderes Gerät am TV?</p><ol>` with the four steps.
 - The PIN tags are a small muted `<span class="pin-tag">` inside the label: "für Gäste" and "nur für dich". They are used on the dashboard and on party-ready.
+
+### D13: Wording and guest feedback follow-up (2026-11-23)
+- **Hints:** "Dieser Artist ist vom Gastgeber gesperrt." / "Einige Ergebnisse sind vom Gastgeber gesperrt." — still only the hint line, no text on the greyed-out song (team decision).
+- **"Auch sperren" → "Entfernen und sperren"**, **"Blacklist" → "Blocklist"** in every visible text. Code, routes (`/select-blacklist`), API, SSE event `blacklist-updated` and the table `blacklist_entry` keep their names here; the full rename follows in its own change (`rename-blacklist-to-blocklist`) because the production database needs a migration.
+- **Like confirmation:** after a successful like, `voting-comp` reloads the queue and shows "Geliked – jetzt auf Platz N" (rank from the re-sorted queue). Un-like stays silent.
+- **Toast:** confirmations stay 1.5 s (`CONFIRM_MS`, team: 4 s and 2.5 s were too long), errors 4 s. `ToastService.show` takes an optional `icon` ('check' | 'heart'); `mv-toast` draws info toasts as a filled Stage Purple card with an icon badge and 1.0625rem bold text. Errors keep the danger colour.
+- **Welcome:** two-line guide with icons; a 10 s timer calls `dismissWelcome()`, so it is remembered like a tap on "Los geht's".
+- **Player:** "Player auf diesem Gerät öffnen" on dashboard and go-live step; below it the shared `shared/mv-other-device-steps` with five steps. Step 1 links to the public LeoCloud address from `shared/public-url.ts` (`PUBLIC_APP_URL`); the current origin would show "localhost" in development (team decision). On the own server this constant must be changed.
 
 ## Risks / Trade-offs
 
