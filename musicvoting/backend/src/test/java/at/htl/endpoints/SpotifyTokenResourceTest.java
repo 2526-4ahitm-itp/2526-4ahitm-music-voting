@@ -66,6 +66,7 @@ class SpotifyTokenResourceTest {
         when(spotifyMusicProvider.getValidAccessToken(any())).thenReturn("access-token-123");
 
         given()
+                .header("Authorization", "Bearer " + party.hostPin())
                 .when().get("/api/party/{partyId}/spotify/token", party.id().value())
                 .then()
                 .statusCode(200)
@@ -143,6 +144,7 @@ class SpotifyTokenResourceTest {
         Party party = registerParty();
 
         given()
+                .header("Authorization", "Bearer " + party.hostPin())
                 .when().get("/api/party/{partyId}/spotify/deviceId", party.id().value())
                 .then()
                 .statusCode(404);
@@ -154,6 +156,7 @@ class SpotifyTokenResourceTest {
         party.getSpotifyCredentials().setDeviceId("device-abc");
 
         given()
+                .header("Authorization", "Bearer " + party.hostPin())
                 .when().get("/api/party/{partyId}/spotify/deviceId", party.id().value())
                 .then()
                 .statusCode(200)
@@ -165,6 +168,7 @@ class SpotifyTokenResourceTest {
         Party party = registerParty();
 
         given()
+                .header("Authorization", "Bearer " + party.hostPin())
                 .contentType(ContentType.TEXT)
                 .body("   ")
                 .when().put("/api/party/{partyId}/spotify/deviceId", party.id().value())
@@ -182,6 +186,7 @@ class SpotifyTokenResourceTest {
 
         try {
             given()
+                    .header("Authorization", "Bearer " + party.hostPin())
                     .contentType(ContentType.TEXT)
                     .body(" device-xyz ")
                     .when().put("/api/party/{partyId}/spotify/deviceId", party.id().value())
@@ -195,6 +200,70 @@ class SpotifyTokenResourceTest {
         } finally {
             subscription.cancel();
         }
+    }
+
+    // --- host spec "Spotify Player Endpoints Require the Host PIN"
+
+    @Test
+    void getToken_withoutAuthHeader_returnsUnauthorizedAndNoToken() {
+        Party party = registerParty();
+        when(spotifyMusicProvider.getValidAccessToken(any())).thenReturn("access-token-123");
+
+        given()
+                .when().get("/api/party/{partyId}/spotify/token", party.id().value())
+                .then()
+                .statusCode(401)
+                .body(not(containsString("access-token-123")));
+    }
+
+    @Test
+    void getToken_withWrongHostPin_returnsForbidden() {
+        Party party = registerParty();
+
+        given()
+                .header("Authorization", "Bearer wrong-pin")
+                .when().get("/api/party/{partyId}/spotify/token", party.id().value())
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void getDeviceId_withoutAuthHeader_returnsUnauthorized() {
+        Party party = registerParty();
+        party.getSpotifyCredentials().setDeviceId("device-abc");
+
+        given()
+                .when().get("/api/party/{partyId}/spotify/deviceId", party.id().value())
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    void setDeviceId_withoutAuthHeader_returnsUnauthorized() {
+        Party party = registerParty();
+
+        given()
+                .contentType(ContentType.TEXT)
+                .body("guest-device")
+                .when().put("/api/party/{partyId}/spotify/deviceId", party.id().value())
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    void setDeviceId_withWrongHostPin_returnsForbiddenAndKeepsDevice() {
+        Party party = registerParty();
+        party.getSpotifyCredentials().setDeviceId("tv-device");
+
+        given()
+                .header("Authorization", "Bearer wrong-pin")
+                .contentType(ContentType.TEXT)
+                .body("guest-device")
+                .when().put("/api/party/{partyId}/spotify/deviceId", party.id().value())
+                .then()
+                .statusCode(403);
+
+        assertEquals("tv-device", party.getSpotifyCredentials().getDeviceId());
     }
 
     @Test
