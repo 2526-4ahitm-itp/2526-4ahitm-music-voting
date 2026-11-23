@@ -20,17 +20,16 @@ Definiert in `src/app/app.routes.ts`. 🔒 = durch `hostGuard` geschützt.
 | `` (Home) | `Home` | Startseite |
 | `code` | `CodeInput` | 5-stelligen PIN eingeben |
 | `join/:pin` | `CodeInput` | Beitritt per QR-Link (`/join/<pin>`) |
-| `voting` | `VotingComp` | Gast: „Warteschlange“ (Läuft-gerade-Leiste, Ränge, Likes) |
-| `guest` | `Guest` | Gast: „Song suchen“ (Suchen & Hinzufügen) |
+| `voting` | `VotingComp` | Die eine Gastseite „Warteschlange“: Läuft-gerade-Leiste, Ränge, Likes und Suchfeld zum Suchen & Hinzufügen |
+| `guest` | → `voting` | Alte Such-Seite, leitet weiter |
 | `host-options` | `HostOptions` | Host-Menü |
 | `create-party` | `CreateParty` | Party erstellen (Provider wählen) |
 | `select-playlist` 🔒 | `SelectPlaylist` | Standard-Playlist wählen oder überspringen (Ziel nach Spotify-Login) |
-| `select-blacklist` 🔒 | `SelectBlacklist` | Blacklist: ein Suchfeld für Wort, Künstler und Song; mit `?mode=edit` während der Party |
-| `party-ready` 🔒 | `PartyReady` | „Deine Party ist bereit“: Player öffnen, Voting-PIN, „Party ist live 🎉“ |
+| `select-blacklist` 🔒 | `SelectBlacklist` | Blocklist: ein Suchfeld für Wort, Künstler und Song; mit `?mode=edit` während der Party |
+| `party-ready` 🔒 | `PartyReady` | „Deine Party ist bereit“: „Player auf diesem Gerät öffnen“ plus fünf Schritte für ein anderes Gerät, Voting-PIN, „Party ist live 🎉“ |
 | `startpage` 🔒 | `Startpage` | Monitor/TV-Player (Web Playback SDK) |
-| `dashboard` 🔒 | `HostDashboard` | Host-Steuerung (Wiedergabe, Queue, QR, Voting-PIN, Player öffnen, Party beenden, Gastgeber-PIN verborgen bis „Anzeigen“) |
-| `voting-host` 🔒 | `VotingHost` | Host: Queue-Ansicht |
-| `search-host` 🔒 | `SearchHost` | Host: Suche |
+| `dashboard` 🔒 | `HostDashboard` | Host-Steuerung (Wiedergabe, ganze Queue mit Likes des Hosts und einem Suchfeld wie bei den Gästen, QR, Voting-PIN, Player öffnen, Party beenden, Gastgeber-PIN verborgen bis „Anzeigen“) |
+| `voting-host`, `search-host` | → `dashboard` | Alte Host-Seiten, leiten weiter |
 | `**` | → `` | Fallback auf Home |
 
 ## Services & Querschnitt
@@ -38,7 +37,6 @@ Definiert in `src/app/app.routes.ts`. 🔒 = durch `hostGuard` geschützt.
 - **`services/party.service.ts`** – zentraler Zugriff auf die Backend-API (Party, Queue, Voting,
   Suche, Playback, Playlists/Standard-Playlist) und die SSE-Verbindung.
 - **`services/spotify-player.ts`** (`SpotifyWebPlayerService`) – kapselt das Web Playback SDK.
-- **`services/queue-state.ts`** (`QueueStateService`) – gemeinsamer Queue-Zustand der Ansichten.
 - **`services/spotify-tracks.ts`** (`TrackService`) – Track-Abfragen.
 - **`host-auth.interceptor.ts`** – hängt `Authorization: Bearer <hostPin>` an, wenn ein Host-PIN im
   `localStorage` liegt (siehe [Authentifizierung](../authentication/)).
@@ -46,18 +44,22 @@ Definiert in `src/app/app.routes.ts`. 🔒 = durch `hostGuard` geschützt.
 
 ## Rollen-Verhalten
 
-- **Gast:** landet nach dem Beitreten auf `voting`; untere Tab-Leiste wechselt zwischen „Voten“
-  (`voting`) und „Hinzufügen“ (`guest`). Oben steht „Party 12345“ mit „Party verlassen“
+- **Gast:** hat nur eine Seite, `voting`. Das Suchfeld über der Warteschlange sucht beim Tippen
+  beim Anbieter; Treffer, die schon in der Warteschlange sind, zeigen Likes und Herz (dort voten),
+  alle anderen ein „+“; das „x“ im Feld leert die Suche. Oben steht „Party 12345“ mit „Party verlassen“
   (Rückfrage; löscht die Party, behält die `deviceId`).
 - **Host:** erstellt die Party (`host-options` → `create-party` → Spotify-Login →
   `select-playlist` → `select-blacklist` → `party-ready` → `dashboard`), steuert Wiedergabe und
   Queue über `dashboard`; Fortschrittsbalken aus `progress`-SSE-Events. Play/Pause/Skip sind
-  gesperrt, solange kein Player offen ist („Player muss zuerst geöffnet werden.“). Die
-  Host-Navigation (`mv-host-menu`: Dashboard, Voting, Suchen, Blacklist) ist unter 1024 px ein
-  Burger-Menü, ab 1024 px eine feste Leiste links.
+  gesperrt, solange kein Player offen ist („Player muss zuerst geöffnet werden.“). Das Suchfeld
+  im Dashboard funktioniert wie bei den Gästen (Treffer ersetzen die Queue, „x“ leert es); der Host
+  liked Songs wie ein Gast, ein Like pro Gerät. Die Host-Navigation (`mv-host-menu`: Dashboard,
+  Blocklist, mit Logo und „Party läuft · PIN“) ist unter 1024 px ein Burger-Menü, ab 1024 px
+  eine feste Leiste links.
 - **Monitor/TV (`startpage`):** lädt das Web Playback SDK, registriert das Spotify-Gerät, sendet das
   Fortschritts-Relay und reagiert auf `track-changed`/`party-ended`. Geöffnet wird er über
-  „Player öffnen“ (im Dashboard oder in `host-options` mit Host-PIN).
+  „Player auf diesem Gerät öffnen“ im Dashboard bzw. auf einem anderen Gerät über `host-options`
+  → „Player öffnen“ mit Gastgeber-PIN (die fünf Schritte stehen in Dashboard und `party-ready`).
 
 ## SSE im Frontend
 
@@ -91,7 +93,8 @@ Das visuelle System („Die Bühne im Wohnzimmer“: dunkle Bühne mit lila-kora
   der Hellmodus ohne seitenspezifisches CSS.
 - **`shared/stage.css`** – gemeinsamer Seitenrahmen (Bühne, Top-Bar, Karten, Zeilen, Knöpfe).
 - **Shared Components** in `src/app/shared/`: `mv-cover`, `mv-icon` (Lucide), `mv-host-menu`,
-  `mv-guest-tabs`, `mv-guest-party`, `mv-theme-toggle`, `mv-toast`, `mv-spinner`,
+  `mv-guest-party`, `mv-theme-toggle` (nur Symbol), `mv-toast` (Bestätigungen als lila Karte mit Symbol),
+  `mv-other-device-steps`, `mv-spinner`,
   `mv-party-ended`, `mv-credit-footer`.
 - **Hell/Dunkel:** getrennte Einstellungen für Host/TV/Einstieg (`mv-theme`) und Gäste
   (`mv-guest-theme`).

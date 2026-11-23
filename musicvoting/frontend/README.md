@@ -25,27 +25,26 @@ All tests must pass before a change is done (`ai/ARBEITSREGELN.md` §3). Besides
 
 **Guests**
 - `/code` – type the 5-digit Voting-PIN (digit boxes); `/join/:pin` – same page, opened by the QR code.
-- `/voting` – "Warteschlange": now-playing bar, ranked queue, likes.
-- `/guest` – "Song suchen": search and add; toast "Song hinzugefügt – Platz N".
-- Both guest views show "Party 12345" and "Party verlassen" in the top bar (`mv-guest-party`) and a bottom tab bar "Voten" / "Hinzufügen" (`mv-guest-tabs`).
+- `/voting` – the single guest page "Warteschlange": now-playing bar, ranked queue, likes, and a search field above the queue. Typing searches the provider; the results replace the queue while the field holds text. A result that is already queued shows its likes and heart (vote there), any other result a "+"; after adding, the toast says "Song hinzugefügt – Platz N", after a like "Geliked – jetzt auf Platz N". The one-time welcome ("Du bist dabei!") explains liking and adding in two lines and closes by itself after 10 s. The "x" ("Suche leeren") empties the field and shows the queue again.
+- `/guest` (old add/search page) redirects to `/voting`. The top bar shows "Party 12345" and "Party verlassen" (`mv-guest-party`); there is no tab bar.
 
 **Host setup** (`/host-options` → `/create-party` → Spotify login → …)
 1. `/select-playlist` 🔒 – optional default playlist for the auto-refill.
-2. `/select-blacklist` 🔒 – optional blacklist: one search field for words, artists and songs (first row "Wort „x“ sperren", then up to 3 artists and 5 songs; Enter blocks the word). "Weiter" is disabled until something is blocked; "Ohne Blacklist fortfahren" skips.
-3. `/party-ready` 🔒 – "Deine Party ist bereit": open the player on the TV, Voting-PIN, "Party ist live 🎉" once the player has registered.
-4. `/dashboard` 🔒 – playback, queue ("Song entfernen" → "Auch sperren" / "Nur entfernen" / "Abbrechen"), QR and Voting-PIN, "Player öffnen", "Party beenden", and the Gastgeber-PIN masked as "•••••" until "Anzeigen".
+2. `/select-blacklist` 🔒 – optional Blocklist (code and API still say "blacklist" until the rename change): one search field for words, artists and songs (first row "Wort „x“ sperren", then up to 3 artists and 5 songs; Enter blocks the word). "Weiter" is disabled until something is blocked; "Ohne Blocklist fortfahren" skips.
+3. `/party-ready` 🔒 – "Deine Party ist bereit": "Player auf diesem Gerät öffnen" and below it "Player auf anderem Gerät öffnen" with five numbered steps (`mv-other-device-steps`, step 1 links to the public address in `shared/public-url.ts`), Voting-PIN, "Party ist live 🎉" once the player has registered.
+4. `/dashboard` 🔒 – the only host view of the queue: playback, one search field that works like the guest page (results replace the queue while it holds text; blocked songs show "Nicht erlaubt."), rank, likes and a like button for the host (one like per device, like a guest) on every screen width, "Song entfernen" → "Entfernen und sperren" / "Nur entfernen" / "Abbrechen" (focus moves into the question, Escape closes it), QR and Voting-PIN ("für Gäste"), "Player öffnen", "Party beenden", and the Gastgeber-PIN ("nur für dich") masked as "•••••" until "Anzeigen".
 
-**During the party** the host navigation (`mv-host-menu`) links Dashboard, Voting (`/voting-host`), Suchen (`/search-host`) and Blacklist (`/select-blacklist?mode=edit`, saves immediately, "Fertig" returns). Below 1024 px it is a burger menu, from 1024 px a fixed side rail.
+**During the party** the host navigation (`mv-host-menu`) links Dashboard and Blocklist (`/select-blacklist?mode=edit`, saves immediately, "Fertig" returns) and shows the logo with the badge "Party läuft · <Voting-PIN>". Below 1024 px it is a burger menu, from 1024 px a fixed side rail. The old `/voting-host` and `/search-host` redirect to `/dashboard`.
 
-**TV** – `/startpage` 🔒 is the room display and the Spotify Web Playback device: now playing, QR + Voting-PIN, top 5 "Als Nächstes", footer with logo and "powered by HTL Leonding". It never shows the Gastgeber-PIN.
+**TV** – `/startpage` 🔒 is the room display and the Spotify Web Playback device: now playing, QR + Voting-PIN, top 5 "Als Nächstes" with a short pulse when a like count changes, footer with logo (faint white glow in dark mode) and "powered by HTL Leonding". It never shows the Gastgeber-PIN.
 
-Blacklisted songs are greyed out with a disabled "+" ("Nicht verfügbar") in the guest and host search; guests never learn why.
+Blocked songs are greyed out with a disabled "+" in the guest and host search. Guests see only the hint "Einige Ergebnisse sind vom Gastgeber gesperrt." (or "Dieser Artist ist vom Gastgeber gesperrt."), never which entry; the host sees "Nicht erlaubt." on the song.
 
 ## Design system
 
 The full description (tokens, typography, components, rules) is [`DESIGN.md`](../../DESIGN.md). In code:
 
-- **Tokens** – `src/styles.css` defines every colour, radius, spacing and motion value as `--mv-*` custom properties. Components never hard-code colours; that is what makes light mode work.
+- **Tokens** – `src/styles.css` defines every colour, radius, spacing and motion value as `--mv-*` custom properties, including the glows (`--mv-glow-brand` under the now-playing cover, `--mv-glow-logo` behind the TV logo). Components never hard-code colours; that is what makes light mode work.
 - **Stage look** – `src/app/shared/stage.css` holds the shared page frame (dark stage with brand glow, sticky top bar, cards, rows, buttons, search field). Every page lists it first in `styleUrls`.
 - **Shared components** (`src/app/shared/`):
 
@@ -53,11 +52,11 @@ The full description (tokens, typography, components, rules) is [`DESIGN.md`](..
   |---|---|
   | `mv-cover` | Album cover with a dark brand placeholder when the image is missing or fails |
   | `mv-icon` | Lucide icons by name (`lucide-angular`); add new icons to its `ICONS` map |
-  | `mv-host-menu` | Host navigation: burger + slide-in below 1024 px, side rail from 1024 px |
-  | `mv-guest-tabs` | Bottom tab bar "Voten" / "Hinzufügen" |
+  | `mv-host-menu` | Host navigation: burger + slide-in below 1024 px, side rail from 1024 px; logo and "Party läuft" badge |
   | `mv-guest-party` | "Party 12345" and "Party verlassen" (with confirmation) for guests |
-  | `mv-theme-toggle` | "Heller Modus" switch (`role="switch"`) |
-  | `mv-toast` + `toast.service.ts` | Short confirmations and errors above the tab bar |
+  | `mv-theme-toggle` | Icon-only "Heller Modus" toggle (moon/sun, `role="switch"`) |
+  | `mv-toast` + `toast.service.ts` | Confirmations ("Song hinzugefügt – Platz N", "Geliked – jetzt auf Platz N") as a filled brand card with icon, and errors, at the bottom of the page |
+  | `mv-other-device-steps` | "Player auf anderem Gerät öffnen" with five steps (dashboard and go-live step) |
   | `mv-spinner` | Loading indicator |
   | `mv-party-ended` | "Die Party ist beendet" overlay for guests |
   | `mv-credit-footer` | "powered by HTL Leonding" (TV and landing page only) |
@@ -70,7 +69,7 @@ The full description (tokens, typography, components, rules) is [`DESIGN.md`](..
 Dark is the default. `ThemeService` sets `data-theme` on `<html>`; `styles.css` swaps the tokens for `[data-theme='light']`. There are two separate choices, each stored in `localStorage`:
 
 - `mv-theme` – host pages, TV and entry pages (`/`, `/host-options`, `/create-party`, setup steps). The TV follows changes from other tabs without reload.
-- `mv-guest-theme` – guest pages (`/code`, `/join/:pin`, `/voting`, `/guest`). Until a guest chooses, it starts from the entry-page choice.
+- `mv-guest-theme` – guest pages (`/code`, `/join/:pin`, `/voting`). Until a guest chooses, it starts from the entry-page choice.
 
 The scope switches on router `ResolveEnd`, so each page group keeps its own mode.
 
