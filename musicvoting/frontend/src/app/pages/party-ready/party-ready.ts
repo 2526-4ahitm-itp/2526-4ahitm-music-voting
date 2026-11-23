@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, PLATFORM_ID, inject, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,6 +22,7 @@ import { MvThemeToggle } from '../../shared/mv-theme-toggle';
   imports: [MvIcon, MvThemeToggle],
   templateUrl: './party-ready.html',
   // Shared stage look first, page layout second.
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './party-ready.css'],
 })
 export class PartyReady implements OnInit, OnDestroy {

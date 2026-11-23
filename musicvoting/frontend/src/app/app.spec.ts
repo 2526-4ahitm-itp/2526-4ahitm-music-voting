@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { Component, provideZonelessChangeDetection } from '@angular/core';
+import { Component, provideZonelessChangeDetection, ChangeDetectionStrategy } from '@angular/core';
 import { Router, provideRouter } from '@angular/router';
 import { GUEST_THEME_KEY, THEME_KEY } from './shared/theme.service';
 import { App } from './app';
 
-@Component({ standalone: true, template: '' })
+@Component({ standalone: true, changeDetection: ChangeDetectionStrategy.Eager,
+ template: '' })
 class Blank {}
 
 describe('App', () => {

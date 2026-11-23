@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, NgZone, signal, computed, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, signal, computed, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 import { lastValueFrom } from 'rxjs';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
@@ -21,6 +21,7 @@ export const WELCOME_KEY_PREFIX = 'mv-welcome-';
   imports: [FormsModule, MvCover, MvIcon, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs, MvGuestParty],
   templateUrl: './voting-comp.html',
   // Shared stage look first, page layout second (design D1/D2).
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './voting-comp.css'],
 })
 /**

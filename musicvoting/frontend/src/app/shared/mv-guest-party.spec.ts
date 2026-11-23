@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID, provideZonelessChangeDetection } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { Router, provideRouter } from '@angular/router';
 import { MvGuestParty } from './mv-guest-party';
 import { PartyService } from '../services/party.service';
@@ -17,7 +17,7 @@ describe('MvGuestParty', () => {
     localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [MvGuestParty],
-      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideRouter([]), { provide: PLATFORM_ID, useValue: 'browser' }],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withXhr()), provideRouter([]), { provide: PLATFORM_ID, useValue: 'browser' }],
     }).compileComponents();
     party = TestBed.inject(PartyService);
     router = TestBed.inject(Router);

@@ -1,4 +1,4 @@
-import { Component, DOCUMENT, inject } from '@angular/core';
+import { Component, DOCUMENT, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ResolveEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { ThemeService, themeScopeForUrl } from './shared/theme.service';
@@ -13,6 +13,7 @@ import { ThemeService, themeScopeForUrl } from './shared/theme.service';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<router-outlet></router-outlet>`
 })
 export class App {

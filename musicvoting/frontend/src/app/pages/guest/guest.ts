@@ -1,5 +1,5 @@
-import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, inject} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, inject, ChangeDetectionStrategy} from '@angular/core';
+
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { QueueStateService } from '../../services/queue-state';
@@ -22,9 +22,10 @@ import { MvGuestTabs } from '../../shared/mv-guest-tabs';
 @Component({
   selector: 'app-guest',
   standalone: true,
-  imports: [CommonModule, FormsModule, MvCover, MvIcon, MvSpinner, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs, MvGuestParty],
+  imports: [FormsModule, MvCover, MvIcon, MvSpinner, MvToast, MvPartyEnded, MvThemeToggle, MvGuestTabs, MvGuestParty],
   templateUrl: './guest.html',
   // Shared stage look first, page layout second (design D1/D2).
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './guest.css'],
 })
 /**

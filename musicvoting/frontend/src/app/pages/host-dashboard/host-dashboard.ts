@@ -1,4 +1,4 @@
-import { Component, NgZone, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, NgZone, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MvHostMenu } from '../../shared/mv-host-menu';
 import { MvCover } from '../../shared/mv-cover';
@@ -17,6 +17,7 @@ import { SpotifyWebPlayerService } from '../../services/spotify-player';
   imports: [CommonModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './host-dashboard.html',
   // Shared stage look first, page layout second (design D1/D2).
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './host-dashboard.css'],
 })
 export class HostDashboard implements OnInit, OnDestroy {

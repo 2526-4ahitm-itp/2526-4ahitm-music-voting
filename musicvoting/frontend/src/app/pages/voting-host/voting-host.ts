@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone, signal, computed } from '@angular/core';
+import { Component, OnInit, NgZone, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 import { lastValueFrom } from 'rxjs';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
@@ -13,6 +13,7 @@ import { MvThemeToggle } from '../../shared/mv-theme-toggle';
   imports: [FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './voting-host.html',
   // Shared stage look first, page layout second (design D1/D2).
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './voting-host.css'],
 })
 export class VotingHost implements OnInit {

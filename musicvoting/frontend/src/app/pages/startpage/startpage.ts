@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef, ElementRef, Optional } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef, ElementRef, Optional, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
@@ -18,6 +18,7 @@ export const TV_QUEUE_LIMIT = 5;
   standalone: true,
   imports: [CommonModule, MvCover, MvIcon, MvCreditFooter],
   templateUrl: './startpage.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./startpage.css'],
 })
 export class Startpage implements OnInit, OnDestroy {

@@ -1,5 +1,5 @@
-import { Component, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PartyService } from '../../services/party.service';
@@ -12,9 +12,10 @@ type Mode = 'menu' | 'pin-dashboard' | 'pin-startpage';
 @Component({
   selector: 'app-host-options',
   standalone: true,
-  imports: [CommonModule, FormsModule, MvIcon, MvThemeToggle],
+  imports: [FormsModule, MvIcon, MvThemeToggle],
   templateUrl: './host-options.html',
   // Shared stage look first, page layout second.
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './host-options.css'],
 })
 /**

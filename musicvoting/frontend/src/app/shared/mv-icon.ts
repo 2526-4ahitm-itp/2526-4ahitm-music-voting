@@ -20,8 +20,8 @@ import {
   Heart,
   KeyRound,
   ListMusic,
+  IconNode,
   LogOut,
-  LucideIconData,
   Menu,
   MonitorPlay,
   Moon,
@@ -39,7 +39,7 @@ import {
   Tv,
   Users,
   X,
-} from 'lucide-angular';
+} from 'lucide';
 
 /**
  * Registry of the Lucide icons the app uses. Listing them here (instead of
@@ -76,7 +76,7 @@ const ICONS = {
   tv: Tv,
   users: Users,
   x: X,
-} satisfies Record<string, LucideIconData>;
+} satisfies Record<string, IconNode>;
 
 export type MvIconName = keyof typeof ICONS;
 
@@ -86,10 +86,10 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
  * Drawn icon from the Lucide set (MIT). Replaces the emoji and ad-hoc SVGs
  * used as icons before, so every icon shares one stroke and weight.
  *
- * Only the icon *data* comes from lucide-angular; the SVG is built here with
- * Renderer2. The package's own component is an NgModule-era component that
- * needs icon providers; building the few nodes ourselves keeps the component
- * standalone, SSR-safe and free of global registration.
+ * Only the icon *data* comes from the framework-independent `lucide` package;
+ * the SVG is built here with Renderer2. That keeps the component standalone,
+ * SSR-safe and free of global registration, and ties the icons to no Angular
+ * version (the deprecated `lucide-angular` package stopped at Angular 21).
  *
  * Icons are always decorative: the accessible name belongs on the
  * surrounding button (aria-label), so the SVG is hidden from assistive
@@ -125,7 +125,7 @@ export class MvIcon {
     effect(() => this.render(ICONS[this.name()], this.size(), this.strokeWidth(), this.filled()));
   }
 
-  private render(data: LucideIconData, size: number, stroke: number, filled: boolean): void {
+  private render(data: IconNode, size: number, stroke: number, filled: boolean): void {
     const el = this.host.nativeElement;
     for (const child of Array.from(el.childNodes)) this.renderer.removeChild(el, child);
 
@@ -147,7 +147,7 @@ export class MvIcon {
     for (const [tag, nodeAttrs] of data) {
       const node = this.renderer.createElement(tag, SVG_NS);
       for (const [key, value] of Object.entries(nodeAttrs)) {
-        this.renderer.setAttribute(node, key, String(value));
+        if (value !== undefined) this.renderer.setAttribute(node, key, String(value));
       }
       this.renderer.appendChild(svg, node);
     }

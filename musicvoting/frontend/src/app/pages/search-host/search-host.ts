@@ -1,5 +1,5 @@
-import {Component, OnInit, ChangeDetectorRef, signal, OnDestroy, inject} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {Component, OnInit, ChangeDetectorRef, signal, OnDestroy, inject, ChangeDetectionStrategy} from '@angular/core';
+
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { QueueStateService } from '../../services/queue-state';
@@ -17,9 +17,10 @@ import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 @Component({
   selector: 'app-search-host',
   standalone: true,
-  imports: [CommonModule, FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle, MvSpinner],
+  imports: [FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle, MvSpinner],
   templateUrl: './search-host.html',
   // Shared stage look first, page layout second (design D1/D2).
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './search-host.css'],
 })
 export class SearchHost implements OnInit, OnDestroy{
