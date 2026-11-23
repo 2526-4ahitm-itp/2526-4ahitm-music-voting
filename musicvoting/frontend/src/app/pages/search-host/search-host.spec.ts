@@ -6,14 +6,12 @@ import { TrackService } from '../../services/spotify-tracks';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { QueueStateService } from '../../services/queue-state';
 import { PartyService } from '../../services/party.service';
-import { Router } from '@angular/router';
 
 describe('SearchHost', () => {
   let trackApi: { searchTracks: jasmine.Spy };
   let spotifyService: { addToPlaylist: jasmine.Spy };
   let queueState: { inQueueUris$: BehaviorSubject<Set<string>>; refresh: jasmine.Spy };
   let cdr: { detectChanges: jasmine.Spy };
-  let router: { navigate: jasmine.Spy };
   let comp: SearchHost;
 
   beforeEach(() => {
@@ -24,14 +22,13 @@ describe('SearchHost', () => {
       refresh: jasmine.createSpy('refresh'),
     };
     cdr = { detectChanges: jasmine.createSpy('detectChanges') };
-    router = { navigate: jasmine.createSpy('navigate') };
 
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), { provide: PartyService, useValue: { currentPartyId: 'party-1' } }],
     });
 
     comp = TestBed.runInInjectionContext(
-      () => new SearchHost(trackApi as any, spotifyService as any, queueState as any, cdr as any, router as any)
+      () => new SearchHost(trackApi as any, spotifyService as any, queueState as any, cdr as any)
     );
   });
 

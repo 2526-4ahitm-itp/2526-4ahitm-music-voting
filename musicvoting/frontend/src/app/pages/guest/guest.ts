@@ -1,4 +1,4 @@
-import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, effect, inject} from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';

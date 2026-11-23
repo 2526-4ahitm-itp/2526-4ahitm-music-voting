@@ -9,7 +9,7 @@ description: Guide implementation work in the MusicVoting Quarkus backend (music
 
 | Component | Detail |
 |---|---|
-| Framework | Quarkus 3.30.6 (Java 21) |
+| Framework | Quarkus 3.40.x (Java 21) — exact version in `pom.xml` |
 | REST | `quarkus-rest` + `quarkus-rest-jackson` (JAX-RS style) |
 | ORM | Hibernate ORM + Panache (`PanacheEntityBase`) |
 | DB | PostgreSQL 16 via Docker (`localhost:5432/musicvoting`) |
@@ -26,27 +26,36 @@ All API paths are under `/api` (set by `RestConfig` → `@ApplicationPath("api")
 ```
 src/main/java/at/htl/
 ├── endpoints/
-│   ├── PartyResource.java         POST|DELETE /api/party, GET /api/party/join/{pin}, GET /api/party/{id}/qr
-│   ├── TrackResource.java         GET|POST|PUT|DELETE /api/party/{partyId}/track/*
-│   ├── SpotifyTokenResource.java  GET|PUT /api/party/{partyId}/spotify/*  (host auth, device, login)
-│   ├── SpotifyCallbackResource.java  GET /api/spotify/callback|ios/callback|events  (OAuth callbacks + SSE)
+│   ├── PartyResource.java         POST /api/party, DELETE|GET /api/party/{id}, PUT {id}/default-playlist,
+│   │                              GET join/{pin}, GET host-join/{hostPin}, GET {id}/qr
+│   ├── TrackResource.java         /api/party/{partyId}/track/* (search, queue, add, vote, play/next/start/pause/resume, …)
+│   ├── BlacklistResource.java     /api/party/{partyId}/blacklist (list/add/delete, artist search) — host only
+│   ├── SpotifyTokenResource.java  /api/party/{partyId}/spotify/* (token, status, login, deviceId, playlists)
+│   ├── SpotifyCallbackResource.java  GET /api/spotify/callback|ios/callback|events (OAuth callbacks + SSE)
+│   ├── HostOnly.java + HostAuthFilter.java  @HostOnly → requires `Authorization: Bearer <hostPin>`
+│   ├── LoginEvent.java / LoginEventBus.java SSE payload record + broadcaster
 │   └── RestConfig.java            @ApplicationPath("api")
 ├── domain/
+│   ├── Party.java                 In-memory party (NOT a DB entity) — credentials, refill history
+│   ├── PartyRegistry.java         In-memory map of active parties (find by id / pin / hostPin)
 │   ├── PartyEntity.java           Panache entity → party table
 │   ├── QueueEntry.java            Panache entity → queue_entry table
 │   ├── Vote.java                  Panache entity → vote table
-│   ├── Party.java                 In-memory party (NOT a DB entity)
+│   ├── BlacklistEntry.java / BlacklistKind.java  Panache entity → blacklist_entry (WORD | ARTIST | TRACK)
 │   ├── PartyId.java               Value object wrapping party ID string
-│   ├── SpotifyCredentials.java    Thread-safe AtomicReference credential holder
-│   ├── ProviderKind.java          Enum: SPOTIFY | YOUTUBE
-│   └── LoginEvent.java            Record used for SSE payloads
+│   └── ProviderKind.java          Enum: SPOTIFY | YOUTUBE
 ├── provider/
 │   ├── MusicProvider.java         Interface (implemented per-provider)
 │   ├── MusicProviderFactory.java  @ApplicationScoped factory
 │   └── spotify/
-│       └── SpotifyMusicProvider.java  Main Spotify implementation
+│       ├── SpotifyMusicProvider.java  Main Spotify implementation (queue, playback, auto-refill)
+│       └── SpotifyCredentials.java    Thread-safe AtomicReference credential holder
 ├── service/
+│   ├── PartyService.java          End party, persist refresh token
+│   ├── BlacklistService.java      Blacklist CRUD + whole-word matching
 │   └── SpotifyApiErrors.java      Error/response builder, 429 handling
+├── scheduler/
+│   └── PartyExpiryScheduler.java  Ends idle/expired parties
 └── model/
     └── Track.java                 DTO for track metadata
 ```
@@ -57,12 +66,13 @@ src/main/java/at/htl/
 
 | State | Where |
 |---|---|
-| Active parties, credentials, device ID | `PartyRegistry` (ConcurrentHashMap) + `SpotifyCredentials` (AtomicReference) |
+| Active parties, access token, device ID, refill history | `PartyRegistry` (ConcurrentHashMap) + `SpotifyCredentials` (AtomicReference) |
 | Song queue + metadata | `queue_entry` table |
 | Votes | `vote` table |
-| Party record (kind, created, currently-playing FK) | `party` table |
+| Party record (kind, pins, default playlist, refresh token, currently-playing FK, playback position) | `party` table |
+| Blacklist | `blacklist_entry` table |
 
-**Rule:** Auth tokens and device IDs never touch the DB. Queue and votes always do.
+**Rule:** Access tokens and device IDs never touch the DB (only the Spotify refresh token is persisted, so a party survives a restart). Queue, votes and blacklist always do.
 
 ---
 
@@ -70,25 +80,27 @@ src/main/java/at/htl/
 
 - **`Party.java` ≠ `PartyEntity.java`.** `Party` is the in-memory object held by `PartyRegistry`; `PartyEntity` is the Panache entity for the `party` DB row. They are intentionally separate — do not merge them.
 - **`pom.xml` already has** `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, and `com.google.zxing`. Do not add duplicates.
-- **`ExampleResourceTest` fails** on a clean checkout (missing Spotify credentials). This is pre-existing — not a regression.
 
 ---
 
 ## Database schema
 
 ```sql
-party          (id VARCHAR PK, provider_kind, created_at, pin VARCHAR(5), ended_at TIMESTAMPTZ,
-                currently_playing_entry_id UUID→queue_entry)
-               UNIQUE INDEX on pin WHERE ended_at IS NULL
-queue_entry    (id UUID PK, party_id→party, track_uri, track_name, artist_name,
-                album_name, image_url, duration_ms, added_at)
-               UNIQUE (party_id, track_uri)
-vote           (id UUID PK, queue_entry_id→queue_entry, device_id, voted_at)
-               UNIQUE (queue_entry_id, device_id)
+party           (id VARCHAR PK, provider_kind, created_at, pin VARCHAR(5), host_pin VARCHAR(5),
+                 ended_at, default_playlist_id, spotify_refresh_token,
+                 currently_playing_entry_id UUID→queue_entry, playback_started_at, paused_position_ms)
+                UNIQUE INDEX on pin WHERE ended_at IS NULL
+queue_entry     (id UUID PK, party_id→party, track_uri, track_name, artist_name,
+                 album_name, image_url, duration_ms, added_at, autofilled BOOLEAN)
+                no (party_id, track_uri) uniqueness — the playing song may be queued again
+vote            (id UUID PK, queue_entry_id→queue_entry, device_id, voted_at)
+                UNIQUE (queue_entry_id, device_id)
+blacklist_entry (id UUID PK, party_id→party, kind, value, label, image_url, created_at)
+                UNIQUE (party_id, kind, value)
 ```
 
 Schema source: `musicvoting/backend/setup.sql`.  
-Hibernate is set to `generation=none` — **never rely on schema auto-generation**.
+**Never rely on Hibernate schema auto-generation** — `setup.sql` is the source of truth, and the prod schema in the `deployment/k8s` ConfigMap must be kept in sync with it.
 
 ### Panache query patterns
 
@@ -115,7 +127,7 @@ Always annotate mutating methods with `@Transactional`.
 
 ## Adding a new REST endpoint
 
-1. Add method to an existing resource (`TrackResource` for queue/playback, `SpotifyTokenResource` for host Spotify, `SpotifyCallbackResource` for OAuth callbacks/SSE) or create a new `@Path` class.
+1. Add method to an existing resource (`TrackResource` for queue/playback, `BlacklistResource` for the blacklist, `SpotifyTokenResource` for host Spotify, `SpotifyCallbackResource` for OAuth callbacks/SSE) or create a new `@Path` class. Annotate host-only actions with `@HostOnly`.
 2. Inject dependencies via `@Inject`.
 3. Resolve the party from the `{partyId}` path param via `partyRegistry.find(PartyId.of(partyId)).orElseThrow(404)`.
 4. Delegate business logic to `SpotifyMusicProvider` (or the appropriate `MusicProvider` via `MusicProviderFactory.forParty(party)`).
@@ -158,7 +170,7 @@ public class MyEntity extends PanacheEntityBase {
 }
 ```
 
-- Add the corresponding `CREATE TABLE` to `setup.sql`.
+- Add the corresponding `CREATE TABLE` to `setup.sql` **and** to the schema ConfigMap under `deployment/k8s/`.
 - Run `docker compose down -v && docker compose up -d` to reset and re-init schema.
 - Do **not** set `quarkus.hibernate-orm.database.generation=update/drop-and-create`.
 
@@ -221,11 +233,11 @@ public Multi<LoginEvent> events(@QueryParam("source") String source) {
 `SpotifyMusicProvider` provides two internal helpers:
 
 ```java
-HttpResponse<String> sendGet(Party party, String url);
-HttpResponse<String> sendPut(Party party, String url, String jsonBody);
+Response sendGet(Party party, String url);
+Response sendPut(Party party, String url, String body);
 ```
 
-Both inject the `Authorization: Bearer <token>` header from `SpotifyCredentials`. For POST/DELETE calls, build an `HttpRequest` manually using the same pattern.
+Both are private, return a JAX-RS `Response`, and inject the `Authorization: Bearer <token>` header (via `getValidAccessToken(party)`, which refreshes an expired token). For POST/DELETE calls, build the request manually using the same pattern.
 
 ---
 
@@ -241,7 +253,8 @@ GET /api/spotify/ios/callback?code=&state=   (iOS)
   → parse partyId from state
   → PartyRegistry.find(partyId) → Party
   → exchange code for token, store on Party credentials
-  → fetchAndStoreUserId() + ensurePartyPlaylistExists()
+  → check the account is Spotify Premium (non-Premium is rejected)
+  → persist the refresh token on the party row
   → emit LoginEvent via LoginEventBus
   → redirect (web) / JSON response (iOS)
 ```
@@ -259,9 +272,12 @@ The iOS callback path does **not** emit a web SSE event to avoid interrupting ac
 | Remove track | `removeTrack(party, uri)` | Yes |
 | Replace entire queue | `overwritePlaylist(party, uris)` | Yes |
 | Advance to next track | `playNextAndRemove(party)` | Yes |
+| Start first song from the queue | `startFirstSongWithoutRemoving(party)` | Yes |
 | Toggle like/unlike | `toggleVote(party, uri, deviceId)` | Yes |
 
-Queue sort order: **votes DESC, added_at ASC** (DB-level, native query).
+Queue sort order (DB-level, native query): **currently playing first, guest adds before auto-filled songs, votes DESC, added_at ASC**.
+
+When only the playing song is left, `refillQueue(party)` auto-fills: default playlist → similar songs → Top-Charts → Spotify search (see `openspec/specs/playback/spec.md`).
 
 ---
 

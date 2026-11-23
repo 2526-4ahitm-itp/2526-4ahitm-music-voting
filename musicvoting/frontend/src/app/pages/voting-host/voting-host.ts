@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone, signal, computed, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, NgZone, signal, computed } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 import { lastValueFrom } from 'rxjs';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
@@ -34,8 +34,7 @@ export class VotingHost implements OnInit {
 
   constructor(
     private spotifyService: SpotifyWebPlayerService,
-    private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {

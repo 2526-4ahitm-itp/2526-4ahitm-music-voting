@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, NgZone, signal, computed, ChangeDetectorR
 import { FormsModule } from "@angular/forms";
 import { lastValueFrom } from 'rxjs';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
-import { Router } from '@angular/router';
 import { PartyService } from '../../services/party.service';
 import { MvCover } from '../../shared/mv-cover';
 import { MvIcon } from '../../shared/mv-icon';
@@ -91,7 +90,6 @@ export class VotingComp implements OnInit, OnDestroy {
     private spotifyService: SpotifyWebPlayerService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
-    private router: Router,
     private partyService: PartyService,
     private toast?: ToastService,
   ) {
