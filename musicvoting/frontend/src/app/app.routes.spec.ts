@@ -1,5 +1,6 @@
 import { routes } from './app.routes';
 import { hostGuard } from './host.guard';
+import { guestGuard } from './guest.guard';
 import { Home } from './pages/home/home';
 import { CodeInput } from './pages/code-input/code-input';
 import { Startpage } from './pages/startpage/startpage';
@@ -28,6 +29,14 @@ describe('app.routes', () => {
 
     expect(route?.component).toBe(PartyReady);
     expect(route?.canActivate).toEqual([hostGuard]);
+  });
+
+  it('protects the guest views voting and guest with the guest guard', () => {
+    const voting = routes.find((r) => r.path === 'voting');
+    const guest = routes.find((r) => r.path === 'guest');
+
+    expect(voting?.canActivate).toEqual([guestGuard]);
+    expect(guest?.canActivate).toEqual([guestGuard]);
   });
 
   it('routes join/:pin to the CodeInput component', () => {
