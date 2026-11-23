@@ -82,9 +82,6 @@ public class SpotifyCallbackResource {
                 creds.setExpiresAt(Instant.now().plusSeconds(expiresIn - 60));
             }
 
-            spotifyMusicProvider.fetchAndStoreUserId(party);
-            spotifyMusicProvider.ensurePartyPlaylistExists(party);
-
             boolean iosSource = state != null && state.toLowerCase(Locale.ROOT).startsWith("ios:");
             String installationId = null;
             if (iosSource) {
@@ -186,9 +183,6 @@ public class SpotifyCallbackResource {
                 int expiresIn = Integer.parseInt(String.valueOf(tokenMap.get("expires_in")));
                 creds.setExpiresAt(Instant.now().plusSeconds(expiresIn - 60));
             }
-
-            spotifyMusicProvider.fetchAndStoreUserId(party);
-            spotifyMusicProvider.ensurePartyPlaylistExists(party);
 
             if (installationId != null && !installationId.isBlank()) {
                 creds.setIosInstallationId(installationId);

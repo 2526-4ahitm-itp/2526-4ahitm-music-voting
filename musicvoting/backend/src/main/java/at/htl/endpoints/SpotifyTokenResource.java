@@ -146,7 +146,7 @@ public class SpotifyTokenResource {
         }
 
         String authorizationRedirectUri = "ios".equals(normalizedSource) ? iosRedirectUri : redirectUri;
-        String scope = "streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state playlist-modify-private playlist-read-private";
+        String scope = "streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state playlist-read-private";
         String spotifyUri = "https://accounts.spotify.com/authorize" +
                 "?response_type=code" +
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
