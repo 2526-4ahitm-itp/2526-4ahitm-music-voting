@@ -13,4 +13,4 @@
 
 ## 3. Verify
 
-- [ ] 3.1 Manual check: guest adds song X in party A, host creates party B, guest joins B in the same tab → X is addable in B
+- [x] 3.1 Manual check: guest adds song X in party A, host creates party B, guest joins B in the same tab → X is addable in B
