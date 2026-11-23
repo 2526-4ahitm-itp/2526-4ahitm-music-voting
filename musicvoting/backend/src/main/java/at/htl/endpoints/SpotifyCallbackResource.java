@@ -242,7 +242,10 @@ public class SpotifyCallbackResource {
                     || (("queue-updated".equals(event.type())
                         || "track-changed".equals(event.type())
                         || "vote-updated".equals(event.type())
-                        || "progress".equals(event.type()))
+                        || "progress".equals(event.type())
+                        // the iOS search greys out blocked results and refreshes on a change
+                        // (search spec "iOS Search Applies the Party Blacklist Like the Web")
+                        || "blacklist-updated".equals(event.type()))
                         && !iosPartyId.isBlank()
                         && iosPartyId.equals(event.payload().get("partyId"))));
         }
@@ -257,7 +260,6 @@ public class SpotifyCallbackResource {
                         || "track-changed".equals(event.type())
                         || "vote-updated".equals(event.type())
                         || "progress".equals(event.type())
-                        // web only: iOS has no greyed-out search results to refresh
                         || "blacklist-updated".equals(event.type()))
                         && !webPartyId.isBlank()
                         && webPartyId.equals(event.payload().get("partyId"))));

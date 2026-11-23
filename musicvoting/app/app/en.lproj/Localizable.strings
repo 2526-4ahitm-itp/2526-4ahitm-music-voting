@@ -55,6 +55,11 @@
 "search.error.invalid" = "Invalid search query.";
 "search.error.failed" = "Search failed. Please try again.";
 "search.add.error" = "Error adding song.";
+"search.blocked.artistHint" = "This artist is not allowed.";
+"search.blocked.someHint" = "Some results are not allowed at this party.";
+"search.blocked.notAllowed" = "Not allowed.";
+"search.blocked.unavailable" = "Not available";
+"search.add.label" = "Add song";
 
 /* VotingView */
 "voting.title" = "Vote for Your Favourite Songs";
