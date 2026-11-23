@@ -10,9 +10,9 @@ Team: Miriam Gnadlinger (lead), Simone Sperrer, Marlies Winklbauer.
 
 | Layer | Technology |
 |---|---|
-| Backend | Quarkus (Java 21), REST + SSE |
-| Frontend | Angular (web — guest, host, dashboard) |
-| Database | PostgreSQL 16 via Docker |
+| Backend | Quarkus (Java 25), REST + SSE |
+| Frontend | Angular 22 (web — guest, host, dashboard) |
+| Database | PostgreSQL 19 via Docker |
 | Mobile (optional) | SwiftUI iOS app |
 | Docs | Hugo site under `hugo/` |
 

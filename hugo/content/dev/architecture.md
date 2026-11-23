@@ -37,7 +37,7 @@ package "Quarkus-Backend" as be {
   [scheduler\n(Auto-Expiry)] as sch
 }
 
-database "PostgreSQL 16\nparty · queue_entry · vote" as db
+database "PostgreSQL 19\nparty · queue_entry · vote" as db
 cloud "Spotify\nWeb API + OAuth" as sp
 
 guests --> fe
@@ -56,9 +56,9 @@ tv --> sp : Playback (SDK)
 
 | Komponente | Technologie | Aufgabe |
 |---|---|---|
-| Backend | Quarkus (Java 21), JAX-RS, SSE | API, Party-Lebenszyklus, Provider-Anbindung |
+| Backend | Quarkus (Java 25), JAX-RS, SSE | API, Party-Lebenszyklus, Provider-Anbindung |
 | Frontend | Angular | Guest-, Host- und TV-Ansichten |
-| Datenbank | PostgreSQL 16, Hibernate ORM Panache | Persistenz von Party, Queue, Votes |
+| Datenbank | PostgreSQL 19, Hibernate ORM Panache | Persistenz von Party, Queue, Votes |
 | Mobile | SwiftUI (iOS) | Native Guest- und Admin-Ansicht (optional) |
 | Provider | Spotify Web API + Web Playback SDK | Suche und Wiedergabe |
 

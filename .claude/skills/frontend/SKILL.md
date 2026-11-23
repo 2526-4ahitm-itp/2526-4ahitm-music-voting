@@ -9,7 +9,7 @@ description: Guide implementation work in the MusicVoting Angular frontend (musi
 
 | Component | Detail |
 |---|---|
-| Framework | Angular 20 — **all components standalone** (no NgModules); exact version in `package.json` |
+| Framework | Angular 22 — **all components standalone** (no NgModules); exact version in `package.json` |
 | Change detection | `provideZonelessChangeDetection()`; some older components still call `cdr.detectChanges()` |
 | Reactivity | Signals (`signal`, `computed`) — use them for new state |
 | HTTP | `HttpClient` + `hostAuthInterceptor` (adds `Authorization: Bearer <hostPin>`) |

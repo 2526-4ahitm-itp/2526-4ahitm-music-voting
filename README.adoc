@@ -32,9 +32,9 @@ Die Wiedergabe erfolgt über den **Spotify-Premium-Account** des Gastgebers.
 |===
 | Ebene | Technologie
 
-| Backend | Quarkus (Java 21), REST + SSE
+| Backend | Quarkus (Java 25), REST + SSE
 | Frontend | Angular (Gast, Host, Dashboard)
-| Datenbank | PostgreSQL 16 (via Docker)
+| Datenbank | PostgreSQL 19 (via Docker)
 | Mobile (optional) | SwiftUI iOS-App
 | Doku | Hugo-Site unter `hugo/`
 |===

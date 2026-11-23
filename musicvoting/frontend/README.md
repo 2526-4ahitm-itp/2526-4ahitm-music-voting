@@ -1,6 +1,6 @@
 # MusicVoting – Frontend
 
-Angular 20 web app for guests, host and the TV player. Zoneless change detection, standalone components, live updates over SSE. Specs live in `openspec/specs/`, the visual system in [`DESIGN.md`](../../DESIGN.md) at the repo root.
+Angular 22 web app for guests, host and the TV player. Standalone components (zone.js change detection in the browser, zoneless on the server), icons from `lucide`, live updates over SSE. Specs live in `openspec/specs/`, the visual system in [`DESIGN.md`](../../DESIGN.md) at the repo root.
 
 ## Development server
 
