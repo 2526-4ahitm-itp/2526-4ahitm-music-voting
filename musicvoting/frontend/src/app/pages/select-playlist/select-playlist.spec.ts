@@ -9,6 +9,7 @@ describe('SelectPlaylist', () => {
   let httpMock: HttpTestingController;
   let router: { navigate: jasmine.Spy };
   let queryParam: string | null;
+  let errorParam: string | null;
 
   function createComponent() {
     const fixture = TestBed.createComponent(SelectPlaylist);
@@ -19,6 +20,7 @@ describe('SelectPlaylist', () => {
   beforeEach(() => {
     localStorage.clear();
     queryParam = 'party-x';
+    errorParam = null;
     router = { navigate: jasmine.createSpy('navigate') };
     TestBed.configureTestingModule({
       imports: [SelectPlaylist],
@@ -30,7 +32,13 @@ describe('SelectPlaylist', () => {
         { provide: Router, useValue: router },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { queryParamMap: { get: () => queryParam } } },
+          useValue: {
+            snapshot: {
+              queryParamMap: {
+                get: (key: string) => (key === 'partyId' ? queryParam : key === 'error' ? errorParam : null),
+              },
+            },
+          },
         },
       ],
     });
@@ -95,5 +103,29 @@ describe('SelectPlaylist', () => {
 
     expect(router.navigate).toHaveBeenCalledWith(['/']);
     httpMock.expectNone('/api/party/party-x/spotify/playlists');
+  });
+
+  it('shows the Premium hint and no playlists after a Free-account login', async () => {
+    errorParam = 'premium-required';
+    const fixture = createComponent();
+    await fixture.whenStable();
+
+    // No playlists request: the party has no Spotify tokens.
+    httpMock.expectNone('/api/party/party-x/spotify/playlists');
+    const comp = fixture.componentInstance;
+    expect(comp.premiumRequired).toBe(true);
+
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).toContain('Dein Spotify-Konto hat kein Premium. Für MusicVoting brauchst du Spotify Premium.');
+    expect(text).toContain('Mit anderem Spotify-Konto anmelden');
+    expect(text).not.toContain('Ohne Standard-Playlist fortfahren');
+  });
+
+  it('switches accounts via a login that forces the Spotify account dialog', () => {
+    errorParam = 'premium-required';
+    const fixture = createComponent();
+
+    expect(fixture.componentInstance.switchAccountUrl())
+      .toBe('/api/party/party-x/spotify/login?source=web&switchAccount=true');
   });
 });

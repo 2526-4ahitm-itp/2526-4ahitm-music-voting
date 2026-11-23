@@ -30,6 +30,9 @@ import java.util.Map;
 @Produces(MediaType.APPLICATION_JSON)
 public class SpotifyCallbackResource {
 
+    /** Query value of {@code error} on the redirect after a login with a non-Premium account. */
+    static final String PREMIUM_REQUIRED_ERROR = "premium-required";
+
     @Inject
     PartyRegistry partyRegistry;
 
@@ -71,6 +74,15 @@ public class SpotifyCallbackResource {
                     .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
             Map<String, String> tokenMap = exchangeAuthorizationCode(code, redirectUri);
+            boolean iosSource = state != null && state.toLowerCase(Locale.ROOT).startsWith("ios:");
+
+            // Free accounts can't play via the API: reject before storing anything, so the party
+            // never looks logged in (provider spec "Spotify Provider Requires Premium Host Account").
+            if (SpotifyMusicProvider.isKnownNonPremium(
+                    spotifyMusicProvider.fetchAccountProduct(tokenMap.get("access_token")))) {
+                return Response.seeOther(premiumRequiredRedirect(iosSource, partyIdStr)).build();
+            }
+
             SpotifyCredentials creds = party.getSpotifyCredentials();
             creds.setToken(tokenMap.get("access_token"));
             if (tokenMap.get("refresh_token") != null) {
@@ -82,7 +94,6 @@ public class SpotifyCallbackResource {
                 creds.setExpiresAt(Instant.now().plusSeconds(expiresIn - 60));
             }
 
-            boolean iosSource = state != null && state.toLowerCase(Locale.ROOT).startsWith("ios:");
             String installationId = null;
             if (iosSource) {
                 String[] parts = state.split(":", 3);
@@ -173,6 +184,11 @@ public class SpotifyCallbackResource {
                     .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
             Map<String, String> tokenMap = exchangeAuthorizationCode(code, iosRedirectUri);
+            if (SpotifyMusicProvider.isKnownNonPremium(
+                    spotifyMusicProvider.fetchAccountProduct(tokenMap.get("access_token")))) {
+                return premiumRequiredResponse();
+            }
+
             SpotifyCredentials creds = party.getSpotifyCredentials();
             creds.setToken(tokenMap.get("access_token"));
             if (tokenMap.get("refresh_token") != null) {
@@ -248,6 +264,31 @@ public class SpotifyCallbackResource {
                         && webPartyId.equals(event.payload().get("partyId"))));
         }
         return stream;
+    }
+
+    /**
+     * Where a login with a non-Premium account is sent: the web setup step (which shows the
+     * Premium hint and an account switch) or the iOS app's callback URL. Both carry
+     * {@code error=premium-required}; no tokens have been stored at this point.
+     */
+    URI premiumRequiredRedirect(boolean iosSource, String partyId) {
+        if (iosSource) {
+            return URI.create(iosRedirectUri + (iosRedirectUri.contains("?") ? "&" : "?")
+                    + "error=" + PREMIUM_REQUIRED_ERROR);
+        }
+        return URI.create(webRedirectUri + (webRedirectUri.contains("?") ? "&" : "?")
+                + "partyId=" + URLEncoder.encode(partyId, StandardCharsets.UTF_8)
+                + "&error=" + PREMIUM_REQUIRED_ERROR);
+    }
+
+    /** iOS code-exchange answer for a non-Premium account; the app maps the reason to its own text. */
+    static Response premiumRequiredResponse() {
+        return Response.status(Response.Status.FORBIDDEN)
+                .entity(Map.of(
+                        "error", SpotifyApiErrors.PREMIUM_REQUIRED_MESSAGE,
+                        "reason", SpotifyApiErrors.PREMIUM_REQUIRED_REASON))
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     private String parsePartyIdFromState(String state) {

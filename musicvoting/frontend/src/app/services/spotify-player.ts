@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, lastValueFrom, Subject, EMPTY, tap } from 'rxjs';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { PartyService } from './party.service';
 
 declare var Spotify: any;
@@ -12,6 +12,13 @@ export class SpotifyWebPlayerService {
   private isConnecting = false;
 
   private playerStateSubject = new Subject<any>();
+
+  /**
+   * True once the Web Playback SDK reported `account_error` (Spotify account without
+   * Premium). The TV page shows it instead of failing silently (provider spec
+   * "Spotify Provider Requires Premium Host Account").
+   */
+  readonly accountError = signal(false);
   private queueUpdatedSubject = new Subject<void>();
 
   constructor(private http: HttpClient, private partyService: PartyService) {}
@@ -109,6 +116,7 @@ export class SpotifyWebPlayerService {
     });
     this.player.addListener('account_error', ({ message }: any) => {
       console.error('Spotify account error:', message);
+      this.accountError.set(true);
     });
     this.player.addListener('playback_error', ({ message }: any) => {
       console.error('Spotify playback error:', message);

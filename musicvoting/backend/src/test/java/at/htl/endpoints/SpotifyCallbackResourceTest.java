@@ -184,4 +184,35 @@ class SpotifyCallbackResourceTest {
             subscription.cancel();
         }
     }
+
+    // --- Non-Premium login (provider spec "Spotify Provider Requires Premium Host Account")
+
+    @Test
+    void premiumRequiredRedirect_web_goesToSetupStepWithPartyIdAndError() {
+        String target = resource.premiumRequiredRedirect(false, "party-1").toString();
+
+        assertTrue(target.contains("partyId=party-1"), target);
+        assertTrue(target.contains("error=premium-required"), target);
+        assertFalse(target.startsWith("musicvotingapp://"), target);
+    }
+
+    @Test
+    void premiumRequiredRedirect_ios_goesToAppCallbackWithError() {
+        String target = resource.premiumRequiredRedirect(true, "party-1").toString();
+
+        assertTrue(target.startsWith("musicvotingapp://callback"), target);
+        assertTrue(target.contains("error=premium-required"), target);
+        assertFalse(target.contains("success=1"), target);
+    }
+
+    @Test
+    void premiumRequiredResponse_isForbiddenWithReason() {
+        Response response = SpotifyCallbackResource.premiumRequiredResponse();
+
+        assertEquals(403, response.getStatus());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getEntity();
+        assertEquals("PREMIUM_REQUIRED", body.get("reason"));
+        assertEquals("Du brauchst Spotify Premium, um Musik abzuspielen.", body.get("error"));
+    }
 }

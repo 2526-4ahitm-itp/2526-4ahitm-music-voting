@@ -138,4 +138,25 @@ final class SpotifyAuthViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoggedIn)
         XCTAssertFalse(viewModel.isChecking)
     }
+
+    // MARK: - Premium required (provider spec "Spotify Provider Requires Premium Host Account")
+
+    func testHandleCallbackWithPremiumRequiredErrorShowsPremiumHint() {
+        viewModel.handleCallback(URL(string: "musicvotingapp://callback?error=premium-required")!)
+
+        XCTAssertFalse(viewModel.isLoggedIn)
+        XCTAssertFalse(viewModel.isChecking)
+        XCTAssertEqual(viewModel.errorMessage, String(localized: "spotify.error.premium"))
+    }
+
+    func testIosLoginRejectedWith403ShowsPremiumHint() async throws {
+        stubCallback(code: "auth_code", state: "s1", statusCode: 403)
+
+        viewModel.handleCallback(URL(string: "musicvotingapp://callback?code=auth_code&state=s1")!)
+
+        try await Task.sleep(for: .milliseconds(300))
+
+        XCTAssertFalse(viewModel.isLoggedIn)
+        XCTAssertEqual(viewModel.errorMessage, String(localized: "spotify.error.premium"))
+    }
 }

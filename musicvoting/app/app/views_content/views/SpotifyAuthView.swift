@@ -101,6 +101,16 @@ final class SpotifyAuthViewModel: ObservableObject {
         }
 
         let queryItems = components.queryItems ?? []
+
+        // The backend rejected a non-Premium Spotify account before storing any token
+        // (provider spec "Spotify Provider Requires Premium Host Account").
+        if queryItems.first(where: { $0.name == "error" })?.value == "premium-required" {
+            isChecking = false
+            isLoggedIn = false
+            errorMessage = String(localized: "spotify.error.premium")
+            return
+        }
+
         let code = queryItems.first(where: { $0.name == "code" })?.value
         let state = queryItems.first(where: { $0.name == "state" })?.value
 
@@ -152,8 +162,17 @@ final class SpotifyAuthViewModel: ObservableObject {
             var request = URLRequest(url: url)
             request.setValue(installationId, forHTTPHeaderField: "X-Install-Id")
             let (_, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw URLError(.badServerResponse)
+            }
+            // 403 = account without Spotify Premium; show the specific hint, not the generic error.
+            if httpResponse.statusCode == 403 {
+                isChecking = false
+                isLoggedIn = false
+                errorMessage = String(localized: "spotify.error.premium")
+                return
+            }
+            guard (200...299).contains(httpResponse.statusCode) else {
                 throw URLError(.badServerResponse)
             }
             await checkLoginStatus()

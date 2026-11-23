@@ -132,7 +132,8 @@ public class SpotifyTokenResource {
     @Path("/login")
     public Response login(
             @QueryParam("source") @DefaultValue("web") String source,
-            @QueryParam("installationId") String installationId
+            @QueryParam("installationId") String installationId,
+            @QueryParam("switchAccount") boolean switchAccount
     ) {
         String normalizedSource = "ios".equalsIgnoreCase(source) ? "ios" : "web";
 
@@ -152,7 +153,10 @@ public class SpotifyTokenResource {
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
                 "&scope=" + URLEncoder.encode(scope, StandardCharsets.UTF_8) +
                 "&redirect_uri=" + URLEncoder.encode(authorizationRedirectUri, StandardCharsets.UTF_8) +
-                "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
+                "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8) +
+                // After a rejected Free-account login the browser is still signed in to that
+                // account; show_dialog lets the host pick a different one.
+                (switchAccount ? "&show_dialog=true" : "");
 
         return Response.seeOther(java.net.URI.create(spotifyUri)).build();
     }

@@ -10,6 +10,14 @@
 <main class="stage" [class.party-empty]="!currentTrack && tracks.length === 0">
   <div class="glow" aria-hidden="true"></div>
 
+  <!-- SDK account_error: the Spotify account has no Premium, nothing can play
+       (provider spec "Spotify Provider Requires Premium Host Account"). -->
+  <div class="player-alert-region" role="alert">
+    @if (playerAccountError) {
+      <p class="player-alert">Wiedergabe nicht möglich: Das Spotify-Konto braucht Premium.</p>
+    }
+  </div>
+
   <section class="now" aria-label="Läuft gerade">
     <mv-cover class="now-cover" size="large" [eager]="true" [images]="currentTrack?.album?.images" />
 

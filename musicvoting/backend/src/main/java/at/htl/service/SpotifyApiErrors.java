@@ -16,6 +16,15 @@ public final class SpotifyApiErrors {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    /** Spotify's {@code error.reason} when a player command needs a Premium account. */
+    public static final String PREMIUM_REQUIRED_REASON = "PREMIUM_REQUIRED";
+
+    /**
+     * Shown instead of Spotify's English "Player command failed: Premium required"
+     * (provider spec "Spotify Provider Requires Premium Host Account").
+     */
+    public static final String PREMIUM_REQUIRED_MESSAGE = "Du brauchst Spotify Premium, um Musik abzuspielen.";
+
     private SpotifyApiErrors() {
     }
 
@@ -26,7 +35,13 @@ public final class SpotifyApiErrors {
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("status", status);
-        payload.put("error", buildUserMessage(status, actionLabel, retryAfterSeconds, spotifyMessage));
+        String spotifyReason = extractSpotifyReason(response.body());
+        if (status == 403 && PREMIUM_REQUIRED_REASON.equals(spotifyReason)) {
+            payload.put("error", PREMIUM_REQUIRED_MESSAGE);
+            payload.put("reason", PREMIUM_REQUIRED_REASON);
+        } else {
+            payload.put("error", buildUserMessage(status, actionLabel, retryAfterSeconds, spotifyMessage));
+        }
 
         if (spotifyMessage != null && !spotifyMessage.isBlank()) {
             payload.put("spotifyMessage", spotifyMessage);
@@ -96,6 +111,22 @@ public final class SpotifyApiErrors {
         } catch (NumberFormatException ignored) {
             return null;
         }
+    }
+
+    /** Reads {@code error.reason} from a Spotify error body (e.g. "PREMIUM_REQUIRED"); null if absent. */
+    private static String extractSpotifyReason(String body) {
+        if (body == null || body.isBlank()) {
+            return null;
+        }
+        try {
+            Object error = MAPPER.readValue(body, Map.class).get("error");
+            if (error instanceof Map<?, ?> errorMap && errorMap.get("reason") instanceof String reason) {
+                return reason;
+            }
+        } catch (Exception ignored) {
+            // Non-JSON bodies have no reason.
+        }
+        return null;
     }
 
     private static String extractSpotifyMessage(String body) {

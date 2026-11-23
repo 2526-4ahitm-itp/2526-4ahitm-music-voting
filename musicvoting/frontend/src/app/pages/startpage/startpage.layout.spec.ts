@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
@@ -28,13 +28,16 @@ describe('Startpage layout (TV)', () => {
     likeCount: likes,
   });
 
+  let spotify: any;
+
   beforeEach(async () => {
     spyOn(Startpage.prototype, 'ngOnInit').and.resolveTo();
-    const spotify = {
+    spotify = {
       disconnectPlayer: () => Promise.resolve(),
       getPlayerStatus: () => NEVER,
       getQueueUpdates: () => NEVER,
       getQueue: () => of({ queue: [] }),
+      accountError: signal(false),
     };
 
     await TestBed.configureTestingModule({
@@ -225,5 +228,20 @@ describe('Startpage layout (TV)', () => {
     expect(atTv(px('.wordmark'))).toBeGreaterThanOrEqual(36);
     expect(atTv(px('mv-credit-footer'))).toBeGreaterThanOrEqual(26);
     expect(px('mv-credit-footer')).toBeLessThan(px('.row-title'));
+  });
+
+  it('shows no player alert while the Spotify account is fine', () => {
+    fixture.detectChanges();
+    expect(q('.player-alert')).toBeNull();
+  });
+
+  it('shows the Premium alert when the Web Playback SDK reports an account error', () => {
+    spotify.accountError.set(true);
+    fixture.detectChanges();
+
+    const alert = q('.player-alert');
+    expect(alert).not.toBeNull();
+    expect(alert!.textContent).toContain('Wiedergabe nicht möglich: Das Spotify-Konto braucht Premium.');
+    expect(alert!.closest('[role="alert"]')).not.toBeNull();
   });
 });

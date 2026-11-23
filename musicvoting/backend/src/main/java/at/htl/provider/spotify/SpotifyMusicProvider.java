@@ -575,6 +575,59 @@ public class SpotifyMusicProvider implements MusicProvider {
         }
     }
 
+    /**
+     * Looks up the Spotify account type ({@code product}: "premium", "free", "open") for a freshly
+     * exchanged access token. Called by the login callbacks before any token is stored, so a Free
+     * account never leaves a half-logged-in party behind (provider spec "Spotify Provider Requires
+     * Premium Host Account"). Any failure yields {@code Optional.empty()}: an unreachable Spotify
+     * API must not lock out a Premium host, so "unknown" is treated as "allowed".
+     */
+    public Optional<String> fetchAccountProduct(String accessToken) {
+        if (accessToken == null || accessToken.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            HttpResponse<String> res = client.send(
+                    HttpRequest.newBuilder()
+                            .uri(URI.create("https://api.spotify.com/v1/me"))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .GET()
+                            .build(),
+                    HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() < 200 || res.statusCode() >= 300) {
+                return Optional.empty();
+            }
+            return parseAccountProduct(res.body());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    /** Extracts the {@code product} field of a {@code GET /v1/me} body; empty if missing or unparsable. */
+    @SuppressWarnings("unchecked")
+    static Optional<String> parseAccountProduct(String body) {
+        if (body == null || body.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            Object product = new ObjectMapper().readValue(body, Map.class).get("product");
+            return product instanceof String text && !text.isBlank() ? Optional.of(text) : Optional.empty();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * True only when the account type is known and is not Premium. An unknown type (lookup
+     * failed, field missing) returns false so the login is accepted.
+     */
+    public static boolean isKnownNonPremium(Optional<String> product) {
+        return product.isPresent() && !"premium".equalsIgnoreCase(product.get());
+    }
+
     @Override
     @Transactional
     public Response overwritePlaylist(Party party, List<String> uris) {
