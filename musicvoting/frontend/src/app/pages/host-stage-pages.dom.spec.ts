@@ -124,7 +124,7 @@ describe('Host pages in stage look (DOM)', () => {
     expect(text).toContain('Voting-PIN');
     expect(text).toContain('47291');
     expect(text).toContain('Gastgeber-PIN');
-    expect(text).toContain('Geheim – damit kommst du zurück ins Dashboard.');
+    expect(text).toContain('Nicht weitergeben – damit öffnest du Dashboard und Player auf einem anderen Gerät.');
     expect(text).not.toContain('Host-PIN');
     fixture.destroy();
   });
@@ -143,7 +143,7 @@ describe('Host pages in stage look (DOM)', () => {
     expect(toggle.textContent!.trim()).toBe('Anzeigen');
     expect(toggle.getAttribute('aria-pressed')).toBe('false');
     // The hint stays visible while the PIN is hidden.
-    expect(card.textContent).toContain('Geheim – damit kommst du zurück ins Dashboard.');
+    expect(card.textContent).toContain('Nicht weitergeben – damit öffnest du Dashboard und Player auf einem anderen Gerät.');
 
     toggle.click();
     fixture.detectChanges();
