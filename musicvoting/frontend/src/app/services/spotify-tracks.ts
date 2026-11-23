@@ -22,10 +22,4 @@ export class TrackService {
     const audience = options?.guest ? '&audience=guest' : '';
     return this.http.get<any>(`/api/party/${this.partyId}/track/search?q=${encodeURIComponent(query)}${audience}`);
   }
-
-  startParty(): Observable<any> {
-    if (!this.partyId) { console.warn('startParty: keine aktive Party'); return EMPTY; }
-    return this.http.post(`/api/party/${this.partyId}/track/next`, {});
-  }
-
 }

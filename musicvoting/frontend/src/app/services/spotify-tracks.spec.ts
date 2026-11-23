@@ -57,25 +57,4 @@ describe('TrackService', () => {
     httpMock.expectNone('/api/party/null/track/search?q=x');
     expect(console.warn).toHaveBeenCalled();
   });
-
-  it('startParty posts to the next-track endpoint', () => {
-    partyService.currentPartyId = 'party-2';
-
-    service.startParty().subscribe();
-
-    const req = httpMock.expectOne('/api/party/party-2/track/next');
-    expect(req.request.method).toBe('POST');
-    req.flush({});
-  });
-
-  it('startParty returns EMPTY when there is no active party', (done) => {
-    spyOn(console, 'warn');
-
-    service.startParty().subscribe({
-      complete: () => done(),
-    });
-
-    httpMock.expectNone('/api/party/null/track/next');
-    expect(console.warn).toHaveBeenCalled();
-  });
 });

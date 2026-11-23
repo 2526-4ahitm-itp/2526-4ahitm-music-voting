@@ -1,7 +1,6 @@
 package at.htl.endpoints;
 
 import at.htl.domain.Party;
-import at.htl.domain.PartyId;
 import at.htl.domain.PartyRegistry;
 import at.htl.domain.ProviderKind;
 import at.htl.provider.MusicProvider;

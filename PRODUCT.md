@@ -50,7 +50,7 @@ What MusicVoting does that a shared Spotify queue (e.g. Spotify Jam) does not, a
 
 - Name "MusicVoting" and the existing logo (`musicvoting/frontend/src/assets/logo.png`) stay unchanged.
 - Brand colours purple `#8403A6` → coral `#F2594B` are binding.
-- The project must stay recognisable as an HTL Leonding school project: a "powered by HTL Leonding" footer on the TV screen and the landing page (`assets/img/htl-leonding-logo.jpg`).
+- The project must stay recognisable as an HTL Leonding school project: a "powered by HTL Leonding" footer on the TV screen and the landing page (`assets/img/htl-leonding-logo-480.jpg`).
 
 ## Evidence on Hand
 
@@ -69,4 +69,4 @@ What MusicVoting does that a shared Spotify queue (e.g. Spotify Jam) does not, a
 
 ## Accessibility & Inclusion
 
-WCAG 2.2 AA for the web app: German `lang`, labelled controls, keyboard operability, visible focus, live-region announcements, AA contrast on the gradient, and respect for `prefers-reduced-motion` (see `openspec/changes/refactor-design-fixes/specs/web-ui/spec.md`).
+WCAG 2.2 AA for the web app: German `lang`, labelled controls, keyboard operability, visible focus, live-region announcements, AA contrast on the gradient, and respect for `prefers-reduced-motion` (see `openspec/specs/web-ui/spec.md`).

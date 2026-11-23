@@ -28,7 +28,6 @@ Key directories:
   - `deployment/server/` — own server with Caddy + HTTPS (see `PLACEHOLDERS.md`)
 - `ai/` — AI-agent documents:
   - `ai/ARBEITSREGELN.md` — team working rules
-  - `ai/continuations/` — session hand-off notes
   - `ai/scratch/` — git-ignored scratch space for prompts and notes
 - `script/` — local dev start scripts (DB, backend, frontend)
 - `.claude/` (skills, commands) and this `CLAUDE.md` stay at the repo root because Claude Code loads them from there.

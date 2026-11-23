@@ -4,16 +4,14 @@ import { VotingComp } from './voting-comp';
 describe('VotingComp', () => {
   let spotifyService: { getQueue: jasmine.Spy };
   let ngZone: { run: jasmine.Spy };
-  let router: { navigate: jasmine.Spy };
   let partyService: { currentPartyId: string | null };
   let comp: VotingComp;
 
   beforeEach(() => {
     spotifyService = { getQueue: jasmine.createSpy('getQueue') };
     ngZone = { run: jasmine.createSpy('run').and.callFake((fn: () => void) => fn()) };
-    router = { navigate: jasmine.createSpy('navigate') };
     partyService = { currentPartyId: 'party-1' };
-    comp = new VotingComp(spotifyService as any, ngZone as any, null as any, router as any, partyService as any);
+    comp = new VotingComp(spotifyService as any, ngZone as any, null as any, partyService as any);
   });
 
   afterEach(() => comp.ngOnDestroy());
@@ -110,7 +108,6 @@ describe('VotingComp', () => {
 
     expect(comp.partyEnded()).toBe(true);
     expect(es.close).toHaveBeenCalled();
-    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it('reloads the playlist when a queue-updated event is received', async () => {

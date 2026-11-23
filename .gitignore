@@ -203,3 +203,6 @@ xcuserdata/
 **/.impeccable/config.local.json
 **/.impeccable/hook.cache.json
 **/.impeccable/live/server.json
+
+# Hugo build lock (generated)
+hugo/.hugo_build.lock

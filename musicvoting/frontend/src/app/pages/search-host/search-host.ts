@@ -6,7 +6,6 @@ import { QueueStateService } from '../../services/queue-state';
 import { PartyService } from '../../services/party.service';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MvHostMenu } from '../../shared/mv-host-menu';
 import { MvCover } from '../../shared/mv-cover';
 import { MvIcon } from '../../shared/mv-icon';
@@ -45,8 +44,7 @@ export class SearchHost implements OnInit, OnDestroy{
     private trackApi: TrackService,
     private spotifyService: SpotifyWebPlayerService,
     private queueState: QueueStateService,
-    private cdr: ChangeDetectorRef,
-    private router: Router
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnDestroy(): void {

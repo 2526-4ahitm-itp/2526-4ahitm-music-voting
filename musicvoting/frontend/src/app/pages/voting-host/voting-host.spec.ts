@@ -9,7 +9,7 @@ describe('VotingHost', () => {
   beforeEach(() => {
     spotifyService = { getQueue: jasmine.createSpy('getQueue') };
     ngZone = { run: jasmine.createSpy('run').and.callFake((fn: () => void) => fn()) };
-    comp = new VotingHost(spotifyService as any, ngZone as any, null as any);
+    comp = new VotingHost(spotifyService as any, ngZone as any);
   });
 
   it('filteredTracks returns all tracks when the search query is empty', () => {
