@@ -260,4 +260,23 @@ class SpotifyTokenResourceTest {
                 .header("Location", containsString("https://accounts.spotify.com/authorize"))
                 .header("Location", containsString("state=ios%3Ainstall-99%3A" + party.id().value()));
     }
+
+    /**
+     * Provider spec "System Does Not Create or Modify Playlists in the Host's Account": the
+     * consent screen may ask to read playlists (default-playlist picker, refill) but never to
+     * modify them. The scope string is URL-encoded, so spaces appear as "+".
+     */
+    @Test
+    void login_requestsPlaylistReadButNoPlaylistModifyScope() {
+        Party party = registerParty();
+
+        given()
+                .redirects().follow(false)
+                .when().get("/api/party/{partyId}/spotify/login", party.id().value())
+                .then()
+                .statusCode(303)
+                .header("Location", containsString("playlist-read-private"))
+                .header("Location", not(containsString("playlist-modify-private")))
+                .header("Location", not(containsString("playlist-modify-public")));
+    }
 }
