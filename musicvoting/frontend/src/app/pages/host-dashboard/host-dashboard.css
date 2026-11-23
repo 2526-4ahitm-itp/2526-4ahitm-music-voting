@@ -32,7 +32,7 @@
   width: clamp(140px, 18vw, 240px);
   height: clamp(140px, 18vw, 240px);
   border-radius: 16px;
-  box-shadow: 0 20px 50px var(--mv-stage-shadow), 0 6px 18px rgba(132, 3, 166, 0.3);
+  box-shadow: 0 20px 50px var(--mv-stage-shadow), 0 6px 18px var(--mv-glow-brand);
 }
 
 .now-info {
@@ -124,8 +124,57 @@
   grid-template-columns: 2.2ch auto minmax(0, 1fr) auto auto;
 }
 
-.queue-item:first-child .queue-row {
+/* Rank 1 plays next; marked by rank, not by position, so a filter does not move it. */
+.queue-row.next {
   background: var(--mv-stage-highlight);
+}
+
+/* ---------- Search in the queue card (same behaviour as the guest page) ---------- */
+
+.queue-search {
+  margin-bottom: var(--mv-space-3);
+}
+
+.search-status:empty {
+  display: none;
+}
+
+/* "Suchergebnisse": these rows are not the ranked queue. */
+.list-label {
+  margin: 0 0 var(--mv-space-2);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--mv-on-stage-muted);
+}
+
+.result-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.blocked-hint,
+.playing-tag {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--mv-stage-accent);
+}
+
+.add {
+  background: var(--mv-purple);
+  color: var(--mv-on-accent);
+}
+
+/* Host like: coral heart, filled when liked (the outline/filled shape carries the state too). */
+.like {
+  color: var(--mv-stage-accent);
+}
+
+.like.liked {
+  background: var(--mv-stage-liked);
+}
+
+/* Heading gets focus after a removal (tabindex -1); no ring for a programmatic focus. */
+#queue-title:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .rank {
@@ -179,6 +228,7 @@
 
 .pin-label {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--mv-space-2);
   margin: 0;
@@ -206,6 +256,15 @@
 
 .pin-toggle {
   flex: none;
+}
+
+/* Who the code is for (host spec "Host Sees PIN and QR Code"): a quiet tag next to the label. */
+.pin-tag {
+  padding: 1px 8px;
+  border-radius: var(--mv-radius-pill);
+  background: var(--mv-stage-tint-2);
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
 .small {
@@ -250,6 +309,11 @@
   font-size: 0.875rem;
 }
 
+.other-device {
+  padding: 0 var(--mv-space-4) var(--mv-space-1);
+  font-size: 0.9375rem;
+}
+
 .action.end {
   color: var(--mv-stage-accent);
 }
@@ -271,11 +335,17 @@
     grid-template-columns: 1fr;
     justify-items: start;
   }
+  /* Rank and likes stay on a phone (host spec "Host Dashboard Shows the Whole Queue on
+     Every Screen"); the cover gets smaller to make room instead. */
   .queue-row {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: 2.2ch 40px minmax(0, 1fr) auto auto;
+    gap: var(--mv-space-2);
   }
-  .queue-row .rank,
+  .queue-row .host-row-cover {
+    width: 40px;
+    height: 40px;
+  }
   .queue-row .host-likes {
-    display: none;
+    font-size: 0.875rem;
   }
 }

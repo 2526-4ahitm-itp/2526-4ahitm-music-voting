@@ -35,7 +35,7 @@ export interface SongSearchResult {
  *
  * Two modes (host spec "Host Manages Party Blacklist"):
  * - setup (default): step after the default-playlist picker, with "Weiter" and
- *   "Ohne Blacklist fortfahren"; no navigation so the setup flow stays focused.
+ *   "Ohne Blocklist fortfahren"; no navigation so the setup flow stays focused.
  * - edit (`?mode=edit`, opened from the host navigation during the party): the same
  *   editing, with the host navigation and a single "Fertig" back to the dashboard.
  *
@@ -115,7 +115,7 @@ export class SelectBlacklist implements OnInit, OnDestroy {
     try {
       this.entries = await lastValueFrom(this.partyService.getBlacklist(this.partyId));
     } catch {
-      this.error = 'Blacklist konnte nicht geladen werden.';
+      this.error = 'Blocklist konnte nicht geladen werden.';
     } finally {
       this.isLoading = false;
       this.cd.detectChanges();

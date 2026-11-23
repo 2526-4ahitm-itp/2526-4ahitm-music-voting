@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, Injector, afterNextRender, inject, input, signal, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PartyService } from '../services/party.service';
 import { MvIcon, MvIconName } from './mv-icon';
 
 /** Pages the host menu can mark as current. */
-export type HostMenuPage = 'dashboard' | 'voting' | 'search' | 'blacklist';
+export type HostMenuPage = 'dashboard' | 'blacklist';
 
 interface MenuEntry {
   page: HostMenuPage;
@@ -17,10 +18,15 @@ interface MenuEntry {
 /**
  * Burger button plus slide-in navigation for the host pages.
  *
- * It replaces the side menu that was copied into host-dashboard, search-host
- * and voting-host. The old "Startseite" entry is gone because it left the
+ * It replaces the side menu that was copied into host-dashboard and the former
+ * host search and voting pages. The old "Startseite" entry is gone because it left the
  * host context; "Blacklist" is new so the host can edit the full blacklist
- * during the party (host spec "Host Manages Party Blacklist").
+ * during the party (host spec "Host Manages Party Blacklist"). "Voting" and
+ * "Suchen" are gone too: the dashboard holds the whole queue and the song
+ * search (host spec "Host Navigation Adapts to Screen Width").
+ *
+ * The head shows the logo and a "Party läuft · <Voting-PIN>" badge, so the
+ * host bar names the product and the running party instead of plain text.
  *
  * The burger sits in the sticky top bar of each host page (.host-top in
  * shared/stage.css), so it is always reachable while scrolling.
@@ -56,7 +62,13 @@ interface MenuEntry {
     <nav #panel id="mv-host-menu-panel" class="panel" [class.open]="open()" [class.rail]="rail()"
          aria-label="Gastgeber-Menü" [attr.inert]="rail() || open() ? null : ''">
       <div class="panel-head">
-        <span class="brand">MusicVoting</span>
+        <span class="brand">
+          <!-- The logo stands for the name, so it carries it as alt text. -->
+          <img class="brand-logo" src="assets/img/logo-mark.png" width="146" height="192" alt="MusicVoting" />
+          @if (pin(); as p) {
+            <span class="live-badge"><span class="live-dot" aria-hidden="true"></span>Party läuft · {{ p }}</span>
+          }
+        </span>
         @if (!rail()) {
           <button #closeBtn type="button" class="close" aria-label="Menü schließen" (click)="close()">
             <mv-icon name="x" [size]="22" />
@@ -135,10 +147,34 @@ interface MenuEntry {
       margin-bottom: var(--mv-space-4);
     }
     .brand {
-      font-family: var(--mv-font-display);
-      font-size: 1.375rem;
-      font-weight: 750;
+      display: flex;
+      align-items: center;
+      gap: var(--mv-space-3);
+      min-width: 0;
+    }
+    .brand-logo {
+      height: 40px;
+      width: auto;
+      flex: none;
+    }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--mv-radius-pill);
+      background: var(--mv-stage-tint-2);
       color: var(--mv-on-stage);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--mv-stage-accent);
     }
     ul {
       list-style: none;
@@ -202,16 +238,17 @@ export class MvHostMenu {
 
   private readonly party = inject(PartyService);
 
+  /** Voting-PIN of the running party for the badge; null hides the badge. */
+  readonly pin = toSignal(this.party.pin$, { initialValue: null as string | null });
+
   /** Entries are computed on access so the blacklist link carries the current party id. */
   entries(): MenuEntry[] {
     const partyId = this.party.currentPartyId;
     return [
       { page: 'dashboard', label: 'Dashboard', icon: 'list-music', link: '/dashboard' },
-      { page: 'voting', label: 'Voting', icon: 'heart', link: '/voting-host' },
-      { page: 'search', label: 'Suchen', icon: 'search', link: '/search-host' },
       {
         page: 'blacklist',
-        label: 'Blacklist',
+        label: 'Blocklist',
         icon: 'shield-ban',
         link: '/select-blacklist',
         query: partyId ? { partyId, mode: 'edit' } : { mode: 'edit' },

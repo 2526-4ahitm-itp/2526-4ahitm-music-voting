@@ -39,25 +39,41 @@ describe('MvHostMenu', () => {
     return fixture;
   }
 
-  it('lists Dashboard, Voting, Suchen and Blacklist but not Startseite', () => {
+  it('lists only Dashboard and Blacklist (no Startseite, Voting or Suchen)', () => {
     const fixture = create();
     const labels = Array.from(fixture.nativeElement.querySelectorAll('nav a')).map((a: any) => a.textContent.trim());
 
-    expect(labels).toEqual(['Dashboard', 'Voting', 'Suchen', 'Blacklist']);
+    expect(labels).toEqual(['Dashboard', 'Blocklist']);
+  });
+
+  it('shows the logo instead of the text and the badge "Party läuft · <Voting-PIN>"', () => {
+    TestBed.inject(PartyService).pin$.next('47291');
+    const fixture = create();
+    const head: HTMLElement = fixture.nativeElement.querySelector('.panel-head');
+
+    expect(head.querySelector('img.brand-logo')!.getAttribute('alt')).toBe('MusicVoting');
+    expect(head.querySelector('.live-badge')!.textContent!.trim()).toBe('Party läuft · 47291');
+  });
+
+  it('hides the badge while no Voting-PIN is known', () => {
+    TestBed.inject(PartyService).pin$.next(null as any);
+    const fixture = create();
+
+    expect(fixture.nativeElement.querySelector('.live-badge')).toBeNull();
   });
 
   it('links Blacklist to the edit mode of the blacklist page for the current party', () => {
     const fixture = create();
-    const link: HTMLAnchorElement = fixture.nativeElement.querySelectorAll('nav a')[3];
+    const link: HTMLAnchorElement = fixture.nativeElement.querySelectorAll('nav a')[1];
 
     expect(link.getAttribute('href')).toBe('/select-blacklist?partyId=party-1&mode=edit');
   });
 
   it('marks the active page with aria-current', () => {
-    const fixture = create('search');
+    const fixture = create('blacklist');
     const current = fixture.nativeElement.querySelector('[aria-current="page"]');
 
-    expect(current.textContent.trim()).toBe('Suchen');
+    expect(current.textContent.trim()).toBe('Blocklist');
   });
 
   it('opens with a labelled burger button and closes on Escape', () => {
@@ -108,7 +124,7 @@ describe('MvHostMenu', () => {
     beforeEach(() => { wide = true; });
 
     it('shows the navigation permanently, without burger, close button or overlay', () => {
-      const fixture = create('voting');
+      const fixture = create('blacklist');
       const root: HTMLElement = fixture.nativeElement;
       const nav = root.querySelector('nav')!;
 
@@ -116,14 +132,14 @@ describe('MvHostMenu', () => {
       expect(root.querySelector('button.close')).toBeNull();
       expect(nav.classList).toContain('rail');
       expect(nav.hasAttribute('inert')).toBe(false);
-      expect(root.querySelector('[aria-current="page"]')!.textContent!.trim()).toBe('Voting');
+      expect(root.querySelector('[aria-current="page"]')!.textContent!.trim()).toBe('Blocklist');
     });
 
     it('lists the same entries as the burger menu', () => {
       const fixture = create();
       const labels = Array.from(fixture.nativeElement.querySelectorAll('nav a')).map((a: any) => a.textContent.trim());
 
-      expect(labels).toEqual(['Dashboard', 'Voting', 'Suchen', 'Blacklist']);
+      expect(labels).toEqual(['Dashboard', 'Blocklist']);
     });
 
     it('switches back to the burger when the window gets narrower, and closes an open slide-in when it grows', () => {

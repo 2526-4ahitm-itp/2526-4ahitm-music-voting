@@ -1,6 +1,8 @@
 <!--
   Host dashboard in the stage look of the TV page (shared/stage.css).
-  Left: now playing with controls, then the queue with remove (asks whether to also block).
+  Left: now playing with controls, then the queue card: one search field like on the guest
+  page (results replace the queue while it holds text), the queue with likes and remove (asks
+  whether to also block). It is the only host view of the queue.
   Right: how guests join (QR + Voting-PIN), the secret Gastgeber-PIN, and
   the party actions.
 -->
@@ -69,31 +71,124 @@
       </section>
 
       <section class="host-card" aria-labelledby="queue-title">
-        <h2 class="host-card-title" id="queue-title">
+        <!-- tabindex -1: focus lands here after a removal, when the row's button is gone. -->
+        <h2 class="host-card-title" id="queue-title" tabindex="-1">
           Warteschlange <span class="host-muted count">{{ tracks.length }}</span>
         </h2>
 
-        @if (tracks.length === 0) {
+        <!-- One search field like on the guest page (host spec "Host Searches and Adds Songs on
+             the Dashboard"): empty → the queue, text → provider results in its place. -->
+        <form class="host-search queue-search" role="search" [class.has-clear]="searchQuery.length > 0"
+              (submit)="search(); $event.preventDefault()">
+          <mv-icon name="search" [size]="18" />
+          <input
+            #searchField
+            type="search"
+            placeholder="Song oder Künstler suchen …"
+            aria-label="Song oder Künstler suchen"
+            [value]="searchQuery"
+            (input)="onSearchInput(searchField.value)"
+            name="search"
+            enterkeyhint="search"
+            autocomplete="off">
+          @if (searchQuery.length > 0) {
+            <button type="button" class="search-clear" aria-label="Suche leeren" (click)="clearSearch(); searchField.focus()">
+              <mv-icon name="x" [size]="20" />
+            </button>
+          }
+        </form>
+
+        @if (isSearchMode) {
+          <div class="search-status" aria-live="polite">
+            @if (isSearching) {
+              <p class="host-status">Suche läuft …</p>
+            } @else if (searchFailed) {
+              <p class="host-status error">Verbindung verloren – versuch es gleich nochmal.</p>
+            } @else if (lastSearchedTerm && results.length === 0) {
+              <p class="host-status">Keine Treffer für „{{ lastSearchedTerm }}“</p>
+            }
+          </div>
+          <div role="alert">
+            @if (addError) {
+              <p class="host-status error">{{ addError }}</p>
+            }
+          </div>
+
+          @if (results.length > 0) {
+            <h3 class="list-label" id="results-title">Suchergebnisse</h3>
+            <ul class="host-list results" aria-labelledby="results-title">
+              @for (track of results; track track.id) {
+                <li class="host-row result-row" [class.blocked]="track.blocked">
+                  <mv-cover class="host-row-cover" [images]="track.album?.images" />
+                  <span class="host-row-text">
+                    <span class="host-row-title">{{ track.name }}</span>
+                    <span class="host-row-artist">{{ track.artists?.[0]?.name }}</span>
+                    @if (track.blocked) {
+                      <!-- The host may know why (guests never do). -->
+                      <span class="blocked-hint">Nicht erlaubt.</span>
+                    }
+                  </span>
+                  @switch (resultState(track)) {
+                    @case ('queued') {
+                      @let entry = queued(track);
+                      @if (entry.isCurrentlyPlaying || entry.uri === currentTrack?.uri) {
+                        <span class="playing-tag">Läuft gerade</span>
+                      } @else {
+                        <span class="host-likes">
+                          <span class="host-likes-count">{{ entry.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
+                          <button type="button" class="host-icon-btn like" [class.liked]="entry.hasVoted"
+                                  [attr.aria-pressed]="!!entry.hasVoted" [attr.aria-label]="voteLabel(entry)"
+                                  (click)="toggleVote(entry)">
+                            <mv-icon name="heart" [size]="20" [filled]="!!entry.hasVoted" />
+                          </button>
+                        </span>
+                      }
+                    }
+                    @default {
+                      <button type="button" class="host-icon-btn add"
+                              (click)="addToPlaylist(track)"
+                              [disabled]="track.blocked || addingTrackId === track.id"
+                              [attr.aria-label]="track.blocked ? 'Nicht erlaubt' : 'Song hinzufügen'">
+                        @if (addingTrackId === track.id) {
+                          <mv-icon name="check" [size]="22" [strokeWidth]="3" />
+                        } @else {
+                          <mv-icon name="plus" [size]="22" [strokeWidth]="3" />
+                        }
+                      </button>
+                    }
+                  }
+                </li>
+              }
+            </ul>
+          }
+        } @else if (tracks.length === 0) {
           <p class="host-empty">Keine Songs in der Warteschlange.</p>
         } @else {
           <ol class="host-list">
             @for (track of tracks; track track.id; let i = $index) {
               <li class="queue-item">
-                <div class="host-row queue-row">
+                <div class="host-row queue-row" [class.next]="i === 0">
                   <span class="rank">{{ i + 1 }}</span>
                   <mv-cover class="host-row-cover" [images]="track.album?.images" />
                   <span class="host-row-text">
                     <span class="host-row-title">{{ track.name || 'Unbekannter Titel' }}</span>
                     <span class="host-row-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</span>
                   </span>
-                  <span class="host-likes" [attr.aria-label]="(track.likeCount ?? 0) + ' Likes'">
-                    <mv-icon name="heart" [size]="18" [filled]="true" />
-                    <span class="host-likes-count">{{ track.likeCount ?? 0 }}</span>
+                  <!-- The host likes like a guest, one like per device (host spec "Host Can Like Songs"). -->
+                  <span class="host-likes">
+                    <span class="host-likes-count">{{ track.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
+                    @if (!track.isCurrentlyPlaying) {
+                      <button type="button" class="host-icon-btn like" [class.liked]="track.hasVoted"
+                              [attr.aria-pressed]="!!track.hasVoted" [attr.aria-label]="voteLabel(track)"
+                              (click)="toggleVote(track)">
+                        <mv-icon name="heart" [size]="20" [filled]="!!track.hasVoted" />
+                      </button>
+                    }
                   </span>
                   <span class="row-actions">
                     <button type="button" class="host-icon-btn" aria-label="Song entfernen" title="Song entfernen"
                             [attr.aria-expanded]="confirmRemoveUri === track.uri"
-                            (click)="requestRemove(track)">
+                            (click)="requestRemove(track, $event)">
                       <mv-icon name="trash" [size]="20" />
                     </button>
                   </span>
@@ -101,13 +196,18 @@
                 <!-- Removal question (design D7): blocking happens here; the playing song
                      can only be removed, not blocked. -->
                 @if (confirmRemoveUri === track.uri) {
-                  <div class="confirm" role="alertdialog" aria-label="Song entfernen bestätigen">
+                  <!-- Focus moves to the first button on open; Escape closes (host spec
+                       "Dashboard Confirmations Manage Focus"). -->
+                  <div class="confirm" role="alertdialog" aria-label="Song entfernen bestätigen"
+                       (keydown.escape)="cancelRemove()">
                     <p>„{{ track.name || 'Unbekannter Titel' }}“ aus der Warteschlange entfernen?</p>
                     <div class="confirm-buttons">
                       @if (!track.isCurrentlyPlaying) {
-                        <button type="button" class="host-btn danger" (click)="confirmBlock(track)">Auch sperren</button>
+                        <button type="button" class="host-btn danger" data-autofocus (click)="confirmBlock(track)">Entfernen und sperren</button>
+                        <button type="button" class="host-btn" (click)="confirmRemoveOnly(track)">Nur entfernen</button>
+                      } @else {
+                        <button type="button" class="host-btn" data-autofocus (click)="confirmRemoveOnly(track)">Nur entfernen</button>
                       }
-                      <button type="button" class="host-btn" (click)="confirmRemoveOnly(track)">Nur entfernen</button>
                       <button type="button" class="host-btn" (click)="cancelRemove()">Abbrechen</button>
                     </div>
                   </div>
@@ -123,7 +223,7 @@
       <section class="host-card join" aria-label="Mitmachen">
         <img class="qr" [src]="qrUrl || 'assets/img/default-qr.png'" alt="QR-Code zum Mitmachen" />
         <div>
-          <p class="pin-label"><mv-icon name="users" [size]="20" /> Voting-PIN</p>
+          <p class="pin-label"><mv-icon name="users" [size]="20" /> Voting-PIN <span class="pin-tag">für Gäste</span></p>
           <p class="pin-value">{{ pin || '–––––' }}</p>
           <p class="host-muted small">Gäste scannen den Code oder geben diese PIN ein.</p>
         </div>
@@ -133,21 +233,24 @@
         <button type="button" class="action" (click)="openPlayer()">
           <mv-icon name="monitor-play" [size]="24" />
           <span>
-            <strong>Player öffnen</strong>
+            <strong>Player auf diesem Gerät öffnen</strong>
             <small>Spielt die Musik ab. Öffne ihn auf dem Gerät, das am TV hängt.</small>
           </span>
         </button>
+        <!-- Same five steps as on the go-live step (host spec "Go-Live Step Explains a Separate TV Device"). -->
+        <mv-other-device-steps class="other-device" />
 
         @if (confirmEnd) {
-          <div class="confirm end" role="alertdialog" aria-label="Party beenden bestätigen">
+          <div class="confirm end" role="alertdialog" aria-label="Party beenden bestätigen"
+               (keydown.escape)="cancelEnd()">
             <p><strong>Party wirklich beenden?</strong></p>
             <div class="confirm-buttons">
               <button type="button" class="host-btn danger" (click)="endParty()">Ja, beenden</button>
-              <button type="button" class="host-btn" (click)="confirmEnd = false">Abbrechen</button>
+              <button type="button" class="host-btn" data-autofocus (click)="cancelEnd()">Abbrechen</button>
             </div>
           </div>
         } @else {
-          <button type="button" class="action end" (click)="confirmEnd = true">
+          <button type="button" class="action end" (click)="requestEnd($event)">
             <mv-icon name="x" [size]="24" />
             <span><strong>Party beenden</strong></span>
           </button>
@@ -157,7 +260,7 @@
       <!-- Hidden by default and below the actions (task 8.4): the dashboard is often open on a
            laptop next to the TV, where guests could read a visible secret over the host's shoulder. -->
       <section class="host-card host-pin" aria-label="Gastgeber-PIN">
-        <p class="pin-label"><mv-icon name="key" [size]="20" /> Gastgeber-PIN</p>
+        <p class="pin-label"><mv-icon name="key" [size]="20" /> Gastgeber-PIN <span class="pin-tag">nur für dich</span></p>
         <div class="pin-row">
           <p class="pin-value" aria-live="polite">
             @if (hostPinVisible) {

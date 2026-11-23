@@ -1,3 +1,5 @@
+import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { HostDashboard } from './host-dashboard';
 
@@ -26,7 +28,9 @@ describe('HostDashboard', () => {
     ngZone = { run: jasmine.createSpy('run').and.callFake((fn: () => void) => fn()) };
     cd = { detectChanges: jasmine.createSpy('detectChanges') };
 
-    comp = new HostDashboard(
+    // inject() in the class needs an injection context.
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    comp = TestBed.runInInjectionContext(() => new HostDashboard(
       ngZone as any,
       http as any,
       cd as any,
@@ -34,7 +38,7 @@ describe('HostDashboard', () => {
       spotifyService as any,
       null as any, // route
       router as any,
-    );
+    ));
   });
 
   afterEach(() => (comp as any).sseSource?.close());
@@ -403,7 +407,7 @@ describe('HostDashboard', () => {
       expect(comp.confirmRemoveUri).toBeNull();
     });
 
-    it('"Auch sperren" blocks the track first, then removes it from the queue', async () => {
+    it('"Entfernen und sperren" blocks the track first, then removes it from the queue', async () => {
       comp.partyId = 'party-1';
       const calls: string[] = [];
       (partyService as any).addBlacklistEntry.and.callFake(() => { calls.push('block'); return of({}); });
@@ -424,7 +428,7 @@ describe('HostDashboard', () => {
       expect(comp.confirmRemoveUri).toBeNull();
     });
 
-    it('"Auch sperren" does nothing for the currently playing song', async () => {
+    it('"Entfernen und sperren" does nothing for the currently playing song', async () => {
       comp.partyId = 'party-1';
 
       await comp.confirmBlock({ ...track, isCurrentlyPlaying: true });
