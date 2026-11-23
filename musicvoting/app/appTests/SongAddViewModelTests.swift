@@ -29,9 +29,11 @@ final class SongAddViewModelTests: XCTestCase {
         super.tearDown()
     }
 
-    private func stubSearch(json: String, statusCode: Int = 200) {
+    /// The test session is a guest, so searches carry audience=guest (search spec "iOS Search
+    /// Applies the Party Blacklist Like the Web").
+    private func stubSearch(json: String, statusCode: Int = 200, query: String = "?q=test&audience=guest") {
         let base = BackendConfiguration.endpoint("/api/party/party-1/track/search").absoluteString
-        MockURLProtocol.stubs[base + "?q=test"] = .success(
+        MockURLProtocol.stubs[base + query] = .success(
             .init(statusCode: statusCode, body: Data(json.utf8),
                   headers: ["Content-Type": "application/json"])
         )
@@ -105,6 +107,65 @@ final class SongAddViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.results[0].artist.isEmpty)
     }
 
+    // MARK: - blacklist (search spec "iOS Search Applies the Party Blacklist Like the Web")
+
+    func testGuestSearchDecodesBlockedFlagAndShowsSomeHint() async {
+        stubSearch(json: """
+            {"tracks":{"items":[
+                {"id":"t1","uri":"spotify:track:t1","name":"Song X (Live)","blocked":true,
+                 "artists":[{"name":"A"}],"album":{"images":[]}},
+                {"id":"t2","uri":"spotify:track:t2","name":"Song Y","blocked":false,
+                 "artists":[{"name":"B"}],"album":{"images":[]}}
+            ]},"hiddenHint":null}
+        """)
+        await viewModel.search(query: "test")
+
+        XCTAssertTrue(viewModel.results[0].blocked)
+        XCTAssertFalse(viewModel.results[1].blocked)
+        XCTAssertEqual(viewModel.blockedHint, String(localized: "search.blocked.someHint"))
+    }
+
+    func testGuestSearchForBannedArtistShowsArtistHint() async {
+        stubSearch(json: #"{"tracks":{"items":[]},"hiddenHint":"ARTIST"}"#)
+        await viewModel.search(query: "test")
+
+        XCTAssertTrue(viewModel.results.isEmpty)
+        XCTAssertEqual(viewModel.blockedHint, String(localized: "search.blocked.artistHint"))
+    }
+
+    func testSearchWithoutBlockedResultsHasNoHint() async {
+        stubSearch(json: """
+            {"tracks":{"items":[{"id":"t1","uri":"spotify:track:t1","name":"Song",
+              "artists":[{"name":"A"}],"album":{"images":[]}}]}}
+        """)
+        await viewModel.search(query: "test")
+
+        XCTAssertFalse(viewModel.results[0].blocked, "missing field decodes as not blocked")
+        XCTAssertNil(viewModel.blockedHint)
+    }
+
+    func testHostSearchOmitsAudienceAndShowsNoGuestHint() async {
+        session.setSession(id: "party-1", pin: "11111", hostPin: "99999", role: .host)
+        stubSearch(json: """
+            {"tracks":{"items":[{"id":"t1","uri":"spotify:track:t1","name":"Song (Live)","blocked":true,
+              "artists":[{"name":"A"}],"album":{"images":[]}}]}}
+        """, query: "?q=test")
+        await viewModel.search(query: "test")
+
+        XCTAssertFalse(viewModel.isGuest)
+        XCTAssertTrue(viewModel.results[0].blocked)
+        XCTAssertNil(viewModel.blockedHint)
+    }
+
+    func testBlockedTrackIsNotAdded() async {
+        var track = makeTrack()
+        track.blocked = true
+        await viewModel.addToPlaylist(track)
+
+        XCTAssertTrue(MockURLProtocol.requestedURLs.isEmpty)
+        XCTAssertFalse(viewModel.addedTrackIds.contains("t1"))
+    }
+
     func testSearchSetsErrorOnNon2xxResponse() async {
         stubSearch(json: "", statusCode: 500)
         await viewModel.search(query: "test")
@@ -115,7 +176,7 @@ final class SongAddViewModelTests: XCTestCase {
     }
 
     func testSearchSetsErrorOnNetworkError() async {
-        let url = BackendConfiguration.endpoint("/api/party/party-1/track/search").absoluteString + "?q=test"
+        let url = BackendConfiguration.endpoint("/api/party/party-1/track/search").absoluteString + "?q=test&audience=guest"
         MockURLProtocol.stubs[url] = .failure(URLError(.notConnectedToInternet))
         await viewModel.search(query: "test")
 

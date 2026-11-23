@@ -9,6 +9,8 @@ import SwiftUI
 
 private struct SearchResponse: Decodable {
     let tracks: TrackContainer
+    /// Guest searches only: "ARTIST" (the term is a banned artist) or "SOME" (songs were removed).
+    let hiddenHint: String?
 }
 
 private struct TrackContainer: Decodable {
@@ -22,6 +24,9 @@ private struct TrackItem: Decodable {
     let name: String
     let artists: [ArtistItem]
     let album: AlbumItem
+    /// True if the track matches the party blacklist (search spec "Blacklisted Search Results
+    /// Cannot Be Added"). Optional so an older backend without the field still decodes.
+    let blocked: Bool?
 
     struct ArtistItem: Decodable {
         let name: String
@@ -42,6 +47,7 @@ struct SearchTrack: Identifiable, Equatable {
     let title: String
     let artist: String
     let imageUrl: String
+    var blocked: Bool = false
 }
 
 private struct QueueResponse: Decodable {
@@ -65,9 +71,28 @@ final class SongAddViewModel: ObservableObject {
     @Published var addingTrackIds: Set<String> = []
     @Published var addedTrackIds: Set<String> = []
     @Published var queuedTrackUris: Set<String> = []
+    /// hiddenHint of the last guest search ("ARTIST", "SOME" or nil).
+    @Published var hiddenHint: String?
 
     private var searchTask: Task<Void, Never>?
     private weak var partySession: PartySessionStore?
+
+    /// Guests get guest results (banned artists removed, no reasons shown); the host sees
+    /// every result with its blocked flag, like the web host search.
+    var isGuest: Bool {
+        partySession?.role != .host
+    }
+
+    /// Hint below the search field for guests (search spec "iOS Search Applies the Party
+    /// Blacklist Like the Web"): names the banned artist case only, never which entry matched.
+    var blockedHint: String? {
+        guard isGuest else { return nil }
+        if hiddenHint == "ARTIST" { return String(localized: "search.blocked.artistHint") }
+        if hiddenHint == "SOME" || results.contains(where: \.blocked) {
+            return String(localized: "search.blocked.someHint")
+        }
+        return nil
+    }
 
     func configure(partySession: PartySessionStore) {
         self.partySession = partySession
@@ -115,6 +140,10 @@ final class SongAddViewModel: ObservableObject {
 
                     if event.type == "queue-updated" {
                         await loadQueue()
+                    } else if event.type == "blacklist-updated" {
+                        // The host changed the blacklist: refresh greyed-out results and the hint.
+                        let term = query.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if term.count >= 2 { await search(query: term) }
                     }
                 }
             } catch {
@@ -129,6 +158,7 @@ final class SongAddViewModel: ObservableObject {
 
         if trimmed.count < 2 {
             results = []
+            hiddenHint = nil
             isLoading = false
             errorMessage = nil
             return
@@ -146,6 +176,7 @@ final class SongAddViewModel: ObservableObject {
 
         var components = URLComponents(url: searchURL, resolvingAgainstBaseURL: false)
         components?.queryItems = [URLQueryItem(name: "q", value: query)]
+            + (isGuest ? [URLQueryItem(name: "audience", value: "guest")] : [])
 
         guard let url = components?.url else {
             isLoading = false
@@ -163,8 +194,10 @@ final class SongAddViewModel: ObservableObject {
             }
             let decoded = try JSONDecoder().decode(SearchResponse.self, from: data)
             results = decoded.tracks.items.compactMap { $0 }.map(Self.mapTrackToSearch)
+            hiddenHint = isGuest ? decoded.hiddenHint : nil
         } catch {
             results = []
+            hiddenHint = nil
             if !Task.isCancelled {
                 errorMessage = String(localized: "error.backendUnreachable")
             }
@@ -180,12 +213,14 @@ final class SongAddViewModel: ObservableObject {
             uri: item.uri,
             title: item.name,
             artist: artists.isEmpty ? String(localized: "unknown") : artists,
-            imageUrl: item.album.images.first?.url ?? ""
+            imageUrl: item.album.images.first?.url ?? "",
+            blocked: item.blocked ?? false
         )
     }
 
     func addToPlaylist(_ track: SearchTrack) async {
-        if addingTrackIds.contains(track.id) || addedTrackIds.contains(track.id) {
+        // Blocked songs cannot be added; the backend would answer 403 anyway.
+        if track.blocked || addingTrackIds.contains(track.id) || addedTrackIds.contains(track.id) {
             return
         }
 
@@ -268,6 +303,13 @@ struct SongAddView: View {
                             .padding(.horizontal)
                     }
 
+                    if let hint = viewModel.blockedHint, !viewModel.isLoading {
+                        Text(hint)
+                            .font(.footnote)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                    }
+
                     resultsCard
                         .padding(.horizontal)
                 }
@@ -335,7 +377,8 @@ struct SongAddView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 48)
-                } else {
+                } else if viewModel.blockedHint == nil {
+                    // When every result was removed, the blacklist hint above replaces this text.
                     Text(String(localized: "search.noResults"))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -346,6 +389,7 @@ struct SongAddView: View {
                     ForEach(viewModel.results) { track in
                         SearchResultRow(
                             track: track,
+                            showsBlockedReason: !viewModel.isGuest,
                             isAdding: viewModel.addingTrackIds.contains(track.id),
                             isAdded: viewModel.addedTrackIds.contains(track.id) || viewModel.queuedTrackUris.contains(track.uri)
                         ) {
@@ -362,6 +406,8 @@ struct SongAddView: View {
 
 private struct SearchResultRow: View {
     let track: SearchTrack
+    /// Host only: shows "Nicht erlaubt." on blocked results; guests never see a reason.
+    let showsBlockedReason: Bool
     let isAdding: Bool
     let isAdded: Bool
     let onAdd: () -> Void
@@ -395,6 +441,11 @@ private struct SearchResultRow: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
+                if track.blocked && showsBlockedReason {
+                    Text("search.blocked.notAllowed")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
 
             Spacer()
@@ -416,10 +467,14 @@ private struct SearchResultRow: View {
                     }
                 }
             }
-            .disabled(isAdding || isAdded)
+            .disabled(isAdding || isAdded || track.blocked)
+            // A blocked "+" says only that it is unavailable, never why (guest spec
+            // "Blocked Search Results Stay Discreet").
+            .accessibilityLabel(track.blocked ? Text("search.blocked.unavailable") : Text("search.add.label"))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+        .opacity(track.blocked ? 0.45 : 1)
     }
 }
 

@@ -215,4 +215,22 @@ class SpotifyCallbackResourceTest {
         assertEquals("PREMIUM_REQUIRED", body.get("reason"));
         assertEquals("Du brauchst Spotify Premium, um Musik abzuspielen.", body.get("error"));
     }
+
+    @Test
+    void events_ios_receivesBlacklistUpdatedOnlyForOwnParty() {
+        var stream = resource.events("ios", "install-1", "party-a");
+        List<LoginEvent> received = new CopyOnWriteArrayList<>();
+        var subscription = stream.subscribe().with(received::add);
+
+        try {
+            loginEventBus.emit(new LoginEvent("blacklist-updated", Instant.now(), Map.of("partyId", "party-a")));
+            loginEventBus.emit(new LoginEvent("blacklist-updated", Instant.now(), Map.of("partyId", "party-b")));
+
+            assertTrue(received.stream().anyMatch(e -> "blacklist-updated".equals(e.type())
+                    && "party-a".equals(e.payload().get("partyId"))));
+            assertFalse(received.stream().anyMatch(e -> "party-b".equals(e.payload().get("partyId"))));
+        } finally {
+            subscription.cancel();
+        }
+    }
 }

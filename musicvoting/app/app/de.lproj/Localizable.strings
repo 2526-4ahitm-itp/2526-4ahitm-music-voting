@@ -55,6 +55,11 @@
 "search.error.invalid" = "Ungueltige Suchanfrage.";
 "search.error.failed" = "Suche fehlgeschlagen. Bitte erneut versuchen.";
 "search.add.error" = "Fehler beim Hinzufuegen.";
+"search.blocked.artistHint" = "Dieser Artist ist nicht zulässig.";
+"search.blocked.someHint" = "Einige Ergebnisse sind auf dieser Party nicht zulässig.";
+"search.blocked.notAllowed" = "Nicht erlaubt.";
+"search.blocked.unavailable" = "Nicht verfügbar";
+"search.add.label" = "Song hinzufügen";
 
 /* VotingView */
 "voting.title" = "Voten Sie für Ihre Lieblingsongs";
