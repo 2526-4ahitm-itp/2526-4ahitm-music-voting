@@ -1,20 +1,94 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+# Project context — injected into every artifact instruction (proposal, specs, design, tasks).
+# Keep it short: product shape, stack, conventions. openspec/project.md is a human-readable
+# overview only — OpenSpec 1.x does not read it, so anything the AI must know belongs here.
+# Binding team rules: ai/ARBEITSREGELN.md.
+context: |
+  Product: MusicVoting — party music-voting web app (HTBLA Leonding, 4AHITM ITP).
+  Guests join anonymously (QR code or typed 5-digit PIN, route join/:pin), search and add songs,
+  and like songs; the queue sorts itself (likes desc, FIFO on ties). Music plays on a shared
+  monitor/TV (/startpage). The host authenticates once per party via Spotify or YouTube OAuth;
+  one party = one provider, tokens are dropped when the party ends.
+  Clients: guest web (phone, /voting), host dashboard (phone, /dashboard), TV display (/startpage),
+  optional SwiftUI iOS app mirroring guest and host.
+  Guest identity: persistent deviceId UUID (localStorage + 1-year cookie on web, UserDefaults on iOS).
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Stack:
+  - Backend: Quarkus (Java 21), REST + SSE, Hibernate ORM Panache, PostgreSQL 16 (Docker),
+    schema in musicvoting/backend/setup.sql. Code: musicvoting/backend/.
+  - Frontend: Angular, zoneless, standalone components, signals. Code: musicvoting/frontend/src/app.
+  - iOS: SwiftUI in musicvoting/app/. Docs: Hugo in hugo/. Deployment: deployment/ (k8s, compose, server).
+
+  Capabilities (openspec/specs/): party, guest, host, queue, voting, playback, dashboard, search,
+  provider, web-ui, ios-localization. Reuse these paths; add a new one only for a durable new area.
+
+  Out of scope (do not propose unless the team decides otherwise):
+  - Multiple providers in one party.
+  - Named or registered guest accounts.
+  - Persistent play history or "recently played" lists.
+  - Guaranteed ad-free YouTube playback (best effort only).
+
+  Domain pitfalls:
+  - Party.java (in-memory, PartyRegistry) and PartyEntity.java (Panache entity, table party)
+    are intentionally separate — never merge them.
+  - The database is the single source of truth for the queue; never read the Spotify playlist.
+  - Every queue/vote operation uses the real party ID from the path, never "default".
+  - Open question, do not assume: empty queue — web spec says stop/pause, Swift spec says
+    play random top charts.
+
+  Conventions:
+  - Artifacts (proposal, specs, design, tasks) are written in English.
+  - User-facing strings are German and quoted verbatim, e.g. "Nicht erlaubt.",
+    "Zu viele Anfragen — bitte kurz warten.", "Song ist schon in der Warteschlange.",
+    "Warteschlange ist leer".
+  - Change names are kebab-case and verb-first: add-…, fix-…, refactor-…, rename-…, remove-…
+  - Commits follow Conventional Commits (feat, fix, docs, test, refactor, chore; optional scope
+    such as frontend, backend, ios, openspec). Commit and push only after asking.
+  - Always use the latest stable versions; point out newer versions, update only after asking.
+
+# Per-artifact rules — appended to the instructions for that artifact only.
+rules:
+  proposal:
+    - 'Title the file "# Proposal: <title>".'
+    - In What Changes, mark route, API, SSE event or DB schema breaks with **BREAKING** and name
+      the old and new route/endpoint.
+    - If the change is based on a review or decision document (e.g. openspec/analyse/…), link it
+      at the top and in Why.
+    - Under Impact, list affected layers (backend, frontend, iOS, DB schema, Hugo docs, slides,
+      README files) and say explicitly when a layer is not affected.
+    - Note if the Hugo presentation (hugo/content/slides/index.md) becomes wrong because of this change.
+  specs:
+    - >-
+      Scenarios use plain bullets "- GIVEN …", "- WHEN …", "- THEN …", "- AND …" under
+      "#### Scenario: <name>"; every requirement has at least one scenario, preferably a happy
+      path and an edge or error case.
+    - Use MUST / SHALL / SHOULD / MAY (RFC 2119). Describe observable behavior — no class names,
+      file paths or library choices (those go in design.md).
+    - Quote German UI texts and error messages verbatim in double quotes.
+    - For MODIFIED requirements, copy the complete existing requirement block from
+      openspec/specs/<capability>/spec.md and edit it — never paste only the changed lines.
+    - Name HTTP endpoints, SSE event names (e.g. queue-updated, vote-updated) and status codes
+      when the behavior is part of the contract between backend and clients.
+    - Cover web and iOS separately when the behavior differs between them.
+  design:
+    - Start with a Context section describing the current code state (concrete files/components)
+      that the change touches.
+    - Number decisions D1, D2, … so tasks can reference them; give each one a rationale and the
+      rejected alternatives.
+    - Include Goals / Non-Goals and a Risks / Trade-offs section.
+    - State whether the DB schema (setup.sql) changes and how existing data is migrated.
+    - Respect DESIGN.md and the dark-stage brand glow for any UI work.
+  tasks:
+    - >-
+      Start the file with the exact test commands —
+      backend `cd musicvoting/backend && ./mvnw test` (needs `cd musicvoting && docker compose up -d`),
+      frontend `cd musicvoting/frontend && npx ng test --watch=false --browsers=ChromeHeadless`
+      (set CHROME_BIN to the local Chrome/Chromium binary if Karma cannot find one).
+    - Group tasks into numbered sections (## 1. …) with numbered checkboxes (- [ ] 1.1 …).
+    - Each implementation task names the tests to add or update, with concrete expectations;
+      tests without expect/assertions are not allowed.
+    - Reference design decisions (design D3) and end tasks with a "Verify:" clause where useful.
+    - Code gets comments on classes, public methods and non-obvious logic, explaining the why.
+    - Include final tasks for docs that become outdated (README.adoc, backend/frontend README,
+      Hugo pages) and a last task "All backend and frontend tests pass".

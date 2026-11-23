@@ -22,6 +22,7 @@ Gelten für das gesamte Team und für Claude (wird über `CLAUDE.md` eingebunden
 - Alle Tests müssen durchlaufen, bevor eine Änderung als fertig gilt:
   - Backend: `cd musicvoting/backend && ./mvnw test` (PostgreSQL muss laufen: `cd musicvoting && docker compose up -d`)
   - Frontend: `cd musicvoting/frontend && npx ng test --watch=false --browsers=ChromeHeadless`
+    (findet Karma kein Chrome, `CHROME_BIN` auf das lokale Chrome/Chromium setzen, z. B. `CHROME_BIN=/usr/bin/chromium-browser`)
 - Tests ohne Erwartungen (`expect`) sind nicht erlaubt.
 
 ## 4. Code-Kommentare

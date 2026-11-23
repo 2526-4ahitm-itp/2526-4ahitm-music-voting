@@ -56,7 +56,8 @@ openspec/
 │   ├── archive/
 │   │   └── .gitkeep
 │   └── .gitkeep
-└── project.md      # brief description of the product for future agents (optional)
+├── config.yaml     # schema + project context + per-artifact rules (read by the OpenSpec CLI)
+└── project.md      # short human-readable product overview (optional, not read by the CLI)
 ```
 
 The OpenSpec CLI (`openspec init`, requires Node ≥ 20.19) does this automatically and also registers slash commands with your AI tool. If the user has it installed, prefer the CLI. Otherwise, create the folders by hand and proceed.
