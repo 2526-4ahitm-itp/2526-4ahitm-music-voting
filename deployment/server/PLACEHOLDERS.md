@@ -107,8 +107,18 @@ git pull && docker compose up -d --build   # Update nach Code-Änderungen
 
 - **Zertifikate** liegen im Volume `caddy_data` — nicht löschen, sonst wird bei
   jedem Neustart ein neues Zertifikat geholt (Let's-Encrypt-Rate-Limits!).
-- **DB-Schema:** `setup.sql` läuft nur beim ersten Start (leeres `postgres_data`-Volume).
+- **DB-Schema:** `setup.sql` läuft nur beim ersten Start (leeres `postgres_data_pg19`-Volume).
   Schema-Änderungen → Volume zurücksetzen: `docker compose down -v` (⚠ löscht alle Daten).
+- **Upgrade auf PostgreSQL 19 (von 16):** Ein neuer Major-Release kann die alten Datendateien
+  nicht lesen, deshalb nutzt `docker-compose.yml` jetzt das neue Volume `postgres_data_pg19`.
+  Läuft der Server schon mit Daten, **vor** dem Update sichern und danach einspielen:
+  ```bash
+  docker compose exec -T postgres pg_dump -U musicvoting -d musicvoting --data-only --disable-triggers > backup.sql
+  git pull && docker compose up -d           # startet Postgres 19 mit leerem Volume + setup.sql
+  docker compose exec -T postgres psql -U musicvoting -d musicvoting < backup.sql
+  ```
+  Das alte Volume `postgres_data` bleibt als Sicherung liegen; löschen erst, wenn alles läuft
+  (`docker volume rm <projekt>_postgres_data`).
 - **Lokaler Test ohne echte Domain:** Caddy braucht für ein echtes Zertifikat eine
   öffentlich auflösbare Domain. Für reine Funktionstests ohne HTTPS lieber das
   bestehende `deployment/compose/`-Setup verwenden.
