@@ -67,7 +67,7 @@
   width: min(48vh, 34vw);
   height: min(48vh, 34vw);
   border-radius: 20px;
-  box-shadow: 0 30px 80px var(--mv-stage-shadow), 0 8px 24px rgba(132, 3, 166, 0.35);
+  box-shadow: 0 30px 80px var(--mv-stage-shadow), 0 8px 24px var(--mv-glow-brand);
   background: var(--mv-stage-raised);
 }
 
@@ -164,6 +164,9 @@
   height: 4.2vh;
   width: auto;
   margin-right: -1vw;
+  /* Faint white light in dark mode (token is `none` in light mode), so the
+     dark-violet segment does not sink into the stage (web-ui "Brand Logo"). */
+  filter: var(--mv-glow-logo);
 }
 
 .stage-footer mv-credit-footer {
@@ -365,6 +368,26 @@
   color: var(--mv-on-stage);
   font-variant-numeric: tabular-nums;
   min-width: 2ch;
+}
+
+/* A new like: heart and number pulse once and light up in the accent colour.
+   Under reduced motion the global rule in styles.css cuts the animation, so
+   only the colour change is left (dashboard spec "Dashboard Pulses When a Like
+   Count Changes"). */
+.row-likes.pulse mv-icon,
+.row-likes.pulse .row-likes-count {
+  display: inline-block;
+  animation: mv-like-pulse 600ms var(--mv-ease-out);
+}
+
+.row-likes.pulse .row-likes-count {
+  color: var(--mv-stage-accent);
+}
+
+@keyframes mv-like-pulse {
+  40% {
+    transform: scale(1.25);
+  }
 }
 
 .queue-more {

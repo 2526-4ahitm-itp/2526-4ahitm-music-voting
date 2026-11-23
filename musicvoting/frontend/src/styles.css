@@ -70,6 +70,12 @@
   --mv-stage-center-glow: radial-gradient(55vw 50vh at 50% 50%,
     rgba(132, 3, 166, 0.5), rgba(242, 89, 75, 0.22) 55%, transparent 80%);
   --mv-stage-shadow: rgba(0, 0, 0, 0.5);
+  /* Purple brand light under the now-playing cover (TV and host dashboard);
+     one token instead of a hard-coded rgba per page. */
+  --mv-glow-brand: rgba(132, 3, 166, 0.35);
+  /* Faint white light behind the TV logo so its dark-violet segment stays
+     visible on the dark stage (team decision E4, 2026-11-23). */
+  --mv-glow-logo: drop-shadow(0 0 18px rgba(255, 255, 255, 0.18));
   /* Card of a song the guest liked (coral wash). */
   --mv-stage-liked: rgba(242, 89, 75, 0.22);
   --mv-stage-liked-edge: rgba(255, 154, 143, 0.55);
@@ -136,6 +142,8 @@
      through on white too). The glow stays a pastel wash behind white cards;
      text placed directly on it keeps >= 4.5:1 (see design D1). */
   --mv-stage-glow: 0.5;
+  /* On the light stage the logo needs no help. */
+  --mv-glow-logo: none;
   /* The TV's corner glows are stronger, so it keeps the earlier, weaker
      light glow; at 0.5 its text would drop below 4.5:1. */
   --mv-stage-tv-glow: 0.35;

@@ -37,6 +37,25 @@
   line-height: 1;
 }
 
+/* Logo in the top bar: phones only, see the media query below. */
+.top-logo {
+  display: none;
+  height: 36px;
+  width: auto;
+}
+
+/* Below 600 px the logo sits left in the top bar and the switch right (the switch
+   pushes itself right with margin-left: auto), instead of a lone switch in an empty
+   bar; the hero then starts with the wordmark. */
+@media (max-width: 599px) {
+  .top-logo {
+    display: block;
+  }
+  .hero .logo {
+    display: none;
+  }
+}
+
 .roles {
   display: grid;
   gap: var(--mv-space-3);

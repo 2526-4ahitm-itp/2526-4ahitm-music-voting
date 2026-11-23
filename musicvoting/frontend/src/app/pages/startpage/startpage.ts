@@ -23,6 +23,17 @@ export const TV_QUEUE_LIMIT = 5;
 })
 export class Startpage implements OnInit, OnDestroy {
   tracks: any[] = [];
+
+  /**
+   * Queue entries whose like count just changed; their heart and number pulse once
+   * (dashboard spec "Dashboard Pulses When a Like Count Changes"), so a new like is
+   * noticeable from the couch. Keyed by URI, cleared after PULSE_MS.
+   */
+  readonly pulsing = new Set<string>();
+  static readonly PULSE_MS = 600;
+  /** Like count per URI from the previous queue snapshot, to see what changed. */
+  private lastLikes = new Map<string, number>();
+  private pulseTimers = new Map<string, ReturnType<typeof setTimeout>>();
   menuOpen = false;
   currentTrack: any = null;
   private eventSource?: EventSource;
@@ -377,6 +388,7 @@ export class Startpage implements OnInit, OnDestroy {
             if (currentId && track?.id === currentId) return false;
             return true;
           });
+          this.markLikeChanges();
           this.cd.detectChanges();
           this.animateRows(before);
           // Reset prepareNext flag when queue changes so autoplay can trigger again
@@ -386,6 +398,37 @@ export class Startpage implements OnInit, OnDestroy {
     } catch (err) {
       console.error('Fehler beim Laden der Playlist:', err);
     }
+  }
+
+  /**
+   * Starts the pulse for every visible entry whose like count differs from the last
+   * snapshot. The first snapshot and newly added songs do not pulse: they fade in
+   * already, and a pulse there would not mean "someone just liked this".
+   * A change during a running pulse extends it instead of stacking a second one.
+   */
+  private markLikeChanges() {
+    const visible = new Set(this.visibleTracks.map((t: any) => t?.uri));
+    for (const track of this.tracks) {
+      const uri = track?.uri;
+      if (!uri) continue;
+      const likes = track.likeCount ?? 0;
+      const before = this.lastLikes.get(uri);
+      if (before !== undefined && before !== likes && visible.has(uri)) {
+        this.pulse(uri);
+      }
+    }
+    this.lastLikes = new Map(this.tracks.filter((t: any) => t?.uri).map((t: any) => [t.uri, t.likeCount ?? 0]));
+  }
+
+  private pulse(uri: string) {
+    const running = this.pulseTimers.get(uri);
+    if (running) clearTimeout(running);
+    this.pulsing.add(uri);
+    this.pulseTimers.set(uri, setTimeout(() => {
+      this.pulseTimers.delete(uri);
+      this.pulsing.delete(uri);
+      this.cd.detectChanges();
+    }, Startpage.PULSE_MS));
   }
 
   /**
@@ -439,6 +482,8 @@ export class Startpage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.pulseTimers.forEach((t) => clearTimeout(t));
+    this.pulseTimers.clear();
     this.stopProgressTimer();
     this.queueUpdatesSub?.unsubscribe();
     this.eventSource?.close();

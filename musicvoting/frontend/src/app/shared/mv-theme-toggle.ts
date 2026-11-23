@@ -3,8 +3,10 @@ import { MvIcon } from './mv-icon';
 import { ThemeService } from './theme.service';
 
 /**
- * "Heller Modus" switch for the top bar of the host pages.
+ * "Heller Modus" switch for the top bar of every stage page except the TV.
  * A real button with role="switch", so screen readers announce the state.
+ * Icon-only (moon in dark, sun in light) on every width, so it looks the same
+ * everywhere (team decision F2, 2026-11-23); the tooltip names the target mode.
  */
 @Component({
   selector: 'mv-theme-toggle',
@@ -21,7 +23,6 @@ import { ThemeService } from './theme.service';
       [title]="isLight() ? 'Dunklen Modus einschalten' : 'Hellen Modus einschalten'"
       (click)="theme.toggle()">
       <mv-icon [name]="isLight() ? 'sun' : 'moon'" [size]="20" />
-      <span class="label">{{ isLight() ? 'Hell' : 'Dunkel' }}</span>
     </button>
   `,
   styles: `
@@ -32,26 +33,20 @@ import { ThemeService } from './theme.service';
     .toggle {
       appearance: none;
       border: 0;
-      min-height: 44px;
-      padding: 0 var(--mv-space-3);
-      border-radius: var(--mv-radius-pill);
+      /* Round 44 px target: the minimum touch size, no text to make room for. */
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 50%;
       display: inline-flex;
       align-items: center;
-      gap: var(--mv-space-2);
+      justify-content: center;
       background: var(--mv-stage-tint-2);
       color: var(--mv-on-stage);
-      font: inherit;
-      font-weight: 700;
-      font-size: 0.9375rem;
       cursor: pointer;
     }
     .toggle:hover {
       background: var(--mv-stage-tint-4);
-    }
-    @media (max-width: 480px) {
-      .label {
-        display: none;
-      }
     }
   `,
 })

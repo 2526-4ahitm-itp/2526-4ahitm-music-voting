@@ -95,6 +95,28 @@ describe('Entry and setup pages in stage look (DOM)', () => {
     fixture.destroy();
   });
 
+  it('landing page on a phone: logo left in the top bar, switch right, no second logo in the hero', () => {
+    const fixture = render(Home);
+    const root: HTMLElement = fixture.nativeElement;
+    const top = root.querySelector('header.host-top') as HTMLElement;
+    const topLogo = top.querySelector('img.top-logo') as HTMLImageElement;
+
+    // Order in the bar: logo first, then the switch (which pushes itself to the right).
+    expect(topLogo.getAttribute('src')).toBe('assets/img/logo-mark.png');
+    expect(topLogo.getAttribute('alt')).toBe('');
+    expect(topLogo.nextElementSibling?.tagName.toLowerCase()).toBe('mv-theme-toggle');
+    // Karma's window is wider than a phone, so the phone rule is checked as a rule.
+    const phoneRule = [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules]; } catch { return []; } })
+      .find((r: any) => r.conditionText?.includes('max-width: 599px') && r.cssText.includes('.top-logo')) as CSSMediaRule | undefined;
+    expect(phoneRule).withContext('phone rule for the top-bar logo').toBeDefined();
+    // Selectors carry Angular's scoping attributes, e.g. .hero[_ngcontent-…] .logo[_ngcontent-…].
+    expect(phoneRule!.cssText).toMatch(/\.hero\S* \.logo\S* \{ display: none/);
+    if (window.innerWidth >= 600) {
+      expect(getComputedStyle(topLogo).display).toBe('none');
+    }
+    fixture.destroy();
+  });
+
   it('host options: icons instead of emoji, "Gastgeber-PIN" wording and "Player öffnen"', () => {
     const fixture = render(HostOptions);
     const root: HTMLElement = fixture.nativeElement;

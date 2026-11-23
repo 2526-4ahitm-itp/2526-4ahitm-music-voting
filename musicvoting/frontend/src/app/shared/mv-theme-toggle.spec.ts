@@ -35,4 +35,30 @@ describe('MvThemeToggle', () => {
     fixture.detectChanges();
     expect(button.getAttribute('aria-checked')).toBe('false');
   });
+
+  it('shows only an icon and a tooltip naming the mode it switches to', () => {
+    const fixture = TestBed.createComponent(MvThemeToggle);
+    fixture.detectChanges();
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+
+    // No visible text at any width: the label only exists as aria-label.
+    expect(button.textContent?.trim()).toBe('');
+    expect(button.querySelector('svg')).not.toBeNull();
+    expect(button.title).toBe('Hellen Modus einschalten');
+
+    button.click();
+    fixture.detectChanges();
+    expect(button.textContent?.trim()).toBe('');
+    expect(button.title).toBe('Dunklen Modus einschalten');
+  });
+
+  it('is a 44 px touch target', () => {
+    const fixture = TestBed.createComponent(MvThemeToggle);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    const rect = (fixture.nativeElement.querySelector('button') as HTMLElement).getBoundingClientRect();
+    expect(rect.width).toBe(44);
+    expect(rect.height).toBe(44);
+    fixture.nativeElement.remove();
+  });
 });

@@ -244,4 +244,72 @@ describe('Startpage layout (TV)', () => {
     expect(alert!.textContent).toContain('Wiedergabe nicht möglich: Das Spotify-Konto braucht Premium.');
     expect(alert!.closest('[role="alert"]')).not.toBeNull();
   });
+
+  // ---------- Like pulse (dashboard spec "Dashboard Pulses When a Like Count Changes") ----------
+
+  describe('like pulse', () => {
+    let queue: any[];
+
+    beforeEach(() => {
+      const spotify = TestBed.inject(SpotifyWebPlayerService) as any;
+      spotify.getQueue = () => of({ queue });
+      (comp as any).partyId = 'p1';
+      comp.currentTrack = track(0);
+      jasmine.clock().install();
+    });
+
+    afterEach(() => jasmine.clock().uninstall());
+
+    async function load(next: any[]) {
+      queue = next;
+      await comp.loadPlaylist();
+      fixture.detectChanges();
+    }
+
+    const pulsing = () => Array.from(fixture.nativeElement.querySelectorAll('.row-likes.pulse'))
+      .map((el: any) => el.closest('.row').querySelector('.row-title').textContent.trim());
+
+    it('pulses only the entry whose like count changed, and stops after 600 ms', async () => {
+      await load([track(1, 2), track(2, 1)]);
+      expect(pulsing()).toEqual([]);
+
+      await load([track(1, 3), track(2, 1)]);
+      expect(pulsing()).toEqual(['Song 1']);
+
+      jasmine.clock().tick(Startpage.PULSE_MS + 10);
+      fixture.detectChanges();
+      expect(pulsing()).toEqual([]);
+    });
+
+    it('does not pulse a newly added song', async () => {
+      await load([track(1, 2)]);
+      await load([track(1, 2), track(2, 0)]);
+
+      expect(pulsing()).toEqual([]);
+    });
+
+    it('lights the number up in the accent colour while it pulses (what is left under reduced motion)', async () => {
+      await load([track(1, 2)]);
+      const count = () => getComputedStyle(q('.row-likes-count')!).color;
+      const normal = count();
+
+      await load([track(1, 3)]);
+
+      expect(count()).not.toBe(normal);
+    });
+  });
+
+  // ---------- Logo glow (web-ui spec "Brand Logo on Landing Page and TV") ----------
+
+  it('gives the logo a faint white glow in dark mode and none in light mode', () => {
+    fixture.detectChanges();
+    const filter = () => getComputedStyle(q('.stage-footer img.logo')!).filter;
+
+    document.documentElement.dataset['theme'] = 'dark';
+    expect(filter()).toContain('drop-shadow');
+
+    document.documentElement.dataset['theme'] = 'light';
+    expect(filter()).toBe('none');
+    document.documentElement.dataset['theme'] = 'dark';
+  });
 });
