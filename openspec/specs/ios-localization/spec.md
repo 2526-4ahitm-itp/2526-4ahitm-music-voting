@@ -1,7 +1,9 @@
 # ios-localization Specification
 
 ## Purpose
-TBD - created by archiving change add-ios-i18n. Update Purpose after archive.
+
+Defines how the iOS app chooses its UI language: it follows the device language, with German as the base language and English as the second language. Texts sent by the backend (error and status messages) stay German and are shown as received.
+
 ## Requirements
 ### Requirement: iOS App Respects the Device Language
 The iOS app MUST localize all user-facing strings via iOS's `Localizable.strings` infrastructure and display them in the language selected by the device's system language setting. The app MUST NOT hardcode user-facing strings in a single language, and MUST NOT provide an in-app language picker — the operating system's language setting is the sole control.
