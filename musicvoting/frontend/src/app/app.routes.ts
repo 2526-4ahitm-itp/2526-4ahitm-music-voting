@@ -13,6 +13,7 @@ import { SelectPlaylist } from './pages/select-playlist/select-playlist';
 import { SelectBlacklist } from './pages/select-blacklist/select-blacklist';
 import { PartyReady } from './pages/party-ready/party-ready';
 import { hostGuard } from './host.guard';
+import { guestGuard } from './guest.guard';
 
 export const routes: Routes = [
   {
@@ -24,6 +25,7 @@ export const routes: Routes = [
   {
     path: 'guest',
     component: Guest,
+    canActivate: [guestGuard],
     title: 'Partygast - MusicVoting'
   },
 
@@ -99,6 +101,7 @@ export const routes: Routes = [
   {
     path: 'voting',
     component: VotingComp,
+    canActivate: [guestGuard],
     title: 'Partygast - MusicVoting'
   },
 
