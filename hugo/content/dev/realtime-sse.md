@@ -30,8 +30,8 @@ Der Stream ist `GET /api/spotify/events?source={web|ios}&partyId={id}`
 Jedes Event mit `partyId` wird **nur** an Clients mit passendem `partyId`-Query ausgeliefert
 (`progress`, `queue-updated`, `track-changed`, `vote-updated`, `blacklist-updated`, `party-ended`).
 Ein Client ohne `partyId`-Query bekommt davon nur `party-ended` (und `login-success`), deshalb
-müssen alle Web-Seiten mit Live-Updates `partyId` mitschicken (`guest` und `search-host` seit
-`add-party-blacklist`).
+müssen alle Web-Seiten mit Live-Updates `partyId` mitschicken (Gastseite `voting`, `dashboard`
+und `startpage`).
 
 - Der **Web**-Zweig liefert party-scoped Events an passende `partyId`.
 - Der **iOS**-Zweig liefert dieselben party-scoped Events plus `party-ended` und per

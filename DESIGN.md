@@ -165,7 +165,7 @@ A night-dark base lit by the two binding brand colours, Stage Purple and Coral, 
 - **Stage Card / Row / Bar** (translucent Stage Night at 0.72 / 0.6 / 0.82): cards, list rows and the sticky top bar. Translucent so the glow shines through, dense enough that they read as clear boxes.
 - **Stage Tint** (On Stage at 0.06–0.22): inner edges, quiet buttons, hover states, input backgrounds.
 - **Light mode** swaps the stage to **Light Stage** (#FAF6FC), text to **Light Ink** (#1D0A24) and **Light Ink Muted** (#4E3D56), accent text to **Light Accent** (#80231A), cards to white.
-- **Danger** (#B3261E) for destructive confirmations ("Party beenden", "Auch sperren"); **Success** (#1E7B4A) is reserved for confirmations.
+- **Danger** (#B3261E) for destructive confirmations ("Party beenden", "Entfernen und sperren"); **Success** (#1E7B4A) is reserved for confirmations.
 
 ### Named Rules
 **The Light, Not Paint Rule.** The brand gradient is only ever light behind the stage (blurred radial glows) or the fill of a large tile without small text. Never a full-page background, never gradient-clipped text.
@@ -192,15 +192,16 @@ A night-dark base lit by the two binding brand colours, Stage Purple and Coral, 
 ### Named Rules
 **The Sofa Rule.** TV text is sized in `vh`, scaled for 1080p: queue titles and likes ≥ 32px, the current title ≥ 48px. Nothing on the TV is smaller than what can be read from the sofa.
 
-**The Plain Title Rule.** Page titles name the place ("Warteschlange", "Song suchen", "Blacklist"), not a slogan.
+**The Plain Title Rule.** Page titles name the place ("Warteschlange", "Dashboard", "Blocklist"), not a slogan.
 
 ## Layout
 
 - **Spacing scale:** 4 / 8 / 12 / 16 / 24 / 32 / 48 px (`--mv-space-1` … `-7`). Page padding is fluid, clamp(16px, 3vw, 40px).
-- **Sticky top bar** on every page except the TV: page title (and, for guests, "Party 12345 · Party verlassen" below it) on the left, the light-mode switch on the right.
-- **Host pages:** below 1024 px a burger opens a slide-in panel; from 1024 px the same navigation is a fixed 220 px side rail (`--mv-host-rail-width`) and the page shifts right. The dashboard uses two columns (queue left, a 280–360 px side column with join, party actions and Gastgeber-PIN), collapsing to one column below 900 px.
+- **Sticky top bar** on every page except the TV: page title (and, for guests, "Party 12345 · Party verlassen" below it) on the left, the icon-only light-mode toggle on the right. On the landing page below 600 px the logo takes the left side.
+- **Host pages:** below 1024 px a burger opens a slide-in panel; from 1024 px the same navigation is a fixed 220 px side rail (`--mv-host-rail-width`) and the page shifts right. The panel and rail show the logo and a "Party läuft · <Voting-PIN>" badge. The dashboard is the only host view of the queue and uses two columns (now playing and the queue card left, whose search field works like the guest page: results replace the queue while it holds text; a 280–360 px side column with join, party actions and Gastgeber-PIN), collapsing to one column below 900 px. Queue rows keep rank, likes, the host's like button and "Song entfernen" on phones; the cover shrinks to 40 px instead.
 - **Entry and setup pages** share one narrow column (max 34rem) so they read as steps of one flow.
-- **Guest pages** are a single column with a floating bottom tab bar ("Voten" / "Hinzufügen", max 450 px wide) in the thumb zone, respecting the safe area.
+- **Search fields** (guest page and dashboard) show a round "x" ("Suche leeren") while they hold text; it empties the field and closes the results in one tap.
+- **Guests have one page** (`/voting`), a single column: now-playing bar, a search field, then the queue. While the field holds text, search results labelled "Suchergebnisse" replace the queue; a queued result shows its likes and heart, any other a "+". There is no tab bar; the toast sits at the bottom in the thumb zone, respecting the safe area.
 - **TV (1920×1080):** now playing (large cover ≥ 40% of the screen height, title, progress) on the left; join block (QR ≥ 25% of the height, Voting-PIN) and "Als Nächstes" (top 5 plus "+ N weitere") on the right; footer with logo, wordmark and "powered by HTL Leonding". When the party is empty, the join block takes the whole right column.
 
 ## Elevation & Depth
@@ -211,14 +212,15 @@ Depth comes from light and translucency, not from shadows. The stage is the bott
 - **Inner edge** (`box-shadow: inset 0 0 0 1px var(--mv-stage-tint-1)`): every row and card; replaces borders.
 - **Floating panel** (`box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45)`): confirmation popovers such as "Party wirklich verlassen?".
 - **Slide-in menu** (`box-shadow: 4px 0 32px rgba(0, 0, 0, 0.5)`): the host burger panel below 1024 px.
-- **Cover lift** (`box-shadow: 0 30px 80px var(--mv-stage-shadow), 0 8px 24px rgba(132, 3, 166, 0.35)`): the now-playing cover on TV and dashboard, lifted towards the light.
+- **Cover lift** (`box-shadow: 0 30px 80px var(--mv-stage-shadow), 0 8px 24px var(--mv-glow-brand)`): the now-playing cover on TV and dashboard, lifted towards the light.
+- **Logo glow** (`filter: var(--mv-glow-logo)`, a faint white `drop-shadow`, `none` in light mode): the TV logo, so its dark-violet segment stays visible on the dark stage.
 
 ### Named Rules
 **The Glow Behind, Never Inside Rule.** The glow lives only behind the stage. The TV gets corner glows but no centre glow (it would fill the whole screen); host and guest pages get the softer centre glow so their dark cards do not sink into black.
 
 ## Shapes
 
-Soft and round throughout. Buttons, chips, the bottom tab bar and the theme switch are pills (999px). Cards use 20px corners, rows 14–16px, inputs 16px, small elements (menu entries, error banners) 10px. Icon buttons are circles (44px, 60px for play/pause). Covers are rounded squares; artist images are circles. There are no hard borders and no sharp corners anywhere.
+Soft and round throughout. Buttons and chips are pills (999px); the theme toggle is a 44px circle. Cards use 20px corners, rows 14–16px, inputs 16px, small elements (menu entries, error banners) 10px. Icon buttons are circles (44px, 60px for play/pause). Covers are rounded squares; artist images are circles. There are no hard borders and no sharp corners anywhere.
 
 ## Components
 
@@ -249,16 +251,16 @@ Soft, tactile and calm (weich, griffig, ruhig): every control is easy to hit, an
 
 ### Navigation
 - **Host:** burger plus slide-in panel below 1024px, fixed side rail with icon and text from 1024px; the current page has a purple wash and `aria-current="page"`.
-- **Guests:** floating bottom tab bar with two tabs, the active one filled Stage Purple.
+- **Guests:** none; queue and search share one page.
 
 ### Queue Row (signature component)
-The heart of the product, used on phone, dashboard and TV: rank number, rounded cover, title and artist (truncated with ellipsis), then the like count and a 44px heart. A liked row gets the coral wash and a coral edge; the next song gets the purple highlight. On the TV, rows slide to their new position when the order changes (FLIP), without movement under reduced motion.
+The heart of the product, used on phone, dashboard and TV: rank number, rounded cover, title and artist (truncated with ellipsis), then the like count and a 44px heart. A liked row gets the coral wash and a coral edge; the next song gets the purple highlight. On the TV, rows slide to their new position when the order changes (FLIP), and a changed like count pulses once (600 ms, accent colour); under reduced motion rows switch without movement and the count only changes colour.
 
 ### Cover
 One shared component (`mv-cover`) for every album image: when the image is missing or fails, it shows a dark brand tile with a line-drawn note, never a light placeholder. Covers are decorative (`alt=""`).
 
 ### Toast
-Short confirmations above the bottom tab bar for about 4 seconds, with an optional action ("Song hinzugefügt – Platz 3 · Zum Voten"). Errors use the same place in a colour with at least 4.5:1 contrast.
+Confirmations at the bottom of the page for about 1.5 seconds ("Song hinzugefügt – Platz 3", "Geliked – jetzt auf Platz 2"): a filled Stage Purple card with a round icon badge (check or heart) and bold 1.0625rem text, so they are noticed at a glance. No action button; the guest already sees the queue. Errors use the same place in the danger colour (at least 4.5:1 contrast) and stay about 4 seconds.
 
 ## Do's and Don'ts
 
