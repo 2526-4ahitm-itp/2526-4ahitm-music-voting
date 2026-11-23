@@ -2,9 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { Subject, of } from 'rxjs';
-import { VotingComp } from './voting-comp';
+import { CONFIRM_MS, VotingComp } from './voting-comp';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { PartyService } from '../../services/party.service';
+import { TrackService } from '../../services/spotify-tracks';
 import { ToastService } from '../../shared/toast.service';
 
 /**
@@ -42,6 +43,7 @@ describe('VotingComp voting (DOM)', () => {
         provideRouter([]),
         { provide: SpotifyWebPlayerService, useValue: spotify },
         { provide: PartyService, useValue: { currentPartyId: 'party-1', deviceId: 'device-1' } },
+        { provide: TrackService, useValue: { searchTracks: () => of({}) } },
       ],
     }).compileComponents();
 
@@ -92,6 +94,52 @@ describe('VotingComp voting (DOM)', () => {
     expect(count()).toBe('2');
     expect(button().getAttribute('aria-pressed')).toBe('false');
     expect(toast.current()?.kind).toBe('error');
+  });
+
+  // Guest spec "Guest Like Is Confirmed with the Rank".
+  it('confirms a like with the new rank from the re-sorted queue', async () => {
+    show(song('a', 3), song('b', 2), song('c', 2));
+    const toast = TestBed.inject(ToastService);
+    // After the like the server sorts c (3 likes, older than a) to rank 2.
+    spotify.getQueue.and.returnValue(of({ queue: [song('a', 3), song('c', 3, true), song('b', 2)] }));
+
+    button(2).click();
+    voteResponse.next({ likeCount: 3, liked: true });
+    voteResponse.complete();
+    await fixture.whenStable();
+    await new Promise((r) => setTimeout(r));
+
+    expect(toast.current()?.text).toBe('Geliked – jetzt auf Platz 2');
+    expect(toast.current()?.icon).toBe('heart');
+  });
+
+  it('lets the like confirmation disappear after about 1.5 seconds', async () => {
+    show(song('a', 2));
+    const toast = TestBed.inject(ToastService);
+    spotify.getQueue.and.returnValue(of({ queue: [song('a', 3, true)] }));
+    button().click();
+    voteResponse.next({ likeCount: 3, liked: true });
+    voteResponse.complete();
+    await fixture.whenStable();
+    await new Promise((r) => setTimeout(r));
+    expect(toast.current()?.text).toBe('Geliked – jetzt auf Platz 1');
+
+    await new Promise((r) => setTimeout(r, CONFIRM_MS + 50));
+    expect(toast.current()).toBeNull();
+  });
+
+  it('shows no confirmation when a like is taken back', async () => {
+    show(song('a', 3, true));
+    const toast = TestBed.inject(ToastService);
+    toast.dismiss();
+
+    button().click();
+    voteResponse.next({ likeCount: 2, liked: false });
+    voteResponse.complete();
+    await fixture.whenStable();
+    await new Promise((r) => setTimeout(r));
+
+    expect(toast.current()).toBeNull();
   });
 
   it('keeps a liked card tappable and removes the like on the next tap', async () => {
@@ -154,6 +202,8 @@ describe('VotingComp voting (DOM)', () => {
 
   it('uses the server numbers once the vote succeeds', async () => {
     show(song('a', 2));
+    // After a like the page reloads the queue for the rank; the server has the new numbers.
+    spotify.getQueue.and.returnValue(of({ queue: [song('a', 5, true)] }));
 
     button().click();
     voteResponse.next({ likeCount: 5, liked: true });
@@ -209,25 +259,6 @@ describe('VotingComp voting (DOM)', () => {
       expect(fixture.nativeElement.querySelector('.track-card .rank')!.textContent).toContain('Platz');
     });
 
-    it('keeps the ranks when the list is filtered', () => {
-      show(playing, song('b', 3), song('c', 1));
-      comp.searchQuery.set('Song c');
-      fixture.detectChanges();
-
-      const rows = fixture.nativeElement.querySelectorAll('.track-card');
-      expect(rows.length).toBe(1);
-      expect(rows[0].querySelector('.rank').textContent).toContain('2');
-    });
-
-    it('says no song matches instead of "empty queue" when a filter finds nothing', () => {
-      show(song('b', 3));
-      comp.searchQuery.set('zzz');
-      fixture.detectChanges();
-
-      expect(fixture.nativeElement.textContent).toContain('Kein Song passt zu „zzz“');
-      expect(fixture.nativeElement.textContent).not.toContain('Die Warteschlange ist leer');
-    });
-
     it('highlights a liked row for a moment, then clears it', () => {
       jasmine.clock().install();
       try {
@@ -243,5 +274,34 @@ describe('VotingComp voting (DOM)', () => {
         jasmine.clock().uninstall();
       }
     });
+  });
+
+  // Guest spec "Guest Is Welcomed After Joining": short guide, closes by itself after 10 s.
+  it('shows a short guide in the welcome and closes it by itself after 10 seconds', () => {
+    fixture.destroy();
+    localStorage.removeItem('mv-welcome-party-1');
+    jasmine.clock().install();
+    try {
+      const f = TestBed.createComponent(VotingComp);
+      f.detectChanges();
+      const sheet = () => f.nativeElement.querySelector('.welcome-sheet') as HTMLElement | null;
+      const guide = Array.from(sheet()!.querySelectorAll('.welcome-guide li')).map((li: any) => li.textContent.trim());
+      expect(guide).toEqual([
+        'Tipp auf ♥ bei Songs, die du hören willst – je mehr Likes, desto früher laufen sie.',
+        'Such oben nach einem Song und tipp auf +, um ihn hinzuzufügen.',
+      ]);
+
+      jasmine.clock().tick(VotingComp.WELCOME_MS - 100);
+      f.detectChanges();
+      expect(sheet()).not.toBeNull();
+
+      jasmine.clock().tick(200);
+      f.detectChanges();
+      expect(sheet()).toBeNull();
+      expect(localStorage.getItem('mv-welcome-party-1')).toBe('1');
+      f.destroy();
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
 });

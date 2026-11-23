@@ -3,8 +3,7 @@ import { PLATFORM_ID, Type, provideZonelessChangeDetection, signal } from '@angu
 import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
-import { BehaviorSubject, NEVER, of } from 'rxjs';
-import { Guest } from './guest/guest';
+import { NEVER, of } from 'rxjs';
 import { VotingComp } from './voting-comp/voting-comp';
 import { SelectBlacklist } from './select-blacklist/select-blacklist';
 import { Startpage } from './startpage/startpage';
@@ -15,7 +14,6 @@ import { CreateParty } from './create-party/create-party';
 import { SpotifyWebPlayerService } from '../services/spotify-player';
 import { PartyService } from '../services/party.service';
 import { TrackService } from '../services/spotify-tracks';
-import { QueueStateService } from '../services/queue-state';
 
 /**
  * Accessibility baseline for the pages not covered by the host and entry page
@@ -36,7 +34,7 @@ describe('Accessibility baseline (DOM)', () => {
 
   beforeEach(async () => {
     // ngOnInit opens SSE / polls the backend; these tests check the markup with fixed state.
-    for (const type of [Guest, VotingComp, SelectBlacklist, Startpage, PartyReady, CodeInput]) {
+    for (const type of [VotingComp, SelectBlacklist, Startpage, PartyReady, CodeInput]) {
       spyOn(type.prototype as any, 'ngOnInit').and.returnValue(undefined);
     }
 
@@ -60,7 +58,6 @@ describe('Accessibility baseline (DOM)', () => {
           },
         },
         { provide: TrackService, useValue: { searchTracks: () => of({}) } },
-        { provide: QueueStateService, useValue: { inQueueUris$: new BehaviorSubject<Set<string>>(new Set()), refresh: () => {} } },
       ],
     }).compileComponents();
   });
@@ -81,38 +78,36 @@ describe('Accessibility baseline (DOM)', () => {
     });
   }
 
-  it('guest search: add buttons are labelled, also for blocked songs', () => {
-    const fixture = render(Guest, (c) => {
+  it('guest search: add and like buttons in the results are labelled, also for blocked songs', () => {
+    const fixture = render(VotingComp, (c) => {
       c.searchQuery.set('abba');
       c.lastSearchedTerm.set('abba');
-      c.tracks.set([song('a'), song('b', { blocked: true })]);
+      // Song c is queued, so its result is a like button instead of "+".
+      c.tracks.set([song('c')]);
+      c.results.set([song('a'), song('b', { blocked: true }), song('c')]);
     });
     const root: HTMLElement = fixture.nativeElement;
 
     const addButtons = root.querySelectorAll('button.add-button');
     expect(addButtons.length).toBe(2);
     addButtons.forEach((b) => expect(b.getAttribute('aria-label')).toBeTruthy());
+    expect(root.querySelector('.results button.vote-button')?.getAttribute('aria-label')).toBe('Song liken');
     expectAccessibleControls(root);
     fixture.destroy();
   });
 
-  // Task 8.5: plain page titles instead of slogans, and the party the guest is in.
-  for (const [name, type, title] of [
-    ['guest voting', VotingComp, 'Warteschlange'],
-    ['guest add', Guest, 'Song suchen'],
-  ] as const) {
-    it(`${name}: title "${title}" with "Party 47291" and "Party verlassen" in the top bar`, () => {
-      const fixture = render(type as any);
-      const top: HTMLElement = fixture.nativeElement.querySelector('header.host-top');
+  // Plain page title instead of a slogan, and the party the guest is in (one guest page).
+  it('guest page: title "Warteschlange" with "Party 47291" and "Party verlassen" in the top bar', () => {
+    const fixture = render(VotingComp);
+    const top: HTMLElement = fixture.nativeElement.querySelector('header.host-top');
 
-      expect(top.querySelector('h1')!.textContent!.trim()).toBe(title);
-      expect(top.querySelector('mv-guest-party .party-id')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Party 47291');
-      expect(top.querySelector('mv-guest-party button.leave')!.textContent!.trim()).toBe('Party verlassen');
-      expect(fixture.nativeElement.textContent).not.toContain('Lieblingssongs');
-      expectAccessibleControls(fixture.nativeElement);
-      fixture.destroy();
-    });
-  }
+    expect(top.querySelector('h1')!.textContent!.trim()).toBe('Warteschlange');
+    expect(top.querySelector('mv-guest-party .party-id')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Party 47291');
+    expect(top.querySelector('mv-guest-party button.leave')!.textContent!.trim()).toBe('Party verlassen');
+    expect(fixture.nativeElement.textContent).not.toContain('Lieblingssongs');
+    expectAccessibleControls(fixture.nativeElement);
+    fixture.destroy();
+  });
 
   it('guest voting: like buttons are labelled toggles, the welcome sheet button has text', () => {
     const fixture = render(VotingComp, (c) => {

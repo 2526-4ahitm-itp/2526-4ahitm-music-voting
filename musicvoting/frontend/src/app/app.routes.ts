@@ -1,12 +1,9 @@
 import { Routes } from '@angular/router';
-import { Guest } from './pages/guest/guest';
 import { Home } from './pages/home/home';
 import { HostDashboard } from './pages/host-dashboard/host-dashboard';
 import { HostOptions } from './pages/host-options/host-options';
 import { Startpage } from './pages/startpage/startpage';
 import { VotingComp } from './pages/voting-comp/voting-comp';
-import {VotingHost} from './pages/voting-host/voting-host';
-import { SearchHost } from './pages/search-host/search-host';
 import { CodeInput } from './pages/code-input/code-input';
 import { CreateParty } from './pages/create-party/create-party';
 import { SelectPlaylist } from './pages/select-playlist/select-playlist';
@@ -23,10 +20,10 @@ export const routes: Routes = [
   },
 
   {
+    // The add/search view merged into the guest page (guest spec "Guest Uses One
+    // Page for Queue and Search"); old links and bookmarks still work.
     path: 'guest',
-    component: Guest,
-    canActivate: [guestGuard],
-    title: 'Partygast - MusicVoting'
+    redirectTo: 'voting'
   },
 
   {
@@ -59,7 +56,7 @@ export const routes: Routes = [
     path: 'select-blacklist',
     component: SelectBlacklist,
     canActivate: [hostGuard],
-    title: 'Blacklist - MusicVoting'
+    title: 'Blocklist - MusicVoting'
   },
 
   {
@@ -85,17 +82,16 @@ export const routes: Routes = [
   },
 
   {
+    // The host voting and search pages merged into the dashboard (host spec "Host
+    // Dashboard Shows the Whole Queue on Every Screen", "Host Adds Songs from the
+    // Dashboard"). The dashboard's guard still applies after the redirect.
     path: 'voting-host',
-    component: VotingHost,
-    canActivate: [hostGuard],
-    title: 'Voten - MusicVoting'
+    redirectTo: 'dashboard'
   },
 
   {
     path: 'search-host',
-    component: SearchHost,
-    canActivate: [hostGuard],
-    title: 'Suchen - MusicVoting'
+    redirectTo: 'dashboard'
   },
 
   {

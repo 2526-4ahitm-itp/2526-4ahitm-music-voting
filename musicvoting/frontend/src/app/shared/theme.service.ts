@@ -17,7 +17,7 @@ export const THEME_KEY = 'mv-theme';
 /** localStorage key for the guest pages, kept apart from the host choice. */
 export const GUEST_THEME_KEY = 'mv-guest-theme';
 
-/** Path prefixes of the guest pages: join by code or QR link, voting, add songs. */
+/** Path prefixes of the guest pages: join by code or QR link, the guest page; `/guest` only redirects to it. */
 const GUEST_PATHS = ['/code', '/join', '/voting', '/guest'];
 
 /**

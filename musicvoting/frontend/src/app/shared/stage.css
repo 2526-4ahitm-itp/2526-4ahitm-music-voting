@@ -189,7 +189,8 @@
   margin: 0;
 }
 
-.host-search mv-icon {
+/* Direct child only: the search icon on the left, not the icon inside the clear button. */
+.host-search > mv-icon {
   position: absolute;
   left: 14px;
   color: var(--mv-on-stage-muted);
@@ -211,6 +212,38 @@
 
 .host-search input::placeholder {
   color: var(--mv-on-stage-muted);
+}
+
+/* One "x" only: the clear button below replaces the browser's own cancel button. */
+.host-search input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* Room on the right for the clear button. */
+.host-search.has-clear input {
+  padding-right: 52px;
+}
+
+/* "Suche leeren": empties the field and closes the results in one tap. */
+.search-clear {
+  position: absolute;
+  right: 4px;
+  appearance: none;
+  border: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  color: var(--mv-on-stage-muted);
+  cursor: pointer;
+}
+
+.search-clear:hover {
+  color: var(--mv-on-stage);
+  background: var(--mv-stage-tint-2);
 }
 
 .host-search input:focus {

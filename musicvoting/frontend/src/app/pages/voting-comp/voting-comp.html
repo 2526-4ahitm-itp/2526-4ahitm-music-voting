@@ -1,10 +1,12 @@
 <!--
-  Guest voting view in the stage look (shared/stage.css), dark or light by
-  the guest's own choice (switch in the top bar).
+  The single guest page in the stage look (shared/stage.css), dark or light by
+  the guest's own choice (switch in the top bar). Queue and search share it:
+  with an empty search field the queue is shown, otherwise the search results
+  (guest spec "Guest Uses One Page for Queue and Search").
 -->
 <div class="host-stage guest">
   <header class="host-top">
-    <!-- Plain page titles; which party the guest is in sits right below (task 8.5). -->
+    <!-- Plain page title; which party the guest is in sits right below. -->
     <div class="guest-head">
       <h1 class="host-title">Warteschlange</h1>
       <mv-guest-party />
@@ -13,7 +15,7 @@
   </header>
 
   <main class="host-content guest-content">
-    <!-- What plays now sits above the list, so the list is only what the room still decides on. -->
+    <!-- What plays now stays on top, also while searching. -->
     @if (nowPlaying(); as playing) {
       <section class="now-bar" aria-label="Läuft gerade">
         <mv-cover class="now-bar-cover" [images]="playing.album?.images" />
@@ -32,68 +34,157 @@
       </section>
     }
 
-    <form class="host-search" role="search" (submit)="$event.preventDefault()">
+    <form class="host-search" role="search" [class.has-clear]="searchQuery().length > 0"
+          (submit)="search(); $event.preventDefault()">
       <mv-icon name="search" [size]="18" />
       <input
+        #searchField
         type="search"
-        placeholder="In der Warteschlange suchen …"
-        aria-label="In der Warteschlange suchen"
-        [ngModel]="searchQuery()"
+        placeholder="Song oder Künstler suchen …"
+        aria-label="Song oder Künstler suchen"
+        [value]="searchQuery()"
         (input)="onSearch($event)"
-        name="search">
+        name="search"
+        enterkeyhint="search"
+        autocomplete="off">
+      <!-- One tap empties the field and closes the results (host spec "Search Field Has a Clear Button"). -->
+      @if (searchQuery().length > 0) {
+        <button type="button" class="search-clear" aria-label="Suche leeren" (click)="clearSearch(); searchField.focus()">
+          <mv-icon name="x" [size]="20" />
+        </button>
+      }
     </form>
 
-    <ol class="track-list" aria-label="Warteschlange, sortiert nach Likes">
-      @for (track of filteredTracks(); track track.id) {
-        <li
-          class="host-row track-card"
-          [class.voted]="track.hasVoted"
-          [class.just-liked]="highlightedUri() === track.uri">
-          <span class="rank" [class.next]="rankOf().get(track.uri) === 1">
-            <span class="mv-visually-hidden">Platz </span>{{ rankOf().get(track.uri) }}
-          </span>
-          <mv-cover class="host-row-cover album-cover" [images]="track.album?.images" />
-          <span class="host-row-text">
-            <span class="host-row-title track-name">{{ track.name }}</span>
-            <span class="host-row-artist artist-name">{{ track.artists?.[0]?.name }}</span>
-          </span>
-          <div class="vote-section">
-            <!-- The count is always shown, also 0, so every card looks alike. -->
-            <span class="like-count">{{ track.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
-            <button
-              type="button"
-              class="vote-button"
-              [class.pop]="track.hasVoted && poppedUri() === track.uri"
-              [attr.aria-pressed]="!!track.hasVoted"
-              [attr.aria-label]="voteLabel(track)"
-              (click)="toggleVote(track)">
-              <mv-icon name="heart" [size]="26" [filled]="!!track.hasVoted" />
-            </button>
-          </div>
-        </li>
-      } @empty {
-        <li class="host-empty">
-          <mv-icon name="music" [size]="40" />
-          @if (searchQuery().trim()) {
-            <h2>Kein Song passt zu „{{ searchQuery().trim() }}“</h2>
-          } @else {
-            <h2>Die Warteschlange ist leer</h2>
-            <p>Es sind noch keine Songs zum Voten da. Füg den ersten hinzu!</p>
+    @if (isSearchMode()) {
+      <!-- Search status; add confirmations and errors go to the shared toast. -->
+      <div class="search-status" aria-live="polite">
+        @if (isSearching()) {
+          <p class="host-status"><mv-spinner label="" /><span>Suche läuft …</span></p>
+        } @else if (searchFailed()) {
+          <p class="host-status error">{{ connectionLostText }}</p>
+        } @else if (hiddenHintText(); as hint) {
+          <!-- Songs by banned artists were removed; the hint replaces "Keine Treffer"
+               when nothing is left (search spec). -->
+          <p class="host-status hidden-hint">{{ hint }}</p>
+        } @else if (lastSearchedTerm() && results().length === 0) {
+          <p class="host-status">Keine Treffer für „{{ lastSearchedTerm() }}“</p>
+        }
+      </div>
+
+      @if (results().length > 0) {
+        <h2 class="list-label" id="results-title">Suchergebnisse</h2>
+        <ul class="track-list results" aria-labelledby="results-title">
+          @for (track of results(); track track.id) {
+            @switch (resultState(track)) {
+              @case ('queued') {
+                <!-- Already queued: vote here like in the queue (guest spec "Guest Votes on
+                     Queued Songs from Search Results"); the state comes from the queue entry. -->
+                @let entry = queued(track);
+                <li class="host-row track-card result-card"
+                    [class.voted]="entry.hasVoted"
+                    [class.just-liked]="highlightedUri() === track.uri">
+                  <mv-cover class="host-row-cover album-cover" [images]="track.album?.images" />
+                  <span class="host-row-text">
+                    <span class="host-row-title track-name">{{ track.name }}</span>
+                    <span class="host-row-artist artist-name">{{ track.artists?.[0]?.name }}</span>
+                  </span>
+                  @if (entry.isCurrentlyPlaying) {
+                    <!-- The playing song cannot be liked any more; say so instead of a dead button. -->
+                    <span class="playing-tag">Läuft gerade</span>
+                  } @else {
+                    <div class="vote-section">
+                      <span class="like-count">{{ entry.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
+                      <button
+                        type="button"
+                        class="vote-button"
+                        [class.pop]="entry.hasVoted && poppedUri() === track.uri"
+                        [attr.aria-pressed]="!!entry.hasVoted"
+                        [attr.aria-label]="voteLabel(entry)"
+                        (click)="toggleVote(entry)">
+                        <mv-icon name="heart" [size]="26" [filled]="!!entry.hasVoted" />
+                      </button>
+                    </div>
+                  }
+                </li>
+              }
+              @default {
+                <!-- Blocked songs stay greyed out without visible text (search spec); the
+                     label and tooltip say "Nicht verfügbar" but never why. -->
+                <li class="host-row track-card result-card" [class.blocked]="track.blocked">
+                  <mv-cover class="host-row-cover album-cover" [images]="track.album?.images" />
+                  <span class="host-row-text">
+                    <span class="host-row-title track-name">{{ track.name }}</span>
+                    <span class="host-row-artist artist-name">{{ track.artists?.[0]?.name }}</span>
+                  </span>
+                  <button type="button" class="add-button"
+                          (click)="addToPlaylist(track)"
+                          [disabled]="track.blocked || addingTrackId === track.id"
+                          [attr.aria-label]="addLabel(track)"
+                          [attr.title]="track.blocked ? 'Nicht verfügbar' : null">
+                    @if (addingTrackId === track.id) {
+                      <mv-icon name="check" [size]="24" [strokeWidth]="3" />
+                    } @else {
+                      <mv-icon name="plus" [size]="24" [strokeWidth]="3" />
+                    }
+                  </button>
+                </li>
+              }
+            }
           }
-        </li>
+        </ul>
       }
-    </ol>
+    } @else {
+      <ol class="track-list" aria-label="Warteschlange, sortiert nach Likes">
+        @for (track of waiting(); track track.id) {
+          <li
+            class="host-row track-card"
+            [class.voted]="track.hasVoted"
+            [class.just-liked]="highlightedUri() === track.uri">
+            <span class="rank" [class.next]="rankOf().get(track.uri) === 1">
+              <span class="mv-visually-hidden">Platz </span>{{ rankOf().get(track.uri) }}
+            </span>
+            <mv-cover class="host-row-cover album-cover" [images]="track.album?.images" />
+            <span class="host-row-text">
+              <span class="host-row-title track-name">{{ track.name }}</span>
+              <span class="host-row-artist artist-name">{{ track.artists?.[0]?.name }}</span>
+            </span>
+            <div class="vote-section">
+              <!-- The count is always shown, also 0, so every card looks alike. -->
+              <span class="like-count">{{ track.likeCount ?? 0 }}<span class="mv-visually-hidden"> Likes</span></span>
+              <button
+                type="button"
+                class="vote-button"
+                [class.pop]="track.hasVoted && poppedUri() === track.uri"
+                [attr.aria-pressed]="!!track.hasVoted"
+                [attr.aria-label]="voteLabel(track)"
+                (click)="toggleVote(track)">
+                <mv-icon name="heart" [size]="26" [filled]="!!track.hasVoted" />
+              </button>
+            </div>
+          </li>
+        } @empty {
+          <li class="host-empty">
+            <mv-icon name="music" [size]="40" />
+            <h2>Die Warteschlange ist leer</h2>
+            <p>Es sind noch keine Songs zum Voten da. Such oben nach einem Song und füg den ersten hinzu!</p>
+          </li>
+        }
+      </ol>
+    }
   </main>
 
   <mv-toast />
-  <mv-guest-tabs active="voting" />
 </div>
 
 @if (showWelcome()) {
   <!-- One-time welcome per party and device. Not a modal: the queue stays usable. -->
   <section class="welcome-sheet" aria-labelledby="welcome-title">
     <h2 id="welcome-title">Du bist dabei! 🎉</h2>
-    <p>Like Songs, die du hören willst, oder füg eigene hinzu.</p>
+    <!-- Short guide; the sheet closes by itself after 10 s (guest spec "Guest Is Welcomed After Joining"). -->
+    <ol class="welcome-guide">
+      <li><mv-icon name="heart" [size]="18" [filled]="true" /> Tipp auf ♥ bei Songs, die du hören willst – je mehr Likes, desto früher laufen sie.</li>
+      <li><mv-icon name="search" [size]="18" /> Such oben nach einem Song und tipp auf +, um ihn hinzuzufügen.</li>
+    </ol>
     <button type="button" class="welcome-ok" (click)="dismissWelcome()">Los geht's</button>
   </section>
 }
