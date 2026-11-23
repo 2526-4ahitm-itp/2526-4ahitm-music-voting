@@ -132,6 +132,42 @@ describe('SpotifyWebPlayerService', () => {
     httpMock.expectNone(() => true);
   });
 
+  it('provideOAuthToken fetches a fresh token on every SDK request', () => {
+    (service as any).token = 'start-token';
+    const received: string[] = [];
+
+    service.provideOAuthToken('p1', (t) => received.push(t));
+    httpMock.expectOne('/api/party/p1/spotify/token').flush('token-1');
+    service.provideOAuthToken('p1', (t) => received.push(t));
+    httpMock.expectOne('/api/party/p1/spotify/token').flush('token-2');
+
+    expect(received).toEqual(['token-1', 'token-2']);
+    expect((service as any).token).toBe('token-2');
+  });
+
+  it('provideOAuthToken falls back to the last token when the request fails', () => {
+    (service as any).token = 'last-token';
+    spyOn(console, 'warn');
+    const cb = jasmine.createSpy('cb');
+
+    service.provideOAuthToken('p1', cb);
+    httpMock.expectOne('/api/party/p1/spotify/token')
+      .flush('boom', { status: 500, statusText: 'Server Error' });
+
+    expect(cb).toHaveBeenCalledWith('last-token');
+  });
+
+  it('provideOAuthToken keeps the last token when the backend returns an empty token', () => {
+    (service as any).token = 'last-token';
+    const cb = jasmine.createSpy('cb');
+
+    service.provideOAuthToken('p1', cb);
+    httpMock.expectOne('/api/party/p1/spotify/token').flush('');
+
+    expect(cb).toHaveBeenCalledWith('last-token');
+    expect((service as any).token).toBe('last-token');
+  });
+
   it('disconnectPlayer does nothing when no player is connected', async () => {
     await expectAsync(service.disconnectPlayer()).toBeResolved();
   });
