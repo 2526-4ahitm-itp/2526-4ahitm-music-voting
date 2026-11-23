@@ -61,9 +61,9 @@ layout: "presentation"
 
 {{< slide title="Technischer Stack" >}}
 <div class="cards" style="--cols: 4">
-<div class="card"><div class="icon">☕</div><h4>Backend</h4><p>Quarkus (Java 21), REST + Server-Sent Events</p></div>
+<div class="card"><div class="icon">☕</div><h4>Backend</h4><p>Quarkus (Java 25), REST + Server-Sent Events</p></div>
 <div class="card"><div class="icon">🅰️</div><h4>Frontend</h4><p>Angular – Gast, Host und Player</p></div>
-<div class="card"><div class="icon">🐘</div><h4>Datenbank</h4><p>PostgreSQL 16 – Quelle der Wahrheit für Warteschlange</p></div>
+<div class="card"><div class="icon">🐘</div><h4>Datenbank</h4><p>PostgreSQL 19 – Quelle der Wahrheit für Warteschlange</p></div>
 <div class="card accent"><div class="icon">📱</div><h4>iOS-App</h4><p>SwiftUI – Gast- und Host-Ansicht</p></div>
 </div>
 {{< /slide >}}

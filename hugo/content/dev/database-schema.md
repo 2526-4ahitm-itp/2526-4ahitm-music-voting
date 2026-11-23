@@ -8,7 +8,7 @@ date: 2026-06-23
 lastmod: 2026-09-28
 ---
 
-PostgreSQL 16. Das Schema wird beim ersten Start aus
+PostgreSQL 19. Das Schema wird beim ersten Start aus
 `musicvoting/backend/setup.sql` initialisiert (Hibernate generiert es **nicht**).
 
 ## Tabellen

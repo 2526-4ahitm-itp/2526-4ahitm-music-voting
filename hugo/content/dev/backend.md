@@ -8,7 +8,7 @@ date: 2026-06-23
 lastmod: 2026-09-28
 ---
 
-Das Backend ist eine **Quarkus**-Anwendung (Java 21) unter `musicvoting/backend/`.
+Das Backend ist eine **Quarkus**-Anwendung (Java 25) unter `musicvoting/backend/`.
 REST-Basis-Pfad ist `/api` (`RestConfig` mit `@ApplicationPath("api")`).
 
 ## Package-Struktur

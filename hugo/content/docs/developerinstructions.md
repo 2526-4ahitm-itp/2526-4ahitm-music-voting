@@ -17,7 +17,7 @@ Willst du die App nur starten/ausprobieren, siehe {{< article link="docs/runinst
 1. **Premium Spotify Account** – nötig, um die Spotify-Playback-API zu nutzen.
 2. **Spotify Developer Konto** – liefert Client ID & Client Secret (siehe unten).
 3. **Docker** – für die PostgreSQL-Datenbank.
-4. **Java 21** und **Node.js** – für Backend bzw. Frontend.
+4. **Java 25** und **Node.js** (22.22+, 24.15+ oder 26; Angular 22 verlangt das) – für Backend bzw. Frontend.
 
 ---
 
@@ -130,9 +130,9 @@ cd script
 
 | Ebene | Technologie |
 |---|---|
-| Backend | Quarkus (Java 21), REST + SSE |
+| Backend | Quarkus (Java 25), REST + SSE |
 | Frontend | Angular (Gast, Host, Dashboard) |
-| Datenbank | PostgreSQL 16 (via Docker) |
+| Datenbank | PostgreSQL 19 (via Docker) |
 | Mobile (optional) | SwiftUI iOS-App |
 
 - Die verbindliche fachliche Spezifikation liegt unter `openspec/specs/`; eine lesbare Zusammenfassung ist die {{< article link="docs/specification/" >}}.

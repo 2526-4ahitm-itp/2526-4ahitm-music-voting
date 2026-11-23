@@ -9,10 +9,10 @@ description: Guide implementation work in the MusicVoting Quarkus backend (music
 
 | Component | Detail |
 |---|---|
-| Framework | Quarkus 3.40.x (Java 21) — exact version in `pom.xml` |
+| Framework | Quarkus 3.40.x (Java 25) — exact version in `pom.xml` |
 | REST | `quarkus-rest` + `quarkus-rest-jackson` (JAX-RS style) |
 | ORM | Hibernate ORM + Panache (`PanacheEntityBase`) |
-| DB | PostgreSQL 16 via Docker (`localhost:5432/musicvoting`) |
+| DB | PostgreSQL 19 via Docker (`localhost:5432/musicvoting`) |
 | Reactive | SmallRye Mutiny (`Multi<T>`) for SSE |
 | DI | Quarkus Arc (`@ApplicationScoped`, `@Inject`) |
 | Tests | JUnit 5 + REST Assured |

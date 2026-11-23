@@ -85,7 +85,7 @@ kein Java, kein Node, kein `application.properties` editieren.
 ### Voraussetzungen
 
 1. **Docker** (für die PostgreSQL-Datenbank).
-2. **Java 21** und **Node.js** (für Backend bzw. Frontend).
+2. **Java 25** und **Node.js** 22.22+, 24.15+ oder 26 (für Backend bzw. Frontend; Angular 22 verlangt diese Node-Versionen).
 3. In `application.properties` die Spotify-Daten eintragen
    (`Client ID`, `Client Secret`, `Redirect URI`) – Datei:
    `musicvoting/backend/src/main/resources/application.properties`.

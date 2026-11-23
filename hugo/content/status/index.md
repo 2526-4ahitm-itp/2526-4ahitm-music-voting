@@ -142,7 +142,7 @@ layout: "presentation"
 
   <!-- Backend -->
   <rect class="box primary" x="150" y="190" width="700" height="160" rx="16"/>
-  <text x="500" y="222" text-anchor="middle" font-size="22" font-weight="700">☕ Quarkus-Backend (Java 21) · /api</text>
+  <text x="500" y="222" text-anchor="middle" font-size="22" font-weight="700">☕ Quarkus-Backend (Java 25) · /api</text>
   <rect class="box" x="175" y="240" width="150" height="90" rx="10"/>
   <text x="250" y="278" text-anchor="middle" font-size="17" font-weight="600">Endpoints</text>
   <text class="muted" x="250" y="302" text-anchor="middle" font-size="13">REST · SSE</text>
@@ -159,7 +159,7 @@ layout: "presentation"
   <path class="edge" d="M700,350 L700,418" marker-end="url(#arrow)"/>
 
   <rect class="box" x="150" y="420" width="300" height="95" rx="14"/>
-  <text x="300" y="460" text-anchor="middle" font-size="22" font-weight="700">🐘 PostgreSQL 16</text>
+  <text x="300" y="460" text-anchor="middle" font-size="22" font-weight="700">🐘 PostgreSQL 19</text>
   <text class="muted" x="300" y="488" text-anchor="middle" font-size="15">party · queue_entry · vote</text>
 
   <rect class="box" x="550" y="420" width="300" height="95" rx="14"/>
