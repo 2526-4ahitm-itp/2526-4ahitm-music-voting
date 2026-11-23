@@ -8,7 +8,7 @@ import { PartyService } from './party.service';
 describe('SpotifyWebPlayerService', () => {
   let service: SpotifyWebPlayerService;
   let httpMock: HttpTestingController;
-  let partyService: { currentPartyId: string | null };
+  let partyService: { currentPartyId: string | null; deviceId?: string };
 
   beforeEach(() => {
     partyService = { currentPartyId: null };
@@ -46,14 +46,16 @@ describe('SpotifyWebPlayerService', () => {
     expect(console.warn).toHaveBeenCalled();
   });
 
-  it('addToPlaylist posts the uri and emits a queue update', () => {
+  it('addToPlaylist posts the uri with the deviceId and emits a queue update', () => {
     partyService.currentPartyId = 'party-1';
+    partyService.deviceId = 'device-1';
     const updates: void[] = [];
     service.getQueueUpdates().subscribe(() => updates.push(undefined));
 
     service.addToPlaylist('spotify:track:abc').subscribe();
 
-    const req = httpMock.expectOne('/api/party/party-1/track/addToPlaylist');
+    // deviceId identifies the guest for the per-guest add limit (guest spec "Per-Guest Add Rate Limit").
+    const req = httpMock.expectOne('/api/party/party-1/track/addToPlaylist?deviceId=device-1');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(['spotify:track:abc']);
     req.flush({ status: 'added' });

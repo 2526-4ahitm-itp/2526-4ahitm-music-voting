@@ -203,10 +203,18 @@ export class SpotifyWebPlayerService {
     window.location.href = `/api/party/${id}/spotify/login?source=web`;
   }
 
+  /**
+   * Adds a song to the queue. The persistent deviceId identifies the guest for the backend's
+   * limit of 10 songs per minute (guest spec "Per-Guest Add Rate Limit"); on the host's device
+   * the host PIN header (interceptor) exempts the request. A 429 carries the German message
+   * "Zu viele Anfragen — bitte kurz warten.", which the pages show like other backend errors.
+   */
   addToPlaylist(uri: string): Observable<any> {
     const id = this.partyService.currentPartyId;
     if (!id) { console.warn('addToPlaylist: keine aktive Party'); return EMPTY; }
-    return this.http.post(`/api/party/${id}/track/addToPlaylist`, [uri]).pipe(
+    const deviceId = this.partyService.deviceId;
+    const params = deviceId ? `?deviceId=${encodeURIComponent(deviceId)}` : '';
+    return this.http.post(`/api/party/${id}/track/addToPlaylist${params}`, [uri]).pipe(
       tap(() => this.queueUpdatedSubject.next())
     );
   }

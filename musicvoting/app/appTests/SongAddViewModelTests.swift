@@ -37,9 +37,11 @@ final class SongAddViewModelTests: XCTestCase {
         )
     }
 
-    private func stubAddToPlaylist(statusCode: Int = 200) {
+    private func stubAddToPlaylist(statusCode: Int = 200, body: String = "") {
         let url = BackendConfiguration.endpoint("/api/party/party-1/track/addToPlaylist").absoluteString
-        MockURLProtocol.stubs[url] = .success(.init(statusCode: statusCode, body: Data()))
+            + "?deviceId=\(session.deviceId)"
+        MockURLProtocol.stubs[url] = .success(.init(statusCode: statusCode, body: Data(body.utf8),
+                                                    headers: ["Content-Type": "application/json"]))
     }
 
     private func stubQueue(json: String = #"{"queue":[]}"#) {
@@ -160,6 +162,33 @@ final class SongAddViewModelTests: XCTestCase {
 
         XCTAssertFalse(viewModel.addedTrackIds.contains("t1"))
         XCTAssertNotNil(viewModel.errorMessage)
+    }
+
+    func testAddToPlaylistSendsDeviceId() async {
+        stubAddToPlaylist()
+        stubQueue()
+        await viewModel.addToPlaylist(makeTrack())
+
+        let addURL = MockURLProtocol.requestedURLs.first { $0.path.hasSuffix("/track/addToPlaylist") }
+        let deviceId = addURL.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }?
+            .queryItems?.first { $0.name == "deviceId" }?.value
+        XCTAssertEqual(deviceId, session.deviceId)
+    }
+
+    func testAddToPlaylistShowsRateLimitMessageVerbatim() async {
+        stubAddToPlaylist(statusCode: 429,
+                          body: #"{"error":"Zu viele Anfragen — bitte kurz warten.","retryAfterSeconds":30}"#)
+        await viewModel.addToPlaylist(makeTrack())
+
+        XCTAssertFalse(viewModel.addedTrackIds.contains("t1"))
+        XCTAssertEqual(viewModel.errorMessage, "Zu viele Anfragen — bitte kurz warten.")
+    }
+
+    func testBackendErrorMessageFallsBackToNilWithoutErrorField() {
+        XCTAssertNil(SongAddViewModel.backendErrorMessage(from: Data()))
+        XCTAssertNil(SongAddViewModel.backendErrorMessage(from: Data(#"{"status":409}"#.utf8)))
+        XCTAssertEqual(SongAddViewModel.backendErrorMessage(from: Data(#"{"error":"Nicht erlaubt."}"#.utf8)),
+                       "Nicht erlaubt.")
     }
 
     func testAddToPlaylistIsIdempotentForAlreadyAddedTrack() async {
