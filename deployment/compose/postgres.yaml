@@ -1,11 +1,13 @@
 services:
   postgres:
     container_name: postgres
-    image: postgres:16-alpine
+    image: postgres:19-alpine
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # PostgreSQL 18+ stores data under /var/lib/postgresql/<major>/docker -> mount one level up.
+      # New volume name: an old postgres_data volume holds PostgreSQL 16 files 19 cannot open.
+      - postgres_data_pg19:/var/lib/postgresql
       - ../../musicvoting/backend/setup.sql:/docker-entrypoint-initdb.d/setup.sql
     environment:
       - POSTGRES_DB=musicvoting
@@ -18,4 +20,4 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
+  postgres_data_pg19:

@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:19
     environment:
       POSTGRES_DB: musicvoting
       POSTGRES_USER: musicvoting
@@ -9,7 +9,10 @@ services:
       - "5432:5432"
     volumes:
       - ./backend/setup.sql:/docker-entrypoint-initdb.d/setup.sql
-      - db_data:/var/lib/postgresql/data
+      # Since PostgreSQL 18 the image keeps its data under /var/lib/postgresql/<major>/docker,
+      # so the volume is mounted one level up. New volume name: the old db_data volume holds
+      # PostgreSQL 16 files that 19 cannot open (kept as a backup, see backend README).
+      - db_data_pg19:/var/lib/postgresql
 
 volumes:
-  db_data:
+  db_data_pg19:

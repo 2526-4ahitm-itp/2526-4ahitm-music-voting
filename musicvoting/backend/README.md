@@ -20,6 +20,12 @@ The schema lives in `setup.sql` and is applied by PostgreSQL only on the **first
 an empty volume (`cd musicvoting && docker compose up -d`). Hibernate does not create or
 update tables (`database.generation=none`).
 
+The dev DB runs PostgreSQL 19 in the volume `db_data_pg19` (mounted at `/var/lib/postgresql`,
+the layout of the 18+ images). The previous volume `musicvoting_db_data` holds PostgreSQL 16 files
+that 19 cannot open; it is no longer used and can be removed once you no longer need it as a
+backup: `docker volume rm musicvoting_db_data`. To move data from 16 to 19, dump it with
+`pg_dump --data-only --disable-triggers` from a 16 container and load it into the new database.
+
 After a schema change, either recreate the dev DB (deletes all local data):
 
 ```shell script
