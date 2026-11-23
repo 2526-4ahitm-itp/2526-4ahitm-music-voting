@@ -80,7 +80,7 @@
                 <span class="row-title">{{ track.name || 'Unbekannter Titel' }}</span>
                 <span class="row-artist">{{ track.artists?.[0]?.name || 'Unbekannter Künstler' }}</span>
               </span>
-              <span class="row-likes" [attr.aria-label]="(track.likeCount ?? 0) + ' Likes'">
+              <span class="row-likes" [class.pulse]="pulsing.has(track.uri)" [attr.aria-label]="(track.likeCount ?? 0) + ' Likes'">
                 <mv-icon name="heart" [size]="30" [filled]="true" />
                 <span class="row-likes-count">{{ track.likeCount ?? 0 }}</span>
               </span>
