@@ -49,8 +49,14 @@ public class SpotifyTokenResource {
         return resolveParty().getSpotifyCredentials();
     }
 
+    /**
+     * The host's Spotify access token for the TV player's Web Playback SDK. Host-only: anyone
+     * else could control the host's Spotify account with it (host spec "Spotify Player
+     * Endpoints Require the Host PIN").
+     */
     @GET
     @Path("/token")
+    @HostOnly
     public String getToken() {
         // Re-mint the access token from the (possibly just-restored) refresh token if needed,
         // so the player gets a working token even right after a backend restart.
@@ -96,6 +102,7 @@ public class SpotifyTokenResource {
 
     @GET
     @Path("/deviceId")
+    @HostOnly
     @Produces(MediaType.TEXT_PLAIN)
     public Response getDeviceId() {
         String deviceId = credentials().getDeviceId();
@@ -105,8 +112,13 @@ public class SpotifyTokenResource {
         return Response.ok(deviceId).build();
     }
 
+    /**
+     * Registers the TV player as playback device. Host-only, so a guest cannot point playback
+     * at a wrong device and stop the music.
+     */
     @PUT
     @Path("/deviceId")
+    @HostOnly
     @Consumes(MediaType.TEXT_PLAIN)
     public Response setDeviceId(String deviceId) {
         if (deviceId == null || deviceId.isBlank()) {
