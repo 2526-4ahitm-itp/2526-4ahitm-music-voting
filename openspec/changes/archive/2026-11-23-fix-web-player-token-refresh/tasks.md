@@ -12,4 +12,4 @@
 
 ## 3. Verify
 
-- [ ] 3.1 Live check: run a party > 60 min (or > 1 token lifetime) without reloading; playback keeps auto-advancing and Play works; no `Spotify auth error` in the startpage console
+- [x] 3.1 Live check: run a party > 60 min (or > 1 token lifetime) without reloading; playback keeps auto-advancing and Play works; no `Spotify auth error` in the startpage console
