@@ -1,6 +1,6 @@
 <!--
   Blacklist page in the host stage look (shared/stage.css).
-  Setup mode: no navigation, "Weiter" / "Ohne Blacklist fortfahren".
+  Setup mode: no navigation, "Weiter" / "Ohne Blocklist fortfahren".
   Edit mode (?mode=edit, from the host navigation): navigation + "Fertig".
 -->
 <div class="host-stage">
@@ -9,7 +9,7 @@
       @if (editMode) {
         <mv-host-menu active="blacklist" />
       }
-      <h1 class="host-title">{{ editMode ? 'Blacklist' : 'Blacklist festlegen' }}</h1>
+      <h1 class="host-title">{{ editMode ? 'Blocklist' : 'Blocklist festlegen' }}</h1>
     <mv-theme-toggle />
     </header>
 
@@ -100,7 +100,7 @@
             Gesperrt <span class="host-muted count">{{ entries.length }}</span>
           </h2>
           @if (isLoading) {
-            <p class="status host-muted">Blacklist wird geladen…</p>
+            <p class="status host-muted">Blocklist wird geladen…</p>
           } @else if (entries.length === 0) {
             <p class="status empty-list host-muted">Noch nichts gesperrt.</p>
           } @else {
@@ -129,7 +129,7 @@
         } @else {
           <!-- "Weiter" only makes sense once something is blocked; with nothing, use the skip button. -->
           <button class="continue-btn host-btn primary" type="button" [disabled]="entries.length === 0" (click)="continue()">Weiter</button>
-          <button class="skip-btn host-btn" type="button" (click)="skip()">Ohne Blacklist fortfahren</button>
+          <button class="skip-btn host-btn" type="button" (click)="skip()">Ohne Blocklist fortfahren</button>
         }
       </div>
     </main>

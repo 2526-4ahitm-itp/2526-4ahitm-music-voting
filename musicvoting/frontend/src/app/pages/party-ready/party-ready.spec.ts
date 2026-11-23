@@ -67,11 +67,21 @@ describe('PartyReady', () => {
 
     expect(text(fixture)).toContain('Deine Party ist bereit');
     expect(text(fixture)).toContain('Gerät, das am TV hängt');
-    expect(fixture.nativeElement.querySelector('.open-player-btn').textContent).toContain('Player auf dem TV öffnen');
-    expect(text(fixture)).toContain(
-      'Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen.'
-    );
-    expect(text(fixture)).toContain('Voting-PIN');
+    expect(fixture.nativeElement.querySelector('.open-player-btn').textContent).toContain('Player auf diesem Gerät öffnen');
+    // Separate-device instructions as four numbered steps, no arrow chain any more.
+    expect(fixture.nativeElement.querySelector('mv-other-device-steps .title').textContent.trim()).toBe('Player auf anderem Gerät öffnen');
+    const steps = Array.from(fixture.nativeElement.querySelectorAll('mv-other-device-steps ol > li')).map((li: any) => li.textContent.replace(/\s+/g, ' ').trim());
+    expect(steps).toEqual([
+      'MusicVoting öffnen: it220241.cloud.htl-leonding.ac.at',
+      'Gastgeber einer Party wählen',
+      'Player öffnen auswählen',
+      'Gastgeber-PIN eingeben',
+      'Player öffnen',
+    ]);
+    // Step 1 links to the public address, never to localhost.
+    expect(fixture.nativeElement.querySelector('mv-other-device-steps a').getAttribute('href')).toBe('https://it220241.cloud.htl-leonding.ac.at/');
+    expect(text(fixture)).not.toContain('→');
+    expect(fixture.nativeElement.querySelector('.pin-label').textContent.replace(/\s+/g, ' ').trim()).toBe('Voting-PIN für Gäste');
     // The PIN refreshed from the backend replaces the stored one.
     expect(fixture.nativeElement.querySelector('.pin-value').textContent.trim()).toBe('47291');
     expect(text(fixture)).not.toContain('Party ist live');
@@ -135,7 +145,7 @@ describe('PartyReady', () => {
     }
   });
 
-  it('"Player auf dem TV öffnen" opens the player for this party in a new window', async () => {
+  it('"Player auf diesem Gerät öffnen" opens the player for this party in a new window', async () => {
     const open = spyOn(window, 'open');
     const fixture = await create(true);
 

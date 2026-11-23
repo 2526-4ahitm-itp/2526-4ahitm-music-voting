@@ -1,16 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Type, provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient, withXhr } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { BehaviorSubject, NEVER, of } from 'rxjs';
+import { NEVER, Subject, of, throwError } from 'rxjs';
 import { HostDashboard } from './host-dashboard/host-dashboard';
-import { SearchHost } from './search-host/search-host';
-import { VotingHost } from './voting-host/voting-host';
 import { SpotifyWebPlayerService } from '../services/spotify-player';
 import { PartyService } from '../services/party.service';
 import { TrackService } from '../services/spotify-tracks';
-import { QueueStateService } from '../services/queue-state';
 
 /**
  * DOM tests for the host pages in the stage look: shared menu, labelled
@@ -31,8 +28,6 @@ describe('Host pages in stage look (DOM)', () => {
   beforeEach(async () => {
     // ngOnInit opens SSE and loads data; the layout is tested with fixed state.
     spyOn(HostDashboard.prototype, 'ngOnInit').and.resolveTo();
-    spyOn(SearchHost.prototype, 'ngOnInit');
-    spyOn(VotingHost.prototype, 'ngOnInit');
 
     await TestBed.configureTestingModule({
       providers: [
@@ -46,10 +41,9 @@ describe('Host pages in stage look (DOM)', () => {
         },
         {
           provide: PartyService,
-          useValue: { currentPartyId: 'party-1', currentPin: '47291', currentHostPin: '99999', endParty: () => of(null), clearParty: () => {} },
+          useValue: { currentPartyId: 'party-1', currentPin: '47291', currentHostPin: '99999', pin$: of('47291'), endParty: () => of(null), clearParty: () => {} },
         },
         { provide: TrackService, useValue: { searchTracks: () => of({}) } },
-        { provide: QueueStateService, useValue: { inQueueUris$: new BehaviorSubject<Set<string>>(new Set()), refresh: () => {} } },
       ],
     }).compileComponents();
   });
@@ -71,10 +65,9 @@ describe('Host pages in stage look (DOM)', () => {
     });
   }
 
+  // The former voting and search pages are part of the dashboard now; it is the only host page with a queue.
   for (const [name, type, active] of [
     ['dashboard', HostDashboard, 'Dashboard'],
-    ['voting', VotingHost, 'Voting'],
-    ['search', SearchHost, 'Suchen'],
   ] as const) {
     it(`${name}: uses the stage look with the shared host menu`, () => {
       const fixture = render(type as Type<any>);
@@ -92,7 +85,7 @@ describe('Host pages in stage look (DOM)', () => {
   }
 
   it('every host page shows the "Heller Modus" switch in the top bar', () => {
-    for (const type of [HostDashboard, VotingHost, SearchHost] as Type<any>[]) {
+    for (const type of [HostDashboard] as Type<any>[]) {
       const fixture = render(type);
       expect(fixture.nativeElement.querySelector('.host-top [role="switch"]')?.getAttribute('aria-label')).toBe('Heller Modus');
       fixture.destroy();
@@ -190,7 +183,7 @@ describe('Host pages in stage look (DOM)', () => {
     fixture.destroy();
   });
 
-  it('dashboard: the removal question offers "Auch sperren" only for waiting songs', () => {
+  it('dashboard: the removal question offers "Entfernen und sperren" only for waiting songs', () => {
     const playing = { ...song('now'), isCurrentlyPlaying: true };
     const waiting = song('a', 2);
     const buttonsOf = (root: HTMLElement) =>
@@ -203,7 +196,7 @@ describe('Host pages in stage look (DOM)', () => {
     const dialog = waitingFixture.nativeElement.querySelector('[role="alertdialog"]') as HTMLElement;
     expect(dialog.getAttribute('aria-label')).toBe('Song entfernen bestätigen');
     expect(dialog.textContent).toContain('aus der Warteschlange entfernen?');
-    expect(buttonsOf(waitingFixture.nativeElement)).toEqual(['Auch sperren', 'Nur entfernen', 'Abbrechen']);
+    expect(buttonsOf(waitingFixture.nativeElement)).toEqual(['Entfernen und sperren', 'Nur entfernen', 'Abbrechen']);
     waitingFixture.destroy();
 
     const playingFixture = render(HostDashboard, (c) => {
@@ -221,22 +214,284 @@ describe('Host pages in stage look (DOM)', () => {
     fixture.destroy();
   });
 
-  it('voting: shows the like count per song instead of a dead heart button', () => {
-    const fixture = render(VotingHost, (c) => c.tracks.set([song('a', 3), song('b', 0)]));
-    const counts = Array.from(fixture.nativeElement.querySelectorAll('.host-likes-count')).map((e: any) => e.textContent.trim());
+  // ---------- One queue (host spec "Host Dashboard Shows the Whole Queue on Every Screen") ----------
 
-    expect(counts).toEqual(['3', '0']);
-    expect(fixture.nativeElement.querySelectorAll('.vote-button').length).toBe(0);
+  it('dashboard: rows keep rank, likes and remove at phone width, with a smaller cover', () => {
+    const fixture = render(HostDashboard, (c) => { c.tracks = [song('b', 3), song('c', 1)]; });
+    const root: HTMLElement = fixture.nativeElement;
+    root.style.width = '390px';
+    document.body.appendChild(root);
+    // Media queries follow the viewport, not the element: check the rule itself.
+    const rule = [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules]; } catch { return []; } })
+      .find((r: any) => r.conditionText?.includes('max-width: 560px') && r.cssText.includes('.queue-row')) as CSSMediaRule | undefined;
+    expect(rule).withContext('phone rule for queue rows').toBeDefined();
+    expect(rule!.cssText).not.toContain('display: none');
+    expect(rule!.cssText).toContain('40px');
+
+    const first = root.querySelector('.queue-row') as HTMLElement;
+    expect(first.querySelector('.rank')!.textContent!.trim()).toBe('1');
+    expect(first.querySelector('.host-likes-count')!.textContent!.trim()).toBe('3 Likes');
+    expect(first.querySelector('button.like')).not.toBeNull();
+    expect(first.querySelector('button[aria-label="Song entfernen"]')).not.toBeNull();
+    root.remove();
     fixture.destroy();
   });
 
-  it('search: keeps the "Nicht erlaubt." hint for blocked songs and disables their add button', () => {
-    const fixture = render(SearchHost, (c) => c.tracks.set([song('a', 0, { blocked: true }), song('b')]));
-    const rows: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.search-row'));
+  // ---------- Search like on the guest page (host spec "Host Searches and Adds Songs on the Dashboard") ----------
 
-    expect(rows[0].textContent).toContain('Nicht erlaubt.');
-    expect((rows[0].querySelector('button') as HTMLButtonElement).disabled).toBe(true);
-    expect((rows[1].querySelector('button') as HTMLButtonElement).getAttribute('aria-label')).toBe('Song hinzufügen');
+  describe('dashboard search', () => {
+    let trackApi: TrackService;
+    let spotify: any;
+
+    beforeEach(() => {
+      trackApi = TestBed.inject(TrackService);
+      spotify = TestBed.inject(SpotifyWebPlayerService);
+    });
+
+    async function searchFor(fixture: ComponentFixture<HostDashboard>, term: string, items: any[]) {
+      (trackApi as any).searchTracks = jasmine.createSpy('searchTracks').and.returnValue(of({ tracks: { items } }));
+      const c = fixture.componentInstance;
+      c.onSearchInput(term);
+      await c.search(term);
+      fixture.detectChanges();
+    }
+
+    const rows = (f: ComponentFixture<HostDashboard>) => Array.from(f.nativeElement.querySelectorAll('.result-row')) as HTMLElement[];
+
+    it('has one search field and no "+ Song" button or separate filter', () => {
+      const fixture = render(HostDashboard, (c) => { c.tracks = [song('a', 0)]; });
+      const root: HTMLElement = fixture.nativeElement;
+
+      const inputs = root.querySelectorAll('.host-search input');
+      expect(inputs.length).toBe(1);
+      expect(inputs[0].getAttribute('aria-label')).toBe('Song oder Künstler suchen');
+      expect(root.querySelector('button.add-song')).toBeNull();
+      expect(root.querySelector('mv-host-song-search')).toBeNull();
+      fixture.destroy();
+    });
+
+    it('replaces the queue with results while searching and shows the queue again when emptied', async () => {
+      const fixture = render(HostDashboard, (c) => { c.tracks = [song('a', 2), song('b', 1)]; });
+      await searchFor(fixture, 'daft', [song('x'), song('y')]);
+
+      expect(fixture.nativeElement.querySelector('.queue-row')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.list-label').textContent).toContain('Suchergebnisse');
+      expect(rows(fixture).length).toBe(2);
+
+      fixture.componentInstance.onSearchInput('');
+      fixture.detectChanges();
+      const ranks = Array.from(fixture.nativeElement.querySelectorAll('.queue-row .rank')).map((r: any) => r.textContent.trim());
+      expect(ranks).toEqual(['1', '2']);
+      fixture.destroy();
+    });
+
+    it('shows a queued result with its likes and like button, others with "+", blocked ones with "Nicht erlaubt."', async () => {
+      const fixture = render(HostDashboard, (c) => { c.tracks = [song('q', 2)]; });
+      await searchFor(fixture, 'x', [song('q'), song('new'), song('live', 0, { blocked: true })]);
+      const [queued, addable, blocked] = rows(fixture);
+
+      expect(queued.querySelector('.host-likes-count')!.textContent).toContain('2');
+      expect(queued.querySelector('button.like')!.getAttribute('aria-label')).toBe('Song liken');
+      expect(queued.querySelector('button.add')).toBeNull();
+      expect((addable.querySelector('button.add') as HTMLButtonElement).disabled).toBe(false);
+      expect(blocked.textContent).toContain('Nicht erlaubt.');
+      expect((blocked.querySelector('button.add') as HTMLButtonElement).disabled).toBe(true);
+      fixture.destroy();
+    });
+
+    it('adds a song without leaving the dashboard; the result then offers the like', async () => {
+      // Started party: before the start the dashboard shows the first queued song as "now playing".
+      const fixture = render(HostDashboard, (c) => { c.tracks = []; c.partyId = 'party-1'; c.partyStarted = true; });
+      spotify.addToPlaylist = jasmine.createSpy('addToPlaylist').and.returnValue(of({}));
+      const http = TestBed.inject(HttpTestingController);
+      await searchFor(fixture, 'x', [song('new')]);
+
+      const done = fixture.componentInstance.addToPlaylist(song('new'));
+      // Let the add request resolve, so the queue reload is pending.
+      await new Promise((r) => setTimeout(r));
+      http.expectOne((r) => r.url.startsWith('/api/party/party-1/track/queue')).flush({ queue: [song('new', 0)] });
+      await done;
+      fixture.detectChanges();
+
+      expect(spotify.addToPlaylist).toHaveBeenCalledWith('spotify:track:new');
+      expect(rows(fixture)[0].querySelector('button.like')).not.toBeNull();
+      fixture.destroy();
+    });
+
+    it('shows a backend rejection verbatim', async () => {
+      spyOn(console, 'error');
+      const fixture = render(HostDashboard, (c) => { c.tracks = []; });
+      spotify.addToPlaylist = () => throwError(() => ({ error: { error: 'Nicht erlaubt.' } }));
+      await searchFor(fixture, 'x', [song('new')]);
+
+      await fixture.componentInstance.addToPlaylist(song('new'));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('Nicht erlaubt.');
+      fixture.destroy();
+    });
+
+    it('"Suche leeren" empties the field in one click, shows the queue and keeps the focus', async () => {
+      const fixture = render(HostDashboard, (c) => { c.tracks = [song('a', 1)]; });
+      document.body.appendChild(fixture.nativeElement);
+      expect(fixture.nativeElement.querySelector('button.search-clear')).toBeNull();
+      await searchFor(fixture, 'abba', [song('x')]);
+
+      const clear = fixture.nativeElement.querySelector('button.search-clear') as HTMLButtonElement;
+      expect(clear.getAttribute('aria-label')).toBe('Suche leeren');
+      clear.click();
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector('.host-search input') as HTMLInputElement;
+      expect(input.value).toBe('');
+      expect(fixture.nativeElement.querySelector('.queue-row')).not.toBeNull();
+      expect(document.activeElement).toBe(input);
+      fixture.nativeElement.remove();
+      fixture.destroy();
+    });
+  });
+
+  // ---------- Host likes (host spec "Host Can Like Songs") ----------
+
+  describe('dashboard likes', () => {
+    it('likes and un-likes a waiting song optimistically, with this device id', () => {
+      const vote = new Subject<any>();
+      const spotify: any = TestBed.inject(SpotifyWebPlayerService);
+      spotify.toggleVote = jasmine.createSpy('toggleVote').and.callFake(() => vote.asObservable());
+      (TestBed.inject(PartyService) as any).deviceId = 'device-host';
+      const fixture = render(HostDashboard, (c) => { c.tracks = [song('b', 2)]; });
+      const btn = () => fixture.nativeElement.querySelector('.queue-row button.like') as HTMLButtonElement;
+      const count = () => fixture.nativeElement.querySelector('.queue-row .host-likes-count').textContent.trim();
+
+      btn().click();
+      fixture.detectChanges();
+      expect(spotify.toggleVote).toHaveBeenCalledWith('spotify:track:b', 'device-host');
+      expect(count()).toContain('3');
+      expect(btn().getAttribute('aria-pressed')).toBe('true');
+      expect(btn().getAttribute('aria-label')).toBe('Like entfernen');
+
+      vote.next({ likeCount: 3, liked: true });
+      vote.complete();
+      fixture.detectChanges();
+      fixture.destroy();
+    });
+
+    it('restores the like state when the request fails', async () => {
+      spyOn(console, 'error');
+      const spotify: any = TestBed.inject(SpotifyWebPlayerService);
+      spotify.toggleVote = () => throwError(() => new Error('offline'));
+      const fixture = render(HostDashboard, (c) => { c.tracks = [song('b', 2)]; });
+
+      await fixture.componentInstance.toggleVote(fixture.componentInstance.tracks[0]);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.queue-row .host-likes-count').textContent).toContain('2');
+      expect(fixture.nativeElement.querySelector('.queue-row button.like').getAttribute('aria-pressed')).toBe('false');
+      fixture.destroy();
+    });
+
+    it('offers no like button for the playing song', () => {
+      const fixture = render(HostDashboard, (c) => { c.tracks = [{ ...song('now', 1), isCurrentlyPlaying: true }]; });
+
+      expect(fixture.nativeElement.querySelector('.queue-row button.like')).toBeNull();
+      fixture.destroy();
+    });
+  });
+
+  it('dashboard: "Player auf diesem Gerät öffnen" with the five steps for another device below', () => {
+    const fixture = render(HostDashboard);
+    const actions = fixture.nativeElement.querySelector('.actions') as HTMLElement;
+
+    expect(actions.querySelector('button.action strong')!.textContent!.trim()).toBe('Player auf diesem Gerät öffnen');
+    expect(actions.querySelector('mv-other-device-steps .title')!.textContent!.trim()).toBe('Player auf anderem Gerät öffnen');
+    expect(actions.querySelectorAll('mv-other-device-steps ol > li').length).toBe(5);
+    expect(actions.querySelector('mv-other-device-steps a')!.getAttribute('href')).toBe('https://it220241.cloud.htl-leonding.ac.at/');
+    expect(actions.querySelector('mv-other-device-steps a')!.textContent!.trim()).toBe('it220241.cloud.htl-leonding.ac.at');
     fixture.destroy();
+  });
+
+  it('dashboard: tags the codes "für Gäste" and "nur für dich"', () => {
+    const fixture = render(HostDashboard, (c) => { c.pin = '47291'; });
+    const labels = Array.from(fixture.nativeElement.querySelectorAll('.pin-label')).map((l: any) => l.textContent.replace(/\s+/g, ' ').trim());
+
+    expect(labels).toEqual(['Voting-PIN für Gäste', 'Gastgeber-PIN nur für dich']);
+    fixture.destroy();
+  });
+
+  // ---------- Focus in the confirms (host spec "Dashboard Confirmations Manage Focus") ----------
+
+  describe('dashboard confirmations', () => {
+    async function open(setup: (c: HostDashboard) => void) {
+      const fixture = render(HostDashboard, setup);
+      document.body.appendChild(fixture.nativeElement);
+      await fixture.whenStable();
+      return fixture;
+    }
+
+    function close(fixture: ComponentFixture<HostDashboard>) {
+      fixture.nativeElement.remove();
+      fixture.destroy();
+    }
+
+    it('"Song entfernen" moves focus to "Entfernen und sperren"', async () => {
+      const fixture = await open((c) => { c.tracks = [song('a', 2)]; });
+      (fixture.nativeElement.querySelector('button[aria-label="Song entfernen"]') as HTMLButtonElement).click();
+      await fixture.whenStable();
+
+      expect((document.activeElement as HTMLElement).textContent!.trim()).toBe('Entfernen und sperren');
+      close(fixture);
+    });
+
+    it('for the playing song the focus goes to "Nur entfernen"', async () => {
+      const playing = { ...song('now'), isCurrentlyPlaying: true };
+      const fixture = await open((c) => { c.tracks = [playing]; });
+      (fixture.nativeElement.querySelector('button[aria-label="Song entfernen"]') as HTMLButtonElement).click();
+      await fixture.whenStable();
+
+      expect((document.activeElement as HTMLElement).textContent!.trim()).toBe('Nur entfernen');
+      close(fixture);
+    });
+
+    it('Escape closes the removal question and returns focus to its trigger', async () => {
+      const fixture = await open((c) => { c.tracks = [song('a', 2)]; });
+      const trigger = fixture.nativeElement.querySelector('button[aria-label="Song entfernen"]') as HTMLButtonElement;
+      trigger.click();
+      await fixture.whenStable();
+
+      (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[role="alertdialog"]')).toBeNull();
+      expect(fixture.componentInstance.tracks.length).toBe(1);
+      expect(document.activeElement).toBe(trigger);
+      close(fixture);
+    });
+
+    it('after a removal the focus is on the queue heading', async () => {
+      const fixture = await open((c) => { c.tracks = [song('a', 2)]; });
+      spyOn(fixture.componentInstance, 'onDeleteTrack').and.resolveTo();
+      (fixture.nativeElement.querySelector('button[aria-label="Song entfernen"]') as HTMLButtonElement).click();
+      await fixture.whenStable();
+
+      await fixture.componentInstance.confirmRemoveOnly(fixture.componentInstance.tracks[0]);
+
+      expect(document.activeElement).toBe(fixture.nativeElement.querySelector('#queue-title'));
+      close(fixture);
+    });
+
+    it('"Party beenden" moves focus to "Abbrechen"; Escape closes and refocuses "Party beenden"', async () => {
+      const fixture = await open(() => {});
+      (fixture.nativeElement.querySelector('button.action.end') as HTMLButtonElement).click();
+      await fixture.whenStable();
+
+      expect((document.activeElement as HTMLElement).textContent!.trim()).toBe('Abbrechen');
+
+      (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.confirm.end')).toBeNull();
+      expect(document.activeElement).toBe(fixture.nativeElement.querySelector('button.action.end'));
+      close(fixture);
+    });
   });
 });

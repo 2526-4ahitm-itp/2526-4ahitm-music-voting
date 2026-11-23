@@ -1,3 +1,5 @@
+import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { HostDashboard } from './host-dashboard';
 
 /**
@@ -12,7 +14,9 @@ describe('HostDashboard progress mirror', () => {
   beforeEach(() => {
     const ngZone: any = { run: (fn: () => void) => fn() };
     const cd: any = { detectChanges: () => {} };
-    comp = new HostDashboard(
+    // inject() in the class needs an injection context.
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    comp = TestBed.runInInjectionContext(() => new HostDashboard(
       ngZone,
       null as any, // http
       cd,
@@ -20,7 +24,7 @@ describe('HostDashboard progress mirror', () => {
       null as any, // spotifyService
       null as any, // route
       null as any, // router
-    );
+    ));
   });
 
   const applyProgress = (payload: any) => (comp as any).applyProgress(payload);

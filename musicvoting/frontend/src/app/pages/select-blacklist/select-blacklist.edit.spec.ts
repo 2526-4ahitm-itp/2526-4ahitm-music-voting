@@ -47,11 +47,11 @@ describe('SelectBlacklist edit mode (DOM)', () => {
   it('shows the host navigation with Blacklist as the current page', async () => {
     const fixture = await createLoaded([]);
 
-    expect(fixture.nativeElement.querySelector('mv-host-menu [aria-current="page"]')?.textContent?.trim()).toBe('Blacklist');
+    expect(fixture.nativeElement.querySelector('mv-host-menu [aria-current="page"]')?.textContent?.trim()).toBe('Blocklist');
     expect(fixture.nativeElement.querySelector('.host-stage')).toBeTruthy();
   });
 
-  it('shows a single "Fertig" instead of "Weiter" and "Ohne Blacklist fortfahren"', async () => {
+  it('shows a single "Fertig" instead of "Weiter" and "Ohne Blocklist fortfahren"', async () => {
     const fixture = await createLoaded([{ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null }]);
 
     expect(fixture.nativeElement.querySelector('.continue-btn')).toBeNull();

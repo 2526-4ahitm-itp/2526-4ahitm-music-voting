@@ -33,15 +33,15 @@
           type="button"
           (click)="openPlayer()"
         >
-          <mv-icon name="tv" [size]="22" /> Player auf dem TV öffnen
+          <mv-icon name="tv" [size]="22" /> Player auf diesem Gerät öffnen
         </button>
-        <p class="other-device host-muted">
-          Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen.
-        </p>
+        <!-- Numbered steps instead of an arrow chain (host spec "Go-Live Step Explains a
+             Separate TV Device"), shared with the dashboard. -->
+        <mv-other-device-steps class="other-device" />
       </div>
 
       <section class="pin-block" aria-label="Voting-PIN">
-        <p class="pin-label"><mv-icon name="users" [size]="20" /> Voting-PIN</p>
+        <p class="pin-label"><mv-icon name="users" [size]="20" /> Voting-PIN <span class="pin-tag">für Gäste</span></p>
         <p class="pin-value">{{ pin || '–––––' }}</p>
         <p class="host-muted">Gäste geben diese PIN ein oder scannen den QR-Code am TV.</p>
       </section>

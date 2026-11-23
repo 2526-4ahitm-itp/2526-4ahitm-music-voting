@@ -79,10 +79,10 @@ describe('SelectBlacklist', () => {
       { id: 'e2', kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: null },
     ]);
 
-    expect(text(fixture)).toContain('Blacklist festlegen');
+    expect(text(fixture)).toContain('Blocklist festlegen');
     expect(text(fixture)).toContain('live');
     expect(text(fixture)).toContain('ABBA');
-    expect(text(fixture)).not.toContain('Blacklist wird geladen');
+    expect(text(fixture)).not.toContain('Blocklist wird geladen');
     expect(fixture.nativeElement.querySelectorAll('.entry').length).toBe(2);
   });
 
@@ -399,7 +399,7 @@ describe('SelectBlacklist', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/party-ready'], { queryParams: { partyId: 'party-x' } });
   });
 
-  it('"Ohne Blacklist fortfahren" navigates to the go-live step without saving anything', async () => {
+  it('"Ohne Blocklist fortfahren" navigates to the go-live step without saving anything', async () => {
     const fixture = await createLoaded([]);
 
     click(fixture, '.skip-btn');

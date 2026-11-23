@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs';
 import { PartyService } from '../../services/party.service';
 import { MvIcon } from '../../shared/mv-icon';
 import { MvThemeToggle } from '../../shared/mv-theme-toggle';
+import { MvOtherDeviceSteps } from '../../shared/mv-other-device-steps';
 
 /**
  * Last host setup step, "Deine Party ist bereit" (host spec "Host Setup Ends
@@ -19,7 +20,7 @@ import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 @Component({
   selector: 'app-party-ready',
   standalone: true,
-  imports: [MvIcon, MvThemeToggle],
+  imports: [MvOtherDeviceSteps, MvIcon, MvThemeToggle],
   templateUrl: './party-ready.html',
   // Shared stage look first, page layout second.
   changeDetection: ChangeDetectionStrategy.Eager,
