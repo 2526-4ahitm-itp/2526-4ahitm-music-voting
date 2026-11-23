@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { MvHostMenu } from './mv-host-menu';
 import { PartyService } from '../services/party.service';
 
@@ -27,7 +27,7 @@ describe('MvHostMenu', () => {
 
     await TestBed.configureTestingModule({
       imports: [MvHostMenu],
-      providers: [provideZonelessChangeDetection(), provideRouter([]), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideRouter([]), provideHttpClient(withXhr())],
     }).compileComponents();
     TestBed.inject(PartyService).setCurrentPartyId('party-1');
   });

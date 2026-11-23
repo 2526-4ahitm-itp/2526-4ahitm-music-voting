@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { HostPlaylist, PartyService } from '../../services/party.service';
@@ -11,9 +11,10 @@ import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 @Component({
   selector: 'app-select-playlist',
   standalone: true,
-  imports: [CommonModule, MvCover, MvIcon, MvSpinner, MvThemeToggle],
+  imports: [MvCover, MvIcon, MvSpinner, MvThemeToggle],
   templateUrl: './select-playlist.html',
   // Shared stage look first, page layout second.
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './select-playlist.css'],
 })
 /**

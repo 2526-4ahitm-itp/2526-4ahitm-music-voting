@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom, Subject } from 'rxjs';
@@ -47,8 +47,9 @@ export interface SongSearchResult {
 @Component({
   selector: 'app-select-blacklist',
   standalone: true,
-  imports: [CommonModule, FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
+  imports: [FormsModule, MvHostMenu, MvCover, MvIcon, MvThemeToggle],
   templateUrl: './select-blacklist.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './select-blacklist.css'],
 })
 export class SelectBlacklist implements OnInit, OnDestroy {

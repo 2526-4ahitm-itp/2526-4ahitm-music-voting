@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { PartyService } from '../../services/party.service';
 import { MvIcon } from '../../shared/mv-icon';
@@ -11,6 +11,7 @@ import { MvThemeToggle } from '../../shared/mv-theme-toggle';
   imports: [MvIcon, MvSpinner, MvThemeToggle],
   templateUrl: './create-party.html',
   // Shared stage look first, page layout second.
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './create-party.css'],
 })
 /**

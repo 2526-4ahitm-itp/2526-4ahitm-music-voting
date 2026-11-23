@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, Optional } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, Optional, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PartyService } from '../../services/party.service';
 import { MvIcon } from '../../shared/mv-icon';
@@ -11,6 +11,7 @@ import { MvThemeToggle } from '../../shared/mv-theme-toggle';
   imports: [MvIcon, MvSpinner, MvThemeToggle],
   templateUrl: './code-input.html',
   // Shared stage look first, page layout second.
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../shared/stage.css', './code-input.css'],
 })
 /**
