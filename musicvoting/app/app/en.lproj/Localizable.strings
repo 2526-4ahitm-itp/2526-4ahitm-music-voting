@@ -9,7 +9,7 @@
 "alert.partyEnded" = "The party has ended.";
 
 /* StartView */
-"start.tagline" = "Bad music at the party? Not anymore with MusicVoting!";
+"start.tagline" = "You pick the party music together: request songs and like them, right on your phone.";
 "start.guestButton" = "Guest at a party";
 "start.hostButton" = "Host a party";
 
@@ -101,7 +101,7 @@
 
 /* InfoView */
 "info.appName" = "MusicVoting";
-"info.tagline" = "Bad music at the party? Not anymore!";
+"info.tagline" = "You pick the party music together: request songs and like them, right on your phone.";
 "info.problem.title" = "The Problem";
 "info.problem.text" = "Often the host has no time to manage the music, or guests have different tastes. The result? A boring atmosphere.";
 "info.solution.title" = "Our Solution";

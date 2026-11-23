@@ -1,9 +1,7 @@
 
 
-> Schlechte Musik auf der Party? Nicht mehr!
-> Denn MusicVoting ermöglicht es jedem Partygast ganz einfach
-> mittels Smartphone mitzubestimmen, welche Musik gespielt
-> werden soll.
+> Die Musik auf der Party bestimmt ihr gemeinsam: Songs wünschen
+> und liken, direkt am Smartphone.
 
 **Live-App:** [it220241.cloud.htl-leonding.ac.at](https://it220241.cloud.htl-leonding.ac.at)
 

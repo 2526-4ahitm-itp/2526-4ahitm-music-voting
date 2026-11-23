@@ -9,7 +9,7 @@
 "alert.partyEnded" = "Die Party ist beendet.";
 
 /* StartView */
-"start.tagline" = "Schlechte Musik auf der Party? Nicht mehr mit MusicVoting!";
+"start.tagline" = "Die Musik auf der Party bestimmt ihr gemeinsam: Songs wünschen und liken, direkt am Smartphone.";
 "start.guestButton" = "Gast auf einer Party";
 "start.hostButton" = "Gastgeber auf einer Party";
 
@@ -101,7 +101,7 @@
 
 /* InfoView */
 "info.appName" = "MusicVoting";
-"info.tagline" = "Schlechte Musik auf der Party? Nicht mehr!";
+"info.tagline" = "Die Musik auf der Party bestimmt ihr gemeinsam: Songs wünschen und liken, direkt am Smartphone.";
 "info.problem.title" = "Das Problem";
 "info.problem.text" = "Oft hat der Gastgeber keine Zeit für die Musik oder der Geschmack der Gäste geht auseinander. Die Folge? Langweilige Stimmung.";
 "info.solution.title" = "Unsere Lösung";
