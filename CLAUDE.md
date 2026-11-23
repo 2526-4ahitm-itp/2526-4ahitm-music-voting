@@ -78,9 +78,11 @@ Schema is initialized from `musicvoting/backend/setup.sql` on first start.
 
 ## Open questions (unresolved, do not assume)
 
-- Empty queue: web spec says stop/pause; Swift spec says play random Top-Charts. Which is canonical?
+_None currently._
 
 ### Resolved (kept for history)
+
+- ~~Empty queue: web spec says stop/pause; Swift spec says play random Top-Charts. Which is canonical?~~ **Auto-refill.** While a song plays and nothing else is queued, the server refills the queue: default playlist → similar songs (artist top-tracks) → Top-Charts playlist → Spotify search. Auto-filled songs sort below guest adds. "Warteschlange ist leer" only when every source yields nothing. See `playback/spec.md` "Empty Queue Behavior" and `provider/spec.md`.
 
 - ~~Blacklist: case-insensitive substring matching? Partial word matching?~~ **Whole word, case-insensitive** ("live" blocks "(Live)" but not "Oliver"). Entries are words, artists (Spotify artist ID) and songs (track URI), stored in `blacklist_entry`. See `host/spec.md` "Host Manages Party Blacklist" and change `add-party-blacklist`.
 
