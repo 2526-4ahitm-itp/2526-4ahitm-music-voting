@@ -11,6 +11,16 @@
 
   <main class="host-content playlist-content">
     <div class="stage-column">
+      @if (premiumRequired) {
+        <!-- Login rejected: Free account (provider spec "Spotify Provider Requires Premium Host Account"). -->
+        <h1 class="stage-heading">Spotify Premium nötig</h1>
+        <p class="host-status error" role="alert">
+          Dein Spotify-Konto hat kein Premium. Für MusicVoting brauchst du Spotify Premium.
+        </p>
+        <button class="host-btn large" type="button" (click)="switchAccount()">
+          Mit anderem Spotify-Konto anmelden
+        </button>
+      } @else {
       <h1 class="stage-heading">Standard-Playlist wählen</h1>
       <p class="stage-lead">
         Wenn die Warteschlange leer wird, spielt MusicVoting automatisch Songs aus dieser Playlist weiter.
@@ -49,6 +59,7 @@
       <button class="skip-btn host-btn large" type="button" [disabled]="isSaving" (click)="skip()">
         Ohne Standard-Playlist fortfahren
       </button>
+      }
     </div>
   </main>
 </div>

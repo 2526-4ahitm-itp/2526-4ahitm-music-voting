@@ -45,6 +45,7 @@
 "spotify.loginButton" = "Bei Spotify anmelden";
 "spotify.error.failed" = "Spotify-Anmeldung ist fehlgeschlagen. Bitte versuche es erneut.";
 "spotify.error.unreachable" = "Spotify-Anmeldung ist derzeit nicht erreichbar. Bitte versuche es erneut.";
+"spotify.error.premium" = "Dein Spotify-Konto hat kein Premium. Für MusicVoting brauchst du Spotify Premium.";
 
 /* SongAddView */
 "search.placeholder" = "Suchen...";

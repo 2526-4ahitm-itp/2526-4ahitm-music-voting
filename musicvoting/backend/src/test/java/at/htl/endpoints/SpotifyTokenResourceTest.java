@@ -279,4 +279,29 @@ class SpotifyTokenResourceTest {
                 .header("Location", not(containsString("playlist-modify-private")))
                 .header("Location", not(containsString("playlist-modify-public")));
     }
+
+    @Test
+    void login_withSwitchAccount_asksSpotifyToShowAccountDialog() {
+        Party party = registerParty();
+
+        given()
+                .redirects().follow(false)
+                .queryParam("switchAccount", "true")
+                .when().get("/api/party/{partyId}/spotify/login", party.id().value())
+                .then()
+                .statusCode(303)
+                .header("Location", containsString("show_dialog=true"));
+    }
+
+    @Test
+    void login_withoutSwitchAccount_doesNotForceAccountDialog() {
+        Party party = registerParty();
+
+        given()
+                .redirects().follow(false)
+                .when().get("/api/party/{partyId}/spotify/login", party.id().value())
+                .then()
+                .statusCode(303)
+                .header("Location", not(containsString("show_dialog")));
+    }
 }

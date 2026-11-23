@@ -61,6 +61,11 @@ export class Startpage implements OnInit, OnDestroy {
     @Optional() private host?: ElementRef<HTMLElement>,
   ) {}
 
+  /** SDK reported an account error (no Premium); read as a signal so zoneless CD re-renders. */
+  get playerAccountError(): boolean {
+    return this.spotifyService.accountError();
+  }
+
   /** The top entries shown on the TV (dashboard spec: top 5). */
   get visibleTracks(): any[] {
     return this.tracks.slice(0, TV_QUEUE_LIMIT);

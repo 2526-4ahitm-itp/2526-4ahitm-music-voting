@@ -31,6 +31,12 @@ export class SelectPlaylist implements OnInit {
   isLoading = true;
   isSaving = false;
   error: string | null = null;
+  /**
+   * Set when the backend rejected the login because the Spotify account is not Premium
+   * (provider spec "Spotify Provider Requires Premium Host Account"). The party then has no
+   * tokens, so instead of playlists the page offers a login with another account.
+   */
+  premiumRequired = false;
 
   async ngOnInit() {
     const partyIdFromUrl = this.route.snapshot.queryParamMap.get('partyId');
@@ -41,6 +47,13 @@ export class SelectPlaylist implements OnInit {
 
     if (!this.partyId) {
       this.router.navigate(['/']);
+      return;
+    }
+
+    if (this.route.snapshot.queryParamMap.get('error') === 'premium-required') {
+      this.premiumRequired = true;
+      this.isLoading = false;
+      this.cd.detectChanges();
       return;
     }
 
@@ -67,6 +80,21 @@ export class SelectPlaylist implements OnInit {
       this.isSaving = false;
       this.cd.detectChanges();
     }
+  }
+
+  /**
+   * Restarts the Spotify login with the account chooser (`switchAccount=true` →
+   * `show_dialog=true`); otherwise Spotify silently reuses the Free account the browser
+   * is still signed in with.
+   */
+  switchAccount() {
+    if (!this.partyId) return;
+    window.location.href = this.switchAccountUrl();
+  }
+
+  /** Login URL for {@link switchAccount}; separate so tests don't have to navigate. */
+  switchAccountUrl(): string {
+    return `/api/party/${encodeURIComponent(this.partyId ?? '')}/spotify/login?source=web&switchAccount=true`;
   }
 
   skip() {

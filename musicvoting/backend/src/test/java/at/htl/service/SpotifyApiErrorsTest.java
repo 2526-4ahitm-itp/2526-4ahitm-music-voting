@@ -148,4 +148,29 @@ class SpotifyApiErrorsTest {
         assertEquals("Das Abspielen ist fehlgeschlagen.", payload.get("error"));
         assertFalse(payload.containsKey("details"));
     }
+
+    @Test
+    void buildResponse_premiumRequired_usesGermanPremiumMessage() {
+        String body = "{\"error\": {\"status\": 403, \"message\": \"Player command failed: Premium required\", \"reason\": \"PREMIUM_REQUIRED\"}}";
+        HttpResponse<String> response = httpResponse(403, body, Map.of());
+
+        Response result = SpotifyApiErrors.buildResponse(response, "Das Abspielen");
+
+        assertEquals(403, result.getStatus());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> payload = (Map<String, Object>) result.getEntity();
+        assertEquals("Du brauchst Spotify Premium, um Musik abzuspielen.", payload.get("error"));
+        assertEquals("PREMIUM_REQUIRED", payload.get("reason"));
+    }
+
+    @Test
+    void buildResponse_otherForbidden_keepsSpotifyMessage() {
+        String body = "{\"error\": {\"status\": 403, \"message\": \"Restriction violated\", \"reason\": \"UNKNOWN\"}}";
+        HttpResponse<String> response = httpResponse(403, body, Map.of());
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> payload = (Map<String, Object>) SpotifyApiErrors.buildResponse(response, "Das Abspielen").getEntity();
+        assertEquals("Das Abspielen ist fehlgeschlagen: Restriction violated", payload.get("error"));
+        assertFalse(payload.containsKey("reason"));
+    }
 }

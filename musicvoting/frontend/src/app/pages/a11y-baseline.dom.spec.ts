@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PLATFORM_ID, Type, provideZonelessChangeDetection } from '@angular/core';
+import { PLATFORM_ID, Type, provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
@@ -50,7 +50,7 @@ describe('Accessibility baseline (DOM)', () => {
         { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => null }, paramMap: { get: () => null } } } },
         {
           provide: SpotifyWebPlayerService,
-          useValue: { getQueue: () => of({ queue: [] }), getQueueUpdates: () => NEVER, addToPlaylist: () => of({}), disconnectPlayer: () => {} },
+          useValue: { getQueue: () => of({ queue: [] }), getQueueUpdates: () => NEVER, addToPlaylist: () => of({}), disconnectPlayer: () => {}, accountError: signal(false) },
         },
         {
           provide: PartyService,

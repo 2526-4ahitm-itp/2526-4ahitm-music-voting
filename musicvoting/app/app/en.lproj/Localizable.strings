@@ -45,6 +45,7 @@
 "spotify.loginButton" = "Sign in with Spotify";
 "spotify.error.failed" = "Spotify sign-in failed. Please try again.";
 "spotify.error.unreachable" = "Spotify sign-in is currently unreachable. Please try again.";
+"spotify.error.premium" = "Your Spotify account has no Premium. MusicVoting requires Spotify Premium.";
 
 /* SongAddView */
 "search.placeholder" = "Search…";

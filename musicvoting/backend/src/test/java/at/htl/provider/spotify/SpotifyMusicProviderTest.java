@@ -677,4 +677,34 @@ class SpotifyMusicProviderTest {
         assertEquals(true, items(json).get(0).get("blocked"));
         assertFalse(json.containsKey("hiddenHint"));
     }
+
+    // --- Premium check at login (provider spec "Spotify Provider Requires Premium Host Account")
+
+    @Test
+    void parseAccountProduct_readsProductField() {
+        assertEquals(java.util.Optional.of("free"),
+                SpotifyMusicProvider.parseAccountProduct("{\"id\":\"u1\",\"product\":\"free\"}"));
+    }
+
+    @Test
+    void parseAccountProduct_missingOrInvalidBody_isEmpty() {
+        assertTrue(SpotifyMusicProvider.parseAccountProduct("{\"id\":\"u1\"}").isEmpty());
+        assertTrue(SpotifyMusicProvider.parseAccountProduct("not json").isEmpty());
+        assertTrue(SpotifyMusicProvider.parseAccountProduct(null).isEmpty());
+    }
+
+    @Test
+    void isKnownNonPremium_rejectsOnlyKnownNonPremiumAccounts() {
+        assertTrue(SpotifyMusicProvider.isKnownNonPremium(java.util.Optional.of("free")));
+        assertTrue(SpotifyMusicProvider.isKnownNonPremium(java.util.Optional.of("open")));
+        assertFalse(SpotifyMusicProvider.isKnownNonPremium(java.util.Optional.of("premium")));
+        // Unknown account type (lookup failed) must not lock out the host.
+        assertFalse(SpotifyMusicProvider.isKnownNonPremium(java.util.Optional.empty()));
+    }
+
+    @Test
+    void fetchAccountProduct_withoutToken_isEmpty() {
+        assertTrue(provider.fetchAccountProduct(null).isEmpty());
+        assertTrue(provider.fetchAccountProduct("  ").isEmpty());
+    }
 }

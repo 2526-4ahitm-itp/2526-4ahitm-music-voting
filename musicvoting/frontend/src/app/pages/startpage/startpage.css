@@ -404,3 +404,25 @@
     max-width: none;
   }
 }
+
+/* Premium/account error from the Web Playback SDK. Pinned on top of the stage so it
+   never shifts the TV layout; the empty live region takes no space. */
+.player-alert-region {
+  position: absolute;
+  top: 2vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  max-width: 90vw;
+}
+
+.player-alert {
+  margin: 0;
+  padding: 1.2vh 2vw;
+  border-radius: var(--mv-radius-sm);
+  background: var(--mv-danger);
+  color: var(--mv-on-accent);
+  font-size: 2.4vh;
+  font-weight: 700;
+  text-align: center;
+}
