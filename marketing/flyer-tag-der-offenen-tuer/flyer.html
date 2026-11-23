@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<!--
+  A3 flyer (297 × 420 mm) for the open day at HTL Leonding.
+  Dark stage from DESIGN.md (Stage Night, purple/coral light, Bricolage
+  Grotesque). Deliberately plain: real app screenshots instead of mock UI,
+  little text, no pill/button shapes (team feedback 2026-11-19).
+
+  Render to PDF:  ./render.sh
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>MusicVoting – Flyer</title>
+<style>
+  @font-face {
+    font-family: 'Bricolage Grotesque Variable';
+    src: url('assets/bricolage.woff2') format('woff2');
+    font-weight: 200 800;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  @font-face {
+    font-family: 'Bricolage Grotesque Variable';
+    src: url('assets/bricolage-ext.woff2') format('woff2');
+    font-weight: 200 800;
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2020, U+2113, U+A720-A7FF;
+  }
+
+  @page { size: 297mm 420mm; margin: 0; }
+
+  :root {
+    --night: #12061A;
+    --on: #FBF4FF;
+    --muted: #C9B6D4;
+    --line: rgba(251, 244, 255, 0.16);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 297mm; height: 420mm; background: var(--night); }
+  body {
+    font-family: 'Bricolage Grotesque Variable', 'Segoe UI', system-ui, sans-serif;
+    color: var(--on);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    position: relative;
+    width: 297mm; height: 420mm;
+    overflow: hidden;
+    padding: 16mm 20mm 14mm;
+    display: flex; flex-direction: column;
+    background: var(--night);
+  }
+  /* Brand light behind the stage, as on the TV screen of the app. */
+  .glow {
+    position: absolute; inset: -20mm; z-index: 0;
+    filter: blur(14mm);
+    background:
+      radial-gradient(160mm 140mm at 10% 6%, rgba(132, 3, 166, 0.7), transparent 70%),
+      radial-gradient(190mm 150mm at 95% 62%, rgba(242, 89, 75, 0.32), transparent 70%),
+      radial-gradient(170mm 140mm at 0% 100%, rgba(132, 3, 166, 0.45), transparent 70%);
+  }
+  .page > *:not(.glow) { position: relative; z-index: 1; }
+
+  /* School credit, small and centred in the footer (same form as the
+     website footer: muted "powered by" plus the logo on white). */
+  .credit {
+    display: flex; align-items: center; gap: 2.5mm;
+    font-size: 4mm; font-weight: 500; letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+  .credit img {
+    height: 9mm; width: auto;
+    background: #fff; border-radius: 1.6mm; padding: 1mm 2mm;
+  }
+
+  /* Title block */
+  .title { margin-top: 10mm; display: flex; align-items: center; gap: 8mm; }
+  .title img { height: 34mm; width: auto; }
+  .wordmark {
+    font-size: 33mm; font-weight: 800; letter-spacing: -0.03em; line-height: 0.95;
+  }
+  .claim {
+    margin-top: 7mm;
+    font-size: 9mm; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15;
+    color: var(--muted);
+  }
+  .claim strong { color: var(--on); font-weight: 750; }
+
+  /* Real screenshots: TV view with the guest phone in front of it. */
+  .shots { position: relative; margin-top: 20mm; height: 178mm; }
+  .tv {
+    position: absolute; left: 0; top: 0;
+    width: 222mm;
+    border-radius: 4mm;
+    box-shadow: 0 0 0 1.4mm #000, 0 0 0 1.7mm rgba(251, 244, 255, 0.14), 0 16mm 36mm rgba(0, 0, 0, 0.55);
+  }
+  .phone {
+    position: absolute; right: 0; top: 20mm;
+    width: 70mm;
+    border-radius: 7mm;
+    box-shadow: 0 0 0 1.8mm #000, 0 0 0 2.1mm rgba(251, 244, 255, 0.18), 0 14mm 30mm rgba(0, 0, 0, 0.6);
+  }
+
+  /* Bottom: team and technologies, plain text, no boxes. */
+  .bottom {
+    margin-top: 18mm;
+    padding-top: 10mm;
+    border-top: 0.3mm solid var(--line);
+    display: grid;
+    grid-template-columns: 1.65fr 1fr;
+    gap: 14mm;
+  }
+  h2 { font-size: 6.4mm; font-weight: 750; letter-spacing: -0.01em; margin-bottom: 6mm; }
+  h2 span { color: var(--muted); font-weight: 500; }
+
+  .team { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+  .member img {
+    display: block;
+    width: 100%; aspect-ratio: 1; object-fit: cover;
+    border-radius: 4mm;
+  }
+  .member h3 { margin-top: 3.5mm; font-size: 4.6mm; white-space: nowrap; font-weight: 700; line-height: 1.2; }
+
+  /* Technologies as logos only (simple-icons, tinted On Stage), 3 × 2 grid
+     roughly as tall as the team photos next to it. */
+  .tech {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 11mm;
+    justify-items: center;
+    align-items: center;
+    padding-top: 2mm;
+  }
+  .tech img { display: block; width: 19mm; height: 19mm; }
+
+  .footer {
+    margin-top: auto;
+    padding-top: 6mm;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    font-size: 3.8mm; color: var(--muted);
+  }
+  .footer strong { color: var(--on); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="glow" aria-hidden="true"></div>
+
+  <section>
+    <div class="title">
+      <img src="assets/logo-mark.png" alt="">
+      <h1 class="wordmark">MusicVoting</h1>
+    </div>
+    <p class="claim">Die Gäste wählen die Musik – <strong>per Smartphone, live am TV.</strong></p>
+  </section>
+
+  <section class="shots">
+    <img class="tv" src="assets/screens/startpage.png" alt="TV-Ansicht">
+    <img class="phone" src="assets/screens/voting.png" alt="Gast-Ansicht am Smartphone">
+  </section>
+
+  <section class="bottom">
+    <div>
+      <h2>Team <span>· 5AHITM</span></h2>
+      <div class="team">
+        <div class="member"><img src="assets/team/miriam.jpg" alt=""><h3>Miriam Gnadlinger</h3></div>
+        <div class="member"><img src="assets/team/simone.jpg" alt=""><h3>Simone Sperrer</h3></div>
+        <div class="member"><img src="assets/team/marlies.jpg" alt=""><h3>Marlies Winklbauer</h3></div>
+      </div>
+    </div>
+    <div>
+      <h2>Technologien</h2>
+      <ul class="tech">
+        <li><img src="assets/tech/angular.svg" alt="Angular"></li>
+        <li><img src="assets/tech/quarkus.svg" alt="Quarkus"></li>
+        <li><img src="assets/tech/postgresql.svg" alt="PostgreSQL"></li>
+        <li><img src="assets/tech/spotify.svg" alt="Spotify"></li>
+        <li><img src="assets/tech/swift.svg" alt="Swift / SwiftUI"></li>
+        <li><img src="assets/tech/kubernetes.svg" alt="Kubernetes"></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>HTBLA Leonding · Medientechnik</span>
+    <div class="credit">
+      <span>powered by</span>
+      <img src="assets/htl-leonding-logo.jpg" alt="HTL Leonding">
+    </div>
+    <span style="text-align: right">Betreut durch <strong>Prof. Ing. Mag. Dr. Thomas Stütz</strong></span>
+  </footer>
+</div>
+</body>
+</html>
