@@ -15,7 +15,7 @@
 
 - [x] 3.0 Verweise auf den alten Spec-Namen „Per-Guest Add Rate Limit“ in Code-Kommentaren (Backend, Frontend, `SongAddView.swift`) auf „Guest Add Limit per Minute“ ändern (prüfen: `grep -rn "Per-Guest Add Rate Limit" musicvoting` findet nichts mehr)
 - [x] 3.1 Hugo-Doku/README auf Erwähnungen von „10 Songs pro Minute“ prüfen und anpassen (prüfen: `grep -rn "10 Songs" hugo README.adoc musicvoting/*/README.md`)
-- [ ] 3.2 Live-Check: als Gast 21 Songs in unter einer Minute hinzufügen → 21. wird abgelehnt, Countdown läuft herunter, danach geht es wieder
+- [ ] 3.2 Live-Check: als Gast 21 Songs in unter einer Minute hinzufügen → 21. wird abgelehnt, Countdown läuft herunter, danach geht es wieder (wird nach dem Deployment geprüft)
 
 ## Workflow follow-up
 
