@@ -373,27 +373,6 @@ When the system advances to the next song, removing the finished queue entry MUS
 - THEN the advance does not fail with an error
 - AND song B becomes the current song
 
-### Requirement: Auto-Refill Skips Blacklisted Songs
-When the system refills the queue automatically (see "Empty Queue Behavior"), it MUST NOT add a song that matches the party's blacklist. Blocked candidates MUST be skipped in the usual source order (default playlist, then similar songs, Top-Charts and search). If no allowed candidate is found, refill behaves as when it yields nothing.
-
-#### Scenario: Blocked playlist song is skipped
-- GIVEN the party's default playlist starts with song X by artist A, followed by song Y
-- AND the blacklist contains artist A
-- WHEN the queue is refilled
-- THEN song Y is added to the queue
-- AND song X is not added
-
-#### Scenario: Party without blacklist refills as before
-- GIVEN the party's blacklist is empty
-- WHEN the queue is refilled
-- THEN the first eligible song from the refill sources is added, exactly as without a blacklist
-
-#### Scenario: Every candidate is blocked
-- GIVEN every refill candidate matches the blacklist
-- WHEN the playing song ends with no other songs queued
-- THEN no blocked song is added
-- AND the dashboard displays "Warteschlange ist leer"
-
 ### Requirement: Web Playback Device Keeps a Valid Spotify Token
 
 The Spotify Web Playback SDK player on `/startpage` MUST fetch its access token from `GET /party/{id}/spotify/token` each time the SDK requests one (`getOAuthToken`), instead of reusing the token from player start, so playback survives the 60-minute token lifetime without a reload. If that request fails or returns an empty token, the SDK MUST receive the last known token.
@@ -432,6 +411,27 @@ When the system refills the queue automatically, it MUST take from each source o
 - **THEN** it adds such an earlier played song instead of stopping
 
 #### Scenario: Blacklist still applies to repeats
-- **GIVEN** the only songs any source yields were played earlier and are now on the blacklist
+- **GIVEN** the only songs any source yields were played earlier and are now on the blocklist
 - **WHEN** the system refills the queue
 - **THEN** no song is added and the dashboard displays "Warteschlange ist leer"
+
+### Requirement: Auto-Refill Skips Blocklisted Songs
+When the system refills the queue automatically (see "Empty Queue Behavior"), it MUST NOT add a song that matches the party's blocklist. Blocked candidates MUST be skipped in the usual source order (default playlist, then similar songs, Top-Charts and search). If no allowed candidate is found, refill behaves as when it yields nothing.
+
+#### Scenario: Blocked playlist song is skipped
+- GIVEN the party's default playlist starts with song X by artist A, followed by song Y
+- AND the blocklist contains artist A
+- WHEN the queue is refilled
+- THEN song Y is added to the queue
+- AND song X is not added
+
+#### Scenario: Party without blocklist refills as before
+- GIVEN the party's blocklist is empty
+- WHEN the queue is refilled
+- THEN the first eligible song from the refill sources is added, exactly as without a blocklist
+
+#### Scenario: Every candidate is blocked
+- GIVEN every refill candidate matches the blocklist
+- WHEN the playing song ends with no other songs queued
+- THEN no blocked song is added
+- AND the dashboard displays "Warteschlange ist leer"

@@ -149,10 +149,10 @@ After a successful add, a confirmation MUST appear at the bottom of the guest pa
 A blocked search result keeps the behaviour of `search/spec.md` (greyed out, no visible text). Its disabled "+" MUST have the `aria-label` and tooltip "Nicht verfügbar", without revealing the reason.
 
 #### Scenario: Blocked result explains itself without a reason
-- GIVEN song X is blocked by the party blacklist
+- GIVEN song X is blocked by the party blocklist
 - WHEN a guest focuses or hovers the disabled "+" of song X in the search results
 - THEN "Nicht verfügbar" is announced or shown as a tooltip
-- AND no blacklist entry or reason is revealed
+- AND no blocklist entry or reason is revealed
 
 ### Requirement: Guest Voting View Shows What Plays and the Ranking
 The web guest page MUST make visible that the room decides the order:
@@ -340,7 +340,7 @@ A guest MUST NOT be able to add more than 20 songs per rolling minute. Exceeding
 - **THEN** the song is added
 
 #### Scenario: Rejected adds do not count
-- **GIVEN** a guest whose add is rejected because the song is already queued or blacklisted
+- **GIVEN** a guest whose add is rejected because the song is already queued or blocklisted
 - **WHEN** the guest adds other songs afterwards
 - **THEN** the rejected attempt does not count towards the 20 songs
 

@@ -62,12 +62,12 @@ The dashboard MUST NOT rely exclusively on polling for any of the above state ch
 - AND no manual page reload is required
 
 ### Requirement: No Host Controls on Dashboard
-The dashboard MUST NOT expose pause, resume, skip, remove, blacklist, or end-party controls. These live on the host client only.
+The dashboard MUST NOT expose pause, resume, skip, remove, blocklist, or end-party controls. These live on the host client only.
 
 #### Scenario: Dashboard contains no control affordances
 - GIVEN the dashboard is connected to a party
 - WHEN a viewer inspects the dashboard UI
-- THEN no button or gesture allows pause, resume, skip, remove, blacklist edits, or ending the party
+- THEN no button or gesture allows pause, resume, skip, remove, blocklist edits, or ending the party
 
 ### Requirement: Dashboard Does Not Attribute Songs to Guests
 The dashboard MUST NOT display which guest requested a given song.
