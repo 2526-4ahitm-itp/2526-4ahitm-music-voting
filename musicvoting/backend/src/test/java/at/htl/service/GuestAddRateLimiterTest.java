@@ -12,7 +12,7 @@ import java.util.OptionalLong;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for the per-guest add limit (guest spec "Per-Guest Add Rate Limit").
+ * Unit tests for the per-guest add limit (guest spec "Guest Add Limit per Minute").
  * A movable clock replaces real waiting.
  */
 class GuestAddRateLimiterTest {
@@ -60,26 +60,34 @@ class GuestAddRateLimiterTest {
         }
     }
 
+    /** The limit under test; tests use the constant so a new limit only changes one place. */
+    private static final int MAX = GuestAddRateLimiter.MAX_ADDS;
+
     @Test
-    void tenAddsAreAllowedAndTheEleventhIsRejected() {
-        addSongs("p1", "guest-a", 10);
+    void limitIsTwentySongs() {
+        assertEquals(20, MAX);
+    }
+
+    @Test
+    void maxAddsAreAllowedAndTheNextOneIsRejected() {
+        addSongs("p1", "guest-a", MAX);
 
         assertTrue(limiter.check("p1", "guest-a", 1).isPresent());
     }
 
     @Test
     void retryAfterIsTheTimeUntilTheOldestAddLeavesTheWindow() {
-        addSongs("p1", "guest-a", 10); // first add at t=0, now t=10s
+        addSongs("p1", "guest-a", MAX); // first add at t=0, now t=MAX seconds
 
         OptionalLong retryAfter = limiter.check("p1", "guest-a", 1);
 
-        assertEquals(50, retryAfter.getAsLong());
+        assertEquals(60 - MAX, retryAfter.getAsLong());
     }
 
     @Test
     void windowRollsForward() {
-        addSongs("p1", "guest-a", 10); // t=0..9s, now t=10s
-        clock.advance(Duration.ofMillis(50_500)); // t=60.5s: only the first add (t=0) has left the window
+        addSongs("p1", "guest-a", MAX); // t=0..MAX-1 s, now t=MAX s
+        clock.advance(Duration.ofMillis((60 - MAX) * 1000L + 500)); // t=60.5s: only the first add (t=0) has left the window
 
         assertTrue(limiter.check("p1", "guest-a", 1).isEmpty());
         // ...but only one slot is free again.
@@ -90,14 +98,14 @@ class GuestAddRateLimiterTest {
     @Test
     void checksWithoutRecordDoNotUseUpTheBudget() {
         // Rejected adds (duplicate, blacklist) are checked but never recorded.
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < MAX * 2; i++) {
             assertTrue(limiter.check("p1", "guest-a", 1).isEmpty());
         }
     }
 
     @Test
     void limitIsPerGuestAndPerParty() {
-        addSongs("p1", "guest-a", 10);
+        addSongs("p1", "guest-a", MAX);
 
         assertTrue(limiter.check("p1", "guest-b", 1).isEmpty(), "other guest of the same party");
         assertTrue(limiter.check("p2", "guest-a", 1).isEmpty(), "same device in another party");
@@ -105,13 +113,13 @@ class GuestAddRateLimiterTest {
 
     @Test
     void severalSongsInOneRequestCountEach() {
-        assertTrue(limiter.check("p1", "guest-a", 10).isEmpty());
-        limiter.record("p1", "guest-a", 8);
+        assertTrue(limiter.check("p1", "guest-a", MAX).isEmpty());
+        limiter.record("p1", "guest-a", MAX - 2);
 
         assertTrue(limiter.check("p1", "guest-a", 2).isEmpty());
         assertTrue(limiter.check("p1", "guest-a", 3).isPresent());
-        assertTrue(new GuestAddRateLimiter().check("p1", "fresh", 11).isPresent(),
-                "a single request with more than 10 songs is rejected");
+        assertTrue(new GuestAddRateLimiter().check("p1", "fresh", MAX + 1).isPresent(),
+                "a single request with more than MAX songs is rejected");
     }
 
     @Test

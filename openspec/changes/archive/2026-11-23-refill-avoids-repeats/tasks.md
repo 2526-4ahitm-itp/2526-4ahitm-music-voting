@@ -18,7 +18,7 @@
 - [x] 3.2 Unit-Test des Quellen-Durchlaufs: erschöpfte erste Quelle → nächste Quelle; nichts Frisches → Wiederholung; alles gesperrt → nichts
 - [x] 3.3 `./mvnw test` grün
 - [x] 3.4 `openspec validate refill-avoids-repeats --strict`
-- [ ] 3.5 Live-Check: Party mit kurzer Standard-Playlist (2–3 Songs) laufen lassen – nach der Playlist kommen andere Songs statt einer Schleife
+- [x] 3.5 Live-Check: Party mit kurzer Standard-Playlist (2–3 Songs) laufen lassen – nach der Playlist kommen andere Songs statt einer Schleife (am 2026-11-24 bestätigt: nach der Playlist kamen neue Songs; ähnliche Songs stammen bewusst nur von Artists, die von Hand hinzugefügt wurden)
 - [x] 3.6 Unit-Test `broadSearchQuery` (2026 → `year:2011-2026`, verschiebt sich mit dem Jahr)
 
 ## Workflow follow-up

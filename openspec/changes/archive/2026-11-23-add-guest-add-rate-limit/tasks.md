@@ -19,7 +19,7 @@
 - [ ] 3.4 iOS-Tests: `deviceId` in der Add-URL; 429-Meldung wird wörtlich angezeigt (geschrieben in `SongAddViewModelTests`, laufen nur in Xcode)
 - [x] 3.5 `./mvnw test` und `npx ng test --watch=false --browsers=ChromeHeadless` grün
 - [x] 3.6 `openspec validate add-guest-add-rate-limit --strict`
-- [ ] 3.7 Live-Check: als Gast 11 Songs in unter einer Minute hinzufügen → 11. wird mit der Meldung abgelehnt; nach einer Minute geht es wieder
+- [x] 3.7 Live-Check: als Gast 11 Songs in unter einer Minute hinzufügen → 11. wird mit der Meldung abgelehnt; nach einer Minute geht es wieder (am 2026-11-24 bestätigt; Limit wird im Folge-Change auf 20/Minute erhöht)
 
 ## Workflow follow-up
 

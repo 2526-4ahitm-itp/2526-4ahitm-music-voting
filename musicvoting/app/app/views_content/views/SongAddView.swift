@@ -101,8 +101,8 @@ final class SongAddViewModel: ObservableObject {
     private var searchURL: URL {
         partySession?.partyURL(path: "track/search") ?? BackendConfiguration.endpoint("/api/party/unknown/track/search")
     }
-    /// The deviceId identifies the guest for the backend's limit of 10 songs per minute
-    /// (guest spec "Per-Guest Add Rate Limit").
+    /// The deviceId identifies the guest for the backend's limit of 20 songs per minute
+    /// (guest spec "Guest Add Limit per Minute").
     private var addToPlaylistURL: URL {
         let base = partySession?.partyURL(path: "track/addToPlaylist") ?? BackendConfiguration.endpoint("/api/party/unknown/track/addToPlaylist")
         guard let deviceId = partySession?.deviceId,

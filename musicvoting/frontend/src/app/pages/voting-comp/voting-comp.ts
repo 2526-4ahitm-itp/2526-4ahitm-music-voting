@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, NgZone, signal, computed, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, signal, computed, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { PartyService } from '../../services/party.service';
+import { AddCooldownService } from '../../services/add-cooldown';
 import { MvCover } from '../../shared/mv-cover';
 import { MvIcon } from '../../shared/mv-icon';
 import { MvSpinner } from '../../shared/mv-spinner';
@@ -72,6 +73,11 @@ export class VotingComp implements OnInit, OnDestroy {
   addingTrackId: string | null = null;
   /** Shown for search and connection problems. */
   readonly connectionLostText = 'Verbindung verloren – versuch es gleich nochmal.';
+  /**
+   * Countdown after the add limit was hit (guest spec "Web Guest Sees When Adding Is Possible
+   * Again"); a root service so it is still right when the guest leaves the page and returns.
+   */
+  readonly cooldown = inject(AddCooldownService);
 
   private eventSource?: EventSource;
   private deviceId: string;
@@ -273,6 +279,7 @@ export class VotingComp implements OnInit, OnDestroy {
   /** Adds a result to the queue and confirms with its rank (guest spec "Guest Add Is Confirmed"). */
   async addToPlaylist(track: any) {
     if (track?.blocked) return; // on the party blacklist — the backend would reject it anyway
+    if (this.cooldown.active()) return; // still over the limit — the backend would answer 429 again
     this.addingTrackId = track.id;
     this.cdr?.detectChanges();
 
@@ -287,9 +294,14 @@ export class VotingComp implements OnInit, OnDestroy {
     } catch (err: any) {
       console.error('Fehler beim Hinzufügen:', err);
       // The backend sends German messages meant to be shown verbatim, e.g. "Nicht erlaubt."
-      // (blacklist, 403) or "Song ist schon in der Warteschlange." (409).
+      // (blacklist, 403), "Song ist schon in der Warteschlange." (409) or
+      // "Zu viele Anfragen — bitte kurz warten." (429, more than 20 songs per minute).
       const message = err?.error?.error;
       this.toast?.error(typeof message === 'string' ? message : this.connectionLostText);
+      if (err?.status === 429) {
+        // Show how long to wait and lock the "+" buttons until then.
+        this.cooldown.start(err?.error?.retryAfterSeconds);
+      }
     } finally {
       this.addingTrackId = null;
       this.cdr?.detectChanges();
@@ -298,7 +310,8 @@ export class VotingComp implements OnInit, OnDestroy {
 
   /** Accessible name of the add button for a result. */
   addLabel(track: any): string {
-    return track?.blocked ? 'Nicht verfügbar' : 'Song hinzufügen';
+    if (track?.blocked) return 'Nicht verfügbar'; // stays blocked after the countdown, too
+    return this.cooldown.active() ? 'Bitte kurz warten' : 'Song hinzufügen';
   }
 
   /** "Suche leeren": empties the field, results and status at once and shows the queue again. */

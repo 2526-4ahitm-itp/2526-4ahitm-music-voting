@@ -24,7 +24,7 @@
 - [x] 4.2 Frontend-Tests: `select-playlist` mit `error=premium-required`; Startpage zeigt Kontofehler
 - [x] 4.3 `./mvnw test` und `npx ng test --watch=false --browsers=ChromeHeadless` grün (iOS-Tests in `SpotifyAuthViewModelTests` ergänzt, laufen nur in Xcode)
 - [x] 4.4 `openspec validate require-spotify-premium --strict`
-- [ ] 4.5 Live-Check: Login mit Spotify-Free-Konto (Web und iOS) zeigt den Premium-Hinweis; Premium-Konto läuft unverändert durch
+- [x] 4.5 Live-Check: Login mit Spotify-Free-Konto (Web und iOS) zeigt den Premium-Hinweis; Premium-Konto läuft unverändert durch (Web am 2026-11-24 bestätigt; iOS nicht prüfbar)
 
 ## Workflow follow-up
 

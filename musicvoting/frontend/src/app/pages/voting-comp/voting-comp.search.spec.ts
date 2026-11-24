@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
 import { VotingComp } from './voting-comp';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { PartyService } from '../../services/party.service';
+import { AddCooldownService } from '../../services/add-cooldown';
 
 /**
  * DOM tests of the single guest page with the search field in use (guest spec
@@ -29,7 +30,16 @@ describe('VotingComp search (DOM)', () => {
     ...extra,
   });
 
+  /** Stand-in for AddCooldownService: start() sets the seconds, tests count down by hand. */
+  let cooldown: { secondsLeft: ReturnType<typeof signal<number>>; active: () => boolean; start: jasmine.Spy };
+
   beforeEach(async () => {
+    const secondsLeft = signal(0);
+    cooldown = {
+      secondsLeft,
+      active: () => secondsLeft() > 0,
+      start: jasmine.createSpy('start').and.callFake((s: number) => secondsLeft.set(s)),
+    };
     localStorage.setItem('mv-welcome-party-1', '1');
     voteResponse = new Subject<any>();
     spotify = {
@@ -47,6 +57,9 @@ describe('VotingComp search (DOM)', () => {
         { provide: SpotifyWebPlayerService, useValue: spotify },
         { provide: TrackService, useValue: trackApi },
         { provide: PartyService, useValue: { currentPartyId: 'party-1', deviceId: 'device-1', clearParty: () => {} } },
+        // Controllable countdown: the real one's timing is covered by add-cooldown.spec.ts.
+        // A mock clock here would race Angular's change-detection scheduler.
+        { provide: AddCooldownService, useValue: cooldown },
       ],
     }).compileComponents();
 
@@ -246,6 +259,82 @@ describe('VotingComp search (DOM)', () => {
       expect(document.activeElement).toBe(input);
       expect(clearBtn()).toBeNull();
       fixture.nativeElement.remove();
+    });
+  });
+
+  describe('countdown after the add limit (guest spec "Web Guest Sees When Adding Is Possible Again")', () => {
+    const rateLimited = (retryAfterSeconds: number) => throwError(() => ({
+      status: 429,
+      error: { error: 'Zu viele Anfragen — bitte kurz warten.', retryAfterSeconds },
+    }));
+    const addButtons = (): HTMLButtonElement[] =>
+      Array.from(fixture.nativeElement.querySelectorAll('.add-button'));
+    const countdown = (): string =>
+      fixture.nativeElement.querySelector('.host-status.cooldown')?.textContent?.trim() ?? '';
+
+    beforeEach(() => spyOn(console, 'error'));
+
+    it('a 429 shows the countdown and locks every "+"', async () => {
+      await searchFor('daft', [song('x'), song('y'), song('b', { blocked: true })]);
+      spotify.addToPlaylist.and.returnValue(rateLimited(30));
+
+      await comp.addToPlaylist(song('x'));
+      fixture.detectChanges();
+
+      expect(cooldown.start).toHaveBeenCalledWith(30);
+      expect(countdown()).toBe('Du kannst in 30 s wieder Songs hinzufügen.');
+      expect(addButtons().every((b) => b.disabled)).toBeTrue();
+      expect(addButtons().map((b) => b.getAttribute('aria-label')))
+        .toEqual(['Bitte kurz warten', 'Bitte kurz warten', 'Nicht verfügbar']);
+    });
+
+    it('counts down and unlocks the "+" when it runs out', async () => {
+      await searchFor('daft', [song('x')]);
+      spotify.addToPlaylist.and.returnValue(rateLimited(2));
+      await comp.addToPlaylist(song('x'));
+
+      cooldown.secondsLeft.set(1);
+      fixture.detectChanges();
+      expect(countdown()).toBe('Du kannst in 1 s wieder Songs hinzufügen.');
+
+      cooldown.secondsLeft.set(0);
+      fixture.detectChanges();
+      expect(countdown()).toBe('');
+      expect(addButtons()[0].disabled).toBeFalse();
+      expect(addButtons()[0].getAttribute('aria-label')).toBe('Song hinzufügen');
+    });
+
+    it('does not send another add while the countdown runs', async () => {
+      spotify.addToPlaylist.and.returnValue(rateLimited(30));
+      await comp.addToPlaylist(song('x'));
+      spotify.addToPlaylist.calls.reset();
+
+      await comp.addToPlaylist(song('y'));
+
+      expect(spotify.addToPlaylist).not.toHaveBeenCalled();
+    });
+
+    it('other errors do not start a countdown', async () => {
+      spotify.addToPlaylist.and.returnValue(
+        throwError(() => ({ status: 409, error: { error: 'Song ist schon in der Warteschlange.' } }))
+      );
+
+      await comp.addToPlaylist(song('x'));
+
+      expect(cooldown.start).not.toHaveBeenCalled();
+    });
+
+    it('a page opened again uses the same countdown (it lives in a root service)', async () => {
+      spotify.addToPlaylist.and.returnValue(rateLimited(40));
+      await comp.addToPlaylist(song('x'));
+      fixture.destroy(); // guest leaves /voting
+
+      fixture = TestBed.createComponent(VotingComp);
+      comp = fixture.componentInstance;
+      await searchFor('daft', [song('y')]);
+
+      expect(countdown()).toBe('Du kannst in 40 s wieder Songs hinzufügen.');
+      expect(addButtons()[0].disabled).toBeTrue();
     });
   });
 });
