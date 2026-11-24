@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>Guests are identified by their persistent {@code deviceId} within a party. Only songs that
  * were actually added are recorded: {@link #check} runs before the add, {@link #record} only
- * after it succeeded, so a duplicate or blacklisted song does not use up the guest's budget.
+ * after it succeeded, so a duplicate or blocklisted song does not use up the guest's budget.
  * State lives in memory only; a backend restart simply starts fresh windows.
  */
 @ApplicationScoped

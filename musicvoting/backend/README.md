@@ -17,8 +17,10 @@ You can run your application in dev mode that enables live coding using:
 ## Database schema
 
 The schema lives in `setup.sql` and is applied by PostgreSQL only on the **first** start of
-an empty volume (`cd musicvoting && docker compose up -d`). Hibernate does not create or
-update tables (`database.generation=none`).
+an empty volume (`cd musicvoting && docker compose up -d`). In production Hibernate does not
+create or update tables. In dev mode (`quarkus:dev`) it runs with `database.generation=update`
+and silently creates missing tables, so run a rename migration **before** starting a new
+backend, or you end up with an empty second table.
 
 The dev DB runs PostgreSQL 19 in the volume `db_data_pg19` (mounted at `/var/lib/postgresql`,
 the layout of the 18+ images). The previous volume `musicvoting_db_data` holds PostgreSQL 16 files
@@ -32,35 +34,30 @@ After a schema change, either recreate the dev DB (deletes all local data):
 cd musicvoting && docker compose down -v && docker compose up -d
 ```
 
-or apply the new statements by hand. For the party blacklist (`add-party-blacklist`):
+or apply the new statements by hand.
+
+**Rename `blacklist_entry` → `blocklist_entry`** (change `rename-blacklist-to-blocklist`,
+2026-11-24). Needed once for every database that has a volume (local Docker,
+`deployment/compose`, `deployment/server`); LeoCloud is rebuilt from the init script on
+every start:
 
 ```shell script
-docker exec -i musicvoting-db-1 psql -U musicvoting -d musicvoting <<'SQL'
-CREATE TABLE IF NOT EXISTS blacklist_entry (
-    id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    party_id    VARCHAR     NOT NULL REFERENCES party(id) ON DELETE CASCADE,
-    kind        VARCHAR     NOT NULL,
-    value       VARCHAR     NOT NULL,
-    label       VARCHAR,
-    image_url   TEXT,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (party_id, kind, value)
-);
-SQL
+docker exec -i musicvoting-db-1 psql -U musicvoting -d musicvoting \
+  -c 'ALTER TABLE blacklist_entry RENAME TO blocklist_entry;'
 ```
 
-## Party blacklist
+## Party blocklist
 
-The host can block words, artists and songs per party (`BlacklistResource`, all `@HostOnly`):
+The host can block words, artists and songs per party (`BlocklistResource`, all `@HostOnly`):
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/api/party/{partyId}/blacklist` | list entries |
-| `POST` | `/api/party/{partyId}/blacklist` | add `{kind: WORD\|ARTIST\|TRACK, value, label?, imageUrl?}` (201 new, 200 duplicate, 400 invalid) |
-| `DELETE` | `/api/party/{partyId}/blacklist/{entryId}` | remove an entry (204 / 404) |
-| `GET` | `/api/party/{partyId}/blacklist/artists?q=` | Spotify artist search for the setup page |
+| `GET` | `/api/party/{partyId}/blocklist` | list entries |
+| `POST` | `/api/party/{partyId}/blocklist` | add `{kind: WORD\|ARTIST\|TRACK, value, label?, imageUrl?}` (201 new, 200 duplicate, 400 invalid) |
+| `DELETE` | `/api/party/{partyId}/blocklist/{entryId}` | remove an entry (204 / 404) |
+| `GET` | `/api/party/{partyId}/blocklist/artists?q=` | Spotify artist search for the setup page |
 
-All matching lives in `BlacklistService.Blacklist#isBlocked` (words match as whole words,
+All matching lives in `BlocklistService.Blocklist#isBlocked` (words match as whole words,
 case-insensitive; artists by Spotify ID; songs by track URI). It is applied when a song is
 added (`403 "Nicht erlaubt."`), during the auto-refill, and as a `blocked` flag on search
 results.

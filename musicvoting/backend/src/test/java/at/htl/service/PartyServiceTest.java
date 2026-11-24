@@ -56,7 +56,7 @@ class PartyServiceTest {
 
     @Test
     @TestTransaction
-    void endParty_deletesBlacklistEntries() {
+    void endParty_deletesBlocklistEntries() {
         String partyId = UUID.randomUUID().toString();
         partyRegistry.register(new Party(PartyId.of(partyId), ProviderKind.SPOTIFY, "17171", "91717"));
 
@@ -68,16 +68,16 @@ class PartyServiceTest {
         entity.hostPin = "91717";
         entity.persist();
 
-        BlacklistEntry word = new BlacklistEntry();
+        BlocklistEntry word = new BlocklistEntry();
         word.partyId = partyId;
-        word.kind = BlacklistKind.WORD;
+        word.kind = BlocklistKind.WORD;
         word.value = "live";
         word.createdAt = OffsetDateTime.now();
         word.persist();
 
         partyService.endParty(PartyId.of(partyId));
 
-        assertEquals(0, BlacklistEntry.count("partyId", partyId));
+        assertEquals(0, BlocklistEntry.count("partyId", partyId));
     }
 
     @Test

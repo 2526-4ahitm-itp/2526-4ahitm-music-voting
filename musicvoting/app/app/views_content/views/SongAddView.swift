@@ -24,7 +24,7 @@ private struct TrackItem: Decodable {
     let name: String
     let artists: [ArtistItem]
     let album: AlbumItem
-    /// True if the track matches the party blacklist (search spec "Blacklisted Search Results
+    /// True if the track matches the party blocklist (search spec "Blocklisted Search Results
     /// Cannot Be Added"). Optional so an older backend without the field still decodes.
     let blocked: Bool?
 
@@ -84,7 +84,7 @@ final class SongAddViewModel: ObservableObject {
     }
 
     /// Hint below the search field for guests (search spec "iOS Search Applies the Party
-    /// Blacklist Like the Web"): names the banned artist case only, never which entry matched.
+    /// Blocklist Like the Web"): names the banned artist case only, never which entry matched.
     var blockedHint: String? {
         guard isGuest else { return nil }
         if hiddenHint == "ARTIST" { return String(localized: "search.blocked.artistHint") }
@@ -140,8 +140,8 @@ final class SongAddViewModel: ObservableObject {
 
                     if event.type == "queue-updated" {
                         await loadQueue()
-                    } else if event.type == "blacklist-updated" {
-                        // The host changed the blacklist: refresh greyed-out results and the hint.
+                    } else if event.type == "blocklist-updated" {
+                        // The host changed the blocklist: refresh greyed-out results and the hint.
                         let term = query.trimmingCharacters(in: .whitespacesAndNewlines)
                         if term.count >= 2 { await search(query: term) }
                     }
@@ -378,7 +378,7 @@ struct SongAddView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 48)
                 } else if viewModel.blockedHint == nil {
-                    // When every result was removed, the blacklist hint above replaces this text.
+                    // When every result was removed, the blocklist hint above replaces this text.
                     Text(String(localized: "search.noResults"))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, alignment: .center)

@@ -30,7 +30,7 @@ final class SongAddViewModelTests: XCTestCase {
     }
 
     /// The test session is a guest, so searches carry audience=guest (search spec "iOS Search
-    /// Applies the Party Blacklist Like the Web").
+    /// Applies the Party Blocklist Like the Web").
     private func stubSearch(json: String, statusCode: Int = 200, query: String = "?q=test&audience=guest") {
         let base = BackendConfiguration.endpoint("/api/party/party-1/track/search").absoluteString
         MockURLProtocol.stubs[base + query] = .success(
@@ -107,7 +107,7 @@ final class SongAddViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.results[0].artist.isEmpty)
     }
 
-    // MARK: - blacklist (search spec "iOS Search Applies the Party Blacklist Like the Web")
+    // MARK: - blocklist (search spec "iOS Search Applies the Party Blocklist Like the Web")
 
     func testGuestSearchDecodesBlockedFlagAndShowsSomeHint() async {
         stubSearch(json: """

@@ -23,7 +23,7 @@ const VIEWPORTS = {
 
 // Seiten, die als Host (mit Host-PIN im localStorage) bzw. als Gast geöffnet werden.
 // Verglichen wird nur der Pfad, eine Query in status.yaml (z. B. ?mode=edit) bleibt in der URL.
-const HOST_ROUTES = new Set(['/select-playlist', '/select-blacklist', '/party-ready', '/dashboard', '/startpage', '/voting-host', '/search-host']);
+const HOST_ROUTES = new Set(['/select-playlist', '/select-blocklist', '/party-ready', '/dashboard', '/startpage', '/voting-host', '/search-host']);
 const GUEST_ROUTES = new Set(['/voting', '/guest']);
 
 const SEED_QUERIES = ['Daft Punk', 'Queen', 'Adele', 'Coldplay', 'Dua Lipa'];
@@ -166,7 +166,7 @@ async function main() {
       // Optional: Suchbegriff eintippen (Feld `search` in status.yaml).
       if (screen.search) {
         await page.type('input[type="search"]', screen.search);
-        // `submit: false` in status.yaml: kein Enter, z. B. auf der Blacklist, wo Enter das Wort sperren würde.
+        // `submit: false` in status.yaml: kein Enter, z. B. auf der Blocklist, wo Enter das Wort sperren würde.
         if (screen.submit !== false) await page.keyboard.press('Enter');
         await new Promise((r) => setTimeout(r, args.wait));
       }

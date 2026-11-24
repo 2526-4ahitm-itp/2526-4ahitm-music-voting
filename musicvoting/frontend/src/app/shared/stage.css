@@ -1,6 +1,6 @@
 /*
  * Shared "stage" look for the host pages (dashboard, voting, search,
- * blacklist) and the guest views (voting, add songs).
+ * blocklist) and the guest views (voting, add songs).
  *
  * The host pages use the same visual language as the TV/player page: a dark
  * stage with the brand colours as light, translucent dark cards and white

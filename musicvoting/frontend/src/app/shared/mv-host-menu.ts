@@ -5,7 +5,7 @@ import { PartyService } from '../services/party.service';
 import { MvIcon, MvIconName } from './mv-icon';
 
 /** Pages the host menu can mark as current. */
-export type HostMenuPage = 'dashboard' | 'blacklist';
+export type HostMenuPage = 'dashboard' | 'blocklist';
 
 interface MenuEntry {
   page: HostMenuPage;
@@ -20,8 +20,8 @@ interface MenuEntry {
  *
  * It replaces the side menu that was copied into host-dashboard and the former
  * host search and voting pages. The old "Startseite" entry is gone because it left the
- * host context; "Blacklist" is new so the host can edit the full blacklist
- * during the party (host spec "Host Manages Party Blacklist"). "Voting" and
+ * host context; "Blocklist" is new so the host can edit the full blocklist
+ * during the party (host spec "Host Manages Party Blocklist"). "Voting" and
  * "Suchen" are gone too: the dashboard holds the whole queue and the song
  * search (host spec "Host Navigation Adapts to Screen Width").
  *
@@ -241,16 +241,16 @@ export class MvHostMenu {
   /** Voting-PIN of the running party for the badge; null hides the badge. */
   readonly pin = toSignal(this.party.pin$, { initialValue: null as string | null });
 
-  /** Entries are computed on access so the blacklist link carries the current party id. */
+  /** Entries are computed on access so the blocklist link carries the current party id. */
   entries(): MenuEntry[] {
     const partyId = this.party.currentPartyId;
     return [
       { page: 'dashboard', label: 'Dashboard', icon: 'list-music', link: '/dashboard' },
       {
-        page: 'blacklist',
+        page: 'blocklist',
         label: 'Blocklist',
         icon: 'shield-ban',
-        link: '/select-blacklist',
+        link: '/select-blocklist',
         query: partyId ? { partyId, mode: 'edit' } : { mode: 'edit' },
       },
     ];

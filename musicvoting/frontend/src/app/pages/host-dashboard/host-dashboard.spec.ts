@@ -368,7 +368,7 @@ describe('HostDashboard', () => {
     };
 
     beforeEach(() => {
-      (partyService as any).addBlacklistEntry = jasmine.createSpy('addBlacklistEntry').and.returnValue(of({}));
+      (partyService as any).addBlocklistEntry = jasmine.createSpy('addBlocklistEntry').and.returnValue(of({}));
     });
 
     it('opens the question instead of removing right away', () => {
@@ -390,11 +390,11 @@ describe('HostDashboard', () => {
       comp.cancelRemove();
 
       expect(comp.confirmRemoveUri).toBeNull();
-      expect((partyService as any).addBlacklistEntry).not.toHaveBeenCalled();
+      expect((partyService as any).addBlocklistEntry).not.toHaveBeenCalled();
       expect(http.delete).not.toHaveBeenCalled();
     });
 
-    it('"Nur entfernen" removes the song without touching the blacklist', async () => {
+    it('"Nur entfernen" removes the song without touching the blocklist', async () => {
       comp.partyId = 'party-1';
       http.delete.and.returnValue(of({}));
       http.get.and.returnValue(of({ queue: [] }));
@@ -403,21 +403,21 @@ describe('HostDashboard', () => {
       await comp.confirmRemoveOnly(track);
 
       expect(http.delete).toHaveBeenCalledWith('/api/party/party-1/track/remove', { body: { uri: 'spotify:track:t1' } });
-      expect((partyService as any).addBlacklistEntry).not.toHaveBeenCalled();
+      expect((partyService as any).addBlocklistEntry).not.toHaveBeenCalled();
       expect(comp.confirmRemoveUri).toBeNull();
     });
 
     it('"Entfernen und sperren" blocks the track first, then removes it from the queue', async () => {
       comp.partyId = 'party-1';
       const calls: string[] = [];
-      (partyService as any).addBlacklistEntry.and.callFake(() => { calls.push('block'); return of({}); });
+      (partyService as any).addBlocklistEntry.and.callFake(() => { calls.push('block'); return of({}); });
       http.delete.and.callFake(() => { calls.push('remove'); return of({}); });
       http.get.and.returnValue(of({ queue: [] }));
       comp.requestRemove(track);
 
       await comp.confirmBlock(track);
 
-      expect((partyService as any).addBlacklistEntry).toHaveBeenCalledWith('party-1', {
+      expect((partyService as any).addBlocklistEntry).toHaveBeenCalledWith('party-1', {
         kind: 'TRACK',
         value: 'spotify:track:t1',
         label: 'Song X – A, B',
@@ -433,14 +433,14 @@ describe('HostDashboard', () => {
 
       await comp.confirmBlock({ ...track, isCurrentlyPlaying: true });
 
-      expect((partyService as any).addBlacklistEntry).not.toHaveBeenCalled();
+      expect((partyService as any).addBlocklistEntry).not.toHaveBeenCalled();
       expect(http.delete).not.toHaveBeenCalled();
     });
 
     it('does not remove the song when blocking fails', async () => {
       spyOn(console, 'error');
       comp.partyId = 'party-1';
-      (partyService as any).addBlacklistEntry.and.returnValue(throwError(() => new Error('boom')));
+      (partyService as any).addBlocklistEntry.and.returnValue(throwError(() => new Error('boom')));
 
       await comp.confirmBlock(track);
 

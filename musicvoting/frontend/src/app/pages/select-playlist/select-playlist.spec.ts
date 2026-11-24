@@ -68,7 +68,7 @@ describe('SelectPlaylist', () => {
     expect(text).not.toContain('Playlists werden geladen');
   });
 
-  it('choose() stores the playlist and navigates to the blacklist step', async () => {
+  it('choose() stores the playlist and navigates to the blocklist step', async () => {
     const fixture = createComponent();
     httpMock.expectOne('/api/party/party-x/spotify/playlists')
       .flush({ playlists: [{ id: 'pl-1', name: 'My List', trackCount: 2, imageUrl: null }] });
@@ -82,10 +82,10 @@ describe('SelectPlaylist', () => {
     putReq.flush({ defaultPlaylistId: 'pl-1' });
     await fixture.whenStable();
 
-    expect(router.navigate).toHaveBeenCalledWith(['/select-blacklist'], { queryParams: { partyId: 'party-x' } });
+    expect(router.navigate).toHaveBeenCalledWith(['/select-blocklist'], { queryParams: { partyId: 'party-x' } });
   });
 
-  it('skip() navigates to the blacklist step without setting a default playlist', async () => {
+  it('skip() navigates to the blocklist step without setting a default playlist', async () => {
     const fixture = createComponent();
     httpMock.expectOne('/api/party/party-x/spotify/playlists').flush({ playlists: [] });
     await fixture.whenStable();
@@ -93,7 +93,7 @@ describe('SelectPlaylist', () => {
     fixture.componentInstance.skip();
 
     httpMock.expectNone('/api/party/party-x/default-playlist');
-    expect(router.navigate).toHaveBeenCalledWith(['/select-blacklist'], { queryParams: { partyId: 'party-x' } });
+    expect(router.navigate).toHaveBeenCalledWith(['/select-blocklist'], { queryParams: { partyId: 'party-x' } });
   });
 
   it('redirects home when no partyId is available', async () => {

@@ -19,7 +19,7 @@ import { MvThemeToggle } from '../../shared/mv-theme-toggle';
 })
 /**
  * Setup step after the provider login: pick the playlist that refills an
- * empty queue, or continue without one. Then on to the blacklist step.
+ * empty queue, or continue without one. Then on to the blocklist step.
  */
 export class SelectPlaylist implements OnInit {
   private route = inject(ActivatedRoute);
@@ -75,7 +75,7 @@ export class SelectPlaylist implements OnInit {
     this.cd.detectChanges();
     try {
       await lastValueFrom(this.partyService.setDefaultPlaylist(this.partyId, playlist.id));
-      this.goToBlacklist();
+      this.goToBlocklist();
     } catch {
       this.error = 'Playlist konnte nicht gespeichert werden. Bitte versuche es erneut.';
       this.isSaving = false;
@@ -99,11 +99,11 @@ export class SelectPlaylist implements OnInit {
   }
 
   skip() {
-    this.goToBlacklist();
+    this.goToBlocklist();
   }
 
   /** Next setup step: the host can block words, artists and songs before the party starts. */
-  private goToBlacklist() {
-    this.router.navigate(['/select-blacklist'], { queryParams: { partyId: this.partyId } });
+  private goToBlocklist() {
+    this.router.navigate(['/select-blocklist'], { queryParams: { partyId: this.partyId } });
   }
 }

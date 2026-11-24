@@ -14,7 +14,7 @@ stand: 2026-11-17
 ist:
   - icon: "👑"
     title: Gastgeber
-    text: Party erstellen, Spotify-Login, Standard-Playlist und Blacklist wählen, Player starten, Wiedergabe steuern, Songs entfernen oder sperren, Party beenden.
+    text: Party erstellen, Spotify-Login, Standard-Playlist und Blocklist wählen, Player starten, Wiedergabe steuern, Songs entfernen oder sperren, Party beenden.
   - icon: "📱"
     title: Gäste
     text: Beitritt per QR-Code oder 5-stelligem PIN, anonym. Sehen, was läuft und auf welchem Platz ihr Song steht; Songs suchen, wünschen und liken – alles live.
@@ -22,7 +22,7 @@ ist:
     title: Player (TV)
     text: Spielt über das Spotify Web Playback SDK, zeigt QR-Code, aktuellen Song mit Fortschritt und die Warteschlange.
   - icon: "🚫"
-    title: Blacklist
+    title: Blocklist
     text: Der Host sperrt Wörter, Künstler und Songs für die Party – vorab oder während der Party. Gäste können gesperrte Songs nicht hinzufügen.
   - icon: "🎨"
     title: Ein Design für alles
@@ -84,11 +84,11 @@ screens:
     role: Gastgeber
     title: Standard-Playlist
     text: Nach dem Login wählt der Host optional eine Playlist, aus der nachgefüllt wird, wenn niemand etwas wünscht.
-  - file: select-blacklist.png
-    route: /select-blacklist
+  - file: select-blocklist.png
+    route: /select-blocklist
     device: desktop
     role: Gastgeber
-    title: Blacklist
+    title: Blocklist
     search: live   # wird vom Skript ins Suchfeld getippt
     submit: false  # kein Enter – sonst würde „live“ wirklich gesperrt
     text: Ein Suchfeld für Wörter, Künstler und Songs – zuerst „Wort sperren“, dann passende Künstler und Songs. Optional, auch während der Party änderbar.

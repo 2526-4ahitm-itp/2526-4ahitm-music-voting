@@ -65,7 +65,7 @@ export class VotingComp implements OnInit, OnDestroy {
   searchFailed = signal<boolean>(false);
   /**
    * Why songs are missing from the last result: songs by banned artists are removed by the
-   * backend (search spec "Blacklisted Search Results Cannot Be Added"), and without this hint
+   * backend (search spec "Blocklisted Search Results Cannot Be Added"), and without this hint
    * the list would just look incomplete. 'ARTIST' = the guest typed a banned artist's name.
    */
   hiddenHint = signal<'ARTIST' | 'SOME' | null>(null);
@@ -177,7 +177,7 @@ export class VotingComp implements OnInit, OnDestroy {
         } else if (data?.type === 'queue-updated' || data?.type === 'vote-updated' || data?.type === 'track-changed') {
           // Also refreshes the result states: they are derived from the queue.
           this.loadPlaylist();
-        } else if (data?.type === 'blacklist-updated' && this.searchQuery().trim()) {
+        } else if (data?.type === 'blocklist-updated' && this.searchQuery().trim()) {
           // The host blocked or unblocked something: search again so greyed-out songs, removed
           // banned-artist songs and the hint below the search field are current.
           this.search(this.searchQuery());
@@ -278,7 +278,7 @@ export class VotingComp implements OnInit, OnDestroy {
 
   /** Adds a result to the queue and confirms with its rank (guest spec "Guest Add Is Confirmed"). */
   async addToPlaylist(track: any) {
-    if (track?.blocked) return; // on the party blacklist — the backend would reject it anyway
+    if (track?.blocked) return; // on the party blocklist — the backend would reject it anyway
     if (this.cooldown.active()) return; // still over the limit — the backend would answer 429 again
     this.addingTrackId = track.id;
     this.cdr?.detectChanges();
@@ -294,7 +294,7 @@ export class VotingComp implements OnInit, OnDestroy {
     } catch (err: any) {
       console.error('Fehler beim Hinzufügen:', err);
       // The backend sends German messages meant to be shown verbatim, e.g. "Nicht erlaubt."
-      // (blacklist, 403), "Song ist schon in der Warteschlange." (409) or
+      // (blocklist, 403), "Song ist schon in der Warteschlange." (409) or
       // "Zu viele Anfragen — bitte kurz warten." (429, more than 20 songs per minute).
       const message = err?.error?.error;
       this.toast?.error(typeof message === 'string' ? message : this.connectionLostText);

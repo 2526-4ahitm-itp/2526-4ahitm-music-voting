@@ -7,7 +7,7 @@ import { VotingComp } from './pages/voting-comp/voting-comp';
 import { CodeInput } from './pages/code-input/code-input';
 import { CreateParty } from './pages/create-party/create-party';
 import { SelectPlaylist } from './pages/select-playlist/select-playlist';
-import { SelectBlacklist } from './pages/select-blacklist/select-blacklist';
+import { SelectBlocklist } from './pages/select-blocklist/select-blocklist';
 import { PartyReady } from './pages/party-ready/party-ready';
 import { hostGuard } from './host.guard';
 import { guestGuard } from './guest.guard';
@@ -53,10 +53,17 @@ export const routes: Routes = [
 
   {
     // Host setup step right after the default-playlist picker.
-    path: 'select-blacklist',
-    component: SelectBlacklist,
+    path: 'select-blocklist',
+    component: SelectBlocklist,
     canActivate: [hostGuard],
     title: 'Blocklist - MusicVoting'
+  },
+
+  {
+    // Path before the rename to "Blocklist" (host spec "Old Blocklist Setup Link Still
+    // Works"): open tabs and bookmarks keep working; the target's hostGuard still applies.
+    path: 'select-blacklist',
+    redirectTo: 'select-blocklist'
   },
 
   {

@@ -1,5 +1,5 @@
 <!--
-  Blacklist page in the host stage look (shared/stage.css).
+  Blocklist page in the host stage look (shared/stage.css).
   Setup mode: no navigation, "Weiter" / "Ohne Blocklist fortfahren".
   Edit mode (?mode=edit, from the host navigation): navigation + "Fertig".
 -->
@@ -7,13 +7,13 @@
   <div class="host-main">
     <header class="host-top">
       @if (editMode) {
-        <mv-host-menu active="blacklist" />
+        <mv-host-menu active="blocklist" />
       }
       <h1 class="host-title">{{ editMode ? 'Blocklist' : 'Blocklist festlegen' }}</h1>
     <mv-theme-toggle />
     </header>
 
-    <main class="host-content blacklist">
+    <main class="host-content blocklist">
       <p class="subtitle host-muted">Gesperrte Wörter, Künstler und Songs können Gäste nicht hinzufügen.</p>
 
       <div role="alert">

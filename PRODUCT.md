@@ -11,7 +11,7 @@ web
 ## Users
 
 - **Guests at a private party or a relaxed get-together** (birthday, flat or house party, family or friends' celebration, about 10–50 people). The mood ranges from lively and loud to calm and cosy, so the product must not feel like a club only. Guests join on their own phone, often with one hand and somewhat distracted. They want to see what is playing and coming up, like songs they want to hear, and add their own. They have no account and install nothing.
-- **The host** is one of the party guests and has Spotify Premium. They set up the party once (Spotify login, optional default playlist, optional blacklist), put the player on the laptop that is connected to the TV or projector, and then mostly party along. They step in now and then to skip, remove or block a song or to end the party.
+- **The host** is one of the party guests and has Spotify Premium. They set up the party once (Spotify login, optional default playlist, optional blocklist), put the player on the laptop that is connected to the TV or projector, and then mostly party along. They step in now and then to skip, remove or block a song or to end the party.
 - **The room** watches the shared TV/projector screen from a distance (sofa, dance floor). It shows what is playing, what comes next and how to join.
 
 ## Product Purpose
@@ -26,13 +26,13 @@ What MusicVoting does that a shared Spotify queue (e.g. Spotify Jam) does not, a
 
 1. **No app, no account for guests**: scan, and you are in, anonymously.
 2. **Democratic order by likes**: the group decides what plays next, not whoever adds first.
-3. **The host keeps control**: blacklist, block or remove songs, end the party.
+3. **The host keeps control**: blocklist, block or remove songs, end the party.
 4. **A shared TV screen**: everyone sees live what is playing and what comes next.
 
 ## Operating Context
 
 - Guests: phone browser after a QR scan (`/join/<pin>`) or typing the code; two views, "Voten" (`/voting`) and "Hinzufügen" (`/guest`), switched with a bottom tab bar.
-- Host: laptop or phone; setup flow create party → Spotify OAuth → default playlist → blacklist → host dashboard. The player (`/startpage`) usually runs on the same laptop connected to the TV, but must also work on a separate device.
+- Host: laptop or phone; setup flow create party → Spotify OAuth → default playlist → blocklist → host dashboard. The player (`/startpage`) usually runs on the same laptop connected to the TV, but must also work on a separate device.
 - TV/projector: the player page doubles as the room display and the Spotify Web Playback device.
 - Live updates over SSE; sessions survive reloads (persistent `deviceId`, stored host PIN).
 
@@ -40,7 +40,7 @@ What MusicVoting does that a shared Spotify queue (e.g. Spotify Jam) does not, a
 
 - Provider: Spotify (host needs Premium). YouTube is specified but not implemented in the web host flow. No other providers.
 - Two codes: the **Voting-PIN** (public, guests join with it) and the **Gastgeber-PIN** (secret, lets the host return to the dashboard).
-- Blacklist per party: words (whole word, case-insensitive), artists, songs. Blocked songs cannot be added and are greyed out in search; guests never learn why.
+- Blocklist per party: words (whole word, case-insensitive), artists, songs. Blocked songs cannot be added and are greyed out in search; guests never learn why.
 - Guests are never attributed on the shared screen.
 - User-facing text is German and uses "du". Backend messages such as "Nicht erlaubt.", "Song ist schon in der Warteschlange.", "Zu viele Anfragen — bitte kurz warten." and "Warteschlange ist leer" are fixed strings. Further languages are not decided.
 - Undecided: what plays when the queue is empty (web spec: stop/pause vs. Swift spec: random Top-Charts).

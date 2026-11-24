@@ -58,6 +58,16 @@ describe('app.routes', () => {
     expect(route?.component).toBeUndefined();
   });
 
+  it('redirects the old blacklist setup path to the blocklist setup page', () => {
+    const route = routes.find((r) => r.path === 'select-blacklist');
+    const target = routes.find((r) => r.path === 'select-blocklist');
+
+    expect(route?.redirectTo).toBe('select-blocklist');
+    expect(route?.component).toBeUndefined();
+    // No guard on the redirect itself: the host check runs on the target route.
+    expect(target?.canActivate).toEqual([hostGuard]);
+  });
+
   it('redirects the old host voting and search routes to the dashboard', () => {
     for (const path of ['voting-host', 'search-host']) {
       const route = routes.find((r) => r.path === path);

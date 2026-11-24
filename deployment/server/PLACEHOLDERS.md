@@ -109,6 +109,11 @@ git pull && docker compose up -d --build   # Update nach Code-Änderungen
   jedem Neustart ein neues Zertifikat geholt (Let's-Encrypt-Rate-Limits!).
 - **DB-Schema:** `setup.sql` läuft nur beim ersten Start (leeres `postgres_data_pg19`-Volume).
   Schema-Änderungen → Volume zurücksetzen: `docker compose down -v` (⚠ löscht alle Daten).
+- **Umbenennung Blacklist → Blocklist (2026-11-24):** Läuft der Server schon mit Daten, vor dem
+  Update der Images die Tabelle einmal umbenennen, damit die Einträge erhalten bleiben:
+  ```bash
+  docker compose exec -T postgres psql -U musicvoting -d musicvoting -c 'ALTER TABLE blacklist_entry RENAME TO blocklist_entry;'
+  ```
 - **Upgrade auf PostgreSQL 19 (von 16):** Ein neuer Major-Release kann die alten Datendateien
   nicht lesen, deshalb nutzt `docker-compose.yml` jetzt das neue Volume `postgres_data_pg19`.
   Läuft der Server schon mit Daten, **vor** dem Update sichern und danach einspielen:

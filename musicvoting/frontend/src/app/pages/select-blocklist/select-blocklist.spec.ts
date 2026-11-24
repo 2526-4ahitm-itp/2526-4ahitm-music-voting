@@ -3,18 +3,18 @@ import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { PLATFORM_ID, provideZonelessChangeDetection } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SelectBlacklist } from './select-blacklist';
+import { SelectBlocklist } from './select-blocklist';
 
 // These tests assert on the rendered DOM, not only on component fields: the app is zoneless,
 // so a missing detectChanges() after an await would leave the view stale.
-describe('SelectBlacklist', () => {
+describe('SelectBlocklist', () => {
   let httpMock: HttpTestingController;
   let router: { navigate: jasmine.Spy };
 
   async function createLoaded(entries: any[] = []) {
-    const fixture = TestBed.createComponent(SelectBlacklist);
+    const fixture = TestBed.createComponent(SelectBlocklist);
     fixture.detectChanges(); // ngOnInit
-    httpMock.expectOne('/api/party/party-x/blacklist').flush(entries);
+    httpMock.expectOne('/api/party/party-x/blocklist').flush(entries);
     await fixture.whenStable();
     return fixture;
   }
@@ -27,7 +27,7 @@ describe('SelectBlacklist', () => {
     (fixture.nativeElement.querySelector(selector) as HTMLElement).click();
   }
 
-  const artistUrl = (q: string) => `/api/party/party-x/blacklist/artists?q=${q}`;
+  const artistUrl = (q: string) => `/api/party/party-x/blocklist/artists?q=${q}`;
   const songUrl = (q: string) => `/api/party/party-x/track/search?q=${q}`;
 
   /** One search fires both requests (artists and songs) in parallel; answer both. */
@@ -38,7 +38,7 @@ describe('SelectBlacklist', () => {
 
   /** Types into the field and runs the search right away (the debounce is tested separately). */
   async function typeAndSearch(fixture: any, q: string, artists: any[] = [], songItems: any[] = []) {
-    const comp = fixture.componentInstance as SelectBlacklist;
+    const comp = fixture.componentInstance as SelectBlocklist;
     // Set the field directly: onSearchQueryChange would also arm the real-time debounce.
     comp.searchQuery = q;
     const searching = comp.search();
@@ -55,7 +55,7 @@ describe('SelectBlacklist', () => {
     localStorage.clear();
     router = { navigate: jasmine.createSpy('navigate') };
     TestBed.configureTestingModule({
-      imports: [SelectBlacklist],
+      imports: [SelectBlocklist],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(withXhr()),
@@ -99,7 +99,7 @@ describe('SelectBlacklist', () => {
     comp.searchQuery = 'Live';
     fixture.nativeElement.querySelector('form.search-form')
       .dispatchEvent(new Event('submit', { cancelable: true }));
-    const req = httpMock.expectOne('/api/party/party-x/blacklist');
+    const req = httpMock.expectOne('/api/party/party-x/blocklist');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ kind: 'WORD', value: 'Live' });
     req.flush({ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null });
@@ -117,7 +117,7 @@ describe('SelectBlacklist', () => {
     const fixture = await createLoaded([{ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null }]);
 
     click(fixture, '.remove-btn');
-    const req = httpMock.expectOne('/api/party/party-x/blacklist/e1');
+    const req = httpMock.expectOne('/api/party/party-x/blocklist/e1');
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
     await fixture.whenStable();
@@ -164,7 +164,7 @@ describe('SelectBlacklist', () => {
     await typeAndSearch(fixture, 'remix');
 
     click(fixture, '.word-result');
-    const req = httpMock.expectOne('/api/party/party-x/blacklist');
+    const req = httpMock.expectOne('/api/party/party-x/blocklist');
     expect(req.request.body).toEqual({ kind: 'WORD', value: 'remix' });
     req.flush({ id: 'e1', kind: 'WORD', value: 'remix', label: 'remix', imageUrl: null });
     await fixture.whenStable();
@@ -221,7 +221,7 @@ describe('SelectBlacklist', () => {
     expect(text(fixture)).toContain('ABBA');
 
     click(fixture, '.artist-result');
-    const req = httpMock.expectOne('/api/party/party-x/blacklist');
+    const req = httpMock.expectOne('/api/party/party-x/blocklist');
     expect(req.request.body).toEqual({ kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'http://img/a' });
     req.flush({ id: 'e2', kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'http://img/a' });
     await fixture.whenStable();
@@ -240,7 +240,7 @@ describe('SelectBlacklist', () => {
     expect(text(fixture)).toContain('Dancing Queen');
 
     click(fixture, '.song-result');
-    const req = httpMock.expectOne('/api/party/party-x/blacklist');
+    const req = httpMock.expectOne('/api/party/party-x/blocklist');
     expect(req.request.body).toEqual({
       kind: 'TRACK', value: 'spotify:track:t1', label: 'Dancing Queen – ABBA', imageUrl: 'http://img/t',
     });
@@ -270,7 +270,7 @@ describe('SelectBlacklist', () => {
       const fixture = await createLoaded([]);
 
       fixture.componentInstance.onSearchQueryChange('abba');
-      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      jasmine.clock().tick(SelectBlocklist.SEARCH_DEBOUNCE_MS);
       await fixture.whenStable();
 
       expect(fixture.nativeElement.textContent).not.toContain('Suche läuft');
@@ -282,7 +282,7 @@ describe('SelectBlacklist', () => {
       const comp = fixture.componentInstance;
 
       comp.onSearchQueryChange('a');
-      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS - 1);
+      jasmine.clock().tick(SelectBlocklist.SEARCH_DEBOUNCE_MS - 1);
       httpMock.expectNone(artistUrl('a'));
       httpMock.expectNone(songUrl('a'));
 
@@ -305,7 +305,7 @@ describe('SelectBlacklist', () => {
       comp.onSearchQueryChange('ab');
       jasmine.clock().tick(100);
       comp.onSearchQueryChange('abb');
-      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      jasmine.clock().tick(SelectBlocklist.SEARCH_DEBOUNCE_MS);
 
       flushSearch('abb');
       httpMock.expectNone(artistUrl('a'));
@@ -320,13 +320,13 @@ describe('SelectBlacklist', () => {
       const fixture = await createLoaded([]);
       const comp = fixture.componentInstance;
       comp.onSearchQueryChange('abba');
-      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      jasmine.clock().tick(SelectBlocklist.SEARCH_DEBOUNCE_MS);
       flushSearch('abba', [{ id: 'a1', name: 'ABBA', imageUrl: null }], [song(1)]);
       await fixture.whenStable();
       expect(fixture.nativeElement.querySelectorAll('.artist-result').length).toBe(1);
 
       comp.onSearchQueryChange('');
-      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      jasmine.clock().tick(SelectBlocklist.SEARCH_DEBOUNCE_MS);
       await fixture.whenStable();
 
       expect(comp.artistResults).toEqual([]);
@@ -339,11 +339,11 @@ describe('SelectBlacklist', () => {
       const comp = fixture.componentInstance;
 
       comp.onSearchQueryChange('ab');
-      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      jasmine.clock().tick(SelectBlocklist.SEARCH_DEBOUNCE_MS);
       const older = httpMock.expectOne(artistUrl('ab'));
       const olderSongs = httpMock.expectOne(songUrl('ab'));
       comp.onSearchQueryChange('abba');
-      jasmine.clock().tick(SelectBlacklist.SEARCH_DEBOUNCE_MS);
+      jasmine.clock().tick(SelectBlocklist.SEARCH_DEBOUNCE_MS);
 
       flushSearch('abba', [{ id: 'a1', name: 'ABBA', imageUrl: null }]);
       await fixture.whenStable();
@@ -377,14 +377,14 @@ describe('SelectBlacklist', () => {
 
     fixture.componentInstance.searchQuery = 'live';
     const adding = fixture.componentInstance.addWord();
-    httpMock.expectOne('/api/party/party-x/blacklist')
+    httpMock.expectOne('/api/party/party-x/blocklist')
       .flush({ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null });
     await adding;
     await fixture.whenStable();
     expect(continueBtn().disabled).toBe(false);
 
     click(fixture, '.remove-btn');
-    httpMock.expectOne('/api/party/party-x/blacklist/e1').flush(null);
+    httpMock.expectOne('/api/party/party-x/blocklist/e1').flush(null);
     await fixture.whenStable();
     expect(continueBtn().disabled).toBe(true);
   });
@@ -405,6 +405,6 @@ describe('SelectBlacklist', () => {
     click(fixture, '.skip-btn');
 
     expect(router.navigate).toHaveBeenCalledWith(['/party-ready'], { queryParams: { partyId: 'party-x' } });
-    httpMock.expectNone('/api/party/party-x/blacklist');
+    httpMock.expectNone('/api/party/party-x/blocklist');
   });
 });

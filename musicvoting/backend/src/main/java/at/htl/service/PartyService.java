@@ -22,7 +22,7 @@ public class PartyService {
     LoginEventBus loginEventBus;
 
     @Inject
-    BlacklistService blacklistService;
+    BlocklistService blocklistService;
 
     /** Persists the party's Spotify refresh token so the host's session survives a restart. */
     @Transactional
@@ -40,8 +40,8 @@ public class PartyService {
     public void endParty(PartyId partyId) {
         QueueEntry.delete("partyId", partyId.value());
         // The party row is only soft-deleted (ended_at), so ON DELETE CASCADE does not fire —
-        // delete the blacklist explicitly so it never carries over.
-        blacklistService.deleteAll(partyId.value());
+        // delete the blocklist explicitly so it never carries over.
+        blocklistService.deleteAll(partyId.value());
 
         Optional<Party> party = partyRegistry.find(partyId);
         if (party.isPresent() && party.get().providerKind() == ProviderKind.SPOTIFY) {

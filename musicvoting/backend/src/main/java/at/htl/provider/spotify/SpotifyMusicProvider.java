@@ -7,7 +7,7 @@ import at.htl.domain.Vote;
 import at.htl.endpoints.LoginEvent;
 import at.htl.endpoints.LoginEventBus;
 import at.htl.provider.MusicProvider;
-import at.htl.service.BlacklistService;
+import at.htl.service.BlocklistService;
 import at.htl.service.PartyService;
 import at.htl.service.SpotifyApiErrors;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class SpotifyMusicProvider implements MusicProvider {
 
-    /** Max. candidates whose metadata the refill loads while skipping blacklisted songs. */
+    /** Max. candidates whose metadata the refill loads while skipping blocklisted songs. */
     static final int REFILL_MAX_METADATA_FETCHES = 10;
 
     private final HttpClient client = HttpClient.newHttpClient();
@@ -60,7 +60,7 @@ public class SpotifyMusicProvider implements MusicProvider {
     PartyService partyService;
 
     @Inject
-    BlacklistService blacklistService;
+    BlocklistService blocklistService;
 
     @ConfigProperty(name = "spotify.client.id")
     String clientId;
@@ -254,11 +254,11 @@ public class SpotifyMusicProvider implements MusicProvider {
                 json.put("tracks", tracks);
             }
 
-            // One blacklist snapshot for all results instead of one query per item.
-            BlacklistService.Blacklist blacklist = blacklistService.load(party.id().value());
-            markBlockedSearchResults(blacklist, json);
+            // One blocklist snapshot for all results instead of one query per item.
+            BlocklistService.Blocklist blocklist = blocklistService.load(party.id().value());
+            markBlockedSearchResults(blocklist, json);
             if (guest) {
-                hideBannedArtistResults(blacklist, query, json);
+                hideBannedArtistResults(blocklist, query, json);
             }
 
             return json;
@@ -381,7 +381,7 @@ public class SpotifyMusicProvider implements MusicProvider {
         try {
             PartyEntity pe = PartyEntity.findById(party.id().value());
             UUID currentEntryId = pe != null ? pe.currentlyPlayingEntryId : null;
-            BlacklistService.Blacklist blacklist = blacklistService.load(party.id().value());
+            BlocklistService.Blocklist blocklist = blocklistService.load(party.id().value());
             for (String uri : uris) {
                 // Only block if the song is already *waiting* in the queue. The currently playing
                 // song is excluded, so a song that is (or was just) playing can be queued again.
@@ -398,9 +398,9 @@ public class SpotifyMusicProvider implements MusicProvider {
                 String trackId = uri.contains(":") ? uri.substring(uri.lastIndexOf(":") + 1) : uri;
                 Map<String, Object> meta = fetchTrackMetadata(party, trackId);
 
-                // Blacklist check after the duplicate check (that one needs no Spotify call) and
+                // Blocklist check after the duplicate check (that one needs no Spotify call) and
                 // after loading metadata, because word and artist entries need title and artist IDs.
-                if (isBlockedTrack(blacklist, uri, meta)) {
+                if (isBlockedTrack(blocklist, uri, meta)) {
                     return Response.status(Response.Status.FORBIDDEN)
                             .entity(Map.of("error", "Nicht erlaubt."))
                             .type(MediaType.APPLICATION_JSON)
@@ -1228,7 +1228,7 @@ public class SpotifyMusicProvider implements MusicProvider {
      * Keeps playback going when the queue would otherwise empty out. While a song
      * is playing and no other songs are queued, adds one song to the bottom of the
      * queue — from the party's default playlist if set, otherwise similar songs,
-     * Top-Charts or search. Songs on the party's blacklist are skipped. Auto-filled
+     * Top-Charts or search. Songs on the party's blocklist are skipped. Auto-filled
      * entries are marked so they always sort below guest-added songs. Runs inside
      * the caller's transaction.
      */
@@ -1266,9 +1266,9 @@ public class SpotifyMusicProvider implements MusicProvider {
 
             Set<String> alreadyQueued = QueueEntry.<QueueEntry>list("partyId", party.id().value())
                     .stream().map(e -> e.trackUri).collect(Collectors.toSet());
-            BlacklistService.Blacklist blacklist = blacklistService.load(party.id().value());
+            BlocklistService.Blocklist blocklist = blocklistService.load(party.id().value());
 
-            RefillPick refillPick = pickRefillTrack(sources, alreadyQueued, blacklist, party, uri -> {
+            RefillPick refillPick = pickRefillTrack(sources, alreadyQueued, blocklist, party, uri -> {
                 String trackId = uri.contains(":") ? uri.substring(uri.lastIndexOf(":") + 1) : uri;
                 return fetchTrackMetadata(party, trackId);
             });
@@ -1305,7 +1305,7 @@ public class SpotifyMusicProvider implements MusicProvider {
         }
     }
 
-    /** A chosen refill track with the metadata loaded for its blacklist check. */
+    /** A chosen refill track with the metadata loaded for its blocklist check. */
     record RefillPick(String uri, Map<String, Object> meta) {
     }
 
@@ -1320,14 +1320,14 @@ public class SpotifyMusicProvider implements MusicProvider {
      * Pass 1 asks the sources one after another and takes the first allowed song not yet played
      * in this party; a source without such a song counts as empty. Pass 2 runs only if pass 1
      * found nothing: it reuses the lists already fetched (no extra list calls) and allows
-     * songs played earlier, so the music keeps going. The blacklist applies to both passes;
+     * songs played earlier, so the music keeps going. The blocklist applies to both passes;
      * word and artist entries need metadata, so each pass is capped at
      * {@link #REFILL_MAX_METADATA_FETCHES} lookups per source (pass 2: in total).
      *
      * @return the pick, or null if no source yields an allowed song
      */
     static RefillPick pickRefillTrack(List<Supplier<List<String>>> sources, Set<String> alreadyQueued,
-                                      BlacklistService.Blacklist blacklist, Party party,
+                                      BlocklistService.Blocklist blocklist, Party party,
                                       TrackMetadataLoader metadataLoader) {
         List<List<String>> fetched = new ArrayList<>();
         for (Supplier<List<String>> source : sources) {
@@ -1342,7 +1342,7 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
             fetched.add(candidates);
             RefillPick pick = firstAllowed(
-                    freshRefillCandidates(candidates, alreadyQueued, blacklist, party), blacklist, metadataLoader);
+                    freshRefillCandidates(candidates, alreadyQueued, blocklist, party), blocklist, metadataLoader);
             if (pick != null) {
                 return pick;
             }
@@ -1350,13 +1350,13 @@ public class SpotifyMusicProvider implements MusicProvider {
 
         List<String> repeats = new ArrayList<>();
         for (List<String> candidates : fetched) {
-            repeats.addAll(repeatRefillCandidates(candidates, alreadyQueued, blacklist, party));
+            repeats.addAll(repeatRefillCandidates(candidates, alreadyQueued, blocklist, party));
         }
-        return firstAllowed(repeats.stream().distinct().toList(), blacklist, metadataLoader);
+        return firstAllowed(repeats.stream().distinct().toList(), blocklist, metadataLoader);
     }
 
-    /** Checks candidates in order and returns the first one whose metadata passes the blacklist. */
-    private static RefillPick firstAllowed(List<String> ordered, BlacklistService.Blacklist blacklist,
+    /** Checks candidates in order and returns the first one whose metadata passes the blocklist. */
+    private static RefillPick firstAllowed(List<String> ordered, BlocklistService.Blocklist blocklist,
                                            TrackMetadataLoader metadataLoader) {
         int fetches = 0;
         for (String candidate : ordered) {
@@ -1366,7 +1366,7 @@ public class SpotifyMusicProvider implements MusicProvider {
             fetches++;
             try {
                 Map<String, Object> meta = metadataLoader.load(candidate);
-                if (meta != null && !isBlockedTrack(blacklist, candidate, meta)) {
+                if (meta != null && !isBlockedTrack(blocklist, candidate, meta)) {
                     return new RefillPick(candidate, meta);
                 }
             } catch (Exception ignored) {
@@ -1382,24 +1382,24 @@ public class SpotifyMusicProvider implements MusicProvider {
      * Duplicates are dropped; the source order is kept.
      */
     static List<String> freshRefillCandidates(List<String> candidates, Set<String> alreadyQueued,
-                                              BlacklistService.Blacklist blacklist, Party party) {
-        return eligibleRefillCandidates(candidates, alreadyQueued, blacklist).stream()
+                                              BlocklistService.Blocklist blocklist, Party party) {
+        return eligibleRefillCandidates(candidates, alreadyQueued, blocklist).stream()
                 .filter(u -> !party.wasUsedForRefill(u))
                 .toList();
     }
 
     /** Candidates for the last-resort pass 2: like pass 1, but only songs already used in this party. */
     static List<String> repeatRefillCandidates(List<String> candidates, Set<String> alreadyQueued,
-                                               BlacklistService.Blacklist blacklist, Party party) {
-        return eligibleRefillCandidates(candidates, alreadyQueued, blacklist).stream()
+                                               BlocklistService.Blocklist blocklist, Party party) {
+        return eligibleRefillCandidates(candidates, alreadyQueued, blocklist).stream()
                 .filter(party::wasUsedForRefill)
                 .toList();
     }
 
     private static List<String> eligibleRefillCandidates(List<String> candidates, Set<String> alreadyQueued,
-                                                         BlacklistService.Blacklist blacklist) {
+                                                         BlocklistService.Blocklist blocklist) {
         return candidates.stream()
-                .filter(u -> u != null && !u.isBlank() && !alreadyQueued.contains(u) && !blacklist.isTrackBlocked(u))
+                .filter(u -> u != null && !u.isBlank() && !alreadyQueued.contains(u) && !blocklist.isTrackBlocked(u))
                 .distinct()
                 .toList();
     }
@@ -1722,12 +1722,12 @@ public class SpotifyMusicProvider implements MusicProvider {
 
     /**
      * Checks a Spotify track JSON object (the shape returned by {@code /v1/tracks/{id}} and
-     * found in search results) against a party's blacklist. Static and HTTP-free so the add
+     * found in search results) against a party's blocklist. Static and HTTP-free so the add
      * path, the refill and the search share one rule and it can be unit-tested directly.
      */
     @SuppressWarnings("unchecked")
-    static boolean isBlockedTrack(BlacklistService.Blacklist blacklist, String uri, Map<String, Object> track) {
-        if (blacklist == null || blacklist.isEmpty()) {
+    static boolean isBlockedTrack(BlocklistService.Blocklist blocklist, String uri, Map<String, Object> track) {
+        if (blocklist == null || blocklist.isEmpty()) {
             return false;
         }
         List<String> artistIds = new ArrayList<>();
@@ -1741,16 +1741,16 @@ public class SpotifyMusicProvider implements MusicProvider {
             }
         }
         String title = track != null && track.get("name") instanceof String n ? n : null;
-        return blacklist.isBlocked(uri, title, artistIds, artistNames);
+        return blocklist.isBlocked(uri, title, artistIds, artistNames);
     }
 
     /**
      * Adds {@code blocked: true|false} to every non-null item of a Spotify search response.
      * Only the flag is exposed — never which entry matched — so guests learn nothing about
-     * the blacklist itself.
+     * the blocklist itself.
      */
     @SuppressWarnings("unchecked")
-    static void markBlockedSearchResults(BlacklistService.Blacklist blacklist, Map<String, Object> searchJson) {
+    static void markBlockedSearchResults(BlocklistService.Blocklist blocklist, Map<String, Object> searchJson) {
         if (!(searchJson.get("tracks") instanceof Map<?, ?> tracks) || !(tracks.get("items") instanceof List<?> items)) {
             return;
         }
@@ -1758,7 +1758,7 @@ public class SpotifyMusicProvider implements MusicProvider {
             if (item instanceof Map<?, ?> raw) {
                 Map<String, Object> track = (Map<String, Object>) raw;
                 String uri = track.get("uri") instanceof String u ? u : null;
-                track.put("blocked", isBlockedTrack(blacklist, uri, track));
+                track.put("blocked", isBlockedTrack(blocklist, uri, track));
             }
         }
     }
@@ -1776,10 +1776,10 @@ public class SpotifyMusicProvider implements MusicProvider {
      * (still flagged {@code blocked}), because only banned artists are hidden.
      */
     @SuppressWarnings("unchecked")
-    static void hideBannedArtistResults(BlacklistService.Blacklist blacklist, String query, Map<String, Object> searchJson) {
+    static void hideBannedArtistResults(BlocklistService.Blocklist blocklist, String query, Map<String, Object> searchJson) {
         boolean removedAny = false;
-        boolean queryIsBannedArtist = blacklist != null && blacklist.isBannedArtistName(query);
-        if (blacklist != null && searchJson.get("tracks") instanceof Map<?, ?> tracks
+        boolean queryIsBannedArtist = blocklist != null && blocklist.isBannedArtistName(query);
+        if (blocklist != null && searchJson.get("tracks") instanceof Map<?, ?> tracks
                 && tracks.get("items") instanceof List<?> items) {
             List<Object> kept = new ArrayList<>();
             for (Object item : items) {
@@ -1789,15 +1789,15 @@ public class SpotifyMusicProvider implements MusicProvider {
                         : List.of();
                 List<String> artistIds = artists.stream()
                         .map(a -> a.get("id")).filter(String.class::isInstance).map(String.class::cast).toList();
-                if (blacklist.isArtistBlocked(artistIds)) {
+                if (blocklist.isArtistBlocked(artistIds)) {
                     removedAny = true;
                     // The stored label may be spelled differently from Spotify's current name,
                     // so also accept the name of a banned artist on the removed song itself.
-                    String normalizedQuery = BlacklistService.Blacklist.normalizeName(query);
+                    String normalizedQuery = BlocklistService.Blocklist.normalizeName(query);
                     for (Map<String, Object> a : artists) {
-                        if (a.get("id") instanceof String id && blacklist.isArtistBlocked(List.of(id))
+                        if (a.get("id") instanceof String id && blocklist.isArtistBlocked(List.of(id))
                                 && a.get("name") instanceof String name
-                                && BlacklistService.Blacklist.normalizeName(name).equals(normalizedQuery)) {
+                                && BlocklistService.Blocklist.normalizeName(name).equals(normalizedQuery)) {
                             queryIsBannedArtist = true;
                         }
                     }

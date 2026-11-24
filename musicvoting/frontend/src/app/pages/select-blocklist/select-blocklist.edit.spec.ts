@@ -3,21 +3,21 @@ import { PLATFORM_ID, provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient, withXhr } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
-import { SelectBlacklist } from './select-blacklist';
+import { SelectBlocklist } from './select-blocklist';
 
 /**
- * Edit mode of the blacklist page (?mode=edit), opened from the host
- * navigation during the party (host spec "Host Manages Party Blacklist",
- * scenario "Host edits the full blacklist during the party").
+ * Edit mode of the blocklist page (?mode=edit), opened from the host
+ * navigation during the party (host spec "Host Manages Party Blocklist",
+ * scenario "Host edits the full blocklist during the party").
  */
-describe('SelectBlacklist edit mode (DOM)', () => {
+describe('SelectBlocklist edit mode (DOM)', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
     localStorage.clear();
     const params: Record<string, string> = { partyId: 'party-x', mode: 'edit' };
     TestBed.configureTestingModule({
-      imports: [SelectBlacklist],
+      imports: [SelectBlocklist],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(withXhr()),
@@ -36,15 +36,15 @@ describe('SelectBlacklist edit mode (DOM)', () => {
   });
 
   async function createLoaded(entries: any[]) {
-    const fixture = TestBed.createComponent(SelectBlacklist);
+    const fixture = TestBed.createComponent(SelectBlocklist);
     fixture.detectChanges();
-    httpMock.expectOne('/api/party/party-x/blacklist').flush(entries);
+    httpMock.expectOne('/api/party/party-x/blocklist').flush(entries);
     await fixture.whenStable();
     fixture.detectChanges();
     return fixture;
   }
 
-  it('shows the host navigation with Blacklist as the current page', async () => {
+  it('shows the host navigation with Blocklist as the current page', async () => {
     const fixture = await createLoaded([]);
 
     expect(fixture.nativeElement.querySelector('mv-host-menu [aria-current="page"]')?.textContent?.trim()).toBe('Blocklist');
@@ -90,7 +90,7 @@ describe('SelectBlacklist edit mode (DOM)', () => {
     // Adding saves immediately: there is no separate save button in edit mode.
     comp.searchQuery = 'explicit';
     const adding = comp.addWord();
-    const post = httpMock.expectOne('/api/party/party-x/blacklist');
+    const post = httpMock.expectOne('/api/party/party-x/blocklist');
     expect(post.request.method).toBe('POST');
     expect(post.request.body).toEqual({ kind: 'WORD', value: 'explicit' });
     post.flush({ id: 'e2', kind: 'WORD', value: 'explicit', label: 'explicit', imageUrl: null });
@@ -101,7 +101,7 @@ describe('SelectBlacklist edit mode (DOM)', () => {
 
     // Removing the artist from setup also saves immediately.
     (fixture.nativeElement.querySelector('.remove-btn[aria-label="ABBA entfernen"]') as HTMLButtonElement).click();
-    const del = httpMock.expectOne('/api/party/party-x/blacklist/e1');
+    const del = httpMock.expectOne('/api/party/party-x/blocklist/e1');
     expect(del.request.method).toBe('DELETE');
     del.flush(null);
     await fixture.whenStable();

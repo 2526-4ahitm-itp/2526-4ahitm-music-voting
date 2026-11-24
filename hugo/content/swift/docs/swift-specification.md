@@ -150,14 +150,14 @@ Die Swift-App ist die mobile Version der Webanwendung. Sie ermöglicht Gästen, 
 
 ---
 
-# Regeln der Warteschlange, Voting, Blacklist, Playback
+# Regeln der Warteschlange, Voting, Blocklist, Playback
 Diese Regeln gelten identisch zur Web-App – siehe allgemeine Spezifikation:
 - **Sortierung:** mehr Likes zuerst, bei Gleichstand ältester Wunsch zuerst; automatisch nachgefüllte Songs stehen unter den Gast-Wünschen.
 - **Keine Duplikate:** „Song ist schon in der Warteschlange.“ (der gerade laufende Song darf erneut gewünscht werden)
 - **Likes:** 1 pro Gast/Song, togglebar, live; Optimistic UI.
 - **Playback:** läuft auf dem Monitor/TV; bei Songende/Skip wird der Song entfernt und der nächste gemäß Sortierung gestartet; keine History.
 - **Leere Queue:** wird automatisch nachgefüllt – Standard-Playlist → ähnliche Songs → Top-Charts → Suche. (Damit ist die frühere offene Frage „stoppen vs. zufällige Top-Charts“ entschieden.)
-- **Limit** (20 Songs/Minute) und **Blacklist** setzt das Backend durch; die App schickt ihre `deviceId` mit und zeigt die Meldungen wörtlich an (ein Countdown wie im Web fehlt in iOS noch).
+- **Limit** (20 Songs/Minute) und **Blocklist** setzt das Backend durch; die App schickt ihre `deviceId` mit und zeigt die Meldungen wörtlich an (ein Countdown wie im Web fehlt in iOS noch).
 
 ---
 

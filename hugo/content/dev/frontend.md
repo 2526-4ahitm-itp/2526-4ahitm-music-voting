@@ -25,7 +25,7 @@ Definiert in `src/app/app.routes.ts`. 🔒 = durch `hostGuard` geschützt.
 | `host-options` | `HostOptions` | Host-Menü |
 | `create-party` | `CreateParty` | Party erstellen (Provider wählen) |
 | `select-playlist` 🔒 | `SelectPlaylist` | Standard-Playlist wählen oder überspringen (Ziel nach Spotify-Login) |
-| `select-blacklist` 🔒 | `SelectBlacklist` | Blocklist: ein Suchfeld für Wort, Künstler und Song; mit `?mode=edit` während der Party |
+| `select-blocklist` 🔒 | `SelectBlocklist` | Blocklist: ein Suchfeld für Wort, Künstler und Song; mit `?mode=edit` während der Party |
 | `party-ready` 🔒 | `PartyReady` | „Deine Party ist bereit“: „Player auf diesem Gerät öffnen“ plus fünf Schritte für ein anderes Gerät, Voting-PIN, „Party ist live 🎉“ |
 | `startpage` 🔒 | `Startpage` | Monitor/TV-Player (Web Playback SDK) |
 | `dashboard` 🔒 | `HostDashboard` | Host-Steuerung (Wiedergabe, ganze Queue mit Likes des Hosts und einem Suchfeld wie bei den Gästen, QR, Voting-PIN, Player öffnen, Party beenden, Gastgeber-PIN verborgen bis „Anzeigen“) |
@@ -49,7 +49,7 @@ Definiert in `src/app/app.routes.ts`. 🔒 = durch `hostGuard` geschützt.
   alle anderen ein „+“; das „x“ im Feld leert die Suche. Oben steht „Party 12345“ mit „Party verlassen“
   (Rückfrage; löscht die Party, behält die `deviceId`).
 - **Host:** erstellt die Party (`host-options` → `create-party` → Spotify-Login →
-  `select-playlist` → `select-blacklist` → `party-ready` → `dashboard`), steuert Wiedergabe und
+  `select-playlist` → `select-blocklist` → `party-ready` → `dashboard`), steuert Wiedergabe und
   Queue über `dashboard`; Fortschrittsbalken aus `progress`-SSE-Events. Play/Pause/Skip sind
   gesperrt, solange kein Player offen ist („Player muss zuerst geöffnet werden.“). Das Suchfeld
   im Dashboard funktioniert wie bei den Gästen (Treffer ersetzen die Queue, „x“ leert es); der Host

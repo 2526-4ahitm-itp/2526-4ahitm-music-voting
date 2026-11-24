@@ -138,11 +138,11 @@ describe('PartyService', () => {
     req.flush({ defaultPlaylistId: '' });
   });
 
-  it('getBlacklist GETs the party blacklist', () => {
+  it('getBlocklist GETs the party blocklist', () => {
     let result: any;
-    service.getBlacklist('party-1').subscribe(res => result = res);
+    service.getBlocklist('party-1').subscribe(res => result = res);
 
-    const req = httpMock.expectOne('/api/party/party-1/blacklist');
+    const req = httpMock.expectOne('/api/party/party-1/blocklist');
     expect(req.request.method).toBe('GET');
     req.flush([{ id: 'e1', kind: 'WORD', value: 'live', label: 'live', imageUrl: null }]);
 
@@ -150,19 +150,19 @@ describe('PartyService', () => {
     expect(result[0].kind).toBe('WORD');
   });
 
-  it('addBlacklistEntry POSTs the entry', () => {
-    service.addBlacklistEntry('party-1', { kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'img' }).subscribe();
+  it('addBlocklistEntry POSTs the entry', () => {
+    service.addBlocklistEntry('party-1', { kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'img' }).subscribe();
 
-    const req = httpMock.expectOne('/api/party/party-1/blacklist');
+    const req = httpMock.expectOne('/api/party/party-1/blocklist');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'img' });
     req.flush({ id: 'e2', kind: 'ARTIST', value: 'a1', label: 'ABBA', imageUrl: 'img' });
   });
 
-  it('removeBlacklistEntry DELETEs the entry', () => {
-    service.removeBlacklistEntry('party-1', 'e1').subscribe();
+  it('removeBlocklistEntry DELETEs the entry', () => {
+    service.removeBlocklistEntry('party-1', 'e1').subscribe();
 
-    const req = httpMock.expectOne('/api/party/party-1/blacklist/e1');
+    const req = httpMock.expectOne('/api/party/party-1/blocklist/e1');
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
   });
@@ -171,7 +171,7 @@ describe('PartyService', () => {
     let result: any;
     service.searchArtists('party-1', 'AC/DC').subscribe(res => result = res);
 
-    const req = httpMock.expectOne('/api/party/party-1/blacklist/artists?q=AC%2FDC');
+    const req = httpMock.expectOne('/api/party/party-1/blocklist/artists?q=AC%2FDC');
     expect(req.request.method).toBe('GET');
     req.flush([{ id: 'a1', name: 'AC/DC', imageUrl: null }]);
 

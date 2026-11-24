@@ -1,7 +1,7 @@
 package at.htl.provider.spotify;
 
 import at.htl.domain.*;
-import at.htl.service.BlacklistService;
+import at.htl.service.BlocklistService;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -487,18 +487,18 @@ class SpotifyMusicProviderTest {
         assertEquals(1, QueueEntry.count("partyId", partyId));
     }
 
-    // --- blacklist (add-party-blacklist) ---
+    // --- blocklist (add-party-blacklist) ---
 
-    private static BlacklistService.Blacklist blacklistOf(BlacklistKind kind, String value) {
-        BlacklistEntry e = new BlacklistEntry();
+    private static BlocklistService.Blocklist blocklistOf(BlocklistKind kind, String value) {
+        BlocklistEntry e = new BlocklistEntry();
         e.kind = kind;
         e.value = value;
-        return BlacklistService.Blacklist.of(List.of(e));
+        return BlocklistService.Blocklist.of(List.of(e));
     }
 
     // --- Refill candidate selection (playback spec "Auto-Refill Prefers Songs Not Yet Played")
 
-    private static final BlacklistService.Blacklist NO_BLACKLIST = BlacklistService.Blacklist.of(List.of());
+    private static final BlocklistService.Blocklist NO_BLOCKLIST = BlocklistService.Blocklist.of(List.of());
 
     /** Metadata stub: every track is allowed and carries its URI as name. */
     private static Map<String, Object> meta(String uri) {
@@ -507,7 +507,7 @@ class SpotifyMusicProviderTest {
 
     @Test
     void freshRefillCandidates_dropsBlockedTrackUris() {
-        BlacklistService.Blacklist bl = blacklistOf(BlacklistKind.TRACK, "spotify:track:blocked");
+        BlocklistService.Blocklist bl = blocklistOf(BlocklistKind.TRACK, "spotify:track:blocked");
 
         List<String> fresh = SpotifyMusicProvider.freshRefillCandidates(
                 List.of("spotify:track:blocked", "spotify:track:ok"), Set.of(), bl, newParty());
@@ -524,7 +524,7 @@ class SpotifyMusicProviderTest {
         List<String> fresh = SpotifyMusicProvider.freshRefillCandidates(
                 java.util.Arrays.asList("spotify:track:filled", "spotify:track:new", "spotify:track:queued",
                         "spotify:track:guestPlayed", "spotify:track:new", "", null),
-                Set.of("spotify:track:queued"), NO_BLACKLIST, party);
+                Set.of("spotify:track:queued"), NO_BLOCKLIST, party);
 
         assertEquals(List.of("spotify:track:new"), fresh);
     }
@@ -534,7 +534,7 @@ class SpotifyMusicProviderTest {
         Party party = newParty();
         party.recordPlayed("spotify:track:a");
         party.recordPlayed("spotify:track:blocked");
-        BlacklistService.Blacklist bl = blacklistOf(BlacklistKind.TRACK, "spotify:track:blocked");
+        BlocklistService.Blocklist bl = blocklistOf(BlocklistKind.TRACK, "spotify:track:blocked");
 
         List<String> repeats = SpotifyMusicProvider.repeatRefillCandidates(
                 List.of("spotify:track:a", "spotify:track:b", "spotify:track:blocked"), Set.of(), bl, party);
@@ -566,7 +566,7 @@ class SpotifyMusicProviderTest {
                         () -> { asked.add("playlist"); return List.of("spotify:track:p1", "spotify:track:p2"); },
                         () -> { asked.add("similar"); return List.of("spotify:track:s1"); },
                         () -> { asked.add("broad"); return List.of("spotify:track:x"); }),
-                Set.of(), NO_BLACKLIST, party, SpotifyMusicProviderTest::meta);
+                Set.of(), NO_BLOCKLIST, party, SpotifyMusicProviderTest::meta);
 
         assertNotNull(pick);
         assertEquals("spotify:track:s1", pick.uri());
@@ -578,7 +578,7 @@ class SpotifyMusicProviderTest {
     void pickRefillTrack_freshSongInFirstSourceWins() {
         SpotifyMusicProvider.RefillPick pick = SpotifyMusicProvider.pickRefillTrack(
                 List.of(() -> List.of("spotify:track:p1"), () -> List.of("spotify:track:s1")),
-                Set.of(), NO_BLACKLIST, newParty(), SpotifyMusicProviderTest::meta);
+                Set.of(), NO_BLOCKLIST, newParty(), SpotifyMusicProviderTest::meta);
 
         assertEquals("spotify:track:p1", pick.uri());
         assertEquals("spotify:track:p1", pick.meta().get("name"));
@@ -592,17 +592,17 @@ class SpotifyMusicProviderTest {
 
         SpotifyMusicProvider.RefillPick pick = SpotifyMusicProvider.pickRefillTrack(
                 List.of(() -> List.of("spotify:track:p1"), List::of, () -> List.of("spotify:track:s1")),
-                Set.of(), NO_BLACKLIST, party, SpotifyMusicProviderTest::meta);
+                Set.of(), NO_BLOCKLIST, party, SpotifyMusicProviderTest::meta);
 
         assertNotNull(pick);
         assertEquals("spotify:track:p1", pick.uri()); // first source's song, as a last resort
     }
 
     @Test
-    void pickRefillTrack_blacklistStillAppliesToRepeats() {
+    void pickRefillTrack_blocklistStillAppliesToRepeats() {
         Party party = newParty();
         party.recordPlayed("spotify:track:p1");
-        BlacklistService.Blacklist bl = blacklistOf(BlacklistKind.TRACK, "spotify:track:p1");
+        BlocklistService.Blocklist bl = blocklistOf(BlocklistKind.TRACK, "spotify:track:p1");
 
         assertNull(SpotifyMusicProvider.pickRefillTrack(
                 List.of(() -> List.of("spotify:track:p1")), Set.of(), bl, party, SpotifyMusicProviderTest::meta));
@@ -614,7 +614,7 @@ class SpotifyMusicProviderTest {
                 List.of(
                         () -> { throw new IllegalStateException("Spotify down"); },
                         () -> List.of("spotify:track:broken", "spotify:track:ok")),
-                Set.of(), NO_BLACKLIST, newParty(),
+                Set.of(), NO_BLOCKLIST, newParty(),
                 uri -> {
                     if (uri.endsWith("broken")) throw new IllegalStateException("404");
                     return meta(uri);
@@ -626,7 +626,7 @@ class SpotifyMusicProviderTest {
     @Test
     void pickRefillTrack_everySourceEmpty_yieldsNothing() {
         assertNull(SpotifyMusicProvider.pickRefillTrack(
-                List.of(List::of, List::of), Set.of(), NO_BLACKLIST, newParty(), SpotifyMusicProviderTest::meta));
+                List.of(List::of, List::of), Set.of(), NO_BLOCKLIST, newParty(), SpotifyMusicProviderTest::meta));
     }
 
     @Test
@@ -643,10 +643,10 @@ class SpotifyMusicProviderTest {
                 "name", "Song (Live)",
                 "artists", List.of(Map.of("id", "artist-1", "name", "Oliver")));
 
-        assertTrue(SpotifyMusicProvider.isBlockedTrack(blacklistOf(BlacklistKind.WORD, "live"), "spotify:track:1", track));
-        assertTrue(SpotifyMusicProvider.isBlockedTrack(blacklistOf(BlacklistKind.ARTIST, "artist-1"), "spotify:track:1", track));
-        assertFalse(SpotifyMusicProvider.isBlockedTrack(blacklistOf(BlacklistKind.WORD, "oli"), "spotify:track:1", track));
-        assertFalse(SpotifyMusicProvider.isBlockedTrack(BlacklistService.Blacklist.of(List.of()), "spotify:track:1", track));
+        assertTrue(SpotifyMusicProvider.isBlockedTrack(blocklistOf(BlocklistKind.WORD, "live"), "spotify:track:1", track));
+        assertTrue(SpotifyMusicProvider.isBlockedTrack(blocklistOf(BlocklistKind.ARTIST, "artist-1"), "spotify:track:1", track));
+        assertFalse(SpotifyMusicProvider.isBlockedTrack(blocklistOf(BlocklistKind.WORD, "oli"), "spotify:track:1", track));
+        assertFalse(SpotifyMusicProvider.isBlockedTrack(BlocklistService.Blocklist.of(List.of()), "spotify:track:1", track));
     }
 
     @Test
@@ -661,7 +661,7 @@ class SpotifyMusicProviderTest {
         items.add(allowed);
         Map<String, Object> json = Map.of("tracks", Map.of("items", items));
 
-        SpotifyMusicProvider.markBlockedSearchResults(blacklistOf(BlacklistKind.WORD, "live"), json);
+        SpotifyMusicProvider.markBlockedSearchResults(blocklistOf(BlocklistKind.WORD, "live"), json);
 
         assertEquals(true, blocked.get("blocked"));
         assertEquals(false, allowed.get("blocked"));
@@ -670,15 +670,15 @@ class SpotifyMusicProviderTest {
 
     // --- guest search: hide songs by a banned artist ---
 
-    private static BlacklistService.Blacklist bannedArtistAndWord() {
-        BlacklistEntry artist = new BlacklistEntry();
-        artist.kind = BlacklistKind.ARTIST;
+    private static BlocklistService.Blocklist bannedArtistAndWord() {
+        BlocklistEntry artist = new BlocklistEntry();
+        artist.kind = BlocklistKind.ARTIST;
         artist.value = "drakeId";
         artist.label = "Drake";
-        BlacklistEntry word = new BlacklistEntry();
-        word.kind = BlacklistKind.WORD;
+        BlocklistEntry word = new BlocklistEntry();
+        word.kind = BlocklistKind.WORD;
         word.value = "live";
-        return BlacklistService.Blacklist.of(List.of(artist, word));
+        return BlocklistService.Blocklist.of(List.of(artist, word));
     }
 
     private static Map<String, Object> track(String uri, String title, String artistId, String artistName) {
@@ -688,7 +688,7 @@ class SpotifyMusicProviderTest {
 
     /** Runs the same two steps as the guest search: flag blocked results, then hide banned artists. */
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> guestSearch(BlacklistService.Blacklist bl, String query, Map<String, Object>... tracks) {
+    private static Map<String, Object> guestSearch(BlocklistService.Blocklist bl, String query, Map<String, Object>... tracks) {
         Map<String, Object> json = new java.util.HashMap<>();
         json.put("tracks", new java.util.HashMap<>(Map.of("items", new java.util.ArrayList<>(List.of(tracks)))));
         SpotifyMusicProvider.markBlockedSearchResults(bl, json);
@@ -734,12 +734,12 @@ class SpotifyMusicProviderTest {
 
     @Test
     void hideBannedArtistResults_matchesSpotifyNameWhenLabelDiffers() {
-        BlacklistEntry artist = new BlacklistEntry();
-        artist.kind = BlacklistKind.ARTIST;
+        BlocklistEntry artist = new BlocklistEntry();
+        artist.kind = BlocklistKind.ARTIST;
         artist.value = "drakeId";
         artist.label = "Drake (old spelling)";
 
-        Map<String, Object> json = guestSearch(BlacklistService.Blacklist.of(List.of(artist)), "drake",
+        Map<String, Object> json = guestSearch(BlocklistService.Blocklist.of(List.of(artist)), "drake",
                 track("spotify:track:1", "Hotline Bling", "drakeId", "Drake"));
 
         assertEquals("ARTIST", json.get("hiddenHint"));

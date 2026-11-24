@@ -39,14 +39,14 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
 - Erstellt eine Party und wählt den Anbieter (Spotify/YouTube).
 - Meldet sich beim Anbieter an (OAuth-Login gilt **nur für diese Party**).
 - Wählt nach dem Login optional eine **Standard-Playlist**, aus der nachgefüllt wird, wenn die Warteschlange leer wird.
-- Steuert die Wiedergabe: Play/Pause/Resume, Song neu starten, Skip, Songs entfernen, Party beenden (Blacklist: spezifiziert, noch nicht umgesetzt).
+- Steuert die Wiedergabe: Play/Pause/Resume, Song neu starten, Skip, Songs entfernen, Party beenden (Blocklist: spezifiziert, noch nicht umgesetzt).
 - Die Host-Bedienelemente laufen **auf dem Gerät des Hosts** – niemals auf dem Monitor/TV.
 
 ## Monitor/TV (Startpage / Player)
 - Wird über **„Player öffnen“** gestartet – im Host-Dashboard oder unter „Gastgeber einer Party“ mit dem **Host-PIN**.
 - Zeigt die Party und spielt die Musik **im Browser auf dem Monitor/TV** ab (Spotify Web Playback SDK).
 - Zeigt dauerhaft QR-Code, aktuellen Song, Fortschritt (Zeitbalken) und die Warteschlange.
-- Hat **keine Host-Bedienelemente** (kein Pause/Skip/Remove/Blacklist/Beenden).
+- Hat **keine Host-Bedienelemente** (kein Pause/Skip/Remove/Blocklist/Beenden).
 - Zeigt **nicht** an, wer einen Song gewünscht hat.
 - Verbindet sich nach einem Reload automatisch wieder mit der Party (**ohne erneute PIN-Eingabe**).
 
@@ -91,7 +91,7 @@ MusicVoting ist eine Web-Anwendung für Partys. Gäste können über ihr Smartph
     - Fehlender Header → **401**, falscher PIN → **403**.
 - Der Web-Client hängt diesen Header automatisch an **jede** Anfrage, sobald ein Host-PIN im `localStorage` liegt; Gäste senden keinen Header.
 - Geschützte Host-Routen (`select-playlist`, `startpage`, `dashboard`, `voting-host`, `search-host`) sind durch einen Route-Guard gesichert: ohne gespeicherten Host-PIN → Weiterleitung auf `/`.
-- Gäste können **nicht** pausieren, skippen, entfernen, die Blacklist ändern oder die Party beenden.
+- Gäste können **nicht** pausieren, skippen, entfernen, die Blocklist ändern oder die Party beenden.
 
 ---
 
@@ -149,11 +149,11 @@ Mit `?deviceId=...` enthält jeder Eintrag zusätzlich `hasVoted`.
 
 ---
 
-# Blacklist (pro Party) *(spezifiziert, noch nicht umgesetzt)*
-- Der Host pflegt pro Party eine **Wortliste**.
-- Beim Hinzufügen wird geprüft, ob ein Blacklist-Wort als **Teilstring** im Titel oder Künstlernamen vorkommt.
+# Blocklist (pro Party)
+- Der Host pflegt pro Party eine Blocklist aus **Wörtern, Künstlern und Songs**.
+- Ein Wort blockiert einen Song, wenn es als **ganzes Wort** (Groß-/Kleinschreibung egal) im Titel oder Künstlernamen vorkommt: „live“ sperrt „(Live)“, aber nicht „Oliver“.
 - Wenn geblockt, sieht der Gast: „**Nicht erlaubt.**“
-- Bereits in der Queue stehende Songs werden bei einem neuen Blacklist-Wort **nicht** rückwirkend entfernt.
+- Bereits in der Queue stehende Songs werden bei einem neuen Blocklist-Wort **nicht** rückwirkend entfernt.
 
 ---
 
@@ -180,7 +180,7 @@ Mit `?deviceId=...` enthält jeder Eintrag zusätzlich `hasVoted`.
 - **Party-Ende:** Erhält die Startpage `party-ended`, wird der SDK-Player **pausiert und getrennt**, bevor zur Startseite navigiert wird – kein Ton nach dem Ende.
 
 > [!NOTE]
-> Offen ist noch die genaue Blacklist-Semantik (Groß-/Kleinschreibung, Teilwort-Treffer).
+> Offen ist noch die genaue Blocklist-Semantik (Groß-/Kleinschreibung, Teilwort-Treffer).
 
 ---
 
@@ -221,7 +221,7 @@ Nicht vorhanden: jegliche Host-Bedienelemente sowie jede Anzeige, **wer** einen 
 1. Gäste können per QR-Code **oder** 5-stelligem PIN beitreten und sehen Updates live.
 2. Pro Gast maximal 20 Songs pro Minute; darüber wird mit „Zu viele Anfragen — bitte kurz warten.“ geblockt, und die Web-App zeigt einen Countdown bis zum nächsten möglichen Song.
 3. Wartende Duplikate werden verhindert und sauber gemeldet; der laufende Song darf erneut gewünscht werden.
-4. Die Blacklist blockiert Wörter (ganzes Wort, ohne Groß-/Kleinschreibung), Artists und Songs und zeigt „Nicht erlaubt.“
+4. Die Blocklist blockiert Wörter (ganzes Wort, ohne Groß-/Kleinschreibung), Artists und Songs und zeigt „Nicht erlaubt.“
 5. Likes sind togglebar (1 pro Gast/Song, serverseitig erzwungen) und aktualisieren live.
 6. Sortierung ist immer: Likes desc, dann ältester zuerst.
 7. Nur der Host (mit Host-PIN) kann entfernen/pausieren/skippen/beenden.

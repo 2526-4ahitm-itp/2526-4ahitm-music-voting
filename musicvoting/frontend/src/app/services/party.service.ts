@@ -28,19 +28,19 @@ export interface HostPlaylist {
   imageUrl: string | null;
 }
 
-/** Kind of a party blacklist entry: a word (whole-word match), an artist (Spotify ID) or a song (track URI). */
-export type BlacklistKind = 'WORD' | 'ARTIST' | 'TRACK';
+/** Kind of a party blocklist entry: a word (whole-word match), an artist (Spotify ID) or a song (track URI). */
+export type BlocklistKind = 'WORD' | 'ARTIST' | 'TRACK';
 
-export interface BlacklistEntry {
+export interface BlocklistEntry {
   id: string;
-  kind: BlacklistKind;
+  kind: BlocklistKind;
   value: string;
   label: string | null;
   imageUrl: string | null;
 }
 
-export interface NewBlacklistEntry {
-  kind: BlacklistKind;
+export interface NewBlocklistEntry {
+  kind: BlocklistKind;
   value: string;
   label?: string | null;
   imageUrl?: string | null;
@@ -145,24 +145,24 @@ export class PartyService {
     return this.http.put<{ defaultPlaylistId: string }>(`/api/party/${id}/default-playlist`, { playlistId });
   }
 
-  // --- Party blacklist (host-only; the Authorization header comes from hostAuthInterceptor) ---
+  // --- Party blocklist (host-only; the Authorization header comes from hostAuthInterceptor) ---
 
-  getBlacklist(id: string): Observable<BlacklistEntry[]> {
-    return this.http.get<BlacklistEntry[]>(`/api/party/${id}/blacklist`);
+  getBlocklist(id: string): Observable<BlocklistEntry[]> {
+    return this.http.get<BlocklistEntry[]>(`/api/party/${id}/blocklist`);
   }
 
   /** Adding an entry that already exists returns the existing one (HTTP 200), so callers need no pre-check. */
-  addBlacklistEntry(id: string, entry: NewBlacklistEntry): Observable<BlacklistEntry> {
-    return this.http.post<BlacklistEntry>(`/api/party/${id}/blacklist`, entry);
+  addBlocklistEntry(id: string, entry: NewBlocklistEntry): Observable<BlocklistEntry> {
+    return this.http.post<BlocklistEntry>(`/api/party/${id}/blocklist`, entry);
   }
 
-  removeBlacklistEntry(id: string, entryId: string): Observable<void> {
-    return this.http.delete<void>(`/api/party/${id}/blacklist/${entryId}`);
+  removeBlocklistEntry(id: string, entryId: string): Observable<void> {
+    return this.http.delete<void>(`/api/party/${id}/blocklist/${entryId}`);
   }
 
   searchArtists(id: string, query: string): Observable<ArtistSearchResult[]> {
     return this.http.get<ArtistSearchResult[]>(
-      `/api/party/${id}/blacklist/artists?q=${encodeURIComponent(query)}`
+      `/api/party/${id}/blocklist/artists?q=${encodeURIComponent(query)}`
     );
   }
 

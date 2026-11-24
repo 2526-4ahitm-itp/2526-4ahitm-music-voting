@@ -1,10 +1,10 @@
 package at.htl.service;
 
-import at.htl.domain.BlacklistEntry;
-import at.htl.domain.BlacklistKind;
+import at.htl.domain.BlocklistEntry;
+import at.htl.domain.BlocklistKind;
 import at.htl.domain.PartyEntity;
 import at.htl.domain.ProviderKind;
-import at.htl.service.BlacklistService.Blacklist;
+import at.htl.service.BlocklistService.Blocklist;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -17,10 +17,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-class BlacklistServiceTest {
+class BlocklistServiceTest {
 
     @Inject
-    BlacklistService blacklistService;
+    BlocklistService blocklistService;
 
     private String newParty() {
         PartyEntity entity = new PartyEntity();
@@ -33,18 +33,18 @@ class BlacklistServiceTest {
         return entity.id;
     }
 
-    private static Blacklist words(String... words) {
-        List<BlacklistEntry> entries = new java.util.ArrayList<>();
+    private static Blocklist words(String... words) {
+        List<BlocklistEntry> entries = new java.util.ArrayList<>();
         for (String w : words) {
-            BlacklistEntry e = new BlacklistEntry();
-            e.kind = BlacklistKind.WORD;
-            e.value = BlacklistService.normalize(BlacklistKind.WORD, w);
+            BlocklistEntry e = new BlocklistEntry();
+            e.kind = BlocklistKind.WORD;
+            e.value = BlocklistService.normalize(BlocklistKind.WORD, w);
             entries.add(e);
         }
-        return Blacklist.of(entries);
+        return Blocklist.of(entries);
     }
 
-    private static boolean titleBlocked(Blacklist bl, String title) {
+    private static boolean titleBlocked(Blocklist bl, String title) {
         return bl.isBlocked("spotify:track:any", title, List.of(), List.of());
     }
 
@@ -52,7 +52,7 @@ class BlacklistServiceTest {
 
     @Test
     void word_matchesWholeWordCaseInsensitive() {
-        Blacklist bl = words("live");
+        Blocklist bl = words("live");
         assertTrue(titleBlocked(bl, "Song X (Live)"));
         assertTrue(titleBlocked(bl, "LIVE at Wembley"));
         assertTrue(titleBlocked(bl, "Song - live"));
@@ -60,7 +60,7 @@ class BlacklistServiceTest {
 
     @Test
     void word_doesNotMatchInsideAnotherWord() {
-        Blacklist bl = words("live");
+        Blocklist bl = words("live");
         assertFalse(titleBlocked(bl, "Oliver"));
         assertFalse(titleBlocked(bl, "Delivery"));
         assertFalse(titleBlocked(bl, "Lively"));
@@ -68,52 +68,52 @@ class BlacklistServiceTest {
 
     @Test
     void word_matchesArtistNames() {
-        Blacklist bl = words("live");
+        Blocklist bl = words("live");
         assertTrue(bl.isBlocked("spotify:track:a", "Clean Title", List.of("id1"), List.of("Live Band")));
         assertFalse(bl.isBlocked("spotify:track:a", "Clean Title", List.of("id1"), List.of("Oliver Tree")));
     }
 
     @Test
     void word_treatsUmlautsAsLetters() {
-        Blacklist bl = words("grün");
+        Blocklist bl = words("grün");
         assertTrue(titleBlocked(bl, "Alles GRÜN"));
         assertFalse(titleBlocked(bl, "Grünwald"));
     }
 
     @Test
     void word_phraseMatchesAsWholeWords() {
-        Blacklist bl = words("Radio  Edit");
+        Blocklist bl = words("Radio  Edit");
         assertTrue(titleBlocked(bl, "Song (Radio Edit)"));
         assertFalse(titleBlocked(bl, "Radio Editor"));
     }
 
     @Test
     void word_regexCharactersAreLiteral() {
-        Blacklist bl = words("a.b");
+        Blocklist bl = words("a.b");
         assertTrue(titleBlocked(bl, "x a.b y"));
         assertFalse(titleBlocked(bl, "x axb y"));
     }
 
     @Test
-    void emptyBlacklist_blocksNothing() {
-        Blacklist bl = Blacklist.of(List.of());
+    void emptyBlocklist_blocksNothing() {
+        Blocklist bl = Blocklist.of(List.of());
         assertTrue(bl.isEmpty());
         assertFalse(bl.isBlocked("spotify:track:a", "Live", List.of("x"), List.of("Live")));
     }
 
     // --- banned-artist check for the guest search (pure, no DB) ---
 
-    private static Blacklist artist(String id, String label) {
-        BlacklistEntry e = new BlacklistEntry();
-        e.kind = BlacklistKind.ARTIST;
+    private static Blocklist artist(String id, String label) {
+        BlocklistEntry e = new BlocklistEntry();
+        e.kind = BlocklistKind.ARTIST;
         e.value = id;
         e.label = label;
-        return Blacklist.of(List.of(e));
+        return Blocklist.of(List.of(e));
     }
 
     @Test
     void isArtistBlocked_matchesAnyOfTheIds() {
-        Blacklist bl = artist("artistA", "Artist A");
+        Blocklist bl = artist("artistA", "Artist A");
         assertTrue(bl.isArtistBlocked(List.of("artistB", "artistA")));
         assertFalse(bl.isArtistBlocked(List.of("artistB")));
         assertFalse(bl.isArtistBlocked(null));
@@ -122,20 +122,20 @@ class BlacklistServiceTest {
     @Test
     void isArtistBlocked_ignoresWordEntries() {
         // A word matching an artist name greys the song out, but it is not a banned artist.
-        Blacklist bl = words("drake");
+        Blocklist bl = words("drake");
         assertFalse(bl.isArtistBlocked(List.of("drakeId")));
     }
 
     @Test
     void isBannedArtistName_isCaseInsensitiveAndTrimmed() {
-        Blacklist bl = artist("drakeId", "Drake");
+        Blocklist bl = artist("drakeId", "Drake");
         assertTrue(bl.isBannedArtistName("drake"));
         assertTrue(bl.isBannedArtistName("  DRAKE "));
     }
 
     @Test
     void isBannedArtistName_needsTheWholeName() {
-        Blacklist bl = artist("drakeId", "Drake");
+        Blocklist bl = artist("drakeId", "Drake");
         assertFalse(bl.isBannedArtistName("drake remix"));
         assertFalse(bl.isBannedArtistName("dra"));
         assertFalse(bl.isBannedArtistName(""));
@@ -143,8 +143,8 @@ class BlacklistServiceTest {
     }
 
     @Test
-    void emptyBlacklist_hasNoBannedArtists() {
-        Blacklist bl = Blacklist.of(List.of());
+    void emptyBlocklist_hasNoBannedArtists() {
+        Blocklist bl = Blocklist.of(List.of());
         assertFalse(bl.isArtistBlocked(List.of("x")));
         assertFalse(bl.isBannedArtistName("x"));
     }
@@ -155,9 +155,9 @@ class BlacklistServiceTest {
     @TestTransaction
     void artistEntry_blocksSongWithThatArtistAsFeature() {
         String partyId = newParty();
-        blacklistService.add(partyId, BlacklistKind.ARTIST, "artistA", "Artist A", null);
+        blocklistService.add(partyId, BlocklistKind.ARTIST, "artistA", "Artist A", null);
 
-        Blacklist bl = blacklistService.load(partyId);
+        Blocklist bl = blocklistService.load(partyId);
 
         assertTrue(bl.isBlocked("spotify:track:1", "Duet", List.of("artistB", "artistA"), List.of("B", "A")));
         assertFalse(bl.isBlocked("spotify:track:2", "Solo", List.of("artistB"), List.of("B")));
@@ -167,9 +167,9 @@ class BlacklistServiceTest {
     @TestTransaction
     void trackEntry_blocksExactlyThatTrack() {
         String partyId = newParty();
-        blacklistService.add(partyId, BlacklistKind.TRACK, "spotify:track:X", "Song X – A", null);
+        blocklistService.add(partyId, BlocklistKind.TRACK, "spotify:track:X", "Song X – A", null);
 
-        Blacklist bl = blacklistService.load(partyId);
+        Blocklist bl = blocklistService.load(partyId);
 
         assertTrue(bl.isTrackBlocked("spotify:track:X"));
         assertTrue(bl.isBlocked("spotify:track:X", "Song X", List.of("a"), List.of("A")));
@@ -181,15 +181,15 @@ class BlacklistServiceTest {
     void add_sameWordTwice_keepsOneEntry() {
         String partyId = newParty();
 
-        BlacklistService.AddResult first = blacklistService.add(partyId, BlacklistKind.WORD, "live", null, null);
-        BlacklistService.AddResult second = blacklistService.add(partyId, BlacklistKind.WORD, "  Live ", null, null);
+        BlocklistService.AddResult first = blocklistService.add(partyId, BlocklistKind.WORD, "live", null, null);
+        BlocklistService.AddResult second = blocklistService.add(partyId, BlocklistKind.WORD, "  Live ", null, null);
 
         assertTrue(first.created());
         assertFalse(second.created());
         assertEquals(first.entry().id, second.entry().id);
-        assertEquals(1, blacklistService.list(partyId).size());
-        assertEquals("live", blacklistService.list(partyId).get(0).value);
-        assertEquals("live", blacklistService.list(partyId).get(0).label);
+        assertEquals(1, blocklistService.list(partyId).size());
+        assertEquals("live", blocklistService.list(partyId).get(0).value);
+        assertEquals("live", blocklistService.list(partyId).get(0).label);
     }
 
     @Test
@@ -198,12 +198,12 @@ class BlacklistServiceTest {
         String partyId = newParty();
 
         assertThrows(IllegalArgumentException.class,
-                () -> blacklistService.add(partyId, BlacklistKind.WORD, "   ", null, null));
+                () -> blocklistService.add(partyId, BlocklistKind.WORD, "   ", null, null));
         assertThrows(IllegalArgumentException.class,
-                () -> blacklistService.add(partyId, BlacklistKind.ARTIST, null, null, null));
+                () -> blocklistService.add(partyId, BlocklistKind.ARTIST, null, null, null));
         assertThrows(IllegalArgumentException.class,
-                () -> blacklistService.add(partyId, null, "live", null, null));
-        assertEquals(0, blacklistService.list(partyId).size());
+                () -> blocklistService.add(partyId, null, "live", null, null));
+        assertEquals(0, blocklistService.list(partyId).size());
     }
 
     @Test
@@ -211,10 +211,10 @@ class BlacklistServiceTest {
     void entriesOfOnePartyDoNotAffectAnother() {
         String partyA = newParty();
         String partyB = newParty();
-        blacklistService.add(partyA, BlacklistKind.WORD, "live", null, null);
+        blocklistService.add(partyA, BlocklistKind.WORD, "live", null, null);
 
-        assertTrue(titleBlocked(blacklistService.load(partyA), "Live"));
-        assertFalse(titleBlocked(blacklistService.load(partyB), "Live"));
+        assertTrue(titleBlocked(blocklistService.load(partyA), "Live"));
+        assertFalse(titleBlocked(blocklistService.load(partyB), "Live"));
     }
 
     @Test
@@ -222,12 +222,12 @@ class BlacklistServiceTest {
     void remove_deletesOnlyOwnPartysEntry() {
         String partyA = newParty();
         String partyB = newParty();
-        BlacklistEntry entry = blacklistService.add(partyA, BlacklistKind.WORD, "live", null, null).entry();
+        BlocklistEntry entry = blocklistService.add(partyA, BlocklistKind.WORD, "live", null, null).entry();
 
-        assertFalse(blacklistService.remove(partyB, entry.id));
-        assertEquals(1, blacklistService.list(partyA).size());
+        assertFalse(blocklistService.remove(partyB, entry.id));
+        assertEquals(1, blocklistService.list(partyA).size());
 
-        assertTrue(blacklistService.remove(partyA, entry.id));
-        assertEquals(0, blacklistService.list(partyA).size());
+        assertTrue(blocklistService.remove(partyA, entry.id));
+        assertEquals(0, blocklistService.list(partyA).size());
     }
 }
