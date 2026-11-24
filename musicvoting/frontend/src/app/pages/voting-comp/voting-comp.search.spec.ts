@@ -12,7 +12,7 @@ import { AddCooldownService } from '../../services/add-cooldown';
  * DOM tests of the single guest page with the search field in use (guest spec
  * "Guest Uses One Page for Queue and Search", "Guest Votes on Queued Songs from
  * Search Results", "Guest Search and Add Give Feedback", search spec
- * "Blacklisted Search Results Cannot Be Added").
+ * "Blocklisted Search Results Cannot Be Added").
  */
 describe('VotingComp search (DOM)', () => {
   let fixture: ComponentFixture<VotingComp>;

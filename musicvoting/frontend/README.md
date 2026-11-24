@@ -30,11 +30,11 @@ All tests must pass before a change is done (`ai/ARBEITSREGELN.md` §3). Besides
 
 **Host setup** (`/host-options` → `/create-party` → Spotify login → …)
 1. `/select-playlist` 🔒 – optional default playlist for the auto-refill.
-2. `/select-blacklist` 🔒 – optional Blocklist (code and API still say "blacklist" until the rename change): one search field for words, artists and songs (first row "Wort „x“ sperren", then up to 3 artists and 5 songs; Enter blocks the word). "Weiter" is disabled until something is blocked; "Ohne Blocklist fortfahren" skips.
+2. `/select-blocklist` 🔒 – optional Blocklist (code and API still say "blocklist" until the rename change): one search field for words, artists and songs (first row "Wort „x“ sperren", then up to 3 artists and 5 songs; Enter blocks the word). "Weiter" is disabled until something is blocked; "Ohne Blocklist fortfahren" skips.
 3. `/party-ready` 🔒 – "Deine Party ist bereit": "Player auf diesem Gerät öffnen" and below it "Player auf anderem Gerät öffnen" with five numbered steps (`mv-other-device-steps`, step 1 links to the public address in `shared/public-url.ts`), Voting-PIN, "Party ist live 🎉" once the player has registered.
 4. `/dashboard` 🔒 – the only host view of the queue: playback, one search field that works like the guest page (results replace the queue while it holds text; blocked songs show "Nicht erlaubt."), rank, likes and a like button for the host (one like per device, like a guest) on every screen width, "Song entfernen" → "Entfernen und sperren" / "Nur entfernen" / "Abbrechen" (focus moves into the question, Escape closes it), QR and Voting-PIN ("für Gäste"), "Player öffnen", "Party beenden", and the Gastgeber-PIN ("nur für dich") masked as "•••••" until "Anzeigen".
 
-**During the party** the host navigation (`mv-host-menu`) links Dashboard and Blocklist (`/select-blacklist?mode=edit`, saves immediately, "Fertig" returns) and shows the logo with the badge "Party läuft · <Voting-PIN>". Below 1024 px it is a burger menu, from 1024 px a fixed side rail. The old `/voting-host` and `/search-host` redirect to `/dashboard`.
+**During the party** the host navigation (`mv-host-menu`) links Dashboard and Blocklist (`/select-blocklist?mode=edit`, saves immediately, "Fertig" returns) and shows the logo with the badge "Party läuft · <Voting-PIN>". Below 1024 px it is a burger menu, from 1024 px a fixed side rail. The old `/voting-host` and `/search-host` redirect to `/dashboard`.
 
 **TV** – `/startpage` 🔒 is the room display and the Spotify Web Playback device: now playing, QR + Voting-PIN, top 5 "Als Nächstes" with a short pulse when a like count changes, footer with logo (faint white glow in dark mode) and "powered by HTL Leonding". It never shows the Gastgeber-PIN.
 

@@ -97,7 +97,7 @@ class GuestAddRateLimiterTest {
 
     @Test
     void checksWithoutRecordDoNotUseUpTheBudget() {
-        // Rejected adds (duplicate, blacklist) are checked but never recorded.
+        // Rejected adds (duplicate, blocklist) are checked but never recorded.
         for (int i = 0; i < MAX * 2; i++) {
             assertTrue(limiter.check("p1", "guest-a", 1).isEmpty());
         }

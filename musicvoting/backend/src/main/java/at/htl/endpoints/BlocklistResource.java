@@ -1,11 +1,11 @@
 package at.htl.endpoints;
 
-import at.htl.domain.BlacklistEntry;
-import at.htl.domain.BlacklistKind;
+import at.htl.domain.BlocklistEntry;
+import at.htl.domain.BlocklistKind;
 import at.htl.domain.Party;
 import at.htl.domain.PartyRegistry;
 import at.htl.provider.MusicProviderFactory;
-import at.htl.service.BlacklistService;
+import at.htl.service.BlocklistService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -18,14 +18,14 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Host-only management of a party's blacklist. Every method is {@link HostOnly}: guests
- * must neither read nor change the blacklist — they only see a {@code blocked} flag on
+ * Host-only management of a party's blocklist. Every method is {@link HostOnly}: guests
+ * must neither read nor change the blocklist — they only see a {@code blocked} flag on
  * search results (see {@code SpotifyMusicProvider#searchTracks}).
  */
-@Path("/party/{partyId}/blacklist")
+@Path("/party/{partyId}/blocklist")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class BlacklistResource {
+public class BlocklistResource {
 
     @PathParam("partyId")
     String partyId;
@@ -37,7 +37,7 @@ public class BlacklistResource {
     MusicProviderFactory providerFactory;
 
     @Inject
-    BlacklistService blacklistService;
+    BlocklistService blocklistService;
 
     @Inject
     LoginEventBus loginEventBus;
@@ -52,12 +52,12 @@ public class BlacklistResource {
     @HostOnly
     public List<Map<String, Object>> list() {
         Party party = resolveParty();
-        return blacklistService.list(party.id().value()).stream().map(BlacklistResource::toJson).toList();
+        return blocklistService.list(party.id().value()).stream().map(BlocklistResource::toJson).toList();
     }
 
     /**
      * Adds an entry. 201 when created, 200 with the existing entry when it was already
-     * blacklisted (so the setup page can add without checking first), 400 on invalid input.
+     * blocklisted (so the setup page can add without checking first), 400 on invalid input.
      */
     @POST
     @HostOnly
@@ -66,17 +66,17 @@ public class BlacklistResource {
         if (body == null) {
             return badRequest("Ungueltiger Eintrag.");
         }
-        BlacklistKind kind;
+        BlocklistKind kind;
         try {
-            kind = BlacklistKind.valueOf(String.valueOf(body.get("kind")).trim().toUpperCase());
+            kind = BlocklistKind.valueOf(String.valueOf(body.get("kind")).trim().toUpperCase());
         } catch (IllegalArgumentException e) {
             return badRequest("Ungueltige Art. Erlaubt: WORD, ARTIST, TRACK.");
         }
         try {
-            BlacklistService.AddResult result = blacklistService.add(party.id().value(), kind,
+            BlocklistService.AddResult result = blocklistService.add(party.id().value(), kind,
                     body.get("value"), body.get("label"), body.get("imageUrl"));
             if (result.created()) {
-                emitBlacklistUpdated(party);
+                emitBlocklistUpdated(party);
             }
             return Response.status(result.created() ? Response.Status.CREATED : Response.Status.OK)
                     .entity(toJson(result.entry()))
@@ -98,21 +98,21 @@ public class BlacklistResource {
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        if (!blacklistService.remove(party.id().value(), id)) {
+        if (!blocklistService.remove(party.id().value(), id)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        emitBlacklistUpdated(party);
+        emitBlocklistUpdated(party);
         return Response.noContent().build();
     }
 
     /**
-     * Tells open web clients of this party that the blacklist changed, so guests re-run their
+     * Tells open web clients of this party that the blocklist changed, so guests re-run their
      * search and see the new greyed-out state right away. The payload carries only the party
-     * ID — never the entry — because guests must not learn what is on the blacklist.
+     * ID — never the entry — because guests must not learn what is on the blocklist.
      */
-    private void emitBlacklistUpdated(Party party) {
+    private void emitBlocklistUpdated(Party party) {
         loginEventBus.emit(new LoginEvent(
-                "blacklist-updated",
+                "blocklist-updated",
                 Instant.now(),
                 Map.of("partyId", party.id().value())
         ));
@@ -130,7 +130,7 @@ public class BlacklistResource {
         return providerFactory.forParty(party).searchArtists(party, query);
     }
 
-    private static Map<String, Object> toJson(BlacklistEntry e) {
+    private static Map<String, Object> toJson(BlocklistEntry e) {
         // HashMap instead of Map.of: label and imageUrl may be null.
         Map<String, Object> json = new HashMap<>();
         json.put("id", e.id.toString());

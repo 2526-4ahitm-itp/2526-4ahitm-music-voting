@@ -28,7 +28,7 @@ Gast-PIN verschieden) und ist nur unter aktiven Partys eindeutig.
 
 - **`host-auth.interceptor.ts`** hängt `Authorization: Bearer <hostPin>` automatisch an **jede**
   HTTP-Anfrage an, sobald ein Host-PIN im `localStorage` liegt. Gäste (kein PIN) senden keinen Header.
-- **`host.guard.ts`** schützt die Host-Routen (`select-playlist`, `select-blacklist`, `party-ready`,
+- **`host.guard.ts`** schützt die Host-Routen (`select-playlist`, `select-blocklist`, `party-ready`,
   `startpage`, `dashboard`): ohne gespeicherten Host-PIN → Redirect auf `/`. Die alten Routen
   `voting-host` und `search-host` leiten auf `dashboard` weiter und sind damit ebenfalls geschützt.
 

@@ -1,10 +1,10 @@
 package at.htl.domain;
 
 /**
- * The three kinds of party blacklist entries. Stored as the enum name in
- * {@code blacklist_entry.kind}.
+ * The three kinds of party blocklist entries. Stored as the enum name in
+ * {@code blocklist_entry.kind}.
  */
-public enum BlacklistKind {
+public enum BlocklistKind {
     /** A word or phrase, matched as a whole word (case-insensitive) in title and artist names. */
     WORD,
     /** A Spotify artist ID; blocks every song the artist takes part in, including features. */

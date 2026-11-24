@@ -253,7 +253,7 @@ export class HostDashboard implements OnInit, OnDestroy {
 
   /** Adds a result; the reloaded queue turns its "+" into the like button. */
   async addToPlaylist(track: any) {
-    if (track?.blocked) return; // on the party blacklist — the backend would reject it anyway
+    if (track?.blocked) return; // on the party blocklist — the backend would reject it anyway
     this.addingTrackId = track.id;
     this.addError = null;
     this.cd.detectChanges();
@@ -561,7 +561,7 @@ export class HostDashboard implements OnInit, OnDestroy {
     this.restoreFocus();
   }
 
-  /** "Nur entfernen": removes the song from the queue, the blacklist stays unchanged. */
+  /** "Nur entfernen": removes the song from the queue, the blocklist stays unchanged. */
   async confirmRemoveOnly(track: any) {
     this.confirmRemoveUri = null;
     await this.onDeleteTrack(track);
@@ -571,7 +571,7 @@ export class HostDashboard implements OnInit, OnDestroy {
 
   /**
    * "Entfernen und sperren": blocks the song for this party, then removes it from the queue.
-   * Blacklisting comes first: if the removal fails, the song is at least blocked for all
+   * Blocklisting comes first: if the removal fails, the song is at least blocked for all
    * future adds. Not offered for the currently playing song (the spec only allows blocking
    * waiting songs).
    */
@@ -580,7 +580,7 @@ export class HostDashboard implements OnInit, OnDestroy {
     const artists = (track.artists ?? []).map((a: any) => a?.name).filter(Boolean).join(', ');
     const images = track.album?.images ?? [];
     try {
-      await lastValueFrom(this.partyService.addBlacklistEntry(this.partyId, {
+      await lastValueFrom(this.partyService.addBlocklistEntry(this.partyId, {
         kind: 'TRACK',
         value: track.uri,
         label: artists ? `${track.name} – ${artists}` : track.name,

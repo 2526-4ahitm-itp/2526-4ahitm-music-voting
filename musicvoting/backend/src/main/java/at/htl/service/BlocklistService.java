@@ -1,7 +1,7 @@
 package at.htl.service;
 
-import at.htl.domain.BlacklistEntry;
-import at.htl.domain.BlacklistKind;
+import at.htl.domain.BlocklistEntry;
+import at.htl.domain.BlocklistKind;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -10,31 +10,31 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Manages a party's blacklist and owns the one and only matching rule. The add path,
- * the auto-refill and the search all go through {@link Blacklist#isBlocked}, so the
+ * Manages a party's blocklist and owns the one and only matching rule. The add path,
+ * the auto-refill and the search all go through {@link Blocklist#isBlocked}, so the
  * three can never disagree about whether a song is allowed.
  */
 @ApplicationScoped
-public class BlacklistService {
+public class BlocklistService {
 
     /** Result of {@link #add}: the stored entry and whether it was newly created. */
-    public record AddResult(BlacklistEntry entry, boolean created) {
+    public record AddResult(BlocklistEntry entry, boolean created) {
     }
 
     /** All entries of a party, oldest first (the order the host added them). */
-    public List<BlacklistEntry> list(String partyId) {
-        return BlacklistEntry.list("partyId = ?1 ORDER BY createdAt", partyId);
+    public List<BlocklistEntry> list(String partyId) {
+        return BlocklistEntry.list("partyId = ?1 ORDER BY createdAt", partyId);
     }
 
     /**
      * Adds an entry, or returns the existing one if the same kind+value is already
-     * blacklisted (idempotent, mirrors the DB's UNIQUE constraint).
+     * blocklisted (idempotent, mirrors the DB's UNIQUE constraint).
      *
      * @throws IllegalArgumentException if kind or value is missing/blank. Validation happens
      *         before anything is written, so it must not roll back a caller's transaction.
      */
     @Transactional(dontRollbackOn = IllegalArgumentException.class)
-    public AddResult add(String partyId, BlacklistKind kind, String value, String label, String imageUrl) {
+    public AddResult add(String partyId, BlocklistKind kind, String value, String label, String imageUrl) {
         if (kind == null) {
             throw new IllegalArgumentException("kind is required");
         }
@@ -43,18 +43,18 @@ public class BlacklistService {
             throw new IllegalArgumentException("value is required");
         }
 
-        BlacklistEntry existing = BlacklistEntry.find("partyId = ?1 AND kind = ?2 AND value = ?3",
+        BlocklistEntry existing = BlocklistEntry.find("partyId = ?1 AND kind = ?2 AND value = ?3",
                 partyId, kind, normalized).firstResult();
         if (existing != null) {
             return new AddResult(existing, false);
         }
 
-        BlacklistEntry entry = new BlacklistEntry();
+        BlocklistEntry entry = new BlocklistEntry();
         entry.partyId = partyId;
         entry.kind = kind;
         entry.value = normalized;
         // A word is its own display name; for artists/songs the client sends a readable name.
-        entry.label = kind == BlacklistKind.WORD || label == null || label.isBlank() ? normalized : label.trim();
+        entry.label = kind == BlocklistKind.WORD || label == null || label.isBlank() ? normalized : label.trim();
         entry.imageUrl = imageUrl == null || imageUrl.isBlank() ? null : imageUrl;
         entry.createdAt = OffsetDateTime.now();
         entry.persist();
@@ -64,42 +64,42 @@ public class BlacklistService {
     /** Removes one entry of this party. Returns false if it does not exist or belongs to another party. */
     @Transactional
     public boolean remove(String partyId, UUID entryId) {
-        return BlacklistEntry.delete("id = ?1 AND partyId = ?2", entryId, partyId) > 0;
+        return BlocklistEntry.delete("id = ?1 AND partyId = ?2", entryId, partyId) > 0;
     }
 
-    /** Deletes the whole blacklist of a party (used when the party ends). */
+    /** Deletes the whole blocklist of a party (used when the party ends). */
     @Transactional
     public void deleteAll(String partyId) {
-        BlacklistEntry.delete("partyId", partyId);
+        BlocklistEntry.delete("partyId", partyId);
     }
 
     /**
-     * Loads the party's blacklist once into an immutable snapshot. Callers that check many
+     * Loads the party's blocklist once into an immutable snapshot. Callers that check many
      * songs (search results, refill candidates) use one snapshot instead of one query per song.
      */
-    public Blacklist load(String partyId) {
-        return Blacklist.of(list(partyId));
+    public Blocklist load(String partyId) {
+        return Blocklist.of(list(partyId));
     }
 
     /**
      * Words are compared case-insensitively and with collapsed whitespace, so "Live" and
      * " live " end up as the same entry. IDs and URIs are only trimmed — they are case-sensitive.
      */
-    static String normalize(BlacklistKind kind, String value) {
+    static String normalize(BlocklistKind kind, String value) {
         if (value == null) {
             return "";
         }
         String trimmed = value.trim();
-        if (kind == BlacklistKind.WORD) {
+        if (kind == BlocklistKind.WORD) {
             return trimmed.replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
         }
         return trimmed;
     }
 
-    /** Immutable view of one party's blacklist with the matching rule. */
-    public static final class Blacklist {
+    /** Immutable view of one party's blocklist with the matching rule. */
+    public static final class Blocklist {
 
-        private static final Blacklist EMPTY = new Blacklist(Set.of(), Set.of(), Set.of(), List.of());
+        private static final Blocklist EMPTY = new Blocklist(Set.of(), Set.of(), Set.of(), List.of());
 
         private final Set<String> trackUris;
         private final Set<String> artistIds;
@@ -111,7 +111,7 @@ public class BlacklistService {
         private final Set<String> artistNames;
         private final List<Pattern> wordPatterns;
 
-        private Blacklist(Set<String> trackUris, Set<String> artistIds, Set<String> artistNames,
+        private Blocklist(Set<String> trackUris, Set<String> artistIds, Set<String> artistNames,
                           List<Pattern> wordPatterns) {
             this.trackUris = trackUris;
             this.artistIds = artistIds;
@@ -120,7 +120,7 @@ public class BlacklistService {
         }
 
         /** Builds a snapshot from stored entries. */
-        public static Blacklist of(Collection<BlacklistEntry> entries) {
+        public static Blocklist of(Collection<BlocklistEntry> entries) {
             if (entries == null || entries.isEmpty()) {
                 return EMPTY;
             }
@@ -128,7 +128,7 @@ public class BlacklistService {
             Set<String> artists = new HashSet<>();
             Set<String> artistNames = new HashSet<>();
             List<Pattern> words = new ArrayList<>();
-            for (BlacklistEntry e : entries) {
+            for (BlocklistEntry e : entries) {
                 switch (e.kind) {
                     case TRACK -> tracks.add(e.value);
                     case ARTIST -> {
@@ -141,7 +141,7 @@ public class BlacklistService {
                     case WORD -> words.add(wordPattern(e.value));
                 }
             }
-            return new Blacklist(Set.copyOf(tracks), Set.copyOf(artists), Set.copyOf(artistNames), List.copyOf(words));
+            return new Blocklist(Set.copyOf(tracks), Set.copyOf(artists), Set.copyOf(artistNames), List.copyOf(words));
         }
 
         /**
@@ -193,14 +193,14 @@ public class BlacklistService {
             return !normalized.isEmpty() && artistNames.contains(normalized);
         }
 
-        /** True if the track URI itself is blacklisted — cheap, needs no metadata. */
+        /** True if the track URI itself is blocklisted — cheap, needs no metadata. */
         public boolean isTrackBlocked(String trackUri) {
             return trackUri != null && trackUris.contains(trackUri);
         }
 
         /**
          * True if the song matches any entry: the track itself, any of its artists, or a
-         * blacklisted word in the title or in any artist name.
+         * blocklisted word in the title or in any artist name.
          */
         public boolean isBlocked(String trackUri, String title, Collection<String> artistIds, Collection<String> artistNames) {
             if (isEmpty()) {

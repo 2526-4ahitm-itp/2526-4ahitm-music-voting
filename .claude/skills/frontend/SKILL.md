@@ -31,7 +31,7 @@ src/app/
 ├── guest.guard.ts           Guest routes: requires a joined party
 ├── host-auth.interceptor.ts Adds the host PIN as Bearer token to every request
 ├── services/
-│   ├── party.service.ts     Party lifecycle, pins, deviceId, default playlist, blacklist (typed interfaces)
+│   ├── party.service.ts     Party lifecycle, pins, deviceId, default playlist, blocklist (typed interfaces)
 │   ├── spotify-player.ts    Web Playback SDK, queue, add, vote, play, SSE queue updates
 │   ├── spotify-tracks.ts    Track search (`TrackService`)
 │   └── add-cooldown.ts      Countdown after a 429 on guest add (root, survives leaving /voting)
@@ -44,7 +44,7 @@ src/app/
     ├── host-options/        Host: create a party or enter host PIN
     ├── create-party/        Host: Spotify login + party creation
     ├── select-playlist/     Host setup: default playlist (auto-refill source)
-    ├── select-blacklist/    Host setup: blacklist words / artists / songs
+    ├── select-blocklist/    Host setup: blocklist words / artists / songs
     ├── party-ready/         Host setup: open the player, go live
     ├── startpage/           TV/player view: current track, queue, Web Playback SDK
     ├── host-dashboard/      Host: playback controls, whole queue with search, add and likes
@@ -71,7 +71,7 @@ The routes and their guards are in `app.routes.ts` — read it instead of duplic
 ## SSE
 
 Pages open `new EventSource('/api/spotify/events?source=web&partyId=<id>')` and switch on `type`:
-`login-success`, `track-changed`, `queue-updated`, `vote-updated`, `progress`, `blacklist-updated`, `party-ended`.
+`login-success`, `track-changed`, `queue-updated`, `vote-updated`, `progress`, `blocklist-updated`, `party-ended`.
 
 Always close the EventSource in `ngOnDestroy`. On `party-ended`, show `mv-party-ended` instead of redirecting.
 

@@ -186,7 +186,7 @@ A night-dark base lit by the two binding brand colours, Stage Purple and Coral, 
 - **Headline** (750, clamp(1.5rem, 4vw, 2rem), -0.01em): step headings of entry and setup pages.
 - **Title** (750, clamp(1.25rem, 2.2vw, 1.75rem), -0.01em): the page title in the sticky top bar; card titles at 1.25rem / 700.
 - **Body** (400, 1rem, line-height 1.5): running text; leads at 1.0625rem in On Stage Muted. Song titles in rows at 1.0625rem / 700, artists at 0.9375rem muted.
-- **Label** (700, 0.8125rem, 0.04em, uppercase): small group labels such as "KÜNSTLER" / "SONGS" in the blacklist results and kind chips.
+- **Label** (700, 0.8125rem, 0.04em, uppercase): small group labels such as "KÜNSTLER" / "SONGS" in the blocklist results and kind chips.
 - **Numbers** (PINs, likes, ranks): tabular figures (`font-variant-numeric: tabular-nums`), PINs with 0.04–0.06em tracking.
 
 ### Named Rules
@@ -236,7 +236,7 @@ Soft, tactile and calm (weich, griffig, ruhig): every control is easy to hit, an
 - **Focus:** `--mv-focus-ring` (2px white halo plus 3px Stage Purple), visible on light, dark and glow.
 
 ### Chips
-- **Kind chips** on blacklist entries ("Wort", "Künstler", "Song"): small pills, label type, purple wash for words, coral wash for artists, neutral tint for songs.
+- **Kind chips** on blocklist entries ("Wort", "Künstler", "Song"): small pills, label type, purple wash for words, coral wash for artists, neutral tint for songs.
 
 ### Cards / Containers
 - **Corner Style:** 20px.

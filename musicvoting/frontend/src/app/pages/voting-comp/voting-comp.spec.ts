@@ -214,21 +214,21 @@ describe('VotingComp', () => {
       expect(comp.hiddenHint()).toBeNull();
     });
 
-    it('re-runs the current search when a blacklist-updated event is received', () => {
+    it('re-runs the current search when a blocklist-updated event is received', () => {
       spyOn(comp, 'search').and.returnValue(Promise.resolve());
       comp.searchQuery.set('queen');
       comp.ngOnInit();
 
-      (comp as any).eventSource.onmessage({ data: JSON.stringify({ type: 'blacklist-updated' }) });
+      (comp as any).eventSource.onmessage({ data: JSON.stringify({ type: 'blocklist-updated' }) });
 
       expect(comp.search).toHaveBeenCalledWith('queen');
     });
 
-    it('does not search on blacklist-updated while the search field is empty', () => {
+    it('does not search on blocklist-updated while the search field is empty', () => {
       spyOn(comp, 'search').and.returnValue(Promise.resolve());
       comp.ngOnInit();
 
-      (comp as any).eventSource.onmessage({ data: JSON.stringify({ type: 'blacklist-updated' }) });
+      (comp as any).eventSource.onmessage({ data: JSON.stringify({ type: 'blocklist-updated' }) });
 
       expect(comp.search).not.toHaveBeenCalled();
     });
@@ -293,7 +293,7 @@ describe('VotingComp', () => {
       expect(toast.error).toHaveBeenCalledWith('Verbindung verloren – versuch es gleich nochmal.');
     });
 
-    it('does nothing for a blacklisted track', async () => {
+    it('does nothing for a blocklisted track', async () => {
       await comp.addToPlaylist({ ...track, blocked: true });
 
       expect(spotifyService.addToPlaylist).not.toHaveBeenCalled();

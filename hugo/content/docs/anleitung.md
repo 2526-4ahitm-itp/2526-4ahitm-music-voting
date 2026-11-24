@@ -178,8 +178,8 @@ Wünsche der Gäste haben **immer Vorrang** – sie werden vor den nachgefüllte
 **Die Play-Tasten sind ausgegraut.**
 Es ist noch kein Player geöffnet. Tippe im Dashboard auf „Player öffnen“ (oder öffne ihn am TV mit dem Host-PIN); danach werden die Tasten aktiv.
 
-**Kann ich eine Blacklist anlegen?**
-Noch nicht – die Blacklist ist geplant, aber noch nicht umgesetzt. Unerwünschte Songs kannst du im Dashboard entfernen.
+**Kann ich eine Blocklist anlegen?**
+Noch nicht – die Blocklist ist geplant, aber noch nicht umgesetzt. Unerwünschte Songs kannst du im Dashboard entfernen.
 
 **Spotify meldet „Sitzung abgelaufen“.**
 Bei „Spotify-Sitzung abgelaufen. Bitte neu anmelden.“ die Party neu starten und erneut bei Spotify anmelden. Normalerweise erneuert die App das Token aber automatisch im Hintergrund – auch bei Partys, die länger als eine Stunde laufen, und auch nach einem Neustart des Servers.

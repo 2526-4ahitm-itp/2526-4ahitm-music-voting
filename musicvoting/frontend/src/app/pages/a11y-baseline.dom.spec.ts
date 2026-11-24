@@ -5,7 +5,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { NEVER, of } from 'rxjs';
 import { VotingComp } from './voting-comp/voting-comp';
-import { SelectBlacklist } from './select-blacklist/select-blacklist';
+import { SelectBlocklist } from './select-blocklist/select-blocklist';
 import { Startpage } from './startpage/startpage';
 import { PartyReady } from './party-ready/party-ready';
 import { CodeInput } from './code-input/code-input';
@@ -17,7 +17,7 @@ import { TrackService } from '../services/spotify-tracks';
 
 /**
  * Accessibility baseline for the pages not covered by the host and entry page
- * DOM specs (tasks 5.1–5.6): guest views, blacklist, TV page and go-live step.
+ * DOM specs (tasks 5.1–5.6): guest views, blocklist, TV page and go-live step.
  * Every page is rendered with real content, so the icon buttons inside lists
  * (add, like, remove) are checked too, not just the empty state.
  */
@@ -34,7 +34,7 @@ describe('Accessibility baseline (DOM)', () => {
 
   beforeEach(async () => {
     // ngOnInit opens SSE / polls the backend; these tests check the markup with fixed state.
-    for (const type of [VotingComp, SelectBlacklist, Startpage, PartyReady, CodeInput]) {
+    for (const type of [VotingComp, SelectBlocklist, Startpage, PartyReady, CodeInput]) {
       spyOn(type.prototype as any, 'ngOnInit').and.returnValue(undefined);
     }
 
@@ -127,8 +127,8 @@ describe('Accessibility baseline (DOM)', () => {
     fixture.destroy();
   });
 
-  it('blacklist: one labelled search field, results and remove buttons are labelled real buttons', () => {
-    const fixture = render(SelectBlacklist, (c) => {
+  it('blocklist: one labelled search field, results and remove buttons are labelled real buttons', () => {
+    const fixture = render(SelectBlocklist, (c) => {
       c.partyId = 'party-1';
       c.isLoading = false;
       c.searchQuery = 'abba';

@@ -29,7 +29,7 @@ src/main/java/at/htl/
 │   ├── PartyResource.java         POST /api/party, DELETE|GET /api/party/{id}, PUT {id}/default-playlist,
 │   │                              GET join/{pin}, GET host-join/{hostPin}, GET {id}/qr
 │   ├── TrackResource.java         /api/party/{partyId}/track/* (search, queue, add, vote, play/next/start/pause/resume, …)
-│   ├── BlacklistResource.java     /api/party/{partyId}/blacklist (list/add/delete, artist search) — host only
+│   ├── BlocklistResource.java     /api/party/{partyId}/blocklist (list/add/delete, artist search) — host only
 │   ├── SpotifyTokenResource.java  /api/party/{partyId}/spotify/* (token, status, login, deviceId, playlists)
 │   ├── SpotifyCallbackResource.java  GET /api/spotify/callback|ios/callback|events (OAuth callbacks + SSE)
 │   ├── HostOnly.java + HostAuthFilter.java  @HostOnly → requires `Authorization: Bearer <hostPin>`
@@ -41,7 +41,7 @@ src/main/java/at/htl/
 │   ├── PartyEntity.java           Panache entity → party table
 │   ├── QueueEntry.java            Panache entity → queue_entry table
 │   ├── Vote.java                  Panache entity → vote table
-│   ├── BlacklistEntry.java / BlacklistKind.java  Panache entity → blacklist_entry (WORD | ARTIST | TRACK)
+│   ├── BlocklistEntry.java / BlocklistKind.java  Panache entity → blocklist_entry (WORD | ARTIST | TRACK)
 │   ├── PartyId.java               Value object wrapping party ID string
 │   └── ProviderKind.java          Enum: SPOTIFY | YOUTUBE
 ├── provider/
@@ -52,7 +52,7 @@ src/main/java/at/htl/
 │       └── SpotifyCredentials.java    Thread-safe AtomicReference credential holder
 ├── service/
 │   ├── PartyService.java          End party, persist refresh token
-│   ├── BlacklistService.java      Blacklist CRUD + whole-word matching
+│   ├── BlocklistService.java      Blocklist CRUD + whole-word matching
 │   └── SpotifyApiErrors.java      Error/response builder, 429 handling
 ├── scheduler/
 │   └── PartyExpiryScheduler.java  Ends idle/expired parties
@@ -70,9 +70,9 @@ src/main/java/at/htl/
 | Song queue + metadata | `queue_entry` table |
 | Votes | `vote` table |
 | Party record (kind, pins, default playlist, refresh token, currently-playing FK, playback position) | `party` table |
-| Blacklist | `blacklist_entry` table |
+| Blocklist | `blocklist_entry` table |
 
-**Rule:** Access tokens and device IDs never touch the DB (only the Spotify refresh token is persisted, so a party survives a restart). Queue, votes and blacklist always do.
+**Rule:** Access tokens and device IDs never touch the DB (only the Spotify refresh token is persisted, so a party survives a restart). Queue, votes and blocklist always do.
 
 ---
 
@@ -95,7 +95,7 @@ queue_entry     (id UUID PK, party_id→party, track_uri, track_name, artist_nam
                 no (party_id, track_uri) uniqueness — the playing song may be queued again
 vote            (id UUID PK, queue_entry_id→queue_entry, device_id, voted_at)
                 UNIQUE (queue_entry_id, device_id)
-blacklist_entry (id UUID PK, party_id→party, kind, value, label, image_url, created_at)
+blocklist_entry (id UUID PK, party_id→party, kind, value, label, image_url, created_at)
                 UNIQUE (party_id, kind, value)
 ```
 
@@ -127,7 +127,7 @@ Always annotate mutating methods with `@Transactional`.
 
 ## Adding a new REST endpoint
 
-1. Add method to an existing resource (`TrackResource` for queue/playback, `BlacklistResource` for the blacklist, `SpotifyTokenResource` for host Spotify, `SpotifyCallbackResource` for OAuth callbacks/SSE) or create a new `@Path` class. Annotate host-only actions with `@HostOnly`.
+1. Add method to an existing resource (`TrackResource` for queue/playback, `BlocklistResource` for the blocklist, `SpotifyTokenResource` for host Spotify, `SpotifyCallbackResource` for OAuth callbacks/SSE) or create a new `@Path` class. Annotate host-only actions with `@HostOnly`.
 2. Inject dependencies via `@Inject`.
 3. Resolve the party from the `{partyId}` path param via `partyRegistry.find(PartyId.of(partyId)).orElseThrow(404)`.
 4. Delegate business logic to `SpotifyMusicProvider` (or the appropriate `MusicProvider` via `MusicProviderFactory.forParty(party)`).

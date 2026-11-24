@@ -30,7 +30,7 @@ layout: "presentation"
 {{< slide title="Drei Rollen" >}}
 <div class="cards">
 <div class="card"><div class="icon">📱</div><h4>Gast</h4><p>Tritt anonym bei, sucht, wünscht und liked – ohne Account.</p></div>
-<div class="card"><div class="icon">👑</div><h4>Gastgeber</h4><p>Erstellt die Party, wählt eine Standard-Playlist und Blacklist und steuert die Wiedergabe.</p></div>
+<div class="card"><div class="icon">👑</div><h4>Gastgeber</h4><p>Erstellt die Party, wählt eine Standard-Playlist und Blocklist und steuert die Wiedergabe.</p></div>
 <div class="card accent"><div class="icon">🖥️</div><h4>Player (TV)</h4><p>Spielt die Musik ab und zeigt QR-Code, aktuellen Song und Warteschlange.</p></div>
 </div>
 {{< /slide >}}

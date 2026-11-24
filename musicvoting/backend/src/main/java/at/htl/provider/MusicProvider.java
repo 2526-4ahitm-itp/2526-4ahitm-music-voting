@@ -12,7 +12,7 @@ public interface MusicProvider {
      * Searches tracks for a party.
      *
      * @param guest true for the web guest search: songs by a banned artist are removed and a
-     *              {@code hiddenHint} is added (see search spec "Blacklisted Search Results
+     *              {@code hiddenHint} is added (see search spec "Blocklisted Search Results
      *              Cannot Be Added"). False keeps every result, blocked ones only flagged.
      */
     Map<String, Object> searchTracks(Party party, String query, boolean guest);
@@ -48,7 +48,7 @@ public interface MusicProvider {
     default void refillQueue(Party party) { }
 
     /**
-     * Artist search for the host's blacklist setup page. Each result is
+     * Artist search for the host's blocklist setup page. Each result is
      * {@code {id, name, imageUrl}}. Empty for providers without artist search.
      */
     default List<Map<String, Object>> searchArtists(Party party, String query) {

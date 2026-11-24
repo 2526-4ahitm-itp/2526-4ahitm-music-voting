@@ -39,7 +39,7 @@ describe('MvHostMenu', () => {
     return fixture;
   }
 
-  it('lists only Dashboard and Blacklist (no Startseite, Voting or Suchen)', () => {
+  it('lists only Dashboard and Blocklist (no Startseite, Voting or Suchen)', () => {
     const fixture = create();
     const labels = Array.from(fixture.nativeElement.querySelectorAll('nav a')).map((a: any) => a.textContent.trim());
 
@@ -62,15 +62,15 @@ describe('MvHostMenu', () => {
     expect(fixture.nativeElement.querySelector('.live-badge')).toBeNull();
   });
 
-  it('links Blacklist to the edit mode of the blacklist page for the current party', () => {
+  it('links Blocklist to the edit mode of the blocklist page for the current party', () => {
     const fixture = create();
     const link: HTMLAnchorElement = fixture.nativeElement.querySelectorAll('nav a')[1];
 
-    expect(link.getAttribute('href')).toBe('/select-blacklist?partyId=party-1&mode=edit');
+    expect(link.getAttribute('href')).toBe('/select-blocklist?partyId=party-1&mode=edit');
   });
 
   it('marks the active page with aria-current', () => {
-    const fixture = create('blacklist');
+    const fixture = create('blocklist');
     const current = fixture.nativeElement.querySelector('[aria-current="page"]');
 
     expect(current.textContent.trim()).toBe('Blocklist');
@@ -124,7 +124,7 @@ describe('MvHostMenu', () => {
     beforeEach(() => { wide = true; });
 
     it('shows the navigation permanently, without burger, close button or overlay', () => {
-      const fixture = create('blacklist');
+      const fixture = create('blocklist');
       const root: HTMLElement = fixture.nativeElement;
       const nav = root.querySelector('nav')!;
 

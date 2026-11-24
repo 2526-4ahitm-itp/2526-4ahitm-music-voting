@@ -1,9 +1,9 @@
 /*
- * Blacklist layout. The stage look (background, cards, buttons, search
+ * Blocklist layout. The stage look (background, cards, buttons, search
  * field) comes from shared/stage.css.
  */
 
-.blacklist {
+.blocklist {
   max-width: 1100px;
   margin: 0 auto;
 }

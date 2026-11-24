@@ -22,7 +22,7 @@ Die Wiedergabe erfolgt über den **Spotify-Premium-Account** des Gastgebers.
 * **Pro Party eine Warteschlange**, sortiert nach Likes (mehr Likes zuerst, bei Gleichstand ältester Wunsch zuerst).
 * **Genau ein Anbieter pro Party** – Spotify (implementiert) oder YouTube (vorgesehen); nach dem Erstellen fix.
 * **Anonyme Gäste** mit persistenter `deviceId`; ein Like pro Gast und Song (togglebar).
-* **Host-Steuerung** (Play/Pause/Skip, Songs entfernen, Blacklist, Party beenden) – abgesichert über einen Host-PIN.
+* **Host-Steuerung** (Play/Pause/Skip, Songs entfernen, Blocklist, Party beenden) – abgesichert über einen Host-PIN.
 * **Live-Updates** über Server-Sent Events (Queue, Votes, aktueller Track, Fortschritt, Party-Ende).
 * Optionale **iOS-App** (SwiftUI) als native Alternative für Gast und Host.
 

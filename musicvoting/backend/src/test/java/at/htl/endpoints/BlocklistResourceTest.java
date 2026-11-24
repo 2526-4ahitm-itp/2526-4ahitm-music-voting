@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-class BlacklistResourceTest {
+class BlocklistResourceTest {
 
     // Own PIN range so we never collide with other test classes on party_pin_active_idx.
     private static final AtomicInteger PIN_COUNTER = new AtomicInteger(70000);
@@ -47,7 +47,7 @@ class BlacklistResourceTest {
     void cleanup() {
         persistedPartyIds.forEach(id -> partyRegistry.remove(PartyId.of(id)));
         if (persistedPartyIds.isEmpty()) return;
-        // blacklist_entry rows go with the party via ON DELETE CASCADE.
+        // blocklist_entry rows go with the party via ON DELETE CASCADE.
         QuarkusTransaction.requiringNew().run(() ->
                 PartyEntity.delete("id in ?1", persistedPartyIds));
         persistedPartyIds.clear();
@@ -57,7 +57,7 @@ class BlacklistResourceTest {
         return String.format("%05d", PIN_COUNTER.getAndIncrement());
     }
 
-    /** Registers a party in memory and in the DB (blacklist rows need the party row). Returns the host PIN. */
+    /** Registers a party in memory and in the DB (blocklist rows need the party row). Returns the host PIN. */
     private String[] newParty() {
         String partyId = UUID.randomUUID().toString();
         String pin = nextPin();
@@ -77,7 +77,7 @@ class BlacklistResourceTest {
     }
 
     private long countEntries(String partyId) {
-        return QuarkusTransaction.requiringNew().call(() -> BlacklistEntry.count("partyId", partyId));
+        return QuarkusTransaction.requiringNew().call(() -> BlocklistEntry.count("partyId", partyId));
     }
 
     // --- authorization: every endpoint is host-only ---
@@ -85,21 +85,21 @@ class BlacklistResourceTest {
     @Test
     void list_withoutHostPin_returnsUnauthorized() {
         String[] p = newParty();
-        given().when().get("/api/party/{id}/blacklist", p[0]).then().statusCode(401);
+        given().when().get("/api/party/{id}/blocklist", p[0]).then().statusCode(401);
     }
 
     @Test
     void list_withWrongHostPin_returnsForbidden() {
         String[] p = newParty();
         given().header("Authorization", "Bearer wrong-pin")
-                .when().get("/api/party/{id}/blacklist", p[0]).then().statusCode(403);
+                .when().get("/api/party/{id}/blocklist", p[0]).then().statusCode(403);
     }
 
     @Test
     void add_withoutHostPin_returnsUnauthorizedAndAddsNothing() {
         String[] p = newParty();
         given().contentType(ContentType.JSON).body(Map.of("kind", "WORD", "value", "live"))
-                .when().post("/api/party/{id}/blacklist", p[0]).then().statusCode(401);
+                .when().post("/api/party/{id}/blocklist", p[0]).then().statusCode(401);
         assertEquals(0, countEntries(p[0]));
     }
 
@@ -108,14 +108,14 @@ class BlacklistResourceTest {
         String[] p = newParty();
         given().header("Authorization", "Bearer wrong-pin")
                 .contentType(ContentType.JSON).body(Map.of("kind", "WORD", "value", "live"))
-                .when().post("/api/party/{id}/blacklist", p[0]).then().statusCode(403);
+                .when().post("/api/party/{id}/blocklist", p[0]).then().statusCode(403);
         assertEquals(0, countEntries(p[0]));
     }
 
     @Test
     void remove_withoutHostPin_returnsUnauthorized() {
         String[] p = newParty();
-        given().when().delete("/api/party/{id}/blacklist/{entryId}", p[0], UUID.randomUUID().toString())
+        given().when().delete("/api/party/{id}/blocklist/{entryId}", p[0], UUID.randomUUID().toString())
                 .then().statusCode(401);
     }
 
@@ -123,7 +123,7 @@ class BlacklistResourceTest {
     void remove_withWrongHostPin_returnsForbidden() {
         String[] p = newParty();
         given().header("Authorization", "Bearer wrong-pin")
-                .when().delete("/api/party/{id}/blacklist/{entryId}", p[0], UUID.randomUUID().toString())
+                .when().delete("/api/party/{id}/blocklist/{entryId}", p[0], UUID.randomUUID().toString())
                 .then().statusCode(403);
     }
 
@@ -131,14 +131,14 @@ class BlacklistResourceTest {
     void searchArtists_withoutHostPin_returnsUnauthorized() {
         String[] p = newParty();
         given().queryParam("q", "abba")
-                .when().get("/api/party/{id}/blacklist/artists", p[0]).then().statusCode(401);
+                .when().get("/api/party/{id}/blocklist/artists", p[0]).then().statusCode(401);
     }
 
     @Test
     void searchArtists_withWrongHostPin_returnsForbidden() {
         String[] p = newParty();
         given().header("Authorization", "Bearer wrong-pin").queryParam("q", "abba")
-                .when().get("/api/party/{id}/blacklist/artists", p[0]).then().statusCode(403);
+                .when().get("/api/party/{id}/blocklist/artists", p[0]).then().statusCode(403);
     }
 
     // --- behavior with the correct host PIN ---
@@ -149,7 +149,7 @@ class BlacklistResourceTest {
 
         String id = given().header("Authorization", "Bearer " + p[1])
                 .contentType(ContentType.JSON).body(Map.of("kind", "WORD", "value", "Live"))
-                .when().post("/api/party/{id}/blacklist", p[0])
+                .when().post("/api/party/{id}/blocklist", p[0])
                 .then().statusCode(201)
                 .body("kind", equalTo("WORD"))
                 .body("value", equalTo("live"))
@@ -158,7 +158,7 @@ class BlacklistResourceTest {
 
         given().header("Authorization", "Bearer " + p[1])
                 .contentType(ContentType.JSON).body(Map.of("kind", "word", "value", " live "))
-                .when().post("/api/party/{id}/blacklist", p[0])
+                .when().post("/api/party/{id}/blocklist", p[0])
                 .then().statusCode(200)
                 .body("id", equalTo(id));
 
@@ -171,12 +171,12 @@ class BlacklistResourceTest {
 
         given().header("Authorization", "Bearer " + p[1])
                 .contentType(ContentType.JSON).body(Map.of("kind", "GENRE", "value", "rock"))
-                .when().post("/api/party/{id}/blacklist", p[0])
+                .when().post("/api/party/{id}/blocklist", p[0])
                 .then().statusCode(400);
 
         given().header("Authorization", "Bearer " + p[1])
                 .contentType(ContentType.JSON).body(Map.of("kind", "WORD", "value", "   "))
-                .when().post("/api/party/{id}/blacklist", p[0])
+                .when().post("/api/party/{id}/blocklist", p[0])
                 .then().statusCode(400)
                 .body("error", notNullValue());
 
@@ -192,12 +192,12 @@ class BlacklistResourceTest {
                 Map.of("kind", "TRACK", "value", "spotify:track:x", "label", "Song X – A"))) {
             given().header("Authorization", "Bearer " + p[1])
                     .contentType(ContentType.JSON).body(body)
-                    .when().post("/api/party/{id}/blacklist", p[0])
+                    .when().post("/api/party/{id}/blocklist", p[0])
                     .then().statusCode(201);
         }
 
         given().header("Authorization", "Bearer " + p[1])
-                .when().get("/api/party/{id}/blacklist", p[0])
+                .when().get("/api/party/{id}/blocklist", p[0])
                 .then().statusCode(200)
                 .body("size()", equalTo(3))
                 .body("kind", contains("WORD", "ARTIST", "TRACK"))
@@ -212,20 +212,20 @@ class BlacklistResourceTest {
 
         String id = given().header("Authorization", "Bearer " + p[1])
                 .contentType(ContentType.JSON).body(Map.of("kind", "WORD", "value", "live"))
-                .when().post("/api/party/{id}/blacklist", p[0])
+                .when().post("/api/party/{id}/blocklist", p[0])
                 .then().statusCode(201).extract().path("id");
 
         // Another party's host cannot delete this party's entry.
         given().header("Authorization", "Bearer " + other[1])
-                .when().delete("/api/party/{id}/blacklist/{entryId}", other[0], id)
+                .when().delete("/api/party/{id}/blocklist/{entryId}", other[0], id)
                 .then().statusCode(404);
         given().header("Authorization", "Bearer " + p[1])
-                .when().delete("/api/party/{id}/blacklist/{entryId}", p[0], "not-a-uuid")
+                .when().delete("/api/party/{id}/blocklist/{entryId}", p[0], "not-a-uuid")
                 .then().statusCode(404);
         assertEquals(1, countEntries(p[0]));
 
         given().header("Authorization", "Bearer " + p[1])
-                .when().delete("/api/party/{id}/blacklist/{entryId}", p[0], id)
+                .when().delete("/api/party/{id}/blocklist/{entryId}", p[0], id)
                 .then().statusCode(204);
         assertEquals(0, countEntries(p[0]));
     }
@@ -235,7 +235,7 @@ class BlacklistResourceTest {
         String[] p = newParty();
 
         given().header("Authorization", "Bearer " + p[1]).queryParam("q", "  ")
-                .when().get("/api/party/{id}/blacklist/artists", p[0])
+                .when().get("/api/party/{id}/blocklist/artists", p[0])
                 .then().statusCode(200)
                 .body("size()", equalTo(0));
 
@@ -249,38 +249,38 @@ class BlacklistResourceTest {
                 .thenReturn(List.of(Map.of("id", "artist-1", "name", "ABBA", "imageUrl", "http://img/a")));
 
         given().header("Authorization", "Bearer " + p[1]).queryParam("q", "abba")
-                .when().get("/api/party/{id}/blacklist/artists", p[0])
+                .when().get("/api/party/{id}/blocklist/artists", p[0])
                 .then().statusCode(200)
                 .body("[0].id", equalTo("artist-1"))
                 .body("[0].name", equalTo("ABBA"));
     }
 
-    // --- live update: guests re-run their search when the blacklist changes ---
+    // --- live update: guests re-run their search when the blocklist changes ---
 
     @Test
-    void addAndRemove_emitBlacklistUpdated_withOnlyThePartyId() {
+    void addAndRemove_emitBlocklistUpdated_withOnlyThePartyId() {
         String[] p = newParty();
         List<LoginEvent> events = new CopyOnWriteArrayList<>();
         var subscription = loginEventBus.stream().subscribe().with(events::add);
         try {
             String id = given().header("Authorization", "Bearer " + p[1])
                     .contentType(ContentType.JSON).body(Map.of("kind", "TRACK", "value", "spotify:track:x"))
-                    .when().post("/api/party/{id}/blacklist", p[0])
+                    .when().post("/api/party/{id}/blocklist", p[0])
                     .then().statusCode(201).extract().path("id");
             assertEquals(1, countUpdated(events, p[0]));
             // Guests must not learn the entry: the payload is the party ID and nothing else.
             assertEquals(Map.of("partyId", p[0]), events.stream()
-                    .filter(e -> e.type().equals("blacklist-updated")).findFirst().orElseThrow().payload());
+                    .filter(e -> e.type().equals("blocklist-updated")).findFirst().orElseThrow().payload());
 
             // A duplicate add changes nothing, so no event.
             given().header("Authorization", "Bearer " + p[1])
                     .contentType(ContentType.JSON).body(Map.of("kind", "TRACK", "value", "spotify:track:x"))
-                    .when().post("/api/party/{id}/blacklist", p[0])
+                    .when().post("/api/party/{id}/blocklist", p[0])
                     .then().statusCode(200);
             assertEquals(1, countUpdated(events, p[0]));
 
             given().header("Authorization", "Bearer " + p[1])
-                    .when().delete("/api/party/{id}/blacklist/{entryId}", p[0], id)
+                    .when().delete("/api/party/{id}/blocklist/{entryId}", p[0], id)
                     .then().statusCode(204);
             assertEquals(2, countUpdated(events, p[0]));
         } finally {
@@ -289,20 +289,20 @@ class BlacklistResourceTest {
     }
 
     @Test
-    void failedAddOrRemove_doesNotEmitBlacklistUpdated() {
+    void failedAddOrRemove_doesNotEmitBlocklistUpdated() {
         String[] p = newParty();
         List<LoginEvent> events = new CopyOnWriteArrayList<>();
         var subscription = loginEventBus.stream().subscribe().with(events::add);
         try {
             given().header("Authorization", "Bearer " + p[1])
                     .contentType(ContentType.JSON).body(Map.of("kind", "WORD", "value", "  "))
-                    .when().post("/api/party/{id}/blacklist", p[0])
+                    .when().post("/api/party/{id}/blocklist", p[0])
                     .then().statusCode(400);
             given().header("Authorization", "Bearer " + p[1])
-                    .when().delete("/api/party/{id}/blacklist/{entryId}", p[0], UUID.randomUUID().toString())
+                    .when().delete("/api/party/{id}/blocklist/{entryId}", p[0], UUID.randomUUID().toString())
                     .then().statusCode(404);
 
-            assertTrue(events.stream().noneMatch(e -> e.type().equals("blacklist-updated")));
+            assertTrue(events.stream().noneMatch(e -> e.type().equals("blocklist-updated")));
         } finally {
             subscription.cancel();
         }
@@ -310,7 +310,7 @@ class BlacklistResourceTest {
 
     private static long countUpdated(List<LoginEvent> events, String partyId) {
         return events.stream()
-                .filter(e -> e.type().equals("blacklist-updated") && partyId.equals(e.payload().get("partyId")))
+                .filter(e -> e.type().equals("blocklist-updated") && partyId.equals(e.payload().get("partyId")))
                 .count();
     }
 }

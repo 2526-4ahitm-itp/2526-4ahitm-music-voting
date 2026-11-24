@@ -217,16 +217,16 @@ class SpotifyCallbackResourceTest {
     }
 
     @Test
-    void events_ios_receivesBlacklistUpdatedOnlyForOwnParty() {
+    void events_ios_receivesBlocklistUpdatedOnlyForOwnParty() {
         var stream = resource.events("ios", "install-1", "party-a");
         List<LoginEvent> received = new CopyOnWriteArrayList<>();
         var subscription = stream.subscribe().with(received::add);
 
         try {
-            loginEventBus.emit(new LoginEvent("blacklist-updated", Instant.now(), Map.of("partyId", "party-a")));
-            loginEventBus.emit(new LoginEvent("blacklist-updated", Instant.now(), Map.of("partyId", "party-b")));
+            loginEventBus.emit(new LoginEvent("blocklist-updated", Instant.now(), Map.of("partyId", "party-a")));
+            loginEventBus.emit(new LoginEvent("blocklist-updated", Instant.now(), Map.of("partyId", "party-b")));
 
-            assertTrue(received.stream().anyMatch(e -> "blacklist-updated".equals(e.type())
+            assertTrue(received.stream().anyMatch(e -> "blocklist-updated".equals(e.type())
                     && "party-a".equals(e.payload().get("partyId"))));
             assertFalse(received.stream().anyMatch(e -> "party-b".equals(e.payload().get("partyId"))));
         } finally {

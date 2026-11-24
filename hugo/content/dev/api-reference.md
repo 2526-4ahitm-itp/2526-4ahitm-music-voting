@@ -28,10 +28,10 @@ Mit 🔒 markierte Endpunkte sind `@HostOnly` und erfordern den Header
 
 | Methode | Pfad | Beschreibung |
 |---|---|---|
-| `GET` | `/search?q=&audience=` | Suche beim Provider; leeres `q` → Top-Charts. Jedes Ergebnis in `tracks.items` hat zusätzlich `blocked: true/false` (Blacklist der Party, ohne Begründung). Mit `audience=guest` (Gast-Suche im Web) werden Songs gesperrter Artists entfernt und `hiddenHint` gesetzt: `ARTIST` (Suchbegriff = Name eines gesperrten Artists), `SOME` (andere Songs entfernt) oder `null`. |
+| `GET` | `/search?q=&audience=` | Suche beim Provider; leeres `q` → Top-Charts. Jedes Ergebnis in `tracks.items` hat zusätzlich `blocked: true/false` (Blocklist der Party, ohne Begründung). Mit `audience=guest` (Gast-Suche im Web) werden Songs gesperrter Artists entfernt und `hiddenHint` gesetzt: `ARTIST` (Suchbegriff = Name eines gesperrten Artists), `SOME` (andere Songs entfernt) oder `null`. |
 | `GET` | `/{id}` | Einzelnen Track abrufen. |
 | `GET` | `/queue?deviceId=` | Sortierte Queue; mit `deviceId` zusätzlich `hasVoted` pro Eintrag. |
-| `POST` | `/addToPlaylist` | Song(s) zur Queue hinzufügen. Body: Liste von URIs. Ist der Song bereits **wartend** in der Queue → `409` „Song ist schon in der Warteschlange.“ (der gerade spielende Song darf erneut hinzugefügt werden). Steht der Song auf der Blacklist → `403` „Nicht erlaubt.“ |
+| `POST` | `/addToPlaylist` | Song(s) zur Queue hinzufügen. Body: Liste von URIs. Ist der Song bereits **wartend** in der Queue → `409` „Song ist schon in der Warteschlange.“ (der gerade spielende Song darf erneut hinzugefügt werden). Steht der Song auf der Blocklist → `403` „Nicht erlaubt.“ |
 | `DELETE` | `/remove` 🔒 | Song aus der Queue entfernen. |
 | `POST` | `/vote` | Like umschalten (Body mit `deviceId`). |
 | `POST` | `/start` 🔒 | Wiedergabe aus der Queue starten. |
@@ -44,16 +44,16 @@ Mit 🔒 markierte Endpunkte sind `@HostOnly` und erfordern den Header
 | `PUT` | `/play` 🔒 | Konkreten Track abspielen. |
 | `POST` | `/saveToPlaylist` 🔒 | Tracks in eine Spotify-Playlist sichern. |
 
-## Blacklist — `/api/party/{partyId}/blacklist`
+## Blocklist — `/api/party/{partyId}/blocklist`
 
-Alle Endpunkte sind 🔒. Einträge: `{id, kind, value, label, imageUrl}` mit `kind` = `WORD` (ganzes Wort, Groß-/Kleinschreibung egal), `ARTIST` (Spotify-Artist-ID) oder `TRACK` (Spotify-Track-URI). Gespeichert in `blacklist_entry`, gelöscht beim Party-Ende. Jedes erfolgreiche Hinzufügen (`201`) und Entfernen sendet das SSE-Event `blacklist-updated` (siehe [Realtime / SSE](../realtime-sse/)).
+Alle Endpunkte sind 🔒. Einträge: `{id, kind, value, label, imageUrl}` mit `kind` = `WORD` (ganzes Wort, Groß-/Kleinschreibung egal), `ARTIST` (Spotify-Artist-ID) oder `TRACK` (Spotify-Track-URI). Gespeichert in `blocklist_entry`, gelöscht beim Party-Ende. Jedes erfolgreiche Hinzufügen (`201`) und Entfernen sendet das SSE-Event `blocklist-updated` (siehe [Realtime / SSE](../realtime-sse/)).
 
 | Methode | Pfad | Beschreibung |
 |---|---|---|
 | `GET` | `/` | Alle Einträge der Party (älteste zuerst). |
 | `POST` | `/` | Eintrag hinzufügen. Body `{"kind":"WORD","value":"live"}` (bei `ARTIST`/`TRACK` optional `label`, `imageUrl`). `201` neu, `200` bestehender Eintrag (doppelt), `400` ungültige Art oder leerer Wert. |
 | `DELETE` | `/{entryId}` | Eintrag entfernen. `204`; `404` wenn unbekannt oder von einer anderen Party. |
-| `GET` | `/artists?q=` | Künstlersuche für die Blacklist-Seite → `[{id, name, imageUrl}]`; leeres `q` → `[]`. |
+| `GET` | `/artists?q=` | Künstlersuche für die Blocklist-Seite → `[{id, name, imageUrl}]`; leeres `q` → `[]`. |
 
 ## Spotify (party-scoped) — `/api/party/{partyId}/spotify`
 
@@ -78,7 +78,7 @@ Alle Endpunkte sind 🔒. Einträge: `{id, kind, value, label, imageUrl}` mit `k
 
 - `401` – fehlender Host-Header bzw. abgelaufene Spotify-Sitzung
   (`"Spotify-Sitzung abgelaufen. Bitte neu anmelden."`).
-- `403` – falscher Host-PIN, bzw. beim Hinzufügen eines Songs: Song steht auf der Blacklist (`{"error":"Nicht erlaubt."}`).
+- `403` – falscher Host-PIN, bzw. beim Hinzufügen eines Songs: Song steht auf der Blocklist (`{"error":"Nicht erlaubt."}`).
 - `404` – unbekannte oder beendete Party.
 - `409` – Song wartet bereits in der Queue (`{"error":"Song ist schon in der Warteschlange."}`).
 - `429` – Gast hat mehr als 20 Songs pro Minute hinzugefügt (pro `deviceId`, Host mit PIN ausgenommen):
