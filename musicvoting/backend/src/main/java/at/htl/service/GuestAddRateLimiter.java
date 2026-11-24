@@ -12,8 +12,8 @@ import java.util.OptionalLong;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Limits how many songs one guest can add per rolling minute (guest spec "Per-Guest Add Rate
- * Limit"), so a single guest cannot flood the queue and push everyone else's wishes down.
+ * Limits how many songs one guest can add per rolling minute (guest spec "Guest Add Limit
+ * per Minute"), so a single guest cannot flood the queue and push everyone else's wishes down.
  *
  * <p>Guests are identified by their persistent {@code deviceId} within a party. Only songs that
  * were actually added are recorded: {@link #check} runs before the add, {@link #record} only
@@ -23,8 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @ApplicationScoped
 public class GuestAddRateLimiter {
 
-    /** Songs a guest may add within {@link #WINDOW}. */
-    public static final int MAX_ADDS = 10;
+    /**
+     * Songs a guest may add within {@link #WINDOW}. Raised from 10 to 20 after the live check on
+     * 2026-11-24: 10 felt too tight at a real party, 20 still stops a single guest from flooding.
+     */
+    public static final int MAX_ADDS = 20;
 
     /** Length of the rolling window. */
     public static final Duration WINDOW = Duration.ofMinutes(1);

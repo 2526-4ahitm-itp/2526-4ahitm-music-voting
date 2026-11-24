@@ -111,7 +111,7 @@ public class TrackResource {
     /**
      * Adds songs to the queue. Guests pass their persistent {@code deviceId} so the per-guest
      * limit of {@link GuestAddRateLimiter#MAX_ADDS} songs per minute applies (guest spec
-     * "Per-Guest Add Rate Limit"); the host (valid host PIN) is exempt so the queue can be
+     * "Guest Add Limit per Minute"); the host (valid host PIN) is exempt so the queue can be
      * filled before the party. Without a {@code deviceId} the request is not limited, so older
      * iOS versions keep working.
      */

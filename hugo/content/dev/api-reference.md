@@ -81,8 +81,6 @@ Alle Endpunkte sind 🔒. Einträge: `{id, kind, value, label, imageUrl}` mit `k
 - `403` – falscher Host-PIN, bzw. beim Hinzufügen eines Songs: Song steht auf der Blacklist (`{"error":"Nicht erlaubt."}`).
 - `404` – unbekannte oder beendete Party.
 - `409` – Song wartet bereits in der Queue (`{"error":"Song ist schon in der Warteschlange."}`).
+- `429` – Gast hat mehr als 20 Songs pro Minute hinzugefügt (pro `deviceId`, Host mit PIN ausgenommen):
+  `{"error":"Zu viele Anfragen — bitte kurz warten.","retryAfterSeconds":N}` plus Header `Retry-After`; die Web-App zeigt daraus einen Countdown an.
 - Fachliche Ablehnungen kommen als deutsche Klartext-Meldungen zurück – diese **verbatim** anzeigen.
-
-> [!NOTE]
-> `"Zu viele Anfragen — bitte kurz warten."` (10 Songs/Minute) ist in `openspec/specs/` festgelegt,
-> im Backend aber **noch nicht umgesetzt**.

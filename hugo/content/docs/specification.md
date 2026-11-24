@@ -219,9 +219,9 @@ Nicht vorhanden: jegliche Host-Bedienelemente sowie jede Anzeige, **wer** einen 
 
 # Akzeptanzkriterien (Checkliste)
 1. Gäste können per QR-Code **oder** 5-stelligem PIN beitreten und sehen Updates live.
-2. *(offen)* Pro Gast maximal 10 Songs pro Minute; darüber wird mit deutscher Meldung geblockt.
+2. Pro Gast maximal 20 Songs pro Minute; darüber wird mit „Zu viele Anfragen — bitte kurz warten.“ geblockt, und die Web-App zeigt einen Countdown bis zum nächsten möglichen Song.
 3. Wartende Duplikate werden verhindert und sauber gemeldet; der laufende Song darf erneut gewünscht werden.
-4. *(offen)* Blacklist blockiert Songs (Teilstring) und zeigt „Nicht erlaubt.“
+4. Die Blacklist blockiert Wörter (ganzes Wort, ohne Groß-/Kleinschreibung), Artists und Songs und zeigt „Nicht erlaubt.“
 5. Likes sind togglebar (1 pro Gast/Song, serverseitig erzwungen) und aktualisieren live.
 6. Sortierung ist immer: Likes desc, dann ältester zuerst.
 7. Nur der Host (mit Host-PIN) kann entfernen/pausieren/skippen/beenden.

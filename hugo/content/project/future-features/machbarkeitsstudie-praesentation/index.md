@@ -43,7 +43,7 @@ weight: 30
 <tr><td>Live-Events</td><td><code>/api/spotify/events</code></td><td>SSE-Kanal heißt „spotify", wird aber für alles genutzt</td></tr>
 <tr><td><strong>Blacklist</strong></td><td><code>isBlockedTrack</code>, <code>searchArtists</code></td><td>Prüfungen beim Hinzufügen, Refill und Suche <strong>im Spotify-Provider</strong>; Künstler = Spotify-ID</td></tr>
 <tr><td>Player-Seite</td><td><code>spotify-player.ts</code>, <code>startpage.ts</code></td><td>Lädt Spotify SDK direkt, Songende-Erkennung auf Spotify zugeschnitten</td></tr>
-<tr><td>Gast/Host-Suche</td><td><code>guest.ts</code>, <code>search-host.ts</code></td><td>Nutzen Spotify-Service und Spotify-Event-Pfad</td></tr>
+<tr><td>Gast/Host-Suche</td><td><code>voting-comp.ts</code>, <code>host-dashboard.ts</code></td><td>Nutzen Spotify-Service und Spotify-Event-Pfad</td></tr>
 <tr><td>Party erstellen</td><td><code>create-party.ts</code></td><td>Dropdown zeigt „Amazon Music", ruft aber immer <code>createParty('spotify')</code></td></tr>
 <tr><td>iOS</td><td><code>SpotifyAuthView.swift</code></td><td>Login-Ansicht nur für Spotify</td></tr>
 </tbody>

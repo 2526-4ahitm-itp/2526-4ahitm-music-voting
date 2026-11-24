@@ -205,7 +205,7 @@ export class SpotifyWebPlayerService {
 
   /**
    * Adds a song to the queue. The persistent deviceId identifies the guest for the backend's
-   * limit of 10 songs per minute (guest spec "Per-Guest Add Rate Limit"); on the host's device
+   * limit of 20 songs per minute (guest spec "Guest Add Limit per Minute"); on the host's device
    * the host PIN header (interceptor) exempts the request. A 429 carries the German message
    * "Zu viele Anfragen — bitte kurz warten.", which the pages show like other backend errors.
    */

@@ -54,7 +54,7 @@ describe('SpotifyWebPlayerService', () => {
 
     service.addToPlaylist('spotify:track:abc').subscribe();
 
-    // deviceId identifies the guest for the per-guest add limit (guest spec "Per-Guest Add Rate Limit").
+    // deviceId identifies the guest for the per-guest add limit (guest spec "Guest Add Limit per Minute").
     const req = httpMock.expectOne('/api/party/party-1/track/addToPlaylist?deviceId=device-1');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(['spotify:track:abc']);

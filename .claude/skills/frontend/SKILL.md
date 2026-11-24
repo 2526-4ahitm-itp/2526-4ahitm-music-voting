@@ -34,10 +34,10 @@ src/app/
 │   ├── party.service.ts     Party lifecycle, pins, deviceId, default playlist, blacklist (typed interfaces)
 │   ├── spotify-player.ts    Web Playback SDK, queue, add, vote, play, SSE queue updates
 │   ├── spotify-tracks.ts    Track search (`TrackService`)
-│   └── queue-state.ts       Shared queue state (which URIs are already queued)
+│   └── add-cooldown.ts      Countdown after a 429 on guest add (root, survives leaving /voting)
 ├── shared/                  Reusable UI: mv-cover, mv-icon, mv-spinner, mv-toast (+ toast.service),
-│                            mv-host-menu, mv-guest-tabs, mv-guest-party, mv-party-ended,
-│                            mv-credit-footer, mv-theme-toggle (+ theme.service), stage.css
+│                            mv-host-menu, mv-guest-party, mv-party-ended, mv-other-device-steps,
+│                            mv-credit-footer, mv-theme-toggle (+ theme.service), public-url, stage.css
 └── pages/
     ├── home/                Landing: host or guest
     ├── code-input/          Guest joins with 5-digit code (also `join/:pin`)
@@ -47,11 +47,8 @@ src/app/
     ├── select-blacklist/    Host setup: blacklist words / artists / songs
     ├── party-ready/         Host setup: open the player, go live
     ├── startpage/           TV/player view: current track, queue, Web Playback SDK
-    ├── host-dashboard/      Host: playback controls + queue management
-    ├── search-host/         Host: search + add
-    ├── voting-host/         Host: see votes
-    ├── guest/               Guest: search + add
-    └── voting-comp/         Guest: vote on queued songs
+    ├── host-dashboard/      Host: playback controls, whole queue with search, add and likes
+    └── voting-comp/         Guest: the single guest page `/voting` — queue, likes, search + add
 ```
 
 The routes and their guards are in `app.routes.ts` — read it instead of duplicating it here.
