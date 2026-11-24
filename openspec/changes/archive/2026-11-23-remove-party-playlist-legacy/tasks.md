@@ -18,7 +18,7 @@
 
 - [x] 3.1 Per Grep sicherstellen, dass „Musicvoting party“, `playlist-modify` und die entfernten Methoden nirgends mehr vorkommen (Backend, Frontend, iOS, README, Hugo)
 - [x] 3.2 `openspec validate remove-party-playlist-legacy` läuft ohne Fehler
-- [ ] 3.3 Live-Check: Host-Login mit Spotify erzeugt keine neue „Musicvoting party“-Playlist; Consent-Screen fragt nicht mehr nach Playlist-Bearbeitung
+- [x] 3.3 Live-Check: Host-Login mit Spotify erzeugt keine neue „Musicvoting party“-Playlist; Consent-Screen fragt nicht mehr nach Playlist-Bearbeitung (am 2026-11-24 bestätigt)
 
 ## Workflow follow-up
 
