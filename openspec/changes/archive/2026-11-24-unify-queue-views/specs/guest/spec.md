@@ -158,6 +158,40 @@ The guest page MUST show the plain page title "Warteschlange" in the top bar. Di
 - WHEN the guest opens `/voting`
 - THEN the top bar shows the title "Warteschlange" and below it "Party 47291" and "Party verlassen"
 
+### Requirement: Queue Marking Belongs to the Current Party
+Which search results count as "already in the queue" (and therefore show the like count and heart instead of "+", see "Guest Votes on Queued Songs from Search Results") MUST only reflect songs waiting in the party the client is currently in. The guest page loads the queue of the current party each time it opens, so no queue state carries over from an earlier party; a queue response that arrives for a party the client has already left MUST NOT change what the page shows.
+
+#### Scenario: Song added in an earlier party can be added in the new party
+- **GIVEN** a guest added song X in party A
+- **AND** the guest then joins party B in the same browser tab, whose queue does not contain X
+- **WHEN** the guest searches for X
+- **THEN** X shows "+" and no like count
+- **AND** the guest can add X to party B
+
+#### Scenario: Late response of the old party is ignored
+- **GIVEN** the queue of party A is still loading
+- **WHEN** the guest switches to party B and A's queue response arrives afterwards
+- **THEN** the guest page shows only the songs of party B
+
+### Requirement: Guest Views Require a Joined Party
+The guest page `/voting` MUST only open when the client has joined a party (a party ID is stored for this browser). Without a joined party, navigating to it MUST redirect the guest to the code entry `/code`. The old route `/guest` redirects to `/voting` and is therefore covered by the same check. The PIN MUST NOT be required in these URLs; `/join/<pin>` remains the entry point that carries a PIN.
+
+#### Scenario: Guest opens the voting view without having joined
+- **GIVEN** no party is stored in the browser
+- **WHEN** the guest opens `/voting`
+- **THEN** the app redirects to `/code`
+- **AND** the guest can enter the 5-digit code there
+
+#### Scenario: Guest opens the add view without having joined
+- **GIVEN** no party is stored in the browser
+- **WHEN** the guest opens `/guest`
+- **THEN** the app redirects to `/voting` and from there to `/code`
+
+#### Scenario: Joined guest opens the voting view
+- **GIVEN** the guest has joined a party via `/join/<pin>` or the code entry
+- **WHEN** the guest opens `/voting` (for example after a reload)
+- **THEN** the voting view of that party opens
+
 ## REMOVED Requirements
 
 ### Requirement: Guest Bottom Tab Navigation
