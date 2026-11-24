@@ -49,11 +49,13 @@ After a party is created, the host view MUST display the 5-digit PIN and a QR co
 
 In all web host and TV views, the two codes MUST be named consistently and shown with different icons:
 - The party PIN that guests use MUST be labelled "Voting-PIN".
-- The host PIN MUST be labelled "Gastgeber-PIN" and carry the hint "Nicht weitergeben – damit öffnest du Dashboard und Player auf einem anderen Gerät."
+- The host PIN MUST be labelled "Gastgeber-PIN" and carry the hint "Geheim – damit kommst du zurück ins Dashboard."
 
 The term "Host-PIN" MUST NOT appear in the web UI. The two codes MUST NOT share the same icon.
 
-On the host dashboard the Gastgeber-PIN MUST be hidden by default and shown as "•••••", placed below the party actions. A button "Anzeigen" reveals it; while it is visible the button reads "Verbergen". The hint "Nicht weitergeben – damit öffnest du Dashboard und Player auf einem anderen Gerät." stays visible in both states. Every time the dashboard loads, the PIN starts hidden again.
+On the web host views (dashboard and go-live step) each label MUST carry a short tag saying who the code is for: "für Gäste" next to "Voting-PIN" and "nur für dich" next to "Gastgeber-PIN".
+
+On the host dashboard the Gastgeber-PIN MUST be hidden by default and shown as "•••••", placed below the party actions. A button "Anzeigen" reveals it; while it is visible the button reads "Verbergen". The hint "Geheim – damit kommst du zurück ins Dashboard." stays visible in both states. Every time the dashboard loads, the PIN starts hidden again.
 
 #### Scenario: Host dashboard shows PIN and QR code
 - GIVEN the host has just created a party
@@ -65,8 +67,14 @@ On the host dashboard the Gastgeber-PIN MUST be hidden by default and shown as "
 #### Scenario: Host sees the host PIN explained
 - GIVEN the host is on the host dashboard
 - WHEN the host looks for the host PIN
-- THEN it is labelled "Gastgeber-PIN" with the hint "Nicht weitergeben – damit öffnest du Dashboard und Player auf einem anderen Gerät."
+- THEN it is labelled "Gastgeber-PIN" with the hint "Geheim – damit kommst du zurück ins Dashboard."
 - AND it uses a different icon than the "Voting-PIN"
+
+#### Scenario: Host sees who each PIN is for
+- GIVEN the host is on the host dashboard or the go-live step
+- WHEN the host looks at the PIN labels
+- THEN "Voting-PIN" carries the tag "für Gäste"
+- AND "Gastgeber-PIN", where shown, carries the tag "nur für dich"
 
 #### Scenario: Gastgeber-PIN is hidden until revealed
 - GIVEN the host is on the host dashboard
@@ -128,7 +136,7 @@ The host MUST be able to start, pause, resume, and skip the currently playing so
 - THEN `POST /api/party/{id}/track/resume` is called
 
 ### Requirement: Host Removes Songs from Queue
-The host MUST be able to remove any song from the queue, including ones not yet played. Tapping "Song entfernen" MUST first ask "„<Titel>“ aus der Warteschlange entfernen?" with the choices "Auch sperren", "Nur entfernen" and "Abbrechen". "Nur entfernen" removes the song from the queue on every client. "Abbrechen" closes the question and changes nothing. For the currently playing song, "Auch sperren" MUST NOT be offered. Only one such question is open at a time.
+The host MUST be able to remove any song from the queue, including ones not yet played. Tapping "Song entfernen" MUST first ask "„<Titel>“ aus der Warteschlange entfernen?" with the choices "Entfernen und sperren", "Nur entfernen" and "Abbrechen". "Nur entfernen" removes the song from the queue on every client. "Abbrechen" closes the question and changes nothing. For the currently playing song, "Entfernen und sperren" MUST NOT be offered. Only one such question is open at a time.
 
 #### Scenario: Host removes a queued song
 - GIVEN a queue with three upcoming songs
@@ -147,7 +155,7 @@ The host MUST be able to remove any song from the queue, including ones not yet 
 - GIVEN song X is currently playing
 - WHEN the host taps "Song entfernen" on song X
 - THEN the question offers "Nur entfernen" and "Abbrechen"
-- AND "Auch sperren" is not offered
+- AND "Entfernen und sperren" is not offered
 
 ### Requirement: Host Manages Party Blacklist
 The host MUST be able to keep a blacklist scoped to the current party. A blacklist entry is one of three kinds:
@@ -163,13 +171,13 @@ Page details:
 - Pressing Enter in the field MUST block the input as a word; the field is emptied afterwards.
 - The artist and song search MUST start while the host types (no "Suchen" button). Emptying the field clears the results.
 - If only one of the two searches fails, the results of the other MUST still be shown.
-- The page MUST be skippable via "Ohne Blacklist fortfahren".
+- The page MUST be skippable via "Ohne Blocklist fortfahren".
 - "Weiter" continues with the current entries and MUST be disabled (greyed out) while the blacklist has no entries.
-- Both "Weiter" and "Ohne Blacklist fortfahren" continue to the go-live step (see "Host Setup Ends with a Go-Live Step").
+- Both "Weiter" and "Ohne Blocklist fortfahren" continue to the go-live step (see "Host Setup Ends with a Go-Live Step").
 
-**During the party.** The host dashboard menu MUST offer the entry "Blacklist". It opens the same page with the same capabilities: the one search field for words, artists and songs, and removing entries. In this mode the page MUST show a single button "Fertig" that returns to the host dashboard instead of "Weiter" / "Ohne Blacklist fortfahren". Every change is saved immediately.
+**During the party.** The host dashboard menu MUST offer the entry "Blocklist". It opens the same page with the same capabilities: the one search field for words, artists and songs, and removing entries. In this mode the page MUST show a single button "Fertig" that returns to the host dashboard instead of "Weiter" / "Ohne Blocklist fortfahren". Every change is saved immediately.
 
-Adding the same entry twice MUST NOT create a duplicate. During the party the host can additionally block single songs from the queue via "Song entfernen" → "Auch sperren" (see "Host Blocks a Queued Song").
+Adding the same entry twice MUST NOT create a duplicate. During the party the host can additionally block single songs from the queue via "Song entfernen" → "Entfernen und sperren" (see "Host Blocks a Queued Song").
 
 When a guest attempts to add a blocked song, the add MUST be rejected with "Nicht erlaubt." Blocked songs MUST NOT be added by the automatic queue refill either (see `playback/spec.md`).
 
@@ -181,7 +189,7 @@ When a guest attempts to add a blocked song, the add MUST be rejected with "Nich
 
 #### Scenario: Host adds a new blacklist word mid-party
 - GIVEN an active party with songs in the queue
-- WHEN the host opens "Blacklist" from the dashboard menu and adds the word "explicit"
+- WHEN the host opens "Blocklist" from the dashboard menu and adds the word "explicit"
 - THEN future guest adds matching "explicit" as a whole word are rejected
 - AND songs already in the queue are not retroactively removed
 
@@ -211,7 +219,7 @@ When a guest attempts to add a blocked song, the add MUST be rejected with "Nich
 
 #### Scenario: Host edits the full blacklist during the party
 - GIVEN the party is running and the host is on the host dashboard
-- WHEN the host opens the menu and chooses "Blacklist"
+- WHEN the host opens the menu and chooses "Blocklist"
 - THEN the blacklist page shows the current entries
 - AND the host can add a word, an artist and a song, and remove entries
 - AND "Fertig" returns to the host dashboard
@@ -246,7 +254,7 @@ When a guest attempts to add a blocked song, the add MUST be rejected with "Nich
 
 #### Scenario: Host skips the blacklist
 - GIVEN the host is on the blacklist setup page
-- WHEN the host chooses "Ohne Blacklist fortfahren"
+- WHEN the host chooses "Ohne Blocklist fortfahren"
 - THEN the host continues to the go-live step
 - AND the party has no word or artist entries
 
@@ -269,7 +277,7 @@ The Angular frontend MUST include an `Authorization: Bearer <hostPin>` header on
 - THEN the request does NOT include an `Authorization` header
 
 ### Requirement: Host Routes Require Stored PIN
-Angular routes `startpage`, `dashboard`, `voting-host`, and `search-host` MUST be protected by a route guard that verifies a host PIN exists in `localStorage`. If no PIN is found, the guard MUST redirect the user to the home page (`/`).
+Angular routes `startpage` and `dashboard` MUST be protected by a route guard that verifies a host PIN exists in `localStorage`. If no PIN is found, the guard MUST redirect the user to the home page (`/`). The former routes `voting-host` and `search-host` redirect to `dashboard`, so the same guard applies.
 
 #### Scenario: Unauthenticated user navigates to dashboard
 - GIVEN no host PIN is stored in `localStorage`
@@ -280,6 +288,11 @@ Angular routes `startpage`, `dashboard`, `voting-host`, and `search-host` MUST b
 - GIVEN a host PIN is stored in `localStorage`
 - WHEN the host navigates to `/dashboard`
 - THEN the route is activated normally
+
+#### Scenario: Unauthenticated user opens an old host link
+- GIVEN no host PIN is stored in `localStorage`
+- WHEN the user navigates to `/voting-host`
+- THEN the user ends up on `/`
 
 ### Requirement: Spotify Access Token Is Refreshed Automatically
 
@@ -600,11 +613,11 @@ A party that has a stored refresh token (but no current access token, e.g. right
 - THEN the new refresh token is persisted on the party row
 
 ### Requirement: Host Blocks a Queued Song
-The web host dashboard MUST NOT show a separate "Song sperren" button. The host blocks a waiting song through the removal question (see "Host Removes Songs from Queue"): choosing "Auch sperren" MUST add that track to the party blacklist as a song entry and MUST remove it from the queue on every client. The currently playing song cannot be blocked.
+The web host dashboard MUST NOT show a separate "Song sperren" button. The host blocks a waiting song through the removal question (see "Host Removes Songs from Queue"): choosing "Entfernen und sperren" MUST add that track to the party blacklist as a song entry and MUST remove it from the queue on every client. The currently playing song cannot be blocked.
 
 #### Scenario: Host blocks a waiting song
 - GIVEN song X is waiting in the queue
-- WHEN the host taps "Song entfernen" on song X and chooses "Auch sperren"
+- WHEN the host taps "Song entfernen" on song X and chooses "Entfernen und sperren"
 - THEN song X disappears from the queue on every client
 - AND a later attempt by a guest to add song X is rejected with "Nicht erlaubt."
 
@@ -612,7 +625,7 @@ The web host dashboard MUST NOT show a separate "Song sperren" button. The host 
 - GIVEN song X is currently playing
 - WHEN the host views the queue on the host dashboard
 - THEN song X shows no "Song sperren" button
-- AND its removal question does not offer "Auch sperren"
+- AND its removal question does not offer "Entfernen und sperren"
 
 #### Scenario: Host cancels the confirmation
 - GIVEN song X is waiting in the queue
@@ -627,7 +640,7 @@ The web host dashboard MUST NOT show a separate "Song sperren" button. The host 
 - AND no "Song sperren" button
 
 ### Requirement: Blacklist Is Visible Only to the Host
-Reading the blacklist, editing it and searching for artists to block MUST require the host credential. Requests without it MUST be rejected as unauthorized. Guests MUST NOT be shown the blacklist entries or the reason why a song is blocked. The only exception: when a guest searches for a banned artist by name, the guest search MAY say "Dieser Artist ist nicht zulässig." (see `search/spec.md`).
+Reading the blacklist, editing it and searching for artists to block MUST require the host credential. Requests without it MUST be rejected as unauthorized. Guests MUST NOT be shown the blacklist entries or the reason why a song is blocked. The only exception: when a guest searches for a banned artist by name, the guest search MAY say "Dieser Artist ist vom Gastgeber gesperrt." (see `search/spec.md`).
 
 #### Scenario: Guest requests the blacklist
 - GIVEN a party with blacklist entries
@@ -644,7 +657,7 @@ Reading the blacklist, editing it and searching for artists to block MUST requir
 #### Scenario: Guest search hint does not list other entries
 - GIVEN the blacklist contains artist A, artist B and the word "live"
 - WHEN a guest searches for "A"
-- THEN the guest is told "Dieser Artist ist nicht zulässig."
+- THEN the guest is told "Dieser Artist ist vom Gastgeber gesperrt."
 - AND artist B and the word "live" are not revealed
 
 ### Requirement: Blacklist Is Removed When the Party Ends
@@ -661,23 +674,28 @@ When a party ends (by the host or by automatic expiry), all of its blacklist ent
 - THEN the new party's blacklist is empty
 
 ### Requirement: Host Navigation Adapts to Screen Width
-From 1024 px viewport width the web host pages (dashboard, voting, search, blacklist during the party) MUST show the host navigation as a permanently visible side rail with icon and text per entry; below that width it MUST stay a burger menu. Both contain the same entries and mark the current page.
+From 1024 px viewport width the web host pages (dashboard, blacklist during the party) MUST show the host navigation as a permanently visible side rail with icon and text per entry; below that width it MUST stay a burger menu. Both contain the same entries, "Dashboard" and "Blocklist", and mark the current page. The rail and the slide-in menu MUST show the MusicVoting logo instead of the text "MusicVoting" and a badge "Party läuft · <Voting-PIN>".
 
 #### Scenario: Host on a laptop sees the navigation rail
 - GIVEN the host opens the dashboard in a window at least 1024 px wide
-- THEN the entries "Dashboard", "Voting", "Suchen" and "Blacklist" are visible at the left edge without opening a menu
+- THEN the entries "Dashboard" and "Blocklist" are visible at the left edge without opening a menu
 - AND "Dashboard" is marked as the current page
+- AND the rail shows the logo and "Party läuft · 47291" for a party with Voting-PIN 47291
 
 #### Scenario: Host on a phone uses the burger menu
 - GIVEN the host opens the dashboard in a window narrower than 1024 px
 - THEN only the burger button is visible
 - WHEN the host taps it
-- THEN the same entries slide in
+- THEN the same entries, the logo and the badge slide in
+
+#### Scenario: Removed entries
+- GIVEN the host opens the navigation
+- THEN no "Voting" and no "Suchen" entry is shown
 
 ### Requirement: Host Setup Ends with a Go-Live Step
 After the blacklist setup page, the web host flow MUST end with the step "Deine Party ist bereit", which MUST:
 - explain in one sentence that the player plays the music and belongs on the device at the TV,
-- offer "Player auf dem TV öffnen", opening `/startpage` for the party in a new window,
+- offer "Player auf diesem Gerät öffnen", opening `/startpage` for the party in a new window, and below it the instructions "Player auf anderem Gerät öffnen" (see "Go-Live Step Explains a Separate TV Device"),
 - show the "Voting-PIN" so the host can share it,
 - offer "Zum Dashboard", which navigates to the host dashboard,
 - show "Party ist live 🎉" once a player has registered as the playback device.
@@ -685,19 +703,25 @@ After the blacklist setup page, the web host flow MUST end with the step "Deine 
 #### Scenario: Host finishes setup on the same device
 - GIVEN the host has completed the blacklist setup page
 - WHEN the go-live step loads
-- THEN "Deine Party ist bereit", the explanation, the button "Player auf dem TV öffnen", the separate-device instructions and the "Voting-PIN" are shown
+- THEN "Deine Party ist bereit", the explanation, the button "Player auf diesem Gerät öffnen", the separate-device instructions and the "Voting-PIN" are shown
 - WHEN the host opens the player and it registers as the playback device
 - THEN "Party ist live 🎉" is shown
 - AND "Zum Dashboard" navigates to the host dashboard
 
 ### Requirement: Go-Live Step Explains a Separate TV Device
-The go-live step MUST explain how to open the player on a separate device: "Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen." The player route requires the host PIN, so a copied link alone would not work on another device.
+Below the button "Player auf diesem Gerät öffnen", the go-live step and the host dashboard MUST show the heading "Player auf anderem Gerät öffnen" followed by a numbered list of five steps: "MusicVoting öffnen" (with a link to the public address https://it220241.cloud.htl-leonding.ac.at, shown as "it220241.cloud.htl-leonding.ac.at", also during local development), "Gastgeber einer Party wählen", "Player öffnen auswählen", "Gastgeber-PIN eingeben", "Player öffnen". The player route requires the host PIN, so a copied link alone would not work on another device.
 
 #### Scenario: Host opens the player on a separate device
 - GIVEN the host is on the go-live step
-- THEN the instructions "Anderes Gerät am TV? Öffne dort MusicVoting → Gastgeber → Gastgeber-PIN eingeben → Player öffnen." are shown
+- THEN "Player auf anderem Gerät öffnen" is followed by an ordered list with the five steps "MusicVoting öffnen", "Gastgeber einer Party wählen", "Player öffnen auswählen", "Gastgeber-PIN eingeben" and "Player öffnen"
+- AND "MusicVoting öffnen" links to https://it220241.cloud.htl-leonding.ac.at, not to "localhost"
 - WHEN the host follows them on another device and that player registers
 - THEN the go-live step shows "Party ist live 🎉"
+
+#### Scenario: Dashboard shows the same instructions
+- GIVEN the host is on the dashboard
+- THEN the party actions offer "Player auf diesem Gerät öffnen"
+- AND below it "Player auf anderem Gerät öffnen" with the same five steps
 
 ### Requirement: Only Supported Providers Are Selectable
 The "Party erstellen" page MUST offer only music providers that the web host flow fully supports as selectable options. Spotify MUST be selectable, together with the note "Du brauchst Spotify Premium." YouTube MUST be shown as a disabled option labelled "YouTube (bald verfügbar)" that cannot be selected. "Amazon Music" MUST NOT be shown.
@@ -728,3 +752,93 @@ The endpoints only the TV player needs MUST require the host PIN like every host
 - **GIVEN** the TV player runs on a device where the host PIN is stored
 - **WHEN** it requests the token and registers its device id with `Authorization: Bearer <hostPin>`
 - **THEN** both requests succeed as before
+
+### Requirement: Host Dashboard Shows the Whole Queue on Every Screen
+The web host dashboard is the only host view of the queue. Every waiting song MUST show its rank, cover, title, artist, like count, like button and the "Song entfernen" button at every viewport width. On narrow screens the cover MUST get smaller rather than hiding rank or likes. There is no separate host voting page: `/voting-host` MUST redirect to `/dashboard`.
+
+#### Scenario: Host on a phone sees ranks and likes
+- GIVEN the host opens the dashboard in a 390 px wide window
+- AND song B (3 likes) is ranked first
+- WHEN the queue is rendered
+- THEN B's row shows rank "1", the like count "3", the like button and the "Song entfernen" button
+
+#### Scenario: Old host voting link
+- GIVEN a host with a stored PIN opens `/voting-host`
+- WHEN the route loads
+- THEN the app redirects to `/dashboard`
+
+### Requirement: Host Searches and Adds Songs on the Dashboard
+The queue card of the web host dashboard MUST offer one search field "Song oder Künstler suchen …" that works like the guest page: while it holds text, results from the party's provider replace the queue list under the label "Suchergebnisse"; when it is empty, the queue is shown. `/search-host` MUST redirect to `/dashboard`.
+
+#### Scenario: Host adds a song without leaving the dashboard
+- GIVEN the host is on the dashboard
+- WHEN the host types "Daft Punk" into the search field and taps "+" on a result
+- THEN the song is added to the queue
+- AND the host is still on `/dashboard`
+
+#### Scenario: Emptying the field shows the queue again
+- GIVEN the host sees search results
+- WHEN the host empties the field
+- THEN the queue with ranks is shown again
+
+#### Scenario: Old host search link
+- GIVEN a host with a stored PIN opens `/search-host`
+- WHEN the route loads
+- THEN the app redirects to `/dashboard`
+
+### Requirement: Host Search Results Show What Each Song Offers
+In the host dashboard search, a result already in the queue MUST show its like count and like button instead of "+"; any other result shows "+". A blocked result stays visible, greyed out, with a disabled "+" and the text "Nicht erlaubt.", so the host knows why.
+
+#### Scenario: Queued song in the host results
+- GIVEN song X is in the queue with 2 likes
+- WHEN the host searches and song X appears in the results
+- THEN song X shows "2" and a like button instead of "+"
+
+#### Scenario: Blocked song in the host results
+- GIVEN the blacklist contains the word "live"
+- WHEN the host searches and "Song X (Live)" appears
+- THEN it is greyed out with a disabled "+" and the text "Nicht erlaubt."
+
+### Requirement: Host Can Like Songs
+The host MUST be able to like and un-like songs on the web host dashboard, in every waiting queue row (next to "Song entfernen") and in the search results for queued songs. A host like counts exactly like a guest like: one like per device and song (see `voting/spec.md` "One Like per Guest per Song", "Likes Are Togglable"), shown optimistically. The playing song cannot be liked.
+
+#### Scenario: Host likes a waiting song
+- GIVEN song B is waiting with 2 likes and the host has not liked it
+- WHEN the host taps the like button in B's queue row
+- THEN B shows 3 likes with a filled heart on the dashboard and on every client
+
+#### Scenario: Host takes the like back
+- GIVEN the host has liked song B
+- WHEN the host taps B's like button again
+- THEN B's like count goes down by one and the heart is no longer filled
+
+### Requirement: Search Field Has a Clear Button
+The search field on the web guest page and on the host dashboard MUST show a button with the `aria-label` "Suche leeren" while it holds text. Activating it MUST empty the field in one step, close the search results, show the queue again and keep the focus in the field. While the field is empty, the button MUST NOT be shown.
+
+#### Scenario: One tap closes the search
+- GIVEN a guest sees search results for "abba"
+- WHEN the guest taps "Suche leeren"
+- THEN the field is empty, the queue is shown and the field has the focus
+
+#### Scenario: No clear button on an empty field
+- GIVEN the search field is empty
+- THEN no "Suche leeren" button is shown
+
+### Requirement: Dashboard Confirmations Manage Focus
+When a confirmation opens on the web host dashboard, keyboard focus MUST move into it: for "Song entfernen?" to its first button ("Entfernen und sperren", or "Nur entfernen" for the playing song), for "Party wirklich beenden?" to "Abbrechen". Pressing Escape MUST close the confirmation without changes. When it closes without removing the button that opened it, focus MUST return to that button.
+
+#### Scenario: Removal question takes the focus
+- GIVEN song X is waiting in the queue
+- WHEN the host activates "Song entfernen" on song X
+- THEN focus is on "Entfernen und sperren"
+
+#### Scenario: End-party question takes the focus
+- GIVEN the host is on the dashboard
+- WHEN the host activates "Party beenden"
+- THEN focus is on "Abbrechen"
+
+#### Scenario: Escape closes and returns focus
+- GIVEN the removal question for song X is open
+- WHEN the host presses Escape
+- THEN the question closes, song X stays in the queue
+- AND focus is back on song X's "Song entfernen" button
