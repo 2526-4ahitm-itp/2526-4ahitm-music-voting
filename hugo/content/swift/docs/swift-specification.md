@@ -157,7 +157,7 @@ Diese Regeln gelten identisch zur Web-App – siehe allgemeine Spezifikation:
 - **Likes:** 1 pro Gast/Song, togglebar, live; Optimistic UI.
 - **Playback:** läuft auf dem Monitor/TV; bei Songende/Skip wird der Song entfernt und der nächste gemäß Sortierung gestartet; keine History.
 - **Leere Queue:** wird automatisch nachgefüllt – Standard-Playlist → ähnliche Songs → Top-Charts → Suche. (Damit ist die frühere offene Frage „stoppen vs. zufällige Top-Charts“ entschieden.)
-- **Limit** (10 Songs/Minute) und **Blacklist** sind spezifiziert, aber noch nicht umgesetzt.
+- **Limit** (20 Songs/Minute) und **Blacklist** setzt das Backend durch; die App schickt ihre `deviceId` mit und zeigt die Meldungen wörtlich an (ein Countdown wie im Web fehlt in iOS noch).
 
 ---
 

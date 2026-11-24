@@ -5,6 +5,7 @@ import at.htl.domain.PartyId;
 import at.htl.domain.PartyRegistry;
 import at.htl.domain.ProviderKind;
 import at.htl.provider.spotify.SpotifyMusicProvider;
+import at.htl.service.GuestAddRateLimiter;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -255,7 +256,7 @@ class TrackResourceTest {
         }
     }
 
-    // ---------- per-guest add limit (guest spec "Per-Guest Add Rate Limit") ----------
+    // ---------- per-guest add limit (guest spec "Guest Add Limit per Minute") ----------
 
     /** Posts one song as a guest with the given deviceId and returns the status code. */
     private int addAsGuest(Party party, String deviceId, String uri) {
@@ -268,19 +269,19 @@ class TrackResourceTest {
     }
 
     @Test
-    void addToPlaylist_eleventhGuestAddWithinAMinute_isRejectedWith429() {
+    void addToPlaylist_guestAddOverTheLimitWithinAMinute_isRejectedWith429() {
         Party party = registerSpotifyParty("10031", "20031");
         when(spotifyMusicProvider.addTracksToPlaylist(eq(party), any())).thenReturn(Response.ok().build());
         String device = "device-" + UUID.randomUUID();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < GuestAddRateLimiter.MAX_ADDS; i++) {
             assertEquals(200, addAsGuest(party, device, "spotify:track:" + i));
         }
 
         given()
                 .contentType(ContentType.JSON)
                 .queryParam("deviceId", device)
-                .body(List.of("spotify:track:eleven"))
+                .body(List.of("spotify:track:one-too-many"))
                 .when().post("/api/party/{partyId}/track/addToPlaylist", party.id().value())
                 .then()
                 .statusCode(429)
@@ -304,7 +305,7 @@ class TrackResourceTest {
         for (int i = 0; i < 5; i++) {
             assertEquals(409, addAsGuest(party, device, "spotify:track:dup"));
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < GuestAddRateLimiter.MAX_ADDS; i++) {
             assertEquals(200, addAsGuest(party, device, "spotify:track:" + i));
         }
     }
@@ -315,7 +316,7 @@ class TrackResourceTest {
         when(spotifyMusicProvider.addTracksToPlaylist(eq(party), any())).thenReturn(Response.ok().build());
         String device = "device-" + UUID.randomUUID();
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < GuestAddRateLimiter.MAX_ADDS + 2; i++) {
             given()
                     .contentType(ContentType.JSON)
                     .header("Authorization", "Bearer 20033")
@@ -332,7 +333,7 @@ class TrackResourceTest {
         Party party = registerSpotifyParty("10034", "20034");
         when(spotifyMusicProvider.addTracksToPlaylist(eq(party), any())).thenReturn(Response.ok().build());
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < GuestAddRateLimiter.MAX_ADDS + 2; i++) {
             given()
                     .contentType(ContentType.JSON)
                     .body(List.of("spotify:track:" + i))

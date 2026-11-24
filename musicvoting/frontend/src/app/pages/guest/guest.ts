@@ -4,6 +4,7 @@ import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { TrackService } from '../../services/spotify-tracks';
 import { QueueStateService } from '../../services/queue-state';
 import { PartyService } from '../../services/party.service';
+import { AddCooldownService } from '../../services/add-cooldown';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -59,6 +60,8 @@ export class Guest implements OnInit, OnDestroy {
   private queueStateSubscription?: Subscription;
   private partyService = inject(PartyService);
   private toast = inject(ToastService);
+  /** Countdown after a 429; a root service so it survives switching guest tabs. */
+  readonly cooldown = inject(AddCooldownService);
 
   private searchAutoTrigger = toObservable(this.searchQuery).pipe(
     debounceTime(400),
@@ -172,6 +175,7 @@ export class Guest implements OnInit, OnDestroy {
   /** Track zur Playlist hinzufügen */
   async addToPlaylist(track: any) {
     if (track?.blocked) return; // on the party blacklist — the backend would reject it anyway
+    if (this.cooldown.active()) return; // still over the limit — the backend would answer 429 again
     this.addingTrackId = track.id;
     this.addError = null;
     this.cdr.detectChanges();
@@ -191,9 +195,14 @@ export class Guest implements OnInit, OnDestroy {
       console.error('Fehler beim Hinzufügen:', err);
       // The backend sends German messages meant to be shown verbatim, e.g. "Nicht erlaubt."
       // (blacklist, 403), "Song ist schon in der Warteschlange." (409) or
-      // "Zu viele Anfragen — bitte kurz warten." (429, more than 10 songs per minute).
+      // "Zu viele Anfragen — bitte kurz warten." (429, more than 20 songs per minute).
       const message = err?.error?.error;
       this.addError = typeof message === 'string' ? message : null;
+      if (err?.status === 429) {
+        // Show how long to wait and lock the "+" buttons until then (guest spec
+        // "Web Guest Sees When Adding Is Possible Again").
+        this.cooldown.start(err?.error?.retryAfterSeconds);
+      }
       this.toast.error(this.addError ?? this.connectionLostText);
     } finally {
       this.addingTrackId = null;
@@ -224,6 +233,8 @@ export class Guest implements OnInit, OnDestroy {
   addLabel(track: any): string {
     if (track?.blocked) return 'Nicht verfügbar';
     if (this.inQueueUris.has(track?.uri)) return 'Schon in der Warteschlange';
+    // Blocked and queued songs keep their own label: after the countdown they still cannot be added.
+    if (this.cooldown.active()) return 'Bitte kurz warten';
     return 'Song hinzufügen';
   }
 

@@ -73,3 +73,12 @@
     font-size: 1.125rem;
   }
 }
+
+/* Countdown after the add limit: highlighted like a hint so the wait time is noticed. */
+.host-status.cooldown {
+  padding: var(--mv-space-2) var(--mv-space-3);
+  border-radius: var(--mv-radius-sm);
+  border: 1px solid currentColor;
+  color: var(--mv-on-stage);
+  font-variant-numeric: tabular-nums;
+}

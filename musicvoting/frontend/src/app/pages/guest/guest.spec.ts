@@ -6,6 +6,7 @@ import { TrackService } from '../../services/spotify-tracks';
 import { SpotifyWebPlayerService } from '../../services/spotify-player';
 import { QueueStateService } from '../../services/queue-state';
 import { PartyService } from '../../services/party.service';
+import { AddCooldownService } from '../../services/add-cooldown';
 import { Router, provideRouter } from '@angular/router';
 
 describe('Guest', () => {
@@ -37,7 +38,10 @@ describe('Guest', () => {
     );
   });
 
-  afterEach(() => comp.ngOnDestroy());
+  afterEach(() => {
+    comp.ngOnDestroy();
+    TestBed.inject(AddCooldownService).ngOnDestroy(); // stop a running countdown interval
+  });
 
   it('search with an empty query clears the tracks', async () => {
     await comp.search('');
@@ -121,6 +125,83 @@ describe('Guest', () => {
 
     expect(comp.addError).toBe('Zu viele Anfragen — bitte kurz warten.');
     expect(comp.addingTrackId).toBeNull();
+  });
+
+  describe('countdown after the add limit (guest spec "Web Guest Sees When Adding Is Possible Again")', () => {
+    const rateLimited = (retryAfterSeconds: number) => throwError(() => ({
+      status: 429,
+      error: { error: 'Zu viele Anfragen — bitte kurz warten.', retryAfterSeconds },
+    }));
+
+    beforeEach(() => {
+      spyOn(console, 'error');
+      jasmine.clock().install();
+      jasmine.clock().mockDate(new Date('2026-11-24T20:00:00Z'));
+    });
+
+    afterEach(() => jasmine.clock().uninstall());
+
+    it('a 429 starts the countdown with retryAfterSeconds and locks adding', async () => {
+      spotifyService.addToPlaylist.and.returnValue(rateLimited(30));
+
+      await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+
+      expect(comp.cooldown.secondsLeft()).toBe(30);
+      expect(comp.addLabel({ uri: 'spotify:track:t2' })).toBe('Bitte kurz warten');
+    });
+
+    it('does not send another add while the countdown runs', async () => {
+      spotifyService.addToPlaylist.and.returnValue(rateLimited(30));
+      await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+      spotifyService.addToPlaylist.calls.reset();
+
+      await comp.addToPlaylist({ id: 't2', uri: 'spotify:track:t2', name: 'Other' });
+
+      expect(spotifyService.addToPlaylist).not.toHaveBeenCalled();
+    });
+
+    it('adding works again when the countdown has run out', async () => {
+      spotifyService.addToPlaylist.and.returnValue(rateLimited(2));
+      await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+
+      jasmine.clock().tick(2000);
+
+      expect(comp.cooldown.active()).toBeFalse();
+      expect(comp.addLabel({ uri: 'spotify:track:t2' })).toBe('Song hinzufügen');
+    });
+
+    it('blocked and queued songs keep their own label during the countdown', async () => {
+      spotifyService.addToPlaylist.and.returnValue(rateLimited(30));
+      await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+      comp.inQueueUris = new Set(['spotify:track:q']);
+
+      expect(comp.addLabel({ uri: 'spotify:track:b', blocked: true })).toBe('Nicht verfügbar');
+      expect(comp.addLabel({ uri: 'spotify:track:q' })).toBe('Schon in der Warteschlange');
+    });
+
+    it('other errors do not start a countdown', async () => {
+      spotifyService.addToPlaylist.and.returnValue(
+        throwError(() => ({ status: 409, error: { error: 'Song ist schon in der Warteschlange.' } }))
+      );
+
+      await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+
+      expect(comp.cooldown.active()).toBeFalse();
+    });
+
+    it('the countdown survives leaving and reopening the search view', async () => {
+      spotifyService.addToPlaylist.and.returnValue(rateLimited(40));
+      await comp.addToPlaylist({ id: 't1', uri: 'spotify:track:t1', name: 'Song' });
+      comp.ngOnDestroy(); // guest opens the voting tab
+
+      jasmine.clock().tick(10_000);
+      const reopened = TestBed.runInInjectionContext(
+        () => new Guest(trackApi as any, spotifyService as any, queueState as any, cdr as any, router as any, ngZone as any)
+      );
+
+      expect(reopened.cooldown.secondsLeft()).toBe(30);
+      reopened.ngOnDestroy();
+    });
   });
 
   it('addToPlaylist clears a previous error on the next add', async () => {

@@ -28,6 +28,12 @@
       >
     </form>
 
+    <!-- Countdown after the add limit was hit. Not aria-live: it changes every second; the
+         start is announced by the error toast and the buttons say "Bitte kurz warten". -->
+    @if (cooldown.secondsLeft() > 0) {
+      <p class="host-status cooldown">Du kannst in {{ cooldown.secondsLeft() }} s wieder Songs hinzufügen.</p>
+    }
+
     <!-- Search status; add confirmations and errors go to the shared toast. -->
     <div class="search-status" aria-live="polite">
       @if (isSearching()) {
@@ -55,7 +61,7 @@
                label and tooltip say "Nicht verfügbar" but never why. -->
           <button type="button" class="add-button"
                   (click)="addToPlaylist(track)"
-                  [disabled]="track.blocked || addingTrackId === track.id || inQueueUris.has(track.uri)"
+                  [disabled]="track.blocked || addingTrackId === track.id || inQueueUris.has(track.uri) || cooldown.secondsLeft() > 0"
                   [attr.aria-label]="addLabel(track)"
                   [attr.title]="track.blocked ? 'Nicht verfügbar' : null">
             @if (addingTrackId === track.id || inQueueUris.has(track.uri)) {
