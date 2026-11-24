@@ -1,6 +1,6 @@
 # Proposal: Rename "Blacklist" to "Blocklist" Everywhere
 
-> **Status: proposal only.** Specs, design and tasks are written when the team starts this change (after `unify-queue-views` is merged).
+> **Status:** specs, design and tasks written on 2026-11-24. Built on `refactor/rename-blocklist`, stacked on `refactor/design-rebased` (`unify-queue-views`).
 
 ## Why
 
@@ -22,7 +22,7 @@ It is a separate change because it reaches beyond the frontend: backend classes,
 - **BREAKING (API):**
   - REST paths `/api/party/{id}/blacklist…` → `/api/party/{id}/blocklist…`
   - SSE event `blacklist-updated` → `blocklist-updated`
-  - The iOS app does not use either, so only the web frontend is affected.
+  - The iOS app does not use the REST paths, but it listens for the SSE event (`SongAddView.swift`, search spec "iOS Search Applies the Party Blocklist Like the Web"), so the event name is renamed there too.
 - **BREAKING (database):**
   - table `blacklist_entry` → `blocklist_entry` in `musicvoting/backend/setup.sql` and in the k8s init config `deployment/k8s/01-postgres.yaml`
   - Databases with a persistent volume (`deployment/server`, `deployment/compose`, local Docker) need `ALTER TABLE blacklist_entry RENAME TO blocklist_entry;` once.
@@ -38,15 +38,17 @@ It is a separate change because it reaches beyond the frontend: backend classes,
 None.
 
 ### Modified Capabilities
-- `host`: renamed requirements ("Host Manages Party Blacklist", "Blacklist Is Visible Only to the Host", "Blacklist Is Removed When the Party Ends"), API paths in the text.
-- `search`: "Blacklisted Search Results Cannot Be Added" renamed, wording.
+- `host`: renamed requirements ("Host Manages Party Blacklist", "Blacklist Is Visible Only to the Host", "Blacklist Is Removed When the Party Ends"), wording, new requirement "Old Blocklist Setup Link Still Works".
+- `search`: "Blacklisted Search Results Cannot Be Added" and "iOS Search Applies the Party Blacklist Like the Web" renamed, wording.
 - `queue`: "Blacklist Enforced on Add" renamed.
-- `playback`: "Auto-Refill Skips Blacklisted Songs" renamed.
+- `playback`: "Auto-Refill Skips Blacklisted Songs" renamed, wording.
+- `dashboard`, `guest`: wording only.
 
 ## Impact
 
 - **Frontend:** about 20 files.
 - **Backend:** about 12 files.
+- **iOS:** the SSE event name in `SongAddView.swift` (plus comments).
 - **Other:** `setup.sql`, `deployment/k8s/01-postgres.yaml`, 6 spec files, about 12 Hugo pages.
 - **Deployment:** frontend and backend images must be deployed together; own server and local volumes need the one-line migration (documented in `deployment/server/PLACEHOLDERS.md` / README).
 - **Tests:** backend (`./mvnw test`) and frontend suites must pass again; renamed test classes.

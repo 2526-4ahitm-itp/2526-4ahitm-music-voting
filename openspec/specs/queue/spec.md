@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the single per-party queue: how songs get in, how it is ordered, how duplicates and blacklist violations are handled, and how songs leave. The queue is the source of truth for what will play next.
+Defines the single per-party queue: how songs get in, how it is ordered, how duplicates and blocklist violations are handled, and how songs leave. The queue is the source of truth for what will play next.
 
 ## Requirements
 
@@ -81,7 +81,7 @@ Guests MUST add songs via search results only. Pasting links or IDs MUST NOT be 
 #### Scenario: Guest adds a song from search
 - GIVEN a guest has searched and received results
 - WHEN the guest taps the "+" on a result
-- THEN that song enters the queue (subject to duplicate and blacklist checks)
+- THEN that song enters the queue (subject to duplicate and blocklist checks)
 
 ### Requirement: Songs Removed on Completion or Skip
 When a song finishes or is skipped, the corresponding row MUST be deleted from the database. The system MUST NOT retain a play history.
@@ -108,28 +108,28 @@ The backend MUST emit a `queue-updated` SSE event scoped to the party whenever a
 - THEN the backend emits `queue-updated` on the party SSE stream
 - AND the removed song disappears from all connected views immediately
 
-### Requirement: Blacklist Enforced on Add
-An add MUST be rejected if the song matches any entry on the party's blacklist: a blacklisted word appearing as a whole word (case-insensitive) in the song's title or any artist name, a blacklisted artist taking part in the song, or the song itself being blacklisted. The rejection MUST apply to every client (web guest, web host, iOS app). A rejected song MUST NOT enter the queue and MUST NOT trigger a queue update for other clients. See `host/spec.md` for blacklist management.
+### Requirement: Blocklist Enforced on Add
+An add MUST be rejected if the song matches any entry on the party's blocklist: a blocklisted word appearing as a whole word (case-insensitive) in the song's title or any artist name, a blocklisted artist taking part in the song, or the song itself being blocklisted. The rejection MUST apply to every client (web guest, web host, iOS app). A rejected song MUST NOT enter the queue and MUST NOT trigger a queue update for other clients. See `host/spec.md` for blocklist management.
 
-#### Scenario: Blacklist blocks an add
-- GIVEN the blacklist contains "live"
+#### Scenario: Blocklist blocks an add
+- GIVEN the blocklist contains "live"
 - WHEN a guest attempts to add "Song X (Live)"
 - THEN the add is rejected
 - AND the guest sees "Nicht erlaubt."
 
 #### Scenario: Word matching ignores case and partial words
-- GIVEN the blacklist contains "live"
+- GIVEN the blocklist contains "live"
 - WHEN guests attempt to add "LIVE at Wembley" and "Delivery"
 - THEN "LIVE at Wembley" is rejected
 - AND "Delivery" is accepted
 
-#### Scenario: Blacklisted artist blocks an add
-- GIVEN the blacklist contains artist A
+#### Scenario: Blocklisted artist blocks an add
+- GIVEN the blocklist contains artist A
 - WHEN a guest attempts to add any song by artist A
 - THEN the add is rejected
 - AND the guest sees "Nicht erlaubt."
 
 #### Scenario: Rejected add leaves the queue unchanged
-- GIVEN the blacklist contains song X
+- GIVEN the blocklist contains song X
 - WHEN a guest attempts to add song X
 - THEN song X does not appear in the queue on any client
