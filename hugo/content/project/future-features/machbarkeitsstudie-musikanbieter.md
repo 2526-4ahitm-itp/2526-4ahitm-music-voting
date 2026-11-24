@@ -59,7 +59,7 @@ funktionieren gleich.
 | **Live-Events** | `/api/spotify/events` | Der SSE-Kanal für alle Clients (Web und iOS) heißt „spotify", wird aber für alles genutzt |
 | **DB** | `party.spotify_refresh_token` | Spaltenname anbieterspezifisch |
 | **Player-Seite** | `frontend/.../services/spotify-player.ts`, `startpage.ts` | Lädt das Spotify SDK direkt; Songende-Erkennung ist auf Spotify-Eigenheiten zugeschnitten |
-| **Gast/Host-Suche** | `guest.ts`, `search-host.ts` | nutzen `SpotifyWebPlayerService` und `/api/spotify/events` |
+| **Gast/Host-Suche** | `voting-comp.ts`, `host-dashboard.ts` | nutzen `SpotifyWebPlayerService` und `/api/spotify/events` |
 | **Party erstellen** | `create-party.ts` / `.html` | Dropdown zeigt „Spotify" und **„Amazon Music"**, der Wert wird aber ignoriert: es wird immer `createParty('spotify')` aufgerufen. Amazon Music ist laut Recherche nicht nutzbar. |
 | **iOS** | `SpotifyAuthView.swift`, `PlaylistPickerView.swift` | Login-Ansicht nur für Spotify |
 | **Blacklist-Prüfungen** | `SpotifyMusicProvider.addTracksToPlaylist`, `refillQueue`, `searchTracks` (`isBlockedTrack`, `markBlockedSearchResults`), `searchArtists` | Alle drei Prüfstellen (Hinzufügen, Auto-Refill, Suchtreffer ausgrauen) liegen **im Spotify-Provider** und lesen Titel und Künstler aus Spotify-JSON. |
@@ -133,7 +133,7 @@ Position, so wie heute.
 - `SpotifyPlayerAdapter` = heutiger `SpotifyWebPlayerService`, `YouTubePlayerAdapter` neu.
 - `startpage` wählt den Adapter anhand des `provider` der Party und hört auf die neuen
   SSE-Kommandos.
-- `guest.ts` und `search-host.ts` brauchen nur den neutralen Event-Pfad; die Suche läuft schon
+- `voting-comp.ts` (Gast) und `host-dashboard.ts` (Host) brauchen nur den neutralen Event-Pfad; die Suche läuft schon
   übers Backend.
 - `create-party`: Dropdown mit den **tatsächlich unterstützten** Anbietern, Auswahl wird an
   `createParty(provider)` übergeben. „Amazon Music" fliegt raus.
